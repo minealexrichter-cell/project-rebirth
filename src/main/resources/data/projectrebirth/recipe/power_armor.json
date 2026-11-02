@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["APA", "IRI", "A A"],
+  "key": { "A": { "item": "projectrebirth:armor_plate" }, "P": { "item": "projectrebirth:circuit_board" }, "I": { "item": "minecraft:iron_block" }, "R": { "item": "minecraft:redstone_block" } },
+  "result": { "id": "projectrebirth:power_armor", "count": 1 }
+}

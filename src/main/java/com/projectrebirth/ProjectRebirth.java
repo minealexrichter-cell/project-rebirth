@@ -11,6 +11,8 @@ import com.projectrebirth.bodies.BodyItems;
 import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModCreativeTabs;
+import com.projectrebirth.powerarmor.HatchReleasePayload;
+import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.TechBlocks;
 import com.projectrebirth.technology.TechItems;
 
@@ -39,6 +41,8 @@ public class ProjectRebirth {
         BodyEntities.register(modEventBus);
         BodyItems.register(modEventBus);
         ReturnToHumanPayload.register(modEventBus);
+        PowerArmorRegistry.register(modEventBus);
+        HatchReleasePayload.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, RebirthConfig.SERVER_SPEC);

@@ -48,5 +48,42 @@
 
   "hud.projectrebirth.body": "Body: %s  [%s] return",
   "key.categories.projectrebirth": "Project: Rebirth",
-  "key.projectrebirth.return_to_human": "Return to human body"
+  "key.projectrebirth.return_to_human": "Return to human body",
+  "key.projectrebirth.emergency_hatch": "Emergency hatch release (hold)",
+  "message.projectrebirth.transfer.in_vehicle": "Leave the vehicle first",
+
+  "item.projectrebirth.power_armor": "Power Armor",
+  "entity.projectrebirth.power_armor": "Power Armor",
+  "item.projectrebirth.repair_wrench": "Repair Wrench",
+  "item.projectrebirth.rescue_tool": "Emergency Rescue Tool",
+  "item.projectrebirth.armor_plate": "Armor Plate",
+
+  "message.projectrebirth.armor.entered": "Power armor: structural %s / %s, critical %s / %s",
+  "message.projectrebirth.armor.no_space": "Not enough space to place the armor",
+  "message.projectrebirth.armor.wreck": "This armor is an unrepairable wreck. Sneak + use a repair wrench to dismantle it.",
+  "message.projectrebirth.armor.occupied": "The armor is occupied",
+  "message.projectrebirth.armor.disabled_empty": "The armor is shut down. Repair it with a repair wrench.",
+  "message.projectrebirth.armor.not_owner": "This armor belongs to another player",
+  "message.projectrebirth.armor.cannot_enter_now": "You cannot get in right now",
+  "message.projectrebirth.armor.shutdown": "Structural integrity lost: the armor has shut down. You are locked in. Hold the emergency hatch key, wait for help or a repair.",
+  "message.projectrebirth.armor.restarted": "The armor has restarted",
+  "message.projectrebirth.armor.wrecked": "Critical integrity lost: the armor is wrecked and you were thrown out",
+  "message.projectrebirth.armor.hatch_blown": "Emergency hatch blown: you are out, the armor was damaged",
+  "message.projectrebirth.armor.cannot_repair_wreck": "A wreck cannot be repaired, only dismantled (sneak + use)",
+  "message.projectrebirth.armor.need_materials": "Need iron ingots (structural) or armor plates (critical)",
+  "message.projectrebirth.armor.nothing_to_repair": "The armor is fully repaired",
+  "message.projectrebirth.armor.repaired": "Repaired: structural %s / %s, critical %s / %s",
+  "message.projectrebirth.armor.rescue_not_needed": "There is nobody to rescue: use the tool on a shut-down armor with a pilot inside",
+  "message.projectrebirth.armor.rescued": "Hatch opened, the pilot is free",
+  "message.projectrebirth.armor.rescued_by": "%s opened your armor's hatch from outside",
+  "message.projectrebirth.armor.dismantled": "The wreck was dismantled for parts",
+
+  "tooltip.projectrebirth.armor.structural": "Structural integrity: %s",
+  "tooltip.projectrebirth.armor.critical": "Critical integrity: %s",
+  "tooltip.projectrebirth.armor.hint": "Use on a block to place. Use the armor to get in, sneak to get out.",
+
+  "hud.projectrebirth.armor.structural": "Structural",
+  "hud.projectrebirth.armor.critical": "Critical",
+  "hud.projectrebirth.armor.disabled": "SHUT DOWN: hold [%s] to blow the hatch",
+  "hud.projectrebirth.armor.exit_hint": "[%s] get out"
 }

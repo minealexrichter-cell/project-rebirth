@@ -3,6 +3,7 @@ package com.projectrebirth.core;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyItems;
+import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.TechItems;
 
 import net.minecraft.core.registries.Registries;
@@ -25,6 +26,10 @@ public final class ModCreativeTabs {
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }
+                output.accept(PowerArmorRegistry.POWER_ARMOR_ITEM.get());
+                output.accept(PowerArmorRegistry.ARMOR_PLATE.get());
+                output.accept(PowerArmorRegistry.REPAIR_WRENCH.get());
+                output.accept(PowerArmorRegistry.RESCUE_TOOL.get());
             })
             .build());
 

@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [" II", " PI", "C  "],
+  "key": { "I": { "item": "minecraft:iron_ingot" }, "P": { "item": "projectrebirth:circuit_board" }, "C": { "item": "minecraft:copper_ingot" } },
+  "result": { "id": "projectrebirth:rescue_tool", "count": 1 }
+}

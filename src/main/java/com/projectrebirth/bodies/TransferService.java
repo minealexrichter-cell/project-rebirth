@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.powerarmor.PowerArmorEntity;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -135,6 +136,7 @@ public final class TransferService {
         ListTag inventory = body.getStoredInventory();
         body.setStoredInventory(new ListTag());
         body.discard();
+        leaveVehicle(player);
 
         player.getInventory().clearContent();
         InventoryUtil.giveInventory(player, inventory);
@@ -155,6 +157,10 @@ public final class TransferService {
         Optional<ShellRegistry.ShellRecord> record = ShellRegistry.get(player.server).get(player.getUUID());
         if (record.isEmpty() || player.server.getLevel(record.get().dimension()) == null) {
             return ReturnResult.HUMAN_BODY_LOST;
+        }
+        if (player.isPassenger()) {
+            // The body would be left inside a vehicle (e.g. power armor); get out first.
+            return ReturnResult.IN_VEHICLE;
         }
 
         // Leave the artificial body standing where it is, with its current inventory and integrity.
@@ -178,6 +184,7 @@ public final class TransferService {
     }
 
     private static void restoreHumanBody(ServerPlayer player, ShellRegistry.ShellRecord record) {
+        leaveVehicle(player);
         ShellRegistry.get(player.server).remove(player.getUUID());
         ServerLevel level = player.server.getLevel(record.dimension());
         float health = record.health();
@@ -265,6 +272,14 @@ public final class TransferService {
         player.sendSystemMessage(message);
     }
 
+    /** Gets the player out of any vehicle before teleporting; a shut-down power armor is told to let them out. */
+    private static void leaveVehicle(ServerPlayer player) {
+        if (player.getVehicle() instanceof PowerArmorEntity armor) {
+            armor.releasePilot();
+        }
+        player.stopRiding();
+    }
+
     /** Each body has its own physical condition: effects, fire and falling do not travel with the consciousness. */
     private static void resetCondition(ServerPlayer player) {
         player.removeAllEffects();
@@ -342,6 +357,7 @@ public final class TransferService {
     public enum ReturnResult {
         SUCCESS("return_success"),
         NOT_IN_BODY("not_in_body"),
+        IN_VEHICLE("in_vehicle"),
         HUMAN_BODY_LOST("human_body_lost");
 
         private final String key;

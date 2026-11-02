@@ -58,6 +58,7 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderPlayer);
         NeoForge.EVENT_BUS.addListener(this::onRenderArm);
+        PowerArmorClient.register(modEventBus);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {

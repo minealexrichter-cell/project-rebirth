@@ -48,5 +48,42 @@
 
   "hud.projectrebirth.body": "Тело: %s  [%s] вернуться",
   "key.categories.projectrebirth": "Project: Rebirth",
-  "key.projectrebirth.return_to_human": "Вернуться в человеческое тело"
+  "key.projectrebirth.return_to_human": "Вернуться в человеческое тело",
+  "key.projectrebirth.emergency_hatch": "Аварийный сброс люка (удерживать)",
+  "message.projectrebirth.transfer.in_vehicle": "Сначала выйдите из транспорта",
+
+  "item.projectrebirth.power_armor": "Силовая броня",
+  "entity.projectrebirth.power_armor": "Силовая броня",
+  "item.projectrebirth.repair_wrench": "Ремонтный ключ",
+  "item.projectrebirth.rescue_tool": "Аварийный инструмент",
+  "item.projectrebirth.armor_plate": "Бронеплита",
+
+  "message.projectrebirth.armor.entered": "Силовая броня: структурная %s / %s, критическая %s / %s",
+  "message.projectrebirth.armor.no_space": "Недостаточно места, чтобы поставить броню",
+  "message.projectrebirth.armor.wreck": "Эта броня разрушена и не подлежит ремонту. Shift + ремонтный ключ: разобрать.",
+  "message.projectrebirth.armor.occupied": "Броня занята",
+  "message.projectrebirth.armor.disabled_empty": "Броня отключена. Почините её ремонтным ключом.",
+  "message.projectrebirth.armor.not_owner": "Эта броня принадлежит другому игроку",
+  "message.projectrebirth.armor.cannot_enter_now": "Сейчас сесть в броню нельзя",
+  "message.projectrebirth.armor.shutdown": "Структурная целостность потеряна: броня отключилась, вы заперты внутри. Удерживайте клавишу аварийного люка, ждите помощи или ремонта.",
+  "message.projectrebirth.armor.restarted": "Броня снова в работе",
+  "message.projectrebirth.armor.wrecked": "Критическая целостность потеряна: броня разрушена, вас выбросило наружу",
+  "message.projectrebirth.armor.hatch_blown": "Аварийный люк сброшен: вы снаружи, броня повреждена",
+  "message.projectrebirth.armor.cannot_repair_wreck": "Развалину нельзя починить, только разобрать (Shift + ПКМ)",
+  "message.projectrebirth.armor.need_materials": "Нужны железные слитки (структурная) или бронеплиты (критическая)",
+  "message.projectrebirth.armor.nothing_to_repair": "Броня полностью исправна",
+  "message.projectrebirth.armor.repaired": "Отремонтировано: структурная %s / %s, критическая %s / %s",
+  "message.projectrebirth.armor.rescue_not_needed": "Спасать некого: инструмент работает на отключённой броне с пилотом внутри",
+  "message.projectrebirth.armor.rescued": "Люк вскрыт, пилот свободен",
+  "message.projectrebirth.armor.rescued_by": "%s вскрыл люк вашей брони снаружи",
+  "message.projectrebirth.armor.dismantled": "Развалина разобрана на детали",
+
+  "tooltip.projectrebirth.armor.structural": "Структурная целостность: %s",
+  "tooltip.projectrebirth.armor.critical": "Критическая целостность: %s",
+  "tooltip.projectrebirth.armor.hint": "ПКМ по блоку: поставить. ПКМ по броне: сесть, Shift: выйти.",
+
+  "hud.projectrebirth.armor.structural": "Структурная",
+  "hud.projectrebirth.armor.critical": "Критическая",
+  "hud.projectrebirth.armor.disabled": "ОТКЛЮЧЕНА: держите [%s] для сброса люка",
+  "hud.projectrebirth.armor.exit_hint": "[%s] выйти"
 }

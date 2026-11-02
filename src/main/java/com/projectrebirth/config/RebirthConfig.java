@@ -20,6 +20,25 @@ public final class RebirthConfig {
     public static final ModConfigSpec.BooleanValue HUMAN_BODY_VULNERABLE;
     public static final ModConfigSpec.BooleanValue BACKUP_BODIES_ENABLED;
 
+    public static final ModConfigSpec.DoubleValue ARMOR_MAX_STRUCTURAL;
+    public static final ModConfigSpec.DoubleValue ARMOR_MAX_CRITICAL;
+    public static final ModConfigSpec.DoubleValue ARMOR_STRUCTURAL_DAMAGE_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue ARMOR_CRITICAL_EXPLOSION_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue ARMOR_CRITICAL_FIRE_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue ARMOR_CRITICAL_OTHER_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue ARMOR_STRUCTURAL_REGEN_PER_SECOND;
+    public static final ModConfigSpec.IntValue ARMOR_STRUCTURAL_REGEN_DELAY_SECONDS;
+    public static final ModConfigSpec.DoubleValue ARMOR_RESTART_FRACTION;
+    public static final ModConfigSpec.IntValue ARMOR_HATCH_RELEASE_SECONDS;
+    public static final ModConfigSpec.DoubleValue ARMOR_HATCH_CRITICAL_COST;
+    public static final ModConfigSpec.DoubleValue ARMOR_WRECK_PILOT_DAMAGE;
+    public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_STRUCTURAL_PER_INGOT;
+    public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_CRITICAL_PER_PLATE;
+    public static final ModConfigSpec.DoubleValue ARMOR_MOVEMENT_SPEED;
+    public static final ModConfigSpec.DoubleValue ARMOR_PILOT_ATTACK_BONUS;
+    public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_IRON;
+    public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_PLATES;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
@@ -40,6 +59,63 @@ public final class RebirthConfig {
         BACKUP_BODIES_ENABLED = builder
                 .comment("If the human body is dead, consciousness moves to another loaded unoccupied body of the same owner")
                 .define("backupBodiesEnabled", true);
+        builder.pop();
+
+        builder.comment("Power armor").push("power_armor");
+        ARMOR_MAX_STRUCTURAL = builder
+                .comment("Structural integrity: current working condition. At 0 the armor shuts down and locks the pilot in.")
+                .defineInRange("maxStructural", 100.0, 1.0, 10000.0);
+        ARMOR_MAX_CRITICAL = builder
+                .comment("Critical integrity: irreversible damage to key components. At 0 the armor becomes an unrepairable wreck.")
+                .defineInRange("maxCritical", 50.0, 1.0, 10000.0);
+        ARMOR_STRUCTURAL_DAMAGE_MULTIPLIER = builder
+                .comment("Structural integrity lost per point of incoming damage")
+                .defineInRange("structuralDamageMultiplier", 1.0, 0.0, 100.0);
+        ARMOR_CRITICAL_EXPLOSION_MULTIPLIER = builder
+                .comment("Critical integrity lost per point of explosion damage")
+                .defineInRange("criticalExplosionMultiplier", 0.5, 0.0, 100.0);
+        ARMOR_CRITICAL_FIRE_MULTIPLIER = builder
+                .comment("Critical integrity lost per point of fire and lava damage")
+                .defineInRange("criticalFireMultiplier", 0.3, 0.0, 100.0);
+        ARMOR_CRITICAL_OTHER_MULTIPLIER = builder
+                .comment("Critical integrity lost per point of any other damage")
+                .defineInRange("criticalOtherMultiplier", 0.05, 0.0, 100.0);
+        ARMOR_STRUCTURAL_REGEN_PER_SECOND = builder
+                .comment("Structural integrity restored per second while the armor works and is not being damaged (0 = no regeneration)")
+                .defineInRange("structuralRegenPerSecond", 1.0, 0.0, 1000.0);
+        ARMOR_STRUCTURAL_REGEN_DELAY_SECONDS = builder
+                .comment("Seconds without damage before structural regeneration starts")
+                .defineInRange("structuralRegenDelaySeconds", 6, 0, 3600);
+        ARMOR_RESTART_FRACTION = builder
+                .comment("Share of max structural integrity a shut-down armor needs (through repair) to start again")
+                .defineInRange("restartStructuralFraction", 0.25, 0.01, 1.0);
+        ARMOR_HATCH_RELEASE_SECONDS = builder
+                .comment("How long the pilot must hold the emergency hatch key to get out of a shut-down armor")
+                .defineInRange("hatchReleaseSeconds", 5, 0, 600);
+        ARMOR_HATCH_CRITICAL_COST = builder
+                .comment("Share of max critical integrity lost when the hatch is blown from inside")
+                .defineInRange("hatchCriticalCostFraction", 0.15, 0.0, 1.0);
+        ARMOR_WRECK_PILOT_DAMAGE = builder
+                .comment("Damage the pilot takes when the armor is wrecked with them inside")
+                .defineInRange("wreckPilotDamage", 6.0, 0.0, 1000.0);
+        ARMOR_REPAIR_STRUCTURAL_PER_INGOT = builder
+                .comment("Structural integrity restored by one iron ingot (repair wrench)")
+                .defineInRange("repairStructuralPerIngot", 15.0, 0.0, 10000.0);
+        ARMOR_REPAIR_CRITICAL_PER_PLATE = builder
+                .comment("Critical integrity restored by one armor plate (repair wrench)")
+                .defineInRange("repairCriticalPerPlate", 10.0, 0.0, 10000.0);
+        ARMOR_MOVEMENT_SPEED = builder
+                .comment("Movement speed of the armor (a walking player is 0.1)")
+                .defineInRange("movementSpeed", 0.12, 0.01, 2.0);
+        ARMOR_PILOT_ATTACK_BONUS = builder
+                .comment("Extra melee damage of the pilot while in the armor")
+                .defineInRange("pilotAttackDamageBonus", 4.0, 0.0, 1000.0);
+        ARMOR_DISMANTLE_IRON = builder
+                .comment("Iron ingots recovered when dismantling a wreck")
+                .defineInRange("dismantleIronIngots", 6, 0, 64);
+        ARMOR_DISMANTLE_PLATES = builder
+                .comment("Armor plates recovered when dismantling a wreck")
+                .defineInRange("dismantleArmorPlates", 2, 0, 64);
         builder.pop();
 
         builder.comment("Artificial body stats, one section per body class").push("bodies");

@@ -4,6 +4,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.client.render.ArmorArmRenderer;
 import com.projectrebirth.client.render.PowerArmorRenderer;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
@@ -16,6 +17,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -24,6 +27,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
@@ -36,6 +40,7 @@ public final class PowerArmorClient {
     private static final int BAR_WIDTH = 100;
 
     private static boolean hatchKeyWasDown;
+    private static ArmorArmRenderer armorArmRenderer;
 
     private PowerArmorClient() {
     }
@@ -48,6 +53,29 @@ public final class PowerArmorClient {
         // Runs before the possessed-body renderer so that a pilot is hidden in any body.
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, PowerArmorClient::hidePilot);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::hideVehicleHearts);
+        NeoForge.EVENT_BUS.addListener(PowerArmorClient::renderArmorHands);
+        PowerArmorEntity.isLocalPlayer = entity -> entity == Minecraft.getInstance().player;
+    }
+
+    /**
+     * In first person the pilot sees the armor's arms. Empty hands show only the armor arm; with an item,
+     * the armor arm is drawn under the normal item view so items stay usable and visible.
+     */
+    private static void renderArmorHands(RenderHandEvent event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null || !(player.getVehicle() instanceof PowerArmorEntity armor) || armor.isWrecked()) {
+            return;
+        }
+        if (armorArmRenderer == null) {
+            armorArmRenderer = new ArmorArmRenderer();
+        }
+        HumanoidArm side = event.getHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
+        armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
+                event.getItemStack().isEmpty() ? event.getEquipProgress() : 0.0f, event.getSwingProgress(), side);
+        if (event.getItemStack().isEmpty()) {
+            event.setCanceled(true);
+        }
     }
 
     /** The armor's own integrity bars replace the vanilla "mount health" hearts. */

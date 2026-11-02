@@ -10,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -72,6 +73,13 @@ public class PowerArmorGameTests {
 
         near(helper, "pilot health", 20.0f, pilot.getHealth());
         near(helper, "structural", maxStructural() - 6.0f, armor.getStructural());
+        near(helper, "pilot entity reach", 3.0f + RebirthConfig.ARMOR_PILOT_ENTITY_REACH_BONUS.get().floatValue(),
+                (float) pilot.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
+        near(helper, "pilot attack damage", 1.0f + RebirthConfig.ARMOR_PILOT_ATTACK_BONUS.get().floatValue(),
+                (float) pilot.getAttributeValue(Attributes.ATTACK_DAMAGE));
+
+        pilot.stopRiding();
+        near(helper, "reach after leaving", 3.0f, (float) pilot.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
         helper.succeed();
     }
 

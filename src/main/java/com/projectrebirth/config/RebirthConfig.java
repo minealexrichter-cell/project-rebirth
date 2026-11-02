@@ -36,6 +36,10 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_CRITICAL_PER_PLATE;
     public static final ModConfigSpec.DoubleValue ARMOR_MOVEMENT_SPEED;
     public static final ModConfigSpec.DoubleValue ARMOR_PILOT_ATTACK_BONUS;
+    public static final ModConfigSpec.DoubleValue ARMOR_PILOT_KNOCKBACK_BONUS;
+    public static final ModConfigSpec.DoubleValue ARMOR_PILOT_ENTITY_REACH_BONUS;
+    public static final ModConfigSpec.DoubleValue ARMOR_PILOT_BLOCK_REACH_BONUS;
+    public static final ModConfigSpec.DoubleValue ARMOR_JUMP_STRENGTH;
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_IRON;
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_PLATES;
 
@@ -109,7 +113,19 @@ public final class RebirthConfig {
                 .defineInRange("movementSpeed", 0.12, 0.01, 2.0);
         ARMOR_PILOT_ATTACK_BONUS = builder
                 .comment("Extra melee damage of the pilot while in the armor")
-                .defineInRange("pilotAttackDamageBonus", 4.0, 0.0, 1000.0);
+                .defineInRange("pilotAttackDamageBonus", 6.0, 0.0, 1000.0);
+        ARMOR_PILOT_KNOCKBACK_BONUS = builder
+                .comment("Extra melee knockback of the pilot while in the armor")
+                .defineInRange("pilotAttackKnockbackBonus", 1.0, 0.0, 10.0);
+        ARMOR_PILOT_ENTITY_REACH_BONUS = builder
+                .comment("Extra reach in blocks for hitting and using entities while in the armor (a player reaches 3)")
+                .defineInRange("pilotEntityReachBonus", 2.0, 0.0, 16.0);
+        ARMOR_PILOT_BLOCK_REACH_BONUS = builder
+                .comment("Extra reach in blocks for breaking and using blocks while in the armor (a player reaches 4.5)")
+                .defineInRange("pilotBlockReachBonus", 1.5, 0.0, 16.0);
+        ARMOR_JUMP_STRENGTH = builder
+                .comment("Jump strength of the armor at full charge (0.42 is a player's jump, about 1.25 blocks; 0 disables jumping)")
+                .defineInRange("jumpStrength", 0.6, 0.0, 3.0);
         ARMOR_DISMANTLE_IRON = builder
                 .comment("Iron ingots recovered when dismantling a wreck")
                 .defineInRange("dismantleIronIngots", 6, 0, 64);

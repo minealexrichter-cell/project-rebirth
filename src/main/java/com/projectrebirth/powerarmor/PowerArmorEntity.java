@@ -1,6 +1,7 @@
 package com.projectrebirth.powerarmor;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
@@ -9,6 +10,7 @@ import com.projectrebirth.config.RebirthConfig;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -32,6 +34,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.PlayerRideableJumping;
+import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -46,6 +50,7 @@ import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -60,7 +65,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * A shut-down armor is left by blowing the hatch from inside (costs critical integrity), by a rescue tool
  * from outside, or it starts again after being repaired with the repair wrench.
  */
-public class PowerArmorEntity extends PathfinderMob implements GeoEntity {
+public class PowerArmorEntity extends PathfinderMob implements GeoEntity, PlayerRideableJumping {
     public static final byte STATE_ACTIVE = 0;
     public static final byte STATE_DISABLED = 1;
     public static final byte STATE_WRECKED = 2;
@@ -73,6 +78,18 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity {
     private static final EntityDataAccessor<Float> HATCH_PROGRESS = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.FLOAT);
 
     private static final ResourceLocation PILOT_ATTACK_MODIFIER = ProjectRebirth.id("power_armor_attack");
+    private static final ResourceLocation PILOT_KNOCKBACK_MODIFIER = ProjectRebirth.id("power_armor_knockback");
+    private static final ResourceLocation PILOT_ENTITY_REACH_MODIFIER = ProjectRebirth.id("power_armor_entity_reach");
+    private static final ResourceLocation PILOT_BLOCK_REACH_MODIFIER = ProjectRebirth.id("power_armor_block_reach");
+    public static final String ACTION_CONTROLLER = "action";
+    public static final String ATTACK_ANIMATION = "attack";
+    private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay("animation.power_armor.attack");
+
+    /**
+     * Set by the client: true for the player of this game client. The pilot looks out from inside the armor's
+     * hitbox, so on their own client the armor must not catch their clicks on blocks and entities.
+     */
+    public static Predicate<Entity> isLocalPlayer = entity -> false;
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.power_armor.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.power_armor.walk");
     private static final RawAnimation SHUTDOWN = RawAnimation.begin().thenPlayAndHold("animation.power_armor.shutdown");
@@ -88,6 +105,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity {
     private int hatchTicks;
     /** True while the armor itself lets the pilot out, so the shutdown lock does not block it. */
     private boolean releasingPilot;
+    /** 0..1 jump strength requested by the pilot (charged with the jump key), applied when on the ground. */
+    private float pendingJump;
 
     public PowerArmorEntity(EntityType<? extends PowerArmorEntity> type, Level level) {
         super(type, level);
@@ -384,6 +403,47 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity {
         yRotO = getYRot();
         yBodyRot = getYRot();
         yHeadRot = getYRot();
+        if (pendingJump > 0.0f && onGround()) {
+            Vec3 motion = getDeltaMovement();
+            setDeltaMovement(motion.x, RebirthConfig.ARMOR_JUMP_STRENGTH.get() * pendingJump, motion.z);
+            hasImpulse = true;
+        }
+        pendingJump = 0.0f;
+    }
+
+    // Jumping works like a horse: hold the jump key to charge, release to jump.
+
+    @Override
+    public void onPlayerJump(int power) {
+        if (isActive()) {
+            pendingJump = power >= 90 ? 1.0f : 0.4f + 0.6f * power / 90.0f;
+        }
+    }
+
+    @Override
+    public boolean canJump() {
+        return isActive() && RebirthConfig.ARMOR_JUMP_STRENGTH.get() > 0;
+    }
+
+    @Override
+    public void handleStartJump(int power) {
+    }
+
+    @Override
+    public void handleStopJump() {
+    }
+
+    @Override
+    public boolean isPickable() {
+        if (level().isClientSide && getPassengers().stream().anyMatch(isLocalPlayer)) {
+            return false;
+        }
+        return super.isPickable();
+    }
+
+    /** Punch animation, seen by everybody; called on the server when the pilot attacks. */
+    public void playAttackAnimation() {
+        triggerAnim(ACTION_CONTROLLER, ATTACK_ANIMATION);
     }
 
     @Override
@@ -429,7 +489,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity {
     protected void addPassenger(Entity passenger) {
         super.addPassenger(passenger);
         if (!level().isClientSide && passenger instanceof Player player) {
-            setPilotAttackBonus(player, true);
+            setPilotBonuses(player, true);
         }
     }
 
@@ -437,20 +497,29 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity {
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         if (!level().isClientSide && passenger instanceof Player player) {
-            setPilotAttackBonus(player, false);
+            setPilotBonuses(player, false);
             hatchHeld = false;
         }
     }
 
-    public static void setPilotAttackBonus(Player player, boolean enabled) {
-        AttributeInstance attack = player.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attack == null) {
+    /** Pilot bonuses: stronger punches with more knockback and longer reach (the armor is big). */
+    public static void setPilotBonuses(Player player, boolean enabled) {
+        setBonus(player, Attributes.ATTACK_DAMAGE, PILOT_ATTACK_MODIFIER, enabled, RebirthConfig.ARMOR_PILOT_ATTACK_BONUS.get());
+        setBonus(player, Attributes.ATTACK_KNOCKBACK, PILOT_KNOCKBACK_MODIFIER, enabled, RebirthConfig.ARMOR_PILOT_KNOCKBACK_BONUS.get());
+        setBonus(player, Attributes.ENTITY_INTERACTION_RANGE, PILOT_ENTITY_REACH_MODIFIER, enabled,
+                RebirthConfig.ARMOR_PILOT_ENTITY_REACH_BONUS.get());
+        setBonus(player, Attributes.BLOCK_INTERACTION_RANGE, PILOT_BLOCK_REACH_MODIFIER, enabled,
+                RebirthConfig.ARMOR_PILOT_BLOCK_REACH_BONUS.get());
+    }
+
+    private static void setBonus(Player player, Holder<Attribute> attribute, ResourceLocation id, boolean enabled, double value) {
+        AttributeInstance instance = player.getAttribute(attribute);
+        if (instance == null) {
             return;
         }
-        attack.removeModifier(PILOT_ATTACK_MODIFIER);
-        if (enabled) {
-            attack.addPermanentModifier(new AttributeModifier(PILOT_ATTACK_MODIFIER,
-                    RebirthConfig.ARMOR_PILOT_ATTACK_BONUS.get(), AttributeModifier.Operation.ADD_VALUE));
+        instance.removeModifier(id);
+        if (enabled && value != 0.0) {
+            instance.addPermanentModifier(new AttributeModifier(id, value, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 
@@ -647,6 +716,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity {
             }
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
         }));
+        // Plays only when triggered; its arm and torso keyframes override the main animation for that moment.
+        controllers.add(new AnimationController<>(this, ACTION_CONTROLLER, 2, state -> PlayState.STOP)
+                .triggerableAnim(ATTACK_ANIMATION, ATTACK));
     }
 
     @Override

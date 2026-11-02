@@ -9,7 +9,9 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityMountEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /** Pilot protection, the shutdown lock and pilot bonus bookkeeping. */
 @EventBusSubscriber(modid = ProjectRebirth.MOD_ID)
@@ -29,19 +31,40 @@ public final class PowerArmorEvents {
         }
     }
 
-    /** A shut-down armor does not let its pilot out by the normal exit; see the hatch, rescue tool and repair. */
+    /**
+     * A shut-down armor does not let its pilot out by the normal exit; see the hatch, rescue tool and repair.
+     * Server only: the client must always accept the server's decision to let the pilot out
+     * (otherwise the client keeps the player seated after the hatch is blown).
+     */
     @SubscribeEvent
     static void onMount(EntityMountEvent event) {
-        if (event.isDismounting() && event.getEntityBeingMounted() instanceof PowerArmorEntity armor && armor.isPilotLocked()
+        if (!event.getLevel().isClientSide() && event.isDismounting()
+                && event.getEntityBeingMounted() instanceof PowerArmorEntity armor && armor.isPilotLocked()
                 && event.getEntityMounting().isAlive() && !event.getEntityMounting().isRemoved()) {
             event.setCanceled(true);
         }
     }
 
-    /** Removes a stale pilot bonus if the player logged in outside an armor (e.g. it was destroyed meanwhile). */
+    /** The armor punches when its pilot attacks an entity or starts hitting a block. */
+    @SubscribeEvent
+    static void onAttack(AttackEntityEvent event) {
+        if (!event.getEntity().level().isClientSide && event.getEntity().getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
+            armor.playAttackAnimation();
+        }
+    }
+
+    @SubscribeEvent
+    static void onHitBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (!event.getLevel().isClientSide() && event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START
+                && event.getEntity().getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
+            armor.playAttackAnimation();
+        }
+    }
+
+    /** Removes stale pilot bonuses if the player logged in outside an armor (e.g. it was destroyed meanwhile). */
     @SubscribeEvent
     static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
-        PowerArmorEntity.setPilotAttackBonus(player, player.getVehicle() instanceof PowerArmorEntity);
+        PowerArmorEntity.setPilotBonuses(player, player.getVehicle() instanceof PowerArmorEntity);
     }
 }

@@ -85,6 +85,35 @@
         }
       }
     },
+    "animation.power_armor.attack": {
+      "animation_length": 0.5,
+      "bones": {
+        "right_arm": {
+          "rotation": {
+            "0.0": [0, 0, 0],
+            "0.1": [-40, 15, 0],
+            "0.2": [-95, -10, 0],
+            "0.35": [-80, -5, 0],
+            "0.5": [0, 0, 0]
+          }
+        },
+        "torso": {
+          "rotation": {
+            "0.0": [0, 0, 0],
+            "0.1": [0, 12, 0],
+            "0.2": [5, -15, 0],
+            "0.5": [0, 0, 0]
+          }
+        },
+        "left_arm": {
+          "rotation": {
+            "0.0": [0, 0, 0],
+            "0.2": [20, 0, -5],
+            "0.5": [0, 0, 0]
+          }
+        }
+      }
+    },
     "animation.power_armor.shutdown": {
       "loop": "hold_on_last_frame",
       "animation_length": 1.5,

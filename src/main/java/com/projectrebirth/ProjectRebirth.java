@@ -1,0 +1,33 @@
+package com.projectrebirth;
+
+import org.slf4j.Logger;
+
+import com.mojang.logging.LogUtils;
+
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+
+/**
+ * Common entry point of Project: Rebirth. Loaded on both the client and the dedicated server,
+ * so it must never reference client-only classes.
+ */
+@Mod(ProjectRebirth.MOD_ID)
+public class ProjectRebirth {
+    public static final String MOD_ID = "projectrebirth";
+    public static final Logger LOGGER = LogUtils.getLogger();
+
+    public ProjectRebirth(IEventBus modEventBus, ModContainer modContainer) {
+        modEventBus.addListener(this::commonSetup);
+    }
+
+    private void commonSetup(FMLCommonSetupEvent event) {
+        LOGGER.info("Project: Rebirth common setup complete");
+    }
+
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    }
+}

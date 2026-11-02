@@ -1,25 +1,61 @@
 package com.projectrebirth.bodies;
 
+import com.mojang.serialization.Codec;
+
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
+
 /**
- * Classes of artificial bodies. All classes share the same entity and item logic;
- * they differ only by id (models, textures, translations) and by config-driven stats.
+ * Classes of artificial bodies, from cheapest to best. All classes share the same entity, item and
+ * transfer logic; they differ only by id (models, textures, translations) and by config-driven stats.
  * The values here are only defaults for the server config.
  */
-public enum BodyClass {
-    BASIC_ROBOT("basic_robot_body", 20.0, 2.0);
+public enum BodyClass implements StringRepresentable {
+    BASIC_ROBOT(0, "basic_robot_body", 20.0, 2.0, 0.85, 0.0),
+    IMPROVED_ROBOT(1, "improved_robot_body", 26.0, 4.0, 0.95, 0.5),
+    ADVANCED_SYNTHETIC(2, "advanced_synthetic_body", 30.0, 6.0, 1.0, 1.0),
+    HIGHTECH_SYNTHETIC(3, "hightech_synthetic_body", 36.0, 8.0, 1.1, 2.0),
+    PREMIUM_SYNTHETIC(4, "premium_synthetic_body", 40.0, 10.0, 1.2, 3.0);
 
+    public static final Codec<BodyClass> CODEC = StringRepresentable.fromEnum(BodyClass::values);
+    public static final StreamCodec<ByteBuf, BodyClass> STREAM_CODEC = ByteBufCodecs.idMapper(
+            ByIdMap.continuous(BodyClass::networkId, values(), ByIdMap.OutOfBoundsStrategy.ZERO), BodyClass::networkId);
+
+    private final int networkId;
     private final String id;
     private final double defaultMaxHealth;
     private final double defaultArmor;
+    private final double defaultSpeedMultiplier;
+    private final double defaultAttackDamageBonus;
 
-    BodyClass(String id, double defaultMaxHealth, double defaultArmor) {
+    BodyClass(int networkId, String id, double defaultMaxHealth, double defaultArmor,
+              double defaultSpeedMultiplier, double defaultAttackDamageBonus) {
+        this.networkId = networkId;
         this.id = id;
         this.defaultMaxHealth = defaultMaxHealth;
         this.defaultArmor = defaultArmor;
+        this.defaultSpeedMultiplier = defaultSpeedMultiplier;
+        this.defaultAttackDamageBonus = defaultAttackDamageBonus;
+    }
+
+    private int networkId() {
+        return networkId;
     }
 
     public String id() {
         return id;
+    }
+
+    @Override
+    public String getSerializedName() {
+        return id;
+    }
+
+    public String translationKey() {
+        return "entity.projectrebirth." + id;
     }
 
     public double defaultMaxHealth() {
@@ -28,5 +64,13 @@ public enum BodyClass {
 
     public double defaultArmor() {
         return defaultArmor;
+    }
+
+    public double defaultSpeedMultiplier() {
+        return defaultSpeedMultiplier;
+    }
+
+    public double defaultAttackDamageBonus() {
+        return defaultAttackDamageBonus;
     }
 }

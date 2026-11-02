@@ -27,6 +27,12 @@ public final class BodyEntities {
         }
     }
 
+    public static final DeferredHolder<EntityType<?>, EntityType<HumanShellEntity>> HUMAN_SHELL = ENTITY_TYPES.register("human_shell",
+            () -> EntityType.Builder.of(HumanShellEntity::new, MobCategory.MISC)
+                    .sized(0.6f, 1.8f)
+                    .clientTrackingRange(10)
+                    .build("human_shell"));
+
     private BodyEntities() {
     }
 
@@ -43,5 +49,6 @@ public final class BodyEntities {
         for (BodyClass bodyClass : BodyClass.values()) {
             event.put(type(bodyClass), ArtificialBodyEntity.createAttributes().build());
         }
+        event.put(HUMAN_SHELL.get(), HumanShellEntity.createAttributes().build());
     }
 }

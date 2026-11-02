@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["DPD", "EBE", "DPD"],
+  "key": { "D": { "item": "minecraft:diamond" }, "P": { "item": "projectrebirth:circuit_board" }, "E": { "item": "minecraft:ender_eye" }, "B": { "item": "projectrebirth:advanced_synthetic_body" } },
+  "result": { "id": "projectrebirth:hightech_synthetic_body", "count": 1 }
+}

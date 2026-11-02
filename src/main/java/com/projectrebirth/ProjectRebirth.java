@@ -3,9 +3,12 @@ package com.projectrebirth;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
+import com.projectrebirth.bodies.BodyAttachments;
+import com.projectrebirth.bodies.BodyBlocks;
 import com.projectrebirth.bodies.BodyComponents;
 import com.projectrebirth.bodies.BodyEntities;
 import com.projectrebirth.bodies.BodyItems;
+import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModCreativeTabs;
 import com.projectrebirth.technology.TechBlocks;
@@ -30,9 +33,12 @@ public class ProjectRebirth {
     public ProjectRebirth(IEventBus modEventBus, ModContainer modContainer) {
         TechBlocks.register(modEventBus);
         TechItems.register(modEventBus);
+        BodyBlocks.register(modEventBus);
         BodyComponents.register(modEventBus);
+        BodyAttachments.register(modEventBus);
         BodyEntities.register(modEventBus);
         BodyItems.register(modEventBus);
+        ReturnToHumanPayload.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, RebirthConfig.SERVER_SPEC);

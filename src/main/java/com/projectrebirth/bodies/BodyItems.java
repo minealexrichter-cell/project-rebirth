@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.projectrebirth.ProjectRebirth;
 
+import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -20,6 +21,9 @@ public final class BodyItems {
                     () -> new ArtificialBodyItem(bodyClass, new Item.Properties().stacksTo(1))));
         }
     }
+
+    public static final DeferredItem<DoubleHighBlockItem> TRANSFER_CAPSULE = ITEMS.register("transfer_capsule",
+            () -> new DoubleHighBlockItem(BodyBlocks.TRANSFER_CAPSULE.get(), new Item.Properties()));
 
     private BodyItems() {
     }

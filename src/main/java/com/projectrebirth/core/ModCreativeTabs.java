@@ -21,6 +21,7 @@ public final class ModCreativeTabs {
             .displayItems((parameters, output) -> {
                 output.accept(TechItems.CIRCUIT_BOARD.get());
                 output.accept(TechItems.ASSEMBLY_STATION.get());
+                output.accept(BodyItems.TRANSFER_CAPSULE.get());
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }

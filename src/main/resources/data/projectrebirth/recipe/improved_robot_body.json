@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["IPI", "IBI", "IRI"],
+  "key": { "I": { "item": "minecraft:iron_ingot" }, "P": { "item": "projectrebirth:circuit_board" }, "B": { "item": "projectrebirth:basic_robot_body" }, "R": { "item": "minecraft:redstone_block" } },
+  "result": { "id": "projectrebirth:improved_robot_body", "count": 1 }
+}

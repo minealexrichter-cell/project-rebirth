@@ -3,13 +3,50 @@
 
   "item.projectrebirth.circuit_board": "Печатная плата",
   "block.projectrebirth.assembly_station": "Сборочная станция",
+  "block.projectrebirth.transfer_capsule": "Капсула переноса сознания",
+
   "item.projectrebirth.basic_robot_body": "Базовое роботизированное тело",
+  "item.projectrebirth.improved_robot_body": "Улучшенное роботизированное тело",
+  "item.projectrebirth.advanced_synthetic_body": "Продвинутое синтетическое тело",
+  "item.projectrebirth.hightech_synthetic_body": "Высокотехнологичное синтетическое тело",
+  "item.projectrebirth.premium_synthetic_body": "Премиальное синтетическое тело",
   "entity.projectrebirth.basic_robot_body": "Базовое роботизированное тело",
+  "entity.projectrebirth.improved_robot_body": "Улучшенное роботизированное тело",
+  "entity.projectrebirth.advanced_synthetic_body": "Продвинутое синтетическое тело",
+  "entity.projectrebirth.hightech_synthetic_body": "Высокотехнологичное синтетическое тело",
+  "entity.projectrebirth.premium_synthetic_body": "Премиальное синтетическое тело",
+  "entity.projectrebirth.human_shell": "Человеческое тело",
 
   "message.projectrebirth.body.status": "%s: целостность %s / %s",
   "message.projectrebirth.body.no_space": "Недостаточно места, чтобы поставить тело",
+  "message.projectrebirth.body.not_owner": "Это тело принадлежит другому игроку",
+  "message.projectrebirth.body.cannot_eat": "Искусственное тело не может есть",
   "message.projectrebirth.assembly_station.offline": "Сборочная станция пока не работает",
 
+  "message.projectrebirth.transfer.success": "Сознание перенесено",
+  "message.projectrebirth.transfer.already_in_body": "Сначала вернитесь в своё человеческое тело",
+  "message.projectrebirth.transfer.not_possible_now": "Перенос сейчас невозможен",
+  "message.projectrebirth.transfer.cooldown": "Капсула перезаряжается, попробуйте через несколько секунд",
+  "message.projectrebirth.transfer.capsule_occupied": "Капсула занята",
+  "message.projectrebirth.transfer.no_body": "Рядом с капсулой (до %s блоков) нет вашего тела",
+  "message.projectrebirth.transfer.return_success": "Сознание вернулось в человеческое тело",
+  "message.projectrebirth.transfer.not_in_body": "Вы уже в своём человеческом теле",
+  "message.projectrebirth.transfer.human_body_lost": "Человеческое тело потеряно: возвращаться некуда",
+  "message.projectrebirth.transfer.human_body_died": "Ваше человеческое тело в капсуле погибло",
+  "message.projectrebirth.transfer.body_destroyed_human": "Тело уничтожено. Сознание вернулось в человеческое тело.",
+  "message.projectrebirth.transfer.body_destroyed_backup": "Тело уничтожено. Сознание перешло в резервное тело: %s.",
+  "message.projectrebirth.transfer.no_body_left": "Тело уничтожено, и вернуться больше некуда.",
+
+  "message.projectrebirth.command.human": "человеческое тело",
+  "message.projectrebirth.command.shell_at": "человеческое тело в капсуле: %s %s %s %s, здоровье %s",
+  "message.projectrebirth.command.no_shell": "сохранённого человеческого тела нет",
+  "message.projectrebirth.command.status": "%s: %s, здоровье %s / %s; %s",
+  "message.projectrebirth.command.not_capsule": "В этой точке нет капсулы переноса",
+
   "tooltip.projectrebirth.body.damaged": "Повреждено: целостность %s",
-  "tooltip.projectrebirth.body.hint": "ПКМ по блоку: поставить. Shift + ПКМ по телу: упаковать."
+  "tooltip.projectrebirth.body.hint": "ПКМ по блоку: поставить. Shift + ПКМ по телу: упаковать.",
+
+  "hud.projectrebirth.body": "Тело: %s  [%s] вернуться",
+  "key.categories.projectrebirth": "Project: Rebirth",
+  "key.projectrebirth.return_to_human": "Вернуться в человеческое тело"
 }

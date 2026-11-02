@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["SPS", "NBN", "SPS"],
+  "key": { "S": { "item": "minecraft:echo_shard" }, "P": { "item": "projectrebirth:circuit_board" }, "N": { "item": "minecraft:netherite_ingot" }, "B": { "item": "projectrebirth:hightech_synthetic_body" } },
+  "result": { "id": "projectrebirth:premium_synthetic_body", "count": 1 }
+}

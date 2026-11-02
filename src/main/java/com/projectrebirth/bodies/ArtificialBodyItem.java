@@ -55,6 +55,9 @@ public class ArtificialBodyItem extends Item {
         if (stack.has(DataComponents.CUSTOM_NAME)) {
             body.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
         }
+        if (player != null) {
+            body.setOwner(player.getUUID());
+        }
         Float storedIntegrity = stack.get(BodyComponents.STORED_INTEGRITY.get());
         level.addFreshEntity(body);
         // Max health comes from the config and is applied when the body joins the level.

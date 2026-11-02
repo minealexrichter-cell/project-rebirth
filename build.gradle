@@ -70,6 +70,16 @@ neoForge {
             }
         }
 
+        // Second test client (player "Observer", separate game folder) for multiplayer checks on the dev server
+        client2 {
+            client()
+            gameDirectory = project.file('run-client2')
+            programArguments.addAll '--username', 'Observer'
+            if (project.hasProperty('quickPlayServer')) {
+                programArguments.addAll '--quickPlayMultiplayer', project.property('quickPlayServer').toString()
+            }
+        }
+
         server {
             server()
             programArgument '--nogui'

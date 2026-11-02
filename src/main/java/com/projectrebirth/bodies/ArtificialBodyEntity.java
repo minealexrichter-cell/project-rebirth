@@ -1,12 +1,21 @@
 package com.projectrebirth.bodies;
 
+import java.util.UUID;
+
+import javax.annotation.Nullable;
+
 import com.projectrebirth.config.RebirthConfig;
 
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -23,18 +32,25 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * An inactive artificial body standing in the world. Shared by all body classes;
- * per-class stats come from {@link RebirthConfig}.
+ * An unoccupied artificial body standing in the world. Shared by all body classes;
+ * per-class stats come from {@link RebirthConfig}. While a player controls the body, this entity
+ * does not exist: the player is the body (see {@link TransferService}).
  */
 public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
     public static final String MAIN_CONTROLLER = "main";
     public static final String INTERACT_ANIMATION = "interact";
 
-    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.body.idle");
+    public static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.body.idle");
+    public static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.body.walk");
     private static final RawAnimation INTERACT = RawAnimation.begin().thenPlay("animation.body.interact");
 
     private final BodyClass bodyClass;
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
+    @Nullable
+    private UUID owner;
+    private ListTag storedInventory = new ListTag();
+    /** False only for a body that has never been in a level; saved so loaded bodies keep their damage. */
+    private boolean statsInitialized;
 
     public ArtificialBodyEntity(EntityType<? extends ArtificialBodyEntity> type, Level level, BodyClass bodyClass) {
         super(type, level);
@@ -53,6 +69,29 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         return bodyClass;
     }
 
+    @Nullable
+    public UUID getOwner() {
+        return owner;
+    }
+
+    public void setOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
+
+    /** A body without an owner (e.g. summoned by command) can be used by anyone and becomes theirs. */
+    public boolean canBeUsedBy(Player player) {
+        return owner == null || owner.equals(player.getUUID());
+    }
+
+    /** The inventory a player gets while controlling this body, in vanilla inventory NBT format. */
+    public ListTag getStoredInventory() {
+        return storedInventory;
+    }
+
+    public void setStoredInventory(ListTag inventory) {
+        this.storedInventory = inventory;
+    }
+
     @Override
     public void onAddedToLevel() {
         super.onAddedToLevel();
@@ -61,14 +100,15 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         }
     }
 
-    /** Re-applied on every load so that config changes reach existing bodies. */
+    /** Re-applied on every load so that config changes reach existing bodies. A brand-new body starts at full integrity. */
     private void applyClassStats() {
         RebirthConfig.BodyStats stats = RebirthConfig.bodyStats(bodyClass);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(stats.maxHealth().get());
         getAttribute(Attributes.ARMOR).setBaseValue(stats.armor().get());
-        if (getHealth() > getMaxHealth()) {
+        if (!statsInitialized || getHealth() > getMaxHealth()) {
             setHealth(getMaxHealth());
         }
+        statsInitialized = true;
     }
 
     @Override
@@ -89,9 +129,16 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         return InteractionResult.CONSUME;
     }
 
-    /** Turns the body back into an item. The entity is removed first, so it can never be packed twice. */
+    /**
+     * Turns the body back into an item; its inventory drops on the ground.
+     * The entity is removed first, so it can never be packed twice.
+     */
     private void packUp(Player player) {
         if (!isAlive()) {
+            return;
+        }
+        if (!canBeUsedBy(player) && !player.isCreative()) {
+            player.displayClientMessage(Component.translatable("message.projectrebirth.body.not_owner"), true);
             return;
         }
         ItemStack stack = new ItemStack(BodyItems.item(bodyClass));
@@ -101,10 +148,19 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         if (hasCustomName()) {
             stack.set(DataComponents.CUSTOM_NAME, getCustomName());
         }
+        InventoryUtil.dropAll(this, storedInventory);
+        storedInventory = new ListTag();
         discard();
         if (!player.getInventory().add(stack)) {
             player.drop(stack, false);
         }
+    }
+
+    @Override
+    protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
+        super.dropCustomDeathLoot(level, source, recentlyHit);
+        InventoryUtil.dropAll(this, storedInventory);
+        storedInventory = new ListTag();
     }
 
     @Override
@@ -125,6 +181,25 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
     @Override
     public boolean canBeLeashed() {
         return false;
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        if (owner != null) {
+            tag.putUUID("Owner", owner);
+        }
+        tag.put("BodyInventory", storedInventory);
+        tag.putBoolean("StatsInitialized", statsInitialized);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
+        storedInventory = tag.getList("BodyInventory", Tag.TAG_COMPOUND);
+        // Bodies saved before this flag existed are already initialized.
+        statsInitialized = !tag.contains("StatsInitialized") || tag.getBoolean("StatsInitialized");
     }
 
     @Override

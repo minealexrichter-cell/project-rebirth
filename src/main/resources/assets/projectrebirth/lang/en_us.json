@@ -3,13 +3,50 @@
 
   "item.projectrebirth.circuit_board": "Circuit Board",
   "block.projectrebirth.assembly_station": "Assembly Station",
+  "block.projectrebirth.transfer_capsule": "Consciousness Transfer Capsule",
+
   "item.projectrebirth.basic_robot_body": "Basic Robotic Body",
+  "item.projectrebirth.improved_robot_body": "Improved Robotic Body",
+  "item.projectrebirth.advanced_synthetic_body": "Advanced Synthetic Body",
+  "item.projectrebirth.hightech_synthetic_body": "High-Tech Synthetic Body",
+  "item.projectrebirth.premium_synthetic_body": "Premium Synthetic Body",
   "entity.projectrebirth.basic_robot_body": "Basic Robotic Body",
+  "entity.projectrebirth.improved_robot_body": "Improved Robotic Body",
+  "entity.projectrebirth.advanced_synthetic_body": "Advanced Synthetic Body",
+  "entity.projectrebirth.hightech_synthetic_body": "High-Tech Synthetic Body",
+  "entity.projectrebirth.premium_synthetic_body": "Premium Synthetic Body",
+  "entity.projectrebirth.human_shell": "Human Body",
 
   "message.projectrebirth.body.status": "%s: integrity %s / %s",
   "message.projectrebirth.body.no_space": "Not enough space to place the body",
+  "message.projectrebirth.body.not_owner": "This body belongs to another player",
+  "message.projectrebirth.body.cannot_eat": "An artificial body cannot eat",
   "message.projectrebirth.assembly_station.offline": "The assembly station is not operational yet",
 
+  "message.projectrebirth.transfer.success": "Consciousness transferred",
+  "message.projectrebirth.transfer.already_in_body": "Return to your human body first",
+  "message.projectrebirth.transfer.not_possible_now": "Transfer is not possible right now",
+  "message.projectrebirth.transfer.cooldown": "The capsule is recharging, try again in a few seconds",
+  "message.projectrebirth.transfer.capsule_occupied": "This capsule is occupied",
+  "message.projectrebirth.transfer.no_body": "No body of yours within %s blocks of the capsule",
+  "message.projectrebirth.transfer.return_success": "Consciousness returned to the human body",
+  "message.projectrebirth.transfer.not_in_body": "You are already in your human body",
+  "message.projectrebirth.transfer.human_body_lost": "Your human body is lost: there is nowhere to return",
+  "message.projectrebirth.transfer.human_body_died": "Your human body in the capsule has died",
+  "message.projectrebirth.transfer.body_destroyed_human": "The body was destroyed. Consciousness returned to the human body.",
+  "message.projectrebirth.transfer.body_destroyed_backup": "The body was destroyed. Consciousness moved to a backup body: %s.",
+  "message.projectrebirth.transfer.no_body_left": "The body was destroyed and there is no body left to return to.",
+
+  "message.projectrebirth.command.human": "human body",
+  "message.projectrebirth.command.shell_at": "human body in capsule at %s %s %s %s, health %s",
+  "message.projectrebirth.command.no_shell": "no stored human body",
+  "message.projectrebirth.command.status": "%s: %s, health %s / %s; %s",
+  "message.projectrebirth.command.not_capsule": "There is no transfer capsule at this position",
+
   "tooltip.projectrebirth.body.damaged": "Damaged: integrity %s",
-  "tooltip.projectrebirth.body.hint": "Use on a block to place. Sneak + use on the body to pack it up."
+  "tooltip.projectrebirth.body.hint": "Use on a block to place. Sneak + use on the body to pack it up.",
+
+  "hud.projectrebirth.body": "Body: %s  [%s] return",
+  "key.categories.projectrebirth": "Project: Rebirth",
+  "key.projectrebirth.return_to_human": "Return to human body"
 }

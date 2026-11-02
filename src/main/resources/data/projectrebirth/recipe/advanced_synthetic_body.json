@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["GPG", "DBD", "GPG"],
+  "key": { "G": { "item": "minecraft:gold_ingot" }, "P": { "item": "projectrebirth:circuit_board" }, "D": { "item": "minecraft:diamond" }, "B": { "item": "projectrebirth:improved_robot_body" } },
+  "result": { "id": "projectrebirth:advanced_synthetic_body", "count": 1 }
+}

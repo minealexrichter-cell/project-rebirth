@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,half=lower": { "model": "projectrebirth:block/transfer_capsule_lower" },
+    "facing=north,half=upper": { "model": "projectrebirth:block/transfer_capsule_upper" },
+    "facing=east,half=lower": { "model": "projectrebirth:block/transfer_capsule_lower", "y": 90 },
+    "facing=east,half=upper": { "model": "projectrebirth:block/transfer_capsule_upper", "y": 90 },
+    "facing=south,half=lower": { "model": "projectrebirth:block/transfer_capsule_lower", "y": 180 },
+    "facing=south,half=upper": { "model": "projectrebirth:block/transfer_capsule_upper", "y": 180 },
+    "facing=west,half=lower": { "model": "projectrebirth:block/transfer_capsule_lower", "y": 270 },
+    "facing=west,half=upper": { "model": "projectrebirth:block/transfer_capsule_upper", "y": 270 }
+  }
+}

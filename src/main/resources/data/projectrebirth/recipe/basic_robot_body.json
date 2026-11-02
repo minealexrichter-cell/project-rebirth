@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " P ",
+    "IRI",
+    "I I"
+  ],
+  "key": {
+    "P": { "item": "projectrebirth:circuit_board" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "minecraft:redstone_block" }
+  },
+  "result": { "id": "projectrebirth:basic_robot_body", "count": 1 }
+}

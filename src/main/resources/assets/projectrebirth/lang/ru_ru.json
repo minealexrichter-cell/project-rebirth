@@ -1,1 +1,15 @@
-{}
+{
+  "itemGroup.projectrebirth": "Project: Rebirth",
+
+  "item.projectrebirth.circuit_board": "Печатная плата",
+  "block.projectrebirth.assembly_station": "Сборочная станция",
+  "item.projectrebirth.basic_robot_body": "Базовое роботизированное тело",
+  "entity.projectrebirth.basic_robot_body": "Базовое роботизированное тело",
+
+  "message.projectrebirth.body.status": "%s: целостность %s / %s",
+  "message.projectrebirth.body.no_space": "Недостаточно места, чтобы поставить тело",
+  "message.projectrebirth.assembly_station.offline": "Сборочная станция пока не работает",
+
+  "tooltip.projectrebirth.body.damaged": "Повреждено: целостность %s",
+  "tooltip.projectrebirth.body.hint": "ПКМ по блоку: поставить. Shift + ПКМ по телу: упаковать."
+}

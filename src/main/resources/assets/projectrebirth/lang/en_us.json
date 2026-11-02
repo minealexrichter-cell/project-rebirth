@@ -1,1 +1,15 @@
-{}
+{
+  "itemGroup.projectrebirth": "Project: Rebirth",
+
+  "item.projectrebirth.circuit_board": "Circuit Board",
+  "block.projectrebirth.assembly_station": "Assembly Station",
+  "item.projectrebirth.basic_robot_body": "Basic Robotic Body",
+  "entity.projectrebirth.basic_robot_body": "Basic Robotic Body",
+
+  "message.projectrebirth.body.status": "%s: integrity %s / %s",
+  "message.projectrebirth.body.no_space": "Not enough space to place the body",
+  "message.projectrebirth.assembly_station.offline": "The assembly station is not operational yet",
+
+  "tooltip.projectrebirth.body.damaged": "Damaged: integrity %s",
+  "tooltip.projectrebirth.body.hint": "Use on a block to place. Sneak + use on the body to pack it up."
+}

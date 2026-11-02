@@ -9,7 +9,7 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
 /** Renders an unoccupied body of any class. */
 public class ArtificialBodyRenderer extends GeoEntityRenderer<ArtificialBodyEntity> {
     public ArtificialBodyRenderer(EntityRendererProvider.Context context, BodyClass bodyClass) {
-        super(context, BodyModels.create(bodyClass));
+        super(context, BodyModels.create(bodyClass, false));
         this.shadowRadius = 0.4f;
     }
 }

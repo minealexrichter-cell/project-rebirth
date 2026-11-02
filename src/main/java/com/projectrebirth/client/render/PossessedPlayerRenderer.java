@@ -16,7 +16,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /** Draws a player who controls an artificial body with that body's model instead of the player model. */
 public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, PossessedPlayerRenderer.BodyAnimatable> {
     public PossessedPlayerRenderer(EntityRendererProvider.Context context, BodyClass bodyClass) {
-        super(context, BodyModels.create(bodyClass), new BodyAnimatable());
+        // The head follows where the player looks, like a normal player head.
+        super(context, BodyModels.create(bodyClass, true), new BodyAnimatable());
         this.shadowRadius = 0.4f;
     }
 

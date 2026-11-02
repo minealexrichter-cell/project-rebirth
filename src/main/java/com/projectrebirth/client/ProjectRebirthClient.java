@@ -12,6 +12,7 @@ import com.projectrebirth.bodies.BodyEntities;
 import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.bodies.TransferService;
 import com.projectrebirth.client.render.ArtificialBodyRenderer;
+import com.projectrebirth.client.render.BodyArmRenderer;
 import com.projectrebirth.client.render.HumanShellRenderer;
 import com.projectrebirth.client.render.PossessedPlayerRenderer;
 
@@ -29,6 +30,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.event.RenderArmEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -45,6 +47,7 @@ public class ProjectRebirthClient {
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.projectrebirth");
 
     private final Map<BodyClass, PossessedPlayerRenderer> possessedRenderers = new EnumMap<>(BodyClass.class);
+    private BodyArmRenderer armRenderer;
 
     public ProjectRebirthClient(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::clientSetup);
@@ -54,6 +57,7 @@ public class ProjectRebirthClient {
         modEventBus.addListener(this::registerGuiLayers);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderPlayer);
+        NeoForge.EVENT_BUS.addListener(this::onRenderArm);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {
@@ -72,6 +76,7 @@ public class ProjectRebirthClient {
         for (BodyClass bodyClass : BodyClass.values()) {
             possessedRenderers.put(bodyClass, new PossessedPlayerRenderer(event.getContext(), bodyClass));
         }
+        armRenderer = new BodyArmRenderer(event.getContext());
     }
 
     private void registerKeys(RegisterKeyMappingsEvent event) {
@@ -100,6 +105,18 @@ public class ProjectRebirthClient {
                 renderer.render(player, player.getViewYRot(event.getPartialTick()), event.getPartialTick(),
                         event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
             }
+        });
+    }
+
+    /** First-person hand: draw the arm of the controlled body instead of the player's own arm. */
+    private void onRenderArm(RenderArmEvent event) {
+        if (armRenderer == null) {
+            return;
+        }
+        TransferService.state(event.getPlayer()).body().ifPresent(bodyClass -> {
+            event.setCanceled(true);
+            armRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
+                    event.getPlayer(), event.getArm(), bodyClass);
         });
     }
 

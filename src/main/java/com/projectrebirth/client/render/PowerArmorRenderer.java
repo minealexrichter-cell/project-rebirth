@@ -28,8 +28,8 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
     private static final ResourceLocation WRECK_TEXTURE = ProjectRebirth.id("textures/entity/power_armor_wrecked.png");
     private static final String RIGHT_HAND = "right_hand";
     private static final String LEFT_HAND = "left_hand";
-    /** The fists are 1.5 times as wide as a player's hand. */
-    private static final float ITEM_SCALE = 1.5f;
+    /** A bit larger than in a player's hand to suit the big fists, but small enough to stay off the ground. */
+    private static final float ITEM_SCALE = 1.25f;
 
     public PowerArmorRenderer(EntityRendererProvider.Context context) {
         super(context, new ArmorModel());
@@ -60,6 +60,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         @Override
         public void setCustomAnimations(PowerArmorEntity armor, long instanceId, AnimationState<PowerArmorEntity> state) {
             super.setCustomAnimations(armor, instanceId, state);
+            PilotArmPose.reset();
             Player pilot = armor.getPilot();
             if (pilot == null || !armor.isActive()) {
                 return;
@@ -106,6 +107,8 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
                 return;
             }
             boolean left = bone.getName().equals(LEFT_HAND);
+            // Undo the lift of an arm holding an item: the item rises with the fist but is not tilted.
+            poseStack.mulPose(Axis.XP.rotation(-PilotArmPose.liftOf(left ? HumanoidArm.LEFT : HumanoidArm.RIGHT)));
             // GeckoLib space -> vanilla model space (which is upside down).
             poseStack.mulPose(Axis.ZP.rotationDegrees(180.0f));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));

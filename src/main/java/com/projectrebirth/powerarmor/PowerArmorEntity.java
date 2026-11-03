@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.factions.FactionService;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -178,6 +179,11 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         return getFirstPassenger() instanceof Player player ? player : null;
     }
 
+    @Nullable
+    public UUID getOwnerId() {
+        return owner;
+    }
+
     public void setOwner(@Nullable UUID owner) {
         this.owner = owner;
     }
@@ -237,6 +243,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         }
         Entity attacker = source.getEntity();
         if (attacker != null && hasPassenger(attacker)) {
+            return false;
+        }
+        // This hurt() does not go through the usual damage event, so friendly fire is checked here directly.
+        if (FactionService.blocksDamage(this, source)) {
             return false;
         }
         float structuralLoss = amount * RebirthConfig.ARMOR_STRUCTURAL_DAMAGE_MULTIPLIER.get().floatValue();

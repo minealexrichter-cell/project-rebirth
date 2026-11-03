@@ -15,9 +15,11 @@ import com.projectrebirth.client.render.ArtificialBodyRenderer;
 import com.projectrebirth.client.render.BodyArmRenderer;
 import com.projectrebirth.client.render.HumanShellRenderer;
 import com.projectrebirth.client.render.PossessedPlayerRenderer;
+import com.projectrebirth.client.screen.FactionScreen;
 import com.projectrebirth.client.screen.MaintenanceScreen;
 import com.projectrebirth.client.screen.StationScreen;
 import com.projectrebirth.technology.TechMenus;
+import com.projectrebirth.factions.ClientFactionCache;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
@@ -30,6 +32,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -49,6 +52,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public class ProjectRebirthClient {
     private static final KeyMapping RETURN_KEY = new KeyMapping("key.projectrebirth.return_to_human",
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.projectrebirth");
+    private static final KeyMapping FACTION_KEY = new KeyMapping("key.projectrebirth.factions",
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.projectrebirth");
 
     private final Map<BodyClass, PossessedPlayerRenderer> possessedRenderers = new EnumMap<>(BodyClass.class);
     private BodyArmRenderer armRenderer;
@@ -63,6 +68,7 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderPlayer);
         NeoForge.EVENT_BUS.addListener(this::onRenderArm);
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientFactionCache.clear());
         PowerArmorClient.register(modEventBus);
     }
 
@@ -92,6 +98,7 @@ public class ProjectRebirthClient {
 
     private void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(RETURN_KEY);
+        event.register(FACTION_KEY);
     }
 
     private void registerGuiLayers(RegisterGuiLayersEvent event) {
@@ -103,6 +110,11 @@ public class ProjectRebirthClient {
         while (RETURN_KEY.consumeClick()) {
             if (player != null && TransferService.isInArtificialBody(player)) {
                 PacketDistributor.sendToServer(ReturnToHumanPayload.INSTANCE);
+            }
+        }
+        while (FACTION_KEY.consumeClick()) {
+            if (player != null && Minecraft.getInstance().screen == null) {
+                Minecraft.getInstance().setScreen(new FactionScreen());
             }
         }
     }

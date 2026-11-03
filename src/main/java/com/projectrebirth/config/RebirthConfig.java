@@ -46,6 +46,9 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
+    public static final ModConfigSpec.BooleanValue FACTION_FRIENDLY_FIRE_DEFAULT;
+    public static final ModConfigSpec.BooleanValue FACTION_LEADER_CAN_TOGGLE_FRIENDLY_FIRE;
+    public static final ModConfigSpec.IntValue FACTION_MAX_MEMBERS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -173,6 +176,18 @@ public final class RebirthConfig {
         MAINTENANCE_BODY_REPAIR_PER_ITEM = builder
                 .comment("Body integrity restored per iron ingot (robot bodies) or synthetic fiber (synthetic bodies)")
                 .defineInRange("bodyRepairPerItem", 8.0, 0.1, 1024.0);
+        builder.pop();
+
+        builder.comment("Factions created by players").push("factions");
+        FACTION_FRIENDLY_FIRE_DEFAULT = builder
+                .comment("Whether members of a new faction can hurt each other (players, their bodies and power armor)")
+                .define("friendlyFireDefault", false);
+        FACTION_LEADER_CAN_TOGGLE_FRIENDLY_FIRE = builder
+                .comment("Whether faction leaders may change friendly fire. If false, friendlyFireDefault applies to every faction")
+                .define("leaderCanToggleFriendlyFire", true);
+        FACTION_MAX_MEMBERS = builder
+                .comment("Maximum members per faction, 0 = unlimited")
+                .defineInRange("maxMembers", 0, 0, 1000);
         builder.pop();
         SERVER_SPEC = builder.build();
     }

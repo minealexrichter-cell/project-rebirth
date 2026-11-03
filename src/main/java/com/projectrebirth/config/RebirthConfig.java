@@ -49,6 +49,8 @@ public final class RebirthConfig {
     public static final ModConfigSpec.BooleanValue FACTION_FRIENDLY_FIRE_DEFAULT;
     public static final ModConfigSpec.BooleanValue FACTION_LEADER_CAN_TOGGLE_FRIENDLY_FIRE;
     public static final ModConfigSpec.IntValue FACTION_MAX_MEMBERS;
+    public static final ModConfigSpec.IntValue FACTION_CORE_RADIUS;
+    public static final ModConfigSpec.IntValue FACTION_MAX_CORES;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -188,6 +190,12 @@ public final class RebirthConfig {
         FACTION_MAX_MEMBERS = builder
                 .comment("Maximum members per faction, 0 = unlimited")
                 .defineInRange("maxMembers", 0, 0, 1000);
+        FACTION_CORE_RADIUS = builder
+                .comment("Territory of a faction core: a square of this many blocks in every direction from the core, full height")
+                .defineInRange("coreRadius", 24, 1, 256);
+        FACTION_MAX_CORES = builder
+                .comment("How many cores (territories) one faction may have")
+                .defineInRange("maxCores", 1, 1, 64);
         builder.pop();
         SERVER_SPEC = builder.build();
     }

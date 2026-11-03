@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "projectrebirth:faction_core",
     "projectrebirth:silver_ore",
     "projectrebirth:deepslate_silver_ore",
     "projectrebirth:lithium_ore",

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["TPT", "CDC", "TPT"],
+  "key": {
+    "T": { "tag": "c:ingots/titanium" },
+    "P": { "item": "projectrebirth:processor" },
+    "C": { "item": "projectrebirth:power_cell" },
+    "D": { "item": "minecraft:diamond" }
+  },
+  "result": { "id": "projectrebirth:faction_core", "count": 1 }
+}

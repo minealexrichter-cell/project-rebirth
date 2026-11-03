@@ -11,6 +11,7 @@ import com.projectrebirth.bodies.BodyItems;
 import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModCreativeTabs;
+import com.projectrebirth.factions.FactionBlocks;
 import com.projectrebirth.factions.FactionSync;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
@@ -52,6 +53,7 @@ public class ProjectRebirth {
         PowerArmorRegistry.register(modEventBus);
         HatchReleasePayload.register(modEventBus);
         ArmorSwingPayload.register(modEventBus);
+        FactionBlocks.register(modEventBus);
         FactionSync.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 

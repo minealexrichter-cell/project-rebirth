@@ -3,6 +3,7 @@ package com.projectrebirth.core;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyItems;
+import com.projectrebirth.factions.FactionBlocks;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.Station;
@@ -35,6 +36,7 @@ public final class ModCreativeTabs {
                     output.accept(TechItems.STATIONS.get(station).get());
                 }
                 output.accept(TechItems.MAINTENANCE_STATION.get());
+                output.accept(FactionBlocks.FACTION_CORE_ITEM.get());
                 output.accept(TechItems.CIRCUIT_BOARD.get());
                 output.accept(TechItems.PROCESSOR.get());
                 output.accept(TechItems.POWER_CELL.get());

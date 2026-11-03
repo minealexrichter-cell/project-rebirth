@@ -5,13 +5,16 @@ import com.projectrebirth.bodies.ArtificialBodyEntity;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyEntities;
 import com.projectrebirth.factions.Faction;
+import com.projectrebirth.factions.FactionBlocks;
 import com.projectrebirth.factions.FactionData;
+import com.projectrebirth.factions.FactionRole;
 import com.projectrebirth.factions.FactionService;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
@@ -156,6 +159,127 @@ public class FactionGameTests {
         helper.assertTrue(hurts(body, body.damageSources().playerAttack(shooter)), "With friendly fire on, the body can be hurt");
 
         FactionService.adminDisband(server, "Fire Delta");
+        helper.succeed();
+    }
+
+    private static ServerPlayer joined(GameTestHelper helper, Faction faction) {
+        ServerPlayer player = player(helper);
+        faction.invited().add(player.getUUID());
+        FactionService.accept(player, faction.id());
+        return player;
+    }
+
+    /** What each role may do with the others. */
+    @GameTest(template = TEMPLATE)
+    public static void rolesLimitWhatMembersCanDo(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        clean(server, "Role Epsilon");
+        ServerPlayer leader = player(helper);
+        FactionService.create(leader, "Role Epsilon", ChatFormatting.AQUA);
+        Faction faction = factionOf(server, leader);
+        ServerPlayer officer = joined(helper, faction);
+        ServerPlayer member = joined(helper, faction);
+        ServerPlayer recruit = joined(helper, faction);
+        helper.assertTrue(faction.role(recruit.getUUID()) == FactionRole.RECRUIT, "New members start as recruits");
+
+        helper.assertTrue(FactionService.setRole(leader, officer.getUUID(), FactionRole.OFFICER).success(), "The leader names officers");
+        helper.assertTrue(FactionService.setRole(officer, member.getUUID(), FactionRole.MEMBER).success(), "An officer promotes a recruit to member");
+        helper.assertFalse(FactionService.setRole(officer, member.getUUID(), FactionRole.OFFICER).success(), "An officer cannot name officers");
+        helper.assertFalse(FactionService.setRole(member, recruit.getUUID(), FactionRole.MEMBER).success(), "A member cannot change roles");
+        FactionService.Result recruitInvite = FactionService.invite(recruit, "nobody");
+        helper.assertTrue(!recruitInvite.success()
+                && recruitInvite.message().getString().equals(Component.translatable("message.projectrebirth.faction.no_permission").getString()),
+                "A recruit cannot invite");
+        helper.assertFalse(FactionService.kick(officer, leader.getUUID()).success(), "An officer cannot kick the leader");
+        helper.assertTrue(FactionService.kick(officer, recruit.getUUID()).success(), "An officer can kick a recruit");
+
+        helper.assertTrue(FactionService.promote(leader, member.getUUID()).success(), "The leader hands over leadership");
+        helper.assertTrue(faction.leader().equals(member.getUUID()) && faction.role(leader.getUUID()) == FactionRole.OFFICER,
+                "The old leader becomes an officer");
+
+        FactionData reloaded = FactionData.reload(FactionData.get(server), helper.getLevel().registryAccess());
+        helper.assertTrue(reloaded.of(officer.getUUID()).orElseThrow().role(officer.getUUID()) == FactionRole.OFFICER,
+                "Roles must survive saving");
+        clean(server, "Role Epsilon");
+        helper.succeed();
+    }
+
+    /** Alliances need both leaders, protect like the own faction and end with a war declaration. */
+    @GameTest(template = TEMPLATE)
+    public static void alliancesAndWars(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        clean(server, "Pact Zeta", "Pact Eta");
+        ServerPlayer leaderA = player(helper);
+        ServerPlayer leaderB = player(helper);
+        FactionService.create(leaderA, "Pact Zeta", ChatFormatting.GREEN);
+        FactionService.create(leaderB, "Pact Eta", ChatFormatting.BLUE);
+        Faction a = factionOf(server, leaderA);
+        Faction b = factionOf(server, leaderB);
+        ServerPlayer memberB = joined(helper, b);
+        FactionService.setFriendlyFire(leaderA, false);
+
+        helper.assertFalse(FactionService.blocksDamage(server, leaderA.getUUID(), memberB.getUUID()), "Strangers are not protected");
+        helper.assertTrue(FactionService.proposeAlliance(leaderA, b.id()).success(), "A leader offers an alliance");
+        helper.assertFalse(FactionService.acceptAlliance(memberB, a.id()).success(), "Only the other leader can accept");
+        helper.assertTrue(FactionService.acceptAlliance(leaderB, a.id()).success(), "The other leader accepts");
+        helper.assertTrue(a.allies().contains(b.id()) && b.allies().contains(a.id()), "The alliance is mutual");
+        helper.assertTrue(FactionService.blocksDamage(server, leaderA.getUUID(), memberB.getUUID()),
+                "Allies are protected when the attacker's faction has friendly fire off");
+
+        helper.assertTrue(FactionService.declareEnemy(leaderB, a.id()).success(), "A leader declares war");
+        helper.assertTrue(a.allies().isEmpty() && b.allies().isEmpty() && FactionService.areEnemies(a, b), "War ends the alliance");
+        helper.assertFalse(FactionService.proposeAlliance(leaderB, a.id()).success(), "No alliance while at war");
+        helper.assertTrue(FactionService.makePeace(leaderB, a.id()).success() && !FactionService.areEnemies(a, b), "Peace ends the war");
+        clean(server, "Pact Zeta", "Pact Eta");
+        helper.succeed();
+    }
+
+    /** Core placement rules and who may use chests and doors on the territory. */
+    @GameTest(template = TEMPLATE)
+    public static void territoryProtectsContainersAndDoors(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        clean(server, "Land Theta", "Land Iota", "Land Kappa");
+        ServerPlayer leader = player(helper);
+        FactionService.create(leader, "Land Theta", ChatFormatting.GOLD);
+        Faction faction = factionOf(server, leader);
+        ServerPlayer recruit = joined(helper, faction);
+        ServerPlayer member = joined(helper, faction);
+        FactionService.setRole(leader, member.getUUID(), FactionRole.MEMBER);
+        helper.assertFalse(FactionService.canPlaceCore(recruit, helper.getLevel(), helper.absolutePos(new BlockPos(2, 2, 2))).success(),
+                "A recruit cannot place a core");
+
+        BlockPos corePos = new BlockPos(2, 2, 2);
+        BlockPos core = helper.absolutePos(corePos);
+        helper.assertTrue(FactionService.canPlaceCore(leader, helper.getLevel(), core).success(), "The leader can place a core");
+        helper.setBlock(corePos, FactionBlocks.FACTION_CORE.get());
+        FactionService.addCore(leader, helper.getLevel(), core);
+        helper.assertFalse(FactionService.canPlaceCore(leader, helper.getLevel(), core.east(5)).success(), "Only one core by default");
+
+        ServerPlayer allyLeader = player(helper);
+        ServerPlayer stranger = player(helper);
+        FactionService.create(allyLeader, "Land Iota", ChatFormatting.GREEN);
+        FactionService.create(stranger, "Land Kappa", ChatFormatting.RED);
+        FactionService.proposeAlliance(leader, factionOf(server, allyLeader).id());
+        FactionService.acceptAlliance(allyLeader, faction.id());
+        helper.assertFalse(FactionService.canPlaceCore(stranger, helper.getLevel(), core.east(FactionService.coreRadius())).success(),
+                "Another faction cannot place a core whose territory would touch this one");
+
+        BlockPos inside = core.north(3);
+        BlockPos outside = core.north(FactionService.coreRadius() + 2);
+        helper.assertTrue(FactionService.mayUse(member, inside, FactionService.Use.CONTAINER), "Members use chests");
+        helper.assertFalse(FactionService.mayUse(recruit, inside, FactionService.Use.CONTAINER), "Recruits do not use chests");
+        helper.assertTrue(FactionService.mayUse(recruit, inside, FactionService.Use.DOOR), "Recruits use doors");
+        helper.assertTrue(FactionService.mayUse(allyLeader, inside, FactionService.Use.DOOR), "Allies use doors");
+        helper.assertFalse(FactionService.mayUse(allyLeader, inside, FactionService.Use.CONTAINER), "Allies do not use chests");
+        helper.assertFalse(FactionService.mayUse(stranger, inside, FactionService.Use.DOOR), "Strangers do not use doors");
+        helper.assertFalse(FactionService.mayUse(stranger, inside, FactionService.Use.CONTAINER), "Strangers do not use chests");
+        helper.assertTrue(FactionService.mayUse(stranger, inside, FactionService.Use.FREE), "Other blocks stay free");
+        helper.assertTrue(FactionService.mayUse(stranger, outside, FactionService.Use.CONTAINER), "Outside the territory nothing is protected");
+
+        helper.destroyBlock(corePos);
+        helper.assertTrue(faction.cores().isEmpty(), "Destroying the core removes the territory");
+        helper.assertTrue(FactionService.mayUse(stranger, inside, FactionService.Use.CONTAINER), "Without the core nothing is protected");
+        clean(server, "Land Theta", "Land Iota", "Land Kappa");
         helper.succeed();
     }
 }

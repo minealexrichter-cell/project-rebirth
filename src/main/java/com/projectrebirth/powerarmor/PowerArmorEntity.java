@@ -79,6 +79,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private static final EntityDataAccessor<Float> MAX_CRITICAL = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Byte> STATE = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Float> HATCH_PROGRESS = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Byte> VARIANT = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BYTE);
+    /** Worker armor: true = 3x3 mining, false = one block. */
+    private static final EntityDataAccessor<Boolean> WIDE_MINING = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final ResourceLocation PILOT_ATTACK_MODIFIER = ProjectRebirth.id("power_armor_attack");
     private static final ResourceLocation PILOT_KNOCKBACK_MODIFIER = ProjectRebirth.id("power_armor_knockback");
@@ -134,6 +137,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         builder.define(MAX_CRITICAL, 1.0f);
         builder.define(STATE, STATE_ACTIVE);
         builder.define(HATCH_PROGRESS, 0.0f);
+        builder.define(VARIANT, (byte) ArmorVariant.COMBAT.ordinal());
+        builder.define(WIDE_MINING, true);
     }
 
     // ---------------------------------------------------------------- state
@@ -152,6 +157,28 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     public float getMaxCritical() {
         return entityData.get(MAX_CRITICAL);
+    }
+
+    public ArmorVariant getVariant() {
+        ArmorVariant[] variants = ArmorVariant.values();
+        return variants[Mth.clamp(entityData.get(VARIANT), 0, variants.length - 1)];
+    }
+
+    /** Set before the armor joins the level (placement from the item); its stats follow from it. */
+    public void setVariant(ArmorVariant variant) {
+        entityData.set(VARIANT, (byte) variant.ordinal());
+    }
+
+    public RebirthConfig.ArmorStats stats() {
+        return RebirthConfig.armorStats(getVariant());
+    }
+
+    public boolean isWideMining() {
+        return entityData.get(WIDE_MINING);
+    }
+
+    public void setWideMining(boolean wide) {
+        entityData.set(WIDE_MINING, wide);
     }
 
     /** 0..1 while the pilot holds the emergency hatch key in a shut-down armor. */
@@ -215,9 +242,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     /** Re-applied on every load so that config changes reach existing armors. */
     private void applyConfig() {
-        entityData.set(MAX_STRUCTURAL, RebirthConfig.ARMOR_MAX_STRUCTURAL.get().floatValue());
-        entityData.set(MAX_CRITICAL, RebirthConfig.ARMOR_MAX_CRITICAL.get().floatValue());
-        getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(RebirthConfig.ARMOR_MOVEMENT_SPEED.get());
+        entityData.set(MAX_STRUCTURAL, stats().maxStructural().get().floatValue());
+        entityData.set(MAX_CRITICAL, stats().maxCritical().get().floatValue());
+        getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(stats().movementSpeed().get());
         if (!initialized) {
             entityData.set(STRUCTURAL, getMaxStructural());
             entityData.set(CRITICAL, getMaxCritical());
@@ -421,7 +448,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         yHeadRot = getYRot();
         if (pendingJump > 0.0f && onGround()) {
             Vec3 motion = getDeltaMovement();
-            setDeltaMovement(motion.x, RebirthConfig.ARMOR_JUMP_STRENGTH.get() * pendingJump, motion.z);
+            setDeltaMovement(motion.x, stats().jumpStrength().get() * pendingJump, motion.z);
             hasImpulse = true;
         }
         pendingJump = 0.0f;
@@ -438,7 +465,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     @Override
     public boolean canJump() {
-        return isActive() && RebirthConfig.ARMOR_JUMP_STRENGTH.get() > 0;
+        return isActive() && stats().jumpStrength().get() > 0;
     }
 
     @Override
@@ -512,7 +539,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     protected void addPassenger(Entity passenger) {
         super.addPassenger(passenger);
         if (!level().isClientSide && passenger instanceof Player player) {
-            setPilotBonuses(player, true);
+            setPilotBonuses(player, getVariant());
         }
     }
 
@@ -520,14 +547,19 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         if (!level().isClientSide && passenger instanceof Player player) {
-            setPilotBonuses(player, false);
+            setPilotBonuses(player, null);
             hatchHeld = false;
         }
     }
 
-    /** Pilot bonuses: stronger punches with more knockback and longer reach (the armor is big). */
-    public static void setPilotBonuses(Player player, boolean enabled) {
-        setBonus(player, Attributes.ATTACK_DAMAGE, PILOT_ATTACK_MODIFIER, enabled, RebirthConfig.ARMOR_PILOT_ATTACK_BONUS.get());
+    /**
+     * Pilot bonuses: stronger punches (by variant) with more knockback and longer reach (the armor is big).
+     * A null variant removes them.
+     */
+    public static void setPilotBonuses(Player player, @Nullable ArmorVariant variant) {
+        boolean enabled = variant != null;
+        setBonus(player, Attributes.ATTACK_DAMAGE, PILOT_ATTACK_MODIFIER, enabled,
+                enabled ? RebirthConfig.armorStats(variant).pilotAttackDamageBonus().get() : 0.0);
         setBonus(player, Attributes.ATTACK_KNOCKBACK, PILOT_KNOCKBACK_MODIFIER, enabled, RebirthConfig.ARMOR_PILOT_KNOCKBACK_BONUS.get());
         setBonus(player, Attributes.ENTITY_INTERACTION_RANGE, PILOT_ENTITY_REACH_MODIFIER, enabled,
                 RebirthConfig.ARMOR_PILOT_ENTITY_REACH_BONUS.get());
@@ -655,7 +687,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (!isAlive()) {
             return;
         }
-        ItemStack stack = new ItemStack(PowerArmorRegistry.POWER_ARMOR_ITEM.get());
+        ItemStack stack = new ItemStack(PowerArmorRegistry.item(getVariant()));
         if (getStructural() < getMaxStructural()) {
             stack.set(PowerArmorRegistry.STORED_STRUCTURAL.get(), getStructural());
         }
@@ -683,7 +715,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     @Override
     public ItemStack getPickResult() {
-        return new ItemStack(PowerArmorRegistry.POWER_ARMOR_ITEM.get());
+        return new ItemStack(PowerArmorRegistry.item(getVariant()));
     }
 
     @Override
@@ -758,6 +790,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         tag.putFloat("Critical", getCritical());
         tag.putByte("ArmorState", entityData.get(STATE));
         tag.putBoolean("Initialized", initialized);
+        tag.putString("Variant", getVariant().id());
+        tag.putBoolean("WideMining", isWideMining());
         if (owner != null) {
             tag.putUUID("Owner", owner);
         }
@@ -770,6 +804,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         entityData.set(CRITICAL, tag.getFloat("Critical"));
         entityData.set(STATE, tag.getByte("ArmorState"));
         initialized = tag.getBoolean("Initialized");
+        // Armors from 0.1.0 have no variant: they are combat armors.
+        setVariant(ArmorVariant.byId(tag.getString("Variant")));
+        setWideMining(!tag.contains("WideMining") || tag.getBoolean("WideMining"));
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
     }
 

@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import com.projectrebirth.bodies.BodyClass;
+import com.projectrebirth.powerarmor.ArmorVariant;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -13,6 +14,7 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class RebirthConfig {
     public static final ModConfigSpec SERVER_SPEC;
     private static final Map<BodyClass, BodyStats> BODY_STATS = new EnumMap<>(BodyClass.class);
+    private static final Map<ArmorVariant, ArmorStats> ARMOR_STATS = new EnumMap<>(ArmorVariant.class);
 
     public static final ModConfigSpec.IntValue TRANSFER_RADIUS;
     public static final ModConfigSpec.IntValue TRANSFER_COOLDOWN_SECONDS;
@@ -20,8 +22,6 @@ public final class RebirthConfig {
     public static final ModConfigSpec.BooleanValue HUMAN_BODY_VULNERABLE;
     public static final ModConfigSpec.BooleanValue BACKUP_BODIES_ENABLED;
 
-    public static final ModConfigSpec.DoubleValue ARMOR_MAX_STRUCTURAL;
-    public static final ModConfigSpec.DoubleValue ARMOR_MAX_CRITICAL;
     public static final ModConfigSpec.DoubleValue ARMOR_STRUCTURAL_DAMAGE_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue ARMOR_CRITICAL_EXPLOSION_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue ARMOR_CRITICAL_FIRE_MULTIPLIER;
@@ -34,12 +34,9 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ARMOR_WRECK_PILOT_DAMAGE;
     public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_STRUCTURAL_PER_INGOT;
     public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_CRITICAL_PER_PLATE;
-    public static final ModConfigSpec.DoubleValue ARMOR_MOVEMENT_SPEED;
-    public static final ModConfigSpec.DoubleValue ARMOR_PILOT_ATTACK_BONUS;
     public static final ModConfigSpec.DoubleValue ARMOR_PILOT_KNOCKBACK_BONUS;
     public static final ModConfigSpec.DoubleValue ARMOR_PILOT_ENTITY_REACH_BONUS;
     public static final ModConfigSpec.DoubleValue ARMOR_PILOT_BLOCK_REACH_BONUS;
-    public static final ModConfigSpec.DoubleValue ARMOR_JUMP_STRENGTH;
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_IRON;
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_PLATES;
 
@@ -91,12 +88,6 @@ public final class RebirthConfig {
         builder.pop();
 
         builder.comment("Power armor").push("power_armor");
-        ARMOR_MAX_STRUCTURAL = builder
-                .comment("Structural integrity: current working condition. At 0 the armor shuts down and locks the pilot in.")
-                .defineInRange("maxStructural", 100.0, 1.0, 10000.0);
-        ARMOR_MAX_CRITICAL = builder
-                .comment("Critical integrity: irreversible damage to key components. At 0 the armor becomes an unrepairable wreck.")
-                .defineInRange("maxCritical", 50.0, 1.0, 10000.0);
         ARMOR_STRUCTURAL_DAMAGE_MULTIPLIER = builder
                 .comment("Structural integrity lost per point of incoming damage")
                 .defineInRange("structuralDamageMultiplier", 1.0, 0.0, 100.0);
@@ -133,12 +124,6 @@ public final class RebirthConfig {
         ARMOR_REPAIR_CRITICAL_PER_PLATE = builder
                 .comment("Critical integrity restored by one armor plate (repair wrench)")
                 .defineInRange("repairCriticalPerPlate", 10.0, 0.0, 10000.0);
-        ARMOR_MOVEMENT_SPEED = builder
-                .comment("Movement speed of the armor (a walking player is 0.1)")
-                .defineInRange("movementSpeed", 0.12, 0.01, 2.0);
-        ARMOR_PILOT_ATTACK_BONUS = builder
-                .comment("Extra melee damage of the pilot while in the armor")
-                .defineInRange("pilotAttackDamageBonus", 6.0, 0.0, 1000.0);
         ARMOR_PILOT_KNOCKBACK_BONUS = builder
                 .comment("Extra melee knockback of the pilot while in the armor")
                 .defineInRange("pilotAttackKnockbackBonus", 1.0, 0.0, 10.0);
@@ -148,15 +133,32 @@ public final class RebirthConfig {
         ARMOR_PILOT_BLOCK_REACH_BONUS = builder
                 .comment("Extra reach in blocks for breaking and using blocks while in the armor (a player reaches 4.5)")
                 .defineInRange("pilotBlockReachBonus", 1.5, 0.0, 16.0);
-        ARMOR_JUMP_STRENGTH = builder
-                .comment("Jump strength of the armor at full charge (0.42 is a player's jump, about 1.25 blocks; 0 disables jumping)")
-                .defineInRange("jumpStrength", 0.6, 0.0, 3.0);
         ARMOR_DISMANTLE_IRON = builder
                 .comment("Iron ingots recovered when dismantling a wreck")
                 .defineInRange("dismantleIronIngots", 6, 0, 64);
         ARMOR_DISMANTLE_PLATES = builder
                 .comment("Armor plates recovered when dismantling a wreck")
                 .defineInRange("dismantleArmorPlates", 2, 0, 64);
+        for (ArmorVariant variant : ArmorVariant.values()) {
+            builder.comment("Stats of the " + variant.id() + " armor").push(variant.id());
+            ModConfigSpec.DoubleValue maxStructural = builder
+                    .comment("Structural integrity: current working condition. At 0 the armor shuts down and locks the pilot in.")
+                    .defineInRange("maxStructural", variant.defaultMaxStructural(), 1.0, 10000.0);
+            ModConfigSpec.DoubleValue maxCritical = builder
+                    .comment("Critical integrity: irreversible damage to key components. At 0 the armor becomes an unrepairable wreck.")
+                    .defineInRange("maxCritical", variant.defaultMaxCritical(), 1.0, 10000.0);
+            ModConfigSpec.DoubleValue speed = builder
+                    .comment("Movement speed of the armor (a walking player is 0.1)")
+                    .defineInRange("movementSpeed", variant.defaultMovementSpeed(), 0.01, 2.0);
+            ModConfigSpec.DoubleValue attack = builder
+                    .comment("Extra melee damage of the pilot while in the armor")
+                    .defineInRange("pilotAttackDamageBonus", variant.defaultPilotAttackBonus(), 0.0, 1000.0);
+            ModConfigSpec.DoubleValue jump = builder
+                    .comment("Jump strength at full charge (0.42 is a player's jump, about 1.25 blocks; 0 disables jumping)")
+                    .defineInRange("jumpStrength", variant.defaultJumpStrength(), 0.0, 3.0);
+            builder.pop();
+            ARMOR_STATS.put(variant, new ArmorStats(maxStructural, maxCritical, speed, attack, jump));
+        }
         builder.pop();
 
         builder.comment("Artificial body stats, one section per body class").push("bodies");
@@ -284,6 +286,15 @@ public final class RebirthConfig {
     }
 
     private RebirthConfig() {
+    }
+
+    public static ArmorStats armorStats(ArmorVariant variant) {
+        return ARMOR_STATS.get(variant);
+    }
+
+    public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
+                             ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
+                             ModConfigSpec.DoubleValue jumpStrength) {
     }
 
     public static BodyStats bodyStats(BodyClass bodyClass) {

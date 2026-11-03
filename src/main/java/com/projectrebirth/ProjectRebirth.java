@@ -16,6 +16,7 @@ import com.projectrebirth.factions.FactionBlocks;
 import com.projectrebirth.factions.FactionSync;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
+import com.projectrebirth.powerarmor.MiningModePayload;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.TechBlockEntities;
 import com.projectrebirth.technology.TechBlocks;
@@ -55,6 +56,7 @@ public class ProjectRebirth {
         PowerArmorRegistry.register(modEventBus);
         HatchReleasePayload.register(modEventBus);
         ArmorSwingPayload.register(modEventBus);
+        MiningModePayload.register(modEventBus);
         FactionBlocks.register(modEventBus);
         FactionSync.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

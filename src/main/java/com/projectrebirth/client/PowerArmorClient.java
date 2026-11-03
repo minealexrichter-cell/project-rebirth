@@ -7,7 +7,9 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.client.render.ArmorArmRenderer;
 import com.projectrebirth.client.render.PowerArmorRenderer;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
+import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
+import com.projectrebirth.powerarmor.MiningModePayload;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 
@@ -39,6 +41,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class PowerArmorClient {
     private static final KeyMapping HATCH_KEY = new KeyMapping("key.projectrebirth.emergency_hatch",
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.projectrebirth");
+    /** Worker armor: switch between 3x3 and single-block mining. */
+    private static final KeyMapping MINING_KEY = new KeyMapping("key.projectrebirth.mining_mode",
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.projectrebirth");
     private static final int BAR_WIDTH = 100;
 
     private static boolean hatchKeyWasDown;
@@ -78,7 +83,7 @@ public final class PowerArmorClient {
         // The player's swing (of either hand), not only this hand's: both armor arms punch at once.
         float swing = player.getAttackAnim(event.getPartialTick());
         armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
-                event.getEquipProgress(), swing, side);
+                event.getEquipProgress(), swing, side, armor.getVariant());
         event.setCanceled(true);
     }
 
@@ -104,6 +109,7 @@ public final class PowerArmorClient {
 
     private static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(HATCH_KEY);
+        event.register(MINING_KEY);
     }
 
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
@@ -119,6 +125,11 @@ public final class PowerArmorClient {
     /** Tells the server when the hatch key starts or stops being held; the server counts the time. */
     private static void onClientTick(ClientTickEvent.Post event) {
         Player player = Minecraft.getInstance().player;
+        while (MINING_KEY.consumeClick()) {
+            if (player != null && player.getVehicle() instanceof PowerArmorEntity armor && armor.getVariant() == ArmorVariant.WORKER) {
+                PacketDistributor.sendToServer(MiningModePayload.INSTANCE);
+            }
+        }
         boolean down = player != null && player.getVehicle() instanceof PowerArmorEntity && HATCH_KEY.isDown();
         if (down != hatchKeyWasDown) {
             hatchKeyWasDown = down;
@@ -152,6 +163,10 @@ public final class PowerArmorClient {
         } else {
             graphics.drawString(font, Component.translatable("hud.projectrebirth.armor.exit_hint",
                     minecraft.options.keyShift.getTranslatedKeyMessage()), x, y + 26, 0xAAAAAA);
+            if (armor.getVariant() == ArmorVariant.WORKER) {
+                graphics.drawString(font, Component.translatable(armor.isWideMining() ? "hud.projectrebirth.armor.mining_wide"
+                        : "hud.projectrebirth.armor.mining_single", MINING_KEY.getTranslatedKeyMessage()), x, y + 38, 0xFFD54F);
+            }
         }
     }
 

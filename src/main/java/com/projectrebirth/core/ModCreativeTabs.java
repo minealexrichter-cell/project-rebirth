@@ -4,6 +4,7 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyItems;
 import com.projectrebirth.factions.FactionBlocks;
+import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.Station;
@@ -51,7 +52,9 @@ public final class ModCreativeTabs {
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }
-                output.accept(PowerArmorRegistry.POWER_ARMOR_ITEM.get());
+                for (ArmorVariant variant : ArmorVariant.values()) {
+                    output.accept(PowerArmorRegistry.item(variant));
+                }
                 output.accept(PowerArmorRegistry.ARMOR_PLATE.get());
                 output.accept(PowerArmorRegistry.REPAIR_WRENCH.get());
                 output.accept(PowerArmorRegistry.RESCUE_TOOL.get());

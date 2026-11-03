@@ -65,6 +65,6 @@ public final class PowerArmorEvents {
     @SubscribeEvent
     static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         Player player = event.getEntity();
-        PowerArmorEntity.setPilotBonuses(player, player.getVehicle() instanceof PowerArmorEntity);
+        PowerArmorEntity.setPilotBonuses(player, player.getVehicle() instanceof PowerArmorEntity armor ? armor.getVariant() : null);
     }
 }

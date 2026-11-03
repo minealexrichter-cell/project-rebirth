@@ -17,8 +17,15 @@ import net.minecraft.world.level.gameevent.GameEvent;
 
 /** A packed-up power armor. Right-clicking a block places it there, keeping its stored damage. */
 public class PowerArmorItem extends Item {
-    public PowerArmorItem(Properties properties) {
+    private final ArmorVariant variant;
+
+    public PowerArmorItem(ArmorVariant variant, Properties properties) {
         super(properties);
+        this.variant = variant;
+    }
+
+    public ArmorVariant variant() {
+        return variant;
     }
 
     @Override
@@ -36,6 +43,7 @@ public class PowerArmorItem extends Item {
         }
         Player player = context.getPlayer();
         float yaw = player != null ? Mth.wrapDegrees(player.getYRot() + 180.0f) : 0.0f;
+        armor.setVariant(variant);
         armor.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, yaw, 0.0f);
         armor.setYHeadRot(yaw);
         armor.setYBodyRot(yaw);
@@ -70,6 +78,7 @@ public class PowerArmorItem extends Item {
         if (critical != null) {
             tooltip.add(Component.translatable("tooltip.projectrebirth.armor.critical", Mth.ceil(critical)).withStyle(ChatFormatting.GOLD));
         }
+        tooltip.add(Component.translatable(variant.translationKey() + ".description").withStyle(ChatFormatting.BLUE));
         tooltip.add(Component.translatable("tooltip.projectrebirth.armor.hint").withStyle(ChatFormatting.GRAY));
     }
 }

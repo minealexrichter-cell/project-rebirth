@@ -87,9 +87,9 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
         switch (Maintenance.kind(stack)) {
             case ARMOR -> {
                 bar(graphics, BAR_Y, Component.translatable("hud.projectrebirth.armor.structural"),
-                        Maintenance.armorStructural(stack), Maintenance.maxStructural(), 0xFF4FC3F7);
+                        Maintenance.armorStructural(stack), Maintenance.maxStructural(stack), 0xFF4FC3F7);
                 bar(graphics, BAR_Y + 10, Component.translatable("hud.projectrebirth.armor.critical"),
-                        Maintenance.armorCritical(stack), Maintenance.maxCritical(), 0xFFFFA726);
+                        Maintenance.armorCritical(stack), Maintenance.maxCritical(stack), 0xFFFFA726);
             }
             case ROBOT_BODY, SYNTHETIC_BODY -> bar(graphics, BAR_Y, Component.translatable("screen.projectrebirth.maintenance.integrity"),
                     Maintenance.bodyIntegrity(stack), Maintenance.maxBodyIntegrity(stack), 0xFF66BB6A);
@@ -122,8 +122,8 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
 
     /** Names exactly the missing armor material: plates for critical, iron for structural, or both. */
     private String armorNeed(ItemStack stack) {
-        boolean plates = Maintenance.armorCritical(stack) < Maintenance.maxCritical() && !menu.hasMaterial(PowerArmorRegistry.ARMOR_PLATE.get());
-        boolean iron = Maintenance.armorStructural(stack) < Maintenance.maxStructural() && !menu.hasMaterial(Items.IRON_INGOT);
+        boolean plates = Maintenance.armorCritical(stack) < Maintenance.maxCritical(stack) && !menu.hasMaterial(PowerArmorRegistry.ARMOR_PLATE.get());
+        boolean iron = Maintenance.armorStructural(stack) < Maintenance.maxStructural(stack) && !menu.hasMaterial(Items.IRON_INGOT);
         return plates && iron ? "screen.projectrebirth.maintenance.need_armor"
                 : plates ? "screen.projectrebirth.maintenance.need_plates" : "screen.projectrebirth.maintenance.need_iron";
     }

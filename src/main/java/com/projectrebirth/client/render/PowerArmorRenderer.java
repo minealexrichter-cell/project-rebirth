@@ -3,6 +3,7 @@ package com.projectrebirth.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 
 import net.minecraft.client.Minecraft;
@@ -26,6 +27,12 @@ import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
  */
 public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
     private static final ResourceLocation WRECK_TEXTURE = ProjectRebirth.id("textures/entity/power_armor_wrecked.png");
+
+    /** One texture per variant on the same model; a wreck looks the same for every variant. */
+    public static ResourceLocation texture(ArmorVariant variant) {
+        return variant == ArmorVariant.COMBAT ? ProjectRebirth.id("textures/entity/power_armor.png")
+                : ProjectRebirth.id("textures/entity/power_armor_" + variant.id() + ".png");
+    }
     private static final String RIGHT_HAND = "right_hand";
     private static final String LEFT_HAND = "left_hand";
 
@@ -37,7 +44,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(PowerArmorEntity armor) {
-        return armor.isWrecked() ? WRECK_TEXTURE : super.getTextureLocation(armor);
+        return armor.isWrecked() ? WRECK_TEXTURE : texture(armor.getVariant());
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.projectrebirth.gametest;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 
@@ -57,11 +58,11 @@ public class PowerArmorGameTests {
     }
 
     private static float maxStructural() {
-        return RebirthConfig.ARMOR_MAX_STRUCTURAL.get().floatValue();
+        return RebirthConfig.armorStats(ArmorVariant.COMBAT).maxStructural().get().floatValue();
     }
 
     private static float maxCritical() {
-        return RebirthConfig.ARMOR_MAX_CRITICAL.get().floatValue();
+        return RebirthConfig.armorStats(ArmorVariant.COMBAT).maxCritical().get().floatValue();
     }
 
     @GameTest(template = TEMPLATE)
@@ -75,7 +76,7 @@ public class PowerArmorGameTests {
         near(helper, "structural", maxStructural() - 6.0f, armor.getStructural());
         near(helper, "pilot entity reach", 3.0f + RebirthConfig.ARMOR_PILOT_ENTITY_REACH_BONUS.get().floatValue(),
                 (float) pilot.getAttributeValue(Attributes.ENTITY_INTERACTION_RANGE));
-        near(helper, "pilot attack damage", 1.0f + RebirthConfig.ARMOR_PILOT_ATTACK_BONUS.get().floatValue(),
+        near(helper, "pilot attack damage", 1.0f + RebirthConfig.armorStats(ArmorVariant.COMBAT).pilotAttackDamageBonus().get().floatValue(),
                 (float) pilot.getAttributeValue(Attributes.ATTACK_DAMAGE));
 
         pilot.stopRiding();

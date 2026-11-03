@@ -198,11 +198,11 @@ public class TechGameTests {
     @GameTest(template = TEMPLATE, timeoutTicks = 600)
     public static void maintenanceRepairsArmorCriticalAndStructural(GameTestHelper helper) {
         MaintenanceBlockEntity station = placeMaintenance(helper);
-        float maxStructural = Maintenance.maxStructural();
-        float maxCritical = Maintenance.maxCritical();
         float perIngot = RebirthConfig.ARMOR_REPAIR_STRUCTURAL_PER_INGOT.get().floatValue();
         float perPlate = RebirthConfig.ARMOR_REPAIR_CRITICAL_PER_PLATE.get().floatValue();
         ItemStack armor = new ItemStack(PowerArmorRegistry.POWER_ARMOR_ITEM.get());
+        float maxStructural = Maintenance.maxStructural(armor);
+        float maxCritical = Maintenance.maxCritical(armor);
         armor.set(PowerArmorRegistry.STORED_STRUCTURAL.get(), maxStructural - 3 * perIngot);
         armor.set(PowerArmorRegistry.STORED_CRITICAL.get(), maxCritical - 2 * perPlate);
         station.items().setStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT, armor);

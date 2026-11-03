@@ -3,6 +3,7 @@ package com.projectrebirth.technology;
 import com.projectrebirth.bodies.ArtificialBodyItem;
 import com.projectrebirth.bodies.BodyComponents;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorItem;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 
@@ -34,20 +35,25 @@ public final class Maintenance {
 
     public static float armorStructural(ItemStack stack) {
         Float value = stack.get(PowerArmorRegistry.STORED_STRUCTURAL.get());
-        return value != null ? value : maxStructural();
+        return value != null ? value : maxStructural(stack);
     }
 
     public static float armorCritical(ItemStack stack) {
         Float value = stack.get(PowerArmorRegistry.STORED_CRITICAL.get());
-        return value != null ? value : maxCritical();
+        return value != null ? value : maxCritical(stack);
     }
 
-    public static float maxStructural() {
-        return RebirthConfig.ARMOR_MAX_STRUCTURAL.get().floatValue();
+    /** Maximum structural integrity of a packed armor, by its variant. */
+    public static float maxStructural(ItemStack stack) {
+        return RebirthConfig.armorStats(variant(stack)).maxStructural().get().floatValue();
     }
 
-    public static float maxCritical() {
-        return RebirthConfig.ARMOR_MAX_CRITICAL.get().floatValue();
+    public static float maxCritical(ItemStack stack) {
+        return RebirthConfig.armorStats(variant(stack)).maxCritical().get().floatValue();
+    }
+
+    private static ArmorVariant variant(ItemStack stack) {
+        return stack.getItem() instanceof PowerArmorItem armor ? armor.variant() : ArmorVariant.COMBAT;
     }
 
     public static float bodyIntegrity(ItemStack stack) {
@@ -62,7 +68,7 @@ public final class Maintenance {
 
     public static boolean needsRepair(ItemStack stack) {
         return switch (kind(stack)) {
-            case ARMOR -> armorCritical(stack) < maxCritical() || armorStructural(stack) < maxStructural();
+            case ARMOR -> armorCritical(stack) < maxCritical(stack) || armorStructural(stack) < maxStructural(stack);
             case ROBOT_BODY, SYNTHETIC_BODY -> bodyIntegrity(stack) < maxBodyIntegrity(stack);
             case NONE -> false;
         };
@@ -75,10 +81,10 @@ public final class Maintenance {
     public static Item materialFor(ItemStack stack, MaterialSource materials) {
         switch (kind(stack)) {
             case ARMOR -> {
-                if (armorCritical(stack) < maxCritical() && materials.has(PowerArmorRegistry.ARMOR_PLATE.get())) {
+                if (armorCritical(stack) < maxCritical(stack) && materials.has(PowerArmorRegistry.ARMOR_PLATE.get())) {
                     return PowerArmorRegistry.ARMOR_PLATE.get();
                 }
-                if (armorStructural(stack) < maxStructural() && materials.has(Items.IRON_INGOT)) {
+                if (armorStructural(stack) < maxStructural(stack) && materials.has(Items.IRON_INGOT)) {
                     return Items.IRON_INGOT;
                 }
                 return null;
@@ -101,11 +107,11 @@ public final class Maintenance {
             float structural = armorStructural(stack);
             float critical = armorCritical(stack);
             if (material == PowerArmorRegistry.ARMOR_PLATE.get()) {
-                critical = Math.min(maxCritical(), critical + RebirthConfig.ARMOR_REPAIR_CRITICAL_PER_PLATE.get().floatValue());
+                critical = Math.min(maxCritical(stack), critical + RebirthConfig.ARMOR_REPAIR_CRITICAL_PER_PLATE.get().floatValue());
             } else {
-                structural = Math.min(maxStructural(), structural + RebirthConfig.ARMOR_REPAIR_STRUCTURAL_PER_INGOT.get().floatValue());
+                structural = Math.min(maxStructural(stack), structural + RebirthConfig.ARMOR_REPAIR_STRUCTURAL_PER_INGOT.get().floatValue());
             }
-            if (structural >= maxStructural() && critical >= maxCritical()) {
+            if (structural >= maxStructural(stack) && critical >= maxCritical(stack)) {
                 stack.remove(PowerArmorRegistry.STORED_STRUCTURAL.get());
                 stack.remove(PowerArmorRegistry.STORED_CRITICAL.get());
             } else {

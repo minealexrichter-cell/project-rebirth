@@ -1,5 +1,8 @@
 package com.projectrebirth.powerarmor;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.mojang.serialization.Codec;
 import com.projectrebirth.ProjectRebirth;
 
@@ -34,8 +37,16 @@ public final class PowerArmorRegistry {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> STORED_CRITICAL = COMPONENTS.registerComponentType(
             "stored_critical", builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
 
-    public static final DeferredItem<PowerArmorItem> POWER_ARMOR_ITEM = ITEMS.register("power_armor",
-            () -> new PowerArmorItem(new Item.Properties().stacksTo(1)));
+    /** One item per armor variant; the combat armor keeps the 0.1.0 id "power_armor". */
+    private static final Map<ArmorVariant, DeferredItem<PowerArmorItem>> ARMOR_ITEMS = new EnumMap<>(ArmorVariant.class);
+
+    static {
+        for (ArmorVariant variant : ArmorVariant.values()) {
+            ARMOR_ITEMS.put(variant, ITEMS.register(variant.itemId(), () -> new PowerArmorItem(variant, new Item.Properties().stacksTo(1))));
+        }
+    }
+
+    public static final DeferredItem<PowerArmorItem> POWER_ARMOR_ITEM = ARMOR_ITEMS.get(ArmorVariant.COMBAT);
     /** Repairs armor (iron ingots for structural, armor plates for critical) and dismantles wrecks. */
     public static final DeferredItem<Item> REPAIR_WRENCH = ITEMS.register("repair_wrench",
             () -> new Item(new Item.Properties().durability(256)));
@@ -46,6 +57,10 @@ public final class PowerArmorRegistry {
     public static final DeferredItem<Item> ARMOR_PLATE = ITEMS.registerSimpleItem("armor_plate");
 
     private PowerArmorRegistry() {
+    }
+
+    public static PowerArmorItem item(ArmorVariant variant) {
+        return ARMOR_ITEMS.get(variant).get();
     }
 
     public static void register(IEventBus modEventBus) {

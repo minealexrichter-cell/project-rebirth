@@ -2,7 +2,7 @@ package com.projectrebirth.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.powerarmor.ArmorVariant;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -22,7 +22,6 @@ import net.minecraft.world.entity.HumanoidArm;
  * (same sizes and texture UVs), arranged like a player arm so that the vanilla first-person hand motion fits.
  */
 public class ArmorArmRenderer {
-    private static final ResourceLocation TEXTURE = ProjectRebirth.id("textures/entity/power_armor.png");
     /** The armor arm is almost twice as long as a player arm. */
     private static final float SCALE = 0.62f;
 
@@ -54,7 +53,7 @@ public class ArmorArmRenderer {
      * the arm is thrust forward, up and towards the crosshair, then pulled back.
      */
     public void render(PoseStack poseStack, MultiBufferSource buffers, int packedLight, float equipProgress, float swingProgress,
-                       HumanoidArm side) {
+                       HumanoidArm side, ArmorVariant variant) {
         boolean right = side != HumanoidArm.LEFT;
         float f = right ? 1.0f : -1.0f;
         // Fast thrust out, slower pull back.
@@ -72,7 +71,7 @@ public class ArmorArmRenderer {
         poseStack.scale(SCALE, SCALE, SCALE);
         ModelPart arm = right ? rightArm : leftArm;
         arm.xRot = 0.0f;
-        arm.render(poseStack, buffers.getBuffer(RenderType.entitySolid(TEXTURE)), packedLight, OverlayTexture.NO_OVERLAY);
+        arm.render(poseStack, buffers.getBuffer(RenderType.entitySolid(PowerArmorRenderer.texture(variant))), packedLight, OverlayTexture.NO_OVERLAY);
         poseStack.popPose();
     }
 }

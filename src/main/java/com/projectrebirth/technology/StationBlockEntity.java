@@ -41,6 +41,8 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
             setChanged();
         }
     };
+    private final AutomationHandler automation = new AutomationHandler(items,
+            (slot, stack) -> slot < INPUT_SLOTS, slot -> slot == OUTPUT_SLOT);
     @Nullable
     private ResourceLocation selected;
     private int progress;
@@ -76,6 +78,11 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
 
     public ItemStackHandler items() {
         return items;
+    }
+
+    /** For hoppers and pipes: materials go into the input slots, only the product comes out. */
+    public AutomationHandler automation() {
+        return automation;
     }
 
     /** Picks the recipe at the given index of the station's list; picking the selected one again clears it. */

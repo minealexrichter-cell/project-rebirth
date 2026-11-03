@@ -5,6 +5,8 @@ import com.projectrebirth.ProjectRebirth;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -28,5 +30,12 @@ public final class TechBlockEntities {
 
     public static void register(IEventBus modEventBus) {
         BLOCK_ENTITIES.register(modEventBus);
+        modEventBus.addListener(TechBlockEntities::registerCapabilities);
+    }
+
+    /** Hoppers, pipes and other mods' machines move items through the stations' automation handlers. */
+    private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STATION.get(), (station, side) -> station.automation());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MAINTENANCE.get(), (station, side) -> station.automation());
     }
 }

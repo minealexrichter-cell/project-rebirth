@@ -19,6 +19,7 @@ import com.projectrebirth.technology.TechItems;
 import com.projectrebirth.technology.TechRecipes;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -32,7 +33,11 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -254,6 +259,34 @@ public class TechGameTests {
                         == Math.min(Maintenance.maxBodyIntegrity(untouched), 5.0f + perItem), "Synthetic fiber must repair the synthetic body");
                 helper.succeed();
             });
+        });
+    }
+
+    /** A hopper on the side feeds the station's inputs; a hopper below takes only the product, never the materials. */
+    @GameTest(template = "floor_5x5", timeoutTicks = 400)
+    public static void hoppersFeedAndEmptyStations(GameTestHelper helper) {
+        BlockPos stationPos = new BlockPos(2, 3, 2);
+        helper.setBlock(stationPos, TechBlocks.STATIONS.get(Station.ELECTRONICS_FABRICATOR).get());
+        StationBlockEntity station = helper.getBlockEntity(stationPos);
+        helper.setBlock(new BlockPos(1, 3, 2), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.EAST));
+        helper.setBlock(new BlockPos(2, 2, 2), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.EAST));
+        helper.setBlock(new BlockPos(3, 2, 2), Blocks.CHEST);
+        HopperBlockEntity feeder = helper.getBlockEntity(new BlockPos(1, 3, 2));
+        feeder.setItem(0, new ItemStack(Items.COPPER_INGOT, 2));
+        feeder.setItem(1, new ItemStack(TechItems.INGOTS.get(Metal.SILVER).get(), 1));
+        feeder.setItem(2, new ItemStack(Items.REDSTONE, 2));
+        station.select(recipeIndex(helper, Station.ELECTRONICS_FABRICATOR, "circuit_board"));
+        helper.succeedWhen(() -> {
+            ChestBlockEntity chest = helper.getBlockEntity(new BlockPos(3, 2, 2));
+            int boards = 0;
+            for (int i = 0; i < chest.getContainerSize(); i++) {
+                if (chest.getItem(i).is(TechItems.CIRCUIT_BOARD.get())) {
+                    boards += chest.getItem(i).getCount();
+                }
+                helper.assertFalse(chest.getItem(i).is(Items.COPPER_INGOT) || chest.getItem(i).is(Items.REDSTONE),
+                        "Materials must not be pulled out of the station");
+            }
+            helper.assertTrue(boards == 2, "Expected 2 circuit boards in the chest, got " + boards);
         });
     }
 

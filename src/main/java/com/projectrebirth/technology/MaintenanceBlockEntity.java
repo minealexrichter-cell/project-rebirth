@@ -42,6 +42,9 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
             setChanged();
         }
     };
+    private final AutomationHandler automation = new AutomationHandler(items,
+            (slot, stack) -> slot != SERVICE_SLOT || Maintenance.needsRepair(stack),
+            slot -> slot == SERVICE_SLOT && !Maintenance.needsRepair(items.getStackInSlot(SERVICE_SLOT)));
     private int progress;
 
     private final ContainerData data = new ContainerData() {
@@ -66,6 +69,14 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
 
     public ItemStackHandler items() {
         return items;
+    }
+
+    /**
+     * For hoppers and pipes: the serviced item goes in only if it can be repaired and comes out only when fully
+     * repaired; materials only go in.
+     */
+    public AutomationHandler automation() {
+        return automation;
     }
 
     public static int stepTicks() {

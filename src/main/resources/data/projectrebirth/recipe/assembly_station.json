@@ -1,15 +1,12 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "pattern": [
-    "III",
-    "PTP",
-    "III"
-  ],
+  "pattern": ["AAA", "PTP", "III"],
   "key": {
-    "I": { "item": "minecraft:iron_ingot" },
+    "A": { "tag": "c:ingots/aluminum" },
     "P": { "item": "projectrebirth:circuit_board" },
-    "T": { "item": "minecraft:crafting_table" }
+    "T": { "item": "minecraft:crafting_table" },
+    "I": { "item": "minecraft:iron_ingot" }
   },
   "result": { "id": "projectrebirth:assembly_station", "count": 1 }
 }

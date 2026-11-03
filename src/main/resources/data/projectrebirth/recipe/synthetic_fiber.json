@@ -1,0 +1,11 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 20,
+  "time": 120,
+  "ingredients": [
+    { "item": "minecraft:string", "count": 4 },
+    { "item": "minecraft:slime_ball", "count": 1 }
+  ],
+  "result": { "id": "projectrebirth:synthetic_fiber", "count": 2 }
+}

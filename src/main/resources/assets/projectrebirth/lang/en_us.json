@@ -21,7 +21,6 @@
   "message.projectrebirth.body.no_space": "Not enough space to place the body",
   "message.projectrebirth.body.not_owner": "This body belongs to another player",
   "message.projectrebirth.body.cannot_eat": "An artificial body cannot eat",
-  "message.projectrebirth.assembly_station.offline": "The assembly station is not operational yet",
 
   "message.projectrebirth.transfer.success": "Consciousness transferred",
   "message.projectrebirth.transfer.already_in_body": "Return to your human body first",
@@ -106,5 +105,19 @@
   "block.projectrebirth.deepslate_titanium_ore": "Deepslate Titanium Ore",
   "item.projectrebirth.raw_titanium": "Raw Titanium",
   "item.projectrebirth.titanium_ingot": "Titanium Ingot",
-  "item.projectrebirth.bronze_ingot": "Bronze Ingot"
+  "item.projectrebirth.bronze_ingot": "Bronze Ingot",
+  "block.projectrebirth.electronics_fabricator": "Electronics Fabricator",
+  "block.projectrebirth.armor_workstation": "Armor Workstation",
+  "item.projectrebirth.processor": "Processor",
+  "item.projectrebirth.power_cell": "Power Cell",
+  "item.projectrebirth.actuator": "Actuator",
+  "item.projectrebirth.synthetic_fiber": "Synthetic Fiber",
+  "screen.projectrebirth.station.select": "Select a recipe above",
+  "screen.projectrebirth.station.missing": "Not enough materials",
+  "screen.projectrebirth.station.output_full": "Output is full",
+  "screen.projectrebirth.station.working": "Working: %s%%",
+  "screen.projectrebirth.station.needs": "Needs:",
+  "screen.projectrebirth.station.ingredient": "%s × %s",
+  "screen.projectrebirth.station.time": "Time: %s s",
+  "screen.projectrebirth.station.remaining": "Remaining: %s s"
 }

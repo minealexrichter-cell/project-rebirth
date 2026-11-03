@@ -21,7 +21,6 @@
   "message.projectrebirth.body.no_space": "Недостаточно места, чтобы поставить тело",
   "message.projectrebirth.body.not_owner": "Это тело принадлежит другому игроку",
   "message.projectrebirth.body.cannot_eat": "Искусственное тело не может есть",
-  "message.projectrebirth.assembly_station.offline": "Сборочная станция пока не работает",
 
   "message.projectrebirth.transfer.success": "Сознание перенесено",
   "message.projectrebirth.transfer.already_in_body": "Сначала вернитесь в своё человеческое тело",
@@ -106,5 +105,19 @@
   "block.projectrebirth.deepslate_titanium_ore": "Глубинносланцевая титановая руда",
   "item.projectrebirth.raw_titanium": "Рудный титан",
   "item.projectrebirth.titanium_ingot": "Титановый слиток",
-  "item.projectrebirth.bronze_ingot": "Бронзовый слиток"
+  "item.projectrebirth.bronze_ingot": "Бронзовый слиток",
+  "block.projectrebirth.electronics_fabricator": "Цех электроники",
+  "block.projectrebirth.armor_workstation": "Станция брони",
+  "item.projectrebirth.processor": "Процессор",
+  "item.projectrebirth.power_cell": "Энергоячейка",
+  "item.projectrebirth.actuator": "Привод",
+  "item.projectrebirth.synthetic_fiber": "Синтетическая ткань",
+  "screen.projectrebirth.station.select": "Выберите рецепт выше",
+  "screen.projectrebirth.station.missing": "Не хватает материалов",
+  "screen.projectrebirth.station.output_full": "Выход заполнен",
+  "screen.projectrebirth.station.working": "Производство: %s%%",
+  "screen.projectrebirth.station.needs": "Нужно:",
+  "screen.projectrebirth.station.ingredient": "%s × %s",
+  "screen.projectrebirth.station.time": "Время: %s с",
+  "screen.projectrebirth.station.remaining": "Осталось: %s с"
 }

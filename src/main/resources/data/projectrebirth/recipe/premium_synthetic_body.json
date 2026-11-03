@@ -1,7 +1,15 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "pattern": ["SPS", "NBN", "SPS"],
-  "key": { "S": { "item": "minecraft:echo_shard" }, "P": { "item": "projectrebirth:circuit_board" }, "N": { "item": "minecraft:netherite_ingot" }, "B": { "item": "projectrebirth:hightech_synthetic_body" } },
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 80,
+  "time": 800,
+  "ingredients": [
+    { "item": "projectrebirth:hightech_synthetic_body", "count": 1 },
+    { "tag": "c:ingots/titanium", "count": 6 },
+    { "item": "projectrebirth:processor", "count": 3 },
+    { "item": "projectrebirth:power_cell", "count": 2 },
+    { "item": "minecraft:netherite_ingot", "count": 1 },
+    { "item": "minecraft:echo_shard", "count": 2 }
+  ],
   "result": { "id": "projectrebirth:premium_synthetic_body", "count": 1 }
 }

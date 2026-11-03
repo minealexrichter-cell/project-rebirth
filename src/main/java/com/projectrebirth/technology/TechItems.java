@@ -17,7 +17,16 @@ public final class TechItems {
     /** Basic electronic component used in bodies and machines. */
     public static final DeferredItem<Item> CIRCUIT_BOARD = ITEMS.registerSimpleItem("circuit_board");
 
-    public static final DeferredItem<BlockItem> ASSEMBLY_STATION = ITEMS.registerSimpleBlockItem(TechBlocks.ASSEMBLY_STATION);
+    /** Second-tier electronics: needed by synthetic bodies and the power armor. */
+    public static final DeferredItem<Item> PROCESSOR = ITEMS.registerSimpleItem("processor");
+    /** Lithium energy cell: power armor and high-end bodies. */
+    public static final DeferredItem<Item> POWER_CELL = ITEMS.registerSimpleItem("power_cell");
+    /** Bronze actuator that moves the limbs of bodies and armor. */
+    public static final DeferredItem<Item> ACTUATOR = ITEMS.registerSimpleItem("actuator");
+    /** Synthetic tissue covering synthetic bodies. */
+    public static final DeferredItem<Item> SYNTHETIC_FIBER = ITEMS.registerSimpleItem("synthetic_fiber");
+
+    public static final Map<Station, DeferredItem<BlockItem>> STATIONS = new EnumMap<>(Station.class);
 
     public static final Map<Metal, DeferredItem<BlockItem>> ORES = new EnumMap<>(Metal.class);
     public static final Map<Metal, DeferredItem<BlockItem>> DEEPSLATE_ORES = new EnumMap<>(Metal.class);
@@ -25,6 +34,9 @@ public final class TechItems {
     public static final Map<Metal, DeferredItem<Item>> INGOTS = new EnumMap<>(Metal.class);
 
     static {
+        for (Station station : Station.values()) {
+            STATIONS.put(station, ITEMS.registerSimpleBlockItem(TechBlocks.STATIONS.get(station)));
+        }
         for (Metal metal : Metal.values()) {
             ORES.put(metal, ITEMS.registerSimpleBlockItem(TechBlocks.ORES.get(metal)));
             DEEPSLATE_ORES.put(metal, ITEMS.registerSimpleBlockItem(TechBlocks.DEEPSLATE_ORES.get(metal)));

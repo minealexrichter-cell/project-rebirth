@@ -1,0 +1,13 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 30,
+  "time": 160,
+  "ingredients": [
+    { "tag": "c:ingots/lithium", "count": 2 },
+    { "tag": "c:ingots/aluminum", "count": 1 },
+    { "item": "minecraft:copper_ingot", "count": 1 },
+    { "item": "minecraft:redstone", "count": 2 }
+  ],
+  "result": { "id": "projectrebirth:power_cell", "count": 1 }
+}

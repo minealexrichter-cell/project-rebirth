@@ -1,6 +1,8 @@
 {
   "values": [
     "projectrebirth:assembly_station",
+    "projectrebirth:electronics_fabricator",
+    "projectrebirth:armor_workstation",
     "projectrebirth:transfer_capsule",
     "projectrebirth:tin_ore",
     "projectrebirth:deepslate_tin_ore",

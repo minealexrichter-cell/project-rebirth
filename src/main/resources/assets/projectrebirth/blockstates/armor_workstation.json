@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "projectrebirth:block/armor_workstation" },
+    "facing=east": { "model": "projectrebirth:block/armor_workstation", "y": 90 },
+    "facing=south": { "model": "projectrebirth:block/armor_workstation", "y": 180 },
+    "facing=west": { "model": "projectrebirth:block/armor_workstation", "y": 270 }
+  }
+}

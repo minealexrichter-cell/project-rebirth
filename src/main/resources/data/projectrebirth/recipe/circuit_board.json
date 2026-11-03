@@ -1,14 +1,12 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "pattern": [
-    "RGR",
-    "CCC"
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 10,
+  "time": 100,
+  "ingredients": [
+    { "item": "minecraft:copper_ingot", "count": 2 },
+    { "tag": "c:ingots/silver", "count": 1 },
+    { "item": "minecraft:redstone", "count": 2 }
   ],
-  "key": {
-    "R": { "item": "minecraft:redstone" },
-    "G": { "item": "minecraft:gold_nugget" },
-    "C": { "item": "minecraft:copper_ingot" }
-  },
-  "result": { "id": "projectrebirth:circuit_board", "count": 1 }
+  "result": { "id": "projectrebirth:circuit_board", "count": 2 }
 }

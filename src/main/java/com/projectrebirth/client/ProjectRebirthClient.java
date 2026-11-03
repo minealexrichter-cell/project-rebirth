@@ -15,6 +15,8 @@ import com.projectrebirth.client.render.ArtificialBodyRenderer;
 import com.projectrebirth.client.render.BodyArmRenderer;
 import com.projectrebirth.client.render.HumanShellRenderer;
 import com.projectrebirth.client.render.PossessedPlayerRenderer;
+import com.projectrebirth.client.screen.StationScreen;
+import com.projectrebirth.technology.TechMenus;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
@@ -32,6 +34,7 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RenderArmEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
@@ -55,10 +58,15 @@ public class ProjectRebirthClient {
         modEventBus.addListener(this::createPossessedRenderers);
         modEventBus.addListener(this::registerKeys);
         modEventBus.addListener(this::registerGuiLayers);
+        modEventBus.addListener(this::registerScreens);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderPlayer);
         NeoForge.EVENT_BUS.addListener(this::onRenderArm);
         PowerArmorClient.register(modEventBus);
+    }
+
+    private void registerScreens(RegisterMenuScreensEvent event) {
+        event.register(TechMenus.STATION.get(), StationScreen::new);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {

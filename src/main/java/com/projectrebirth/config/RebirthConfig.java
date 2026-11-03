@@ -43,6 +43,8 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_IRON;
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_PLATES;
 
+    public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
@@ -152,6 +154,13 @@ public final class RebirthConfig {
             builder.pop();
             BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack));
         }
+        builder.pop();
+
+        builder.comment("Production stations. Ingredients, results and base times of each recipe are data files",
+                "(data/projectrebirth/recipe, type projectrebirth:fabrication) and can be changed with a data pack.").push("production");
+        PRODUCTION_TIME_MULTIPLIER = builder
+                .comment("Multiplier for the production time of every station recipe (0.5 = twice as fast)")
+                .defineInRange("timeMultiplier", 1.0, 0.01, 100.0);
         builder.pop();
         SERVER_SPEC = builder.build();
     }

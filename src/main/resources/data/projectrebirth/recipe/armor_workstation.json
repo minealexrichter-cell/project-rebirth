@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["TTT", "XAX", "III"],
+  "key": {
+    "T": { "tag": "c:ingots/titanium" },
+    "X": { "item": "projectrebirth:actuator" },
+    "A": { "item": "minecraft:anvil" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": { "id": "projectrebirth:armor_workstation", "count": 1 }
+}

@@ -17,19 +17,21 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class TechBlocks {
     private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ProjectRebirth.MOD_ID);
 
-    public static final DeferredBlock<AssemblyStationBlock> ASSEMBLY_STATION = BLOCKS.registerBlock("assembly_station",
-            AssemblyStationBlock::new,
-            BlockBehaviour.Properties.of()
-                    .mapColor(MapColor.METAL)
-                    .strength(3.5f, 6.0f)
-                    .sound(SoundType.METAL)
-                    .requiresCorrectToolForDrops());
+    /** Production stations, one block per {@link Station}, registered under the station's id. */
+    public static final Map<Station, DeferredBlock<StationBlock>> STATIONS = new EnumMap<>(Station.class);
 
     /** Stone and deepslate ores; same hardness as the vanilla ores. */
     public static final Map<Metal, DeferredBlock<Block>> ORES = new EnumMap<>(Metal.class);
     public static final Map<Metal, DeferredBlock<Block>> DEEPSLATE_ORES = new EnumMap<>(Metal.class);
 
     static {
+        for (Station station : Station.values()) {
+            STATIONS.put(station, BLOCKS.register(station.id(), () -> new StationBlock(station, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops())));
+        }
         for (Metal metal : Metal.values()) {
             ORES.put(metal, BLOCKS.registerSimpleBlock(metal.id() + "_ore", BlockBehaviour.Properties.of()
                     .mapColor(MapColor.STONE)

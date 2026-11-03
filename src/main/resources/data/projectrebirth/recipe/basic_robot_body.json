@@ -1,15 +1,12 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "pattern": [
-    " P ",
-    "IRI",
-    "I I"
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 40,
+  "time": 300,
+  "ingredients": [
+    { "item": "minecraft:iron_ingot", "count": 6 },
+    { "item": "projectrebirth:actuator", "count": 2 },
+    { "item": "projectrebirth:circuit_board", "count": 1 }
   ],
-  "key": {
-    "P": { "item": "projectrebirth:circuit_board" },
-    "I": { "item": "minecraft:iron_ingot" },
-    "R": { "item": "minecraft:redstone_block" }
-  },
   "result": { "id": "projectrebirth:basic_robot_body", "count": 1 }
 }

@@ -1,0 +1,12 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 10,
+  "time": 100,
+  "ingredients": [
+    { "tag": "c:ingots/bronze", "count": 2 },
+    { "item": "minecraft:iron_ingot", "count": 1 },
+    { "item": "minecraft:redstone", "count": 1 }
+  ],
+  "result": { "id": "projectrebirth:actuator", "count": 1 }
+}

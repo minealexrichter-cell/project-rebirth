@@ -5,6 +5,7 @@ import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyItems;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.Metal;
+import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.TechItems;
 
 import net.minecraft.core.registries.Registries;
@@ -30,8 +31,14 @@ public final class ModCreativeTabs {
                     output.accept(TechItems.INGOTS.get(metal).get());
                 }
                 output.accept(TechItems.BRONZE_INGOT.get());
+                for (Station station : Station.values()) {
+                    output.accept(TechItems.STATIONS.get(station).get());
+                }
                 output.accept(TechItems.CIRCUIT_BOARD.get());
-                output.accept(TechItems.ASSEMBLY_STATION.get());
+                output.accept(TechItems.PROCESSOR.get());
+                output.accept(TechItems.POWER_CELL.get());
+                output.accept(TechItems.ACTUATOR.get());
+                output.accept(TechItems.SYNTHETIC_FIBER.get());
                 output.accept(BodyItems.TRANSFER_CAPSULE.get());
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));

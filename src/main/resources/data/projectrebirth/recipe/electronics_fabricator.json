@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["IGI", "BRB", "IBI"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "G": { "item": "minecraft:glass" },
+    "B": { "tag": "c:ingots/bronze" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": { "id": "projectrebirth:electronics_fabricator", "count": 1 }
+}

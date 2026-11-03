@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "projectrebirth:block/armor_workstation_top",
+    "front": "projectrebirth:block/armor_workstation_front",
+    "side": "projectrebirth:block/armor_workstation_side"
+  }
+}

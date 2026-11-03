@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "projectrebirth:block/electronics_fabricator" },
+    "facing=east": { "model": "projectrebirth:block/electronics_fabricator", "y": 90 },
+    "facing=south": { "model": "projectrebirth:block/electronics_fabricator", "y": 180 },
+    "facing=west": { "model": "projectrebirth:block/electronics_fabricator", "y": 270 }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 20,
+  "time": 200,
+  "ingredients": [
+    { "item": "projectrebirth:circuit_board", "count": 2 },
+    { "tag": "c:ingots/silver", "count": 2 },
+    { "item": "minecraft:quartz", "count": 2 },
+    { "item": "minecraft:gold_ingot", "count": 1 }
+  ],
+  "result": { "id": "projectrebirth:processor", "count": 1 }
+}

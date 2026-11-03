@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "projectrebirth:block/electronics_fabricator_top",
+    "front": "projectrebirth:block/electronics_fabricator_front",
+    "side": "projectrebirth:block/electronics_fabricator_side"
+  }
+}

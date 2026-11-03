@@ -14,8 +14,11 @@ import com.projectrebirth.core.ModCreativeTabs;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
+import com.projectrebirth.technology.TechBlockEntities;
 import com.projectrebirth.technology.TechBlocks;
 import com.projectrebirth.technology.TechItems;
+import com.projectrebirth.technology.TechMenus;
+import com.projectrebirth.technology.TechRecipes;
 
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -36,6 +39,9 @@ public class ProjectRebirth {
     public ProjectRebirth(IEventBus modEventBus, ModContainer modContainer) {
         TechBlocks.register(modEventBus);
         TechItems.register(modEventBus);
+        TechBlockEntities.register(modEventBus);
+        TechMenus.register(modEventBus);
+        TechRecipes.register(modEventBus);
         BodyBlocks.register(modEventBus);
         BodyComponents.register(modEventBus);
         BodyAttachments.register(modEventBus);

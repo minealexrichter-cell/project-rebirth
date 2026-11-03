@@ -51,6 +51,8 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue FACTION_MAX_MEMBERS;
     public static final ModConfigSpec.IntValue FACTION_CORE_RADIUS;
     public static final ModConfigSpec.IntValue FACTION_MAX_CORES;
+    public static final ModConfigSpec.IntValue FACTION_WAR_PREPARATION_MINUTES;
+    public static final ModConfigSpec.IntValue FACTION_WAR_MAX_HOURS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -196,6 +198,12 @@ public final class RebirthConfig {
         FACTION_MAX_CORES = builder
                 .comment("How many cores (territories) one faction may have")
                 .defineInRange("maxCores", 1, 1, 64);
+        FACTION_WAR_PREPARATION_MINUTES = builder
+                .comment("Real-time minutes between a war declaration and the start of the raid rules (doors and the core of the enemy)")
+                .defineInRange("warPreparationMinutes", 10, 0, 10080);
+        FACTION_WAR_MAX_HOURS = builder
+                .comment("A war ends by itself after this many real-time hours if no peace is made")
+                .defineInRange("warMaxHours", 72, 1, 8760);
         builder.pop();
         SERVER_SPEC = builder.build();
     }

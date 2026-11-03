@@ -67,6 +67,7 @@ public class FactionData extends SavedData {
             other.allies().remove(faction.id());
             other.enemies().remove(faction.id());
             other.allyRequests().remove(faction.id());
+            other.peaceOffers().remove(faction.id());
         }
         setDirty();
     }
@@ -117,6 +118,11 @@ public class FactionData extends SavedData {
                 data.factions.put(faction.id(), faction);
                 faction.members().keySet().forEach(member -> data.byMember.put(member, faction.id()));
             }
+        }
+        // a war is always on both sides (earlier saves kept it one-sided); wars with removed factions are dropped
+        for (Faction faction : data.factions.values()) {
+            faction.enemies().removeIf(other -> !data.factions.containsKey(other));
+            faction.warStarts().forEach((other, start) -> data.factions.get(other).warStarts().putIfAbsent(faction.id(), start));
         }
         return data;
     }

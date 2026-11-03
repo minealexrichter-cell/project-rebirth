@@ -34,7 +34,8 @@ public final class FactionSync {
     }
 
     /** Full state for one player: all factions plus the invitations addressed to this player. */
-    public record StatePayload(List<FactionView> factions, List<UUID> invites, boolean friendlyFireLocked, int coreRadius)
+    public record StatePayload(List<FactionView> factions, List<UUID> invites, boolean friendlyFireLocked, int coreRadius,
+                               long serverTime, long warPreparation)
             implements CustomPacketPayload {
         public static final Type<StatePayload> TYPE = new Type<>(ProjectRebirth.id("faction_state"));
         public static final StreamCodec<ByteBuf, StatePayload> STREAM_CODEC = StreamCodec.composite(
@@ -42,6 +43,8 @@ public final class FactionSync {
                 UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list()), StatePayload::invites,
                 ByteBufCodecs.BOOL, StatePayload::friendlyFireLocked,
                 ByteBufCodecs.VAR_INT, StatePayload::coreRadius,
+                ByteBufCodecs.VAR_LONG, StatePayload::serverTime,
+                ByteBufCodecs.VAR_LONG, StatePayload::warPreparation,
                 StatePayload::new);
 
         @Override
@@ -69,7 +72,7 @@ public final class FactionSync {
      */
     public enum Action {
         CREATE, INVITE, ACCEPT, DECLINE, LEAVE, KICK, PROMOTE, SET_COLOR, SET_FRIENDLY_FIRE, SET_ROLE,
-        PROPOSE_ALLIANCE, ACCEPT_ALLIANCE, BREAK_ALLIANCE, DECLARE_WAR, MAKE_PEACE
+        PROPOSE_ALLIANCE, ACCEPT_ALLIANCE, BREAK_ALLIANCE, DECLARE_WAR, OFFER_PEACE
     }
 
     public record ActionPayload(Action action, String arg, int color) implements CustomPacketPayload {
@@ -100,7 +103,7 @@ public final class FactionSync {
 
     private static void onState(StatePayload payload, IPayloadContext context) {
         ClientFactionCache.update(payload.factions(), payload.invites(), payload.friendlyFireLocked(), payload.coreRadius(),
-                context.player().getUUID());
+                context.player().getUUID(), payload.serverTime(), payload.warPreparation());
         // names above heads and in chat include the faction tag
         context.player().level().players().forEach(Player::refreshDisplayName);
     }
@@ -124,7 +127,7 @@ public final class FactionSync {
             case ACCEPT_ALLIANCE -> withUuid(payload.arg(), id -> FactionService.acceptAlliance(player, id));
             case BREAK_ALLIANCE -> withUuid(payload.arg(), id -> FactionService.breakAlliance(player, id));
             case DECLARE_WAR -> withUuid(payload.arg(), id -> FactionService.declareEnemy(player, id));
-            case MAKE_PEACE -> withUuid(payload.arg(), id -> FactionService.makePeace(player, id));
+            case OFFER_PEACE -> withUuid(payload.arg(), id -> FactionService.offerPeace(player, id));
         };
         PacketDistributor.sendToPlayer(player, new ResultPayload(result.message(), result.success()));
         player.sendSystemMessage(result.message());
@@ -156,7 +159,7 @@ public final class FactionSync {
                 .toList();
         PacketDistributor.sendToPlayer(player,
                 new StatePayload(views, invites, !RebirthConfig.FACTION_LEADER_CAN_TOGGLE_FRIENDLY_FIRE.get(),
-                        FactionService.coreRadius()));
+                        FactionService.coreRadius(), System.currentTimeMillis(), FactionService.preparationMillis()));
     }
 
     public static void sendToAll(MinecraftServer server) {

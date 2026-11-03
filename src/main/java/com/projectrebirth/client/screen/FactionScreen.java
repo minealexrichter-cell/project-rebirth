@@ -195,6 +195,19 @@ public class FactionScreen extends Screen {
                 continue;
             }
             String id = other.id().toString();
+            if (faction.isEnemyOf(other)) {
+                // at war: one wide peace button instead of the alliance and war buttons
+                boolean offeredToUs = faction.peaceOffers().contains(other.id());
+                boolean offeredByUs = other.peaceOffers().contains(faction.id());
+                Button peace = Button.builder(Component.translatable(offeredToUs ? "screen.projectrebirth.faction.accept_peace"
+                                        : offeredByUs ? "screen.projectrebirth.faction.peace_offered" : "screen.projectrebirth.faction.offer_peace"),
+                                b -> send(FactionSync.Action.OFFER_PEACE, id, 0))
+                        .bounds(left + 142, row - 3, 88, 14).build();
+                peace.active = !offeredByUs;
+                addRenderableWidget(peace);
+                row += 18;
+                continue;
+            }
             Button alliance;
             if (faction.allies().contains(other.id())) {
                 alliance = Button.builder(Component.translatable("screen.projectrebirth.faction.break_alliance"),
@@ -209,10 +222,8 @@ public class FactionScreen extends Screen {
                 alliance.active = !other.allyRequests().contains(faction.id());
             }
             addRenderableWidget(alliance);
-            boolean atWar = faction.enemies().contains(other.id());
-            addRenderableWidget(Button.builder(Component.translatable(atWar ? "screen.projectrebirth.faction.peace" : "screen.projectrebirth.faction.war"),
-                    b -> send(atWar ? FactionSync.Action.MAKE_PEACE : FactionSync.Action.DECLARE_WAR, id, 0))
-                    .bounds(left + 190, row - 3, 40, 14).build());
+            addRenderableWidget(Button.builder(Component.translatable("screen.projectrebirth.faction.war"),
+                    b -> send(FactionSync.Action.DECLARE_WAR, id, 0)).bounds(left + 190, row - 3, 40, 14).build());
             row += 18;
         }
     }
@@ -370,28 +381,40 @@ public class FactionScreen extends Screen {
                 continue;
             }
             graphics.drawString(font, Component.literal(other.name()).withStyle(other.color()), left + 10, row, 0xFFFFFF);
-            String relation;
-            ChatFormatting color;
+            Component relation;
             if (faction.allies().contains(other.id())) {
-                relation = "ally";
-                color = ChatFormatting.GREEN;
+                relation = Component.translatable("screen.projectrebirth.faction.relation.ally").withStyle(ChatFormatting.GREEN);
             } else if (faction.isEnemyOf(other)) {
-                relation = "enemy";
-                color = ChatFormatting.RED;
+                relation = warRelation(faction, other);
             } else if (faction.allyRequests().contains(other.id())) {
-                relation = "offers";
-                color = ChatFormatting.YELLOW;
+                relation = Component.translatable("screen.projectrebirth.faction.relation.offers").withStyle(ChatFormatting.YELLOW);
             } else {
-                relation = "neutral";
-                color = ChatFormatting.GRAY;
+                relation = Component.translatable("screen.projectrebirth.faction.relation.neutral").withStyle(ChatFormatting.GRAY);
             }
-            graphics.drawString(font, Component.translatable("screen.projectrebirth.faction.relation." + relation).withStyle(color),
-                    left + 76, row, 0xFFFFFF);
+            graphics.drawString(font, relation, left + 76, row, 0xFFFFFF);
             row += 18;
         }
         if (shown == 0) {
             graphics.drawString(font, Component.translatable("screen.projectrebirth.faction.no_other_factions"), left + 10, row, 0x808080);
         }
+    }
+
+    /**
+     * State of a war, by the same rules as the server: preparation countdown, then war; an active war is shown as
+     * "protected" while nobody of the enemy faction is online (that is how the server treats their territory).
+     */
+    private Component warRelation(FactionView faction, FactionView enemy) {
+        Long start = faction.warStart(enemy.id());
+        long remaining = start == null ? 0 : start + ClientFactionCache.warPreparation() - ClientFactionCache.serverNow();
+        if (remaining > 0) {
+            return Component.translatable("screen.projectrebirth.faction.relation.preparing", (remaining + 59_999) / 60_000)
+                    .withStyle(ChatFormatting.GOLD);
+        }
+        boolean enemyOnline = minecraft != null && minecraft.getConnection() != null
+                && enemy.members().stream().anyMatch(member -> minecraft.getConnection().getPlayerInfo(member.id()) != null);
+        return enemyOnline
+                ? Component.translatable("screen.projectrebirth.faction.relation.enemy").withStyle(ChatFormatting.RED)
+                : Component.translatable("screen.projectrebirth.faction.relation.protected").withStyle(ChatFormatting.DARK_AQUA);
     }
 
     private void renderSettings(GuiGraphics graphics, FactionView faction) {

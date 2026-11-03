@@ -1,6 +1,10 @@
 package com.projectrebirth.factions;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -139,7 +143,117 @@ public final class FactionService {
             return use == Use.DOOR || faction.role(player.getUUID()).canUseContainers();
         }
         Optional<Faction> own = FactionData.get(player.server).of(player.getUUID());
-        return use == Use.DOOR && own.isPresent() && faction.allies().contains(own.get().id());
+        if (use != Use.DOOR || own.isEmpty()) {
+            return false;
+        }
+        // allies always use doors; enemies only in an active war while a defender is online
+        return faction.allies().contains(own.get().id()) || canRaid(player.server, own.get(), faction);
+    }
+
+    /**
+     * Whether the core at this position may be broken by this player: by its own faction at any time, by enemies
+     * during an active war while a defender is online, and by nobody else. A core that belongs to no faction is free.
+     */
+    public static Result mayBreakCore(ServerPlayer player, Level level, BlockPos pos) {
+        if (player.isCreative() && player.hasPermissions(2)) {
+            return Result.ok("core_broken");
+        }
+        FactionData data = FactionData.get(player.server);
+        GlobalPos key = GlobalPos.of(level.dimension(), pos);
+        Optional<Faction> owner = data.all().stream().filter(faction -> faction.cores().contains(key)).findFirst();
+        if (owner.isEmpty() || owner.get().isMember(player.getUUID())) {
+            return Result.ok("core_broken");
+        }
+        Optional<Faction> own = data.of(player.getUUID());
+        if (own.isPresent() && canRaid(player.server, own.get(), owner.get())) {
+            return Result.ok("core_broken");
+        }
+        return Result.fail("core_protected", owner.get().name());
+    }
+
+    // ---------- war ----------
+
+    public enum WarState {
+        NONE, PREPARING, ACTIVE
+    }
+
+    public static long preparationMillis() {
+        return RebirthConfig.FACTION_WAR_PREPARATION_MINUTES.get() * 60_000L;
+    }
+
+    public static long maxWarMillis() {
+        return RebirthConfig.FACTION_WAR_MAX_HOURS.get() * 3_600_000L;
+    }
+
+    public static WarState warState(Faction a, Faction b, long now) {
+        Long start = a.warStarts().get(b.id());
+        if (start == null) {
+            return WarState.NONE;
+        }
+        return now < start + preparationMillis() ? WarState.PREPARING : WarState.ACTIVE;
+    }
+
+    /** At least one member is on the server: otherwise the territory is protected as in peace. */
+    public static boolean anyoneOnline(MinecraftServer server, Faction faction) {
+        return faction.members().keySet().stream().anyMatch(member -> server.getPlayerList().getPlayer(member) != null);
+    }
+
+    /** Raid rules apply: the war is active and the defenders are not all offline. */
+    public static boolean canRaid(MinecraftServer server, Faction attacker, Faction defender) {
+        return warState(attacker, defender, System.currentTimeMillis()) == WarState.ACTIVE && anyoneOnline(server, defender);
+    }
+
+    /**
+     * Once a second: announces wars whose preparation just ended and ends wars that have lasted too long.
+     * {@code announced} remembers which wars were already announced (it is not saved, so after a restart an active
+     * war may be announced once more).
+     */
+    public static void tickWars(MinecraftServer server, Set<String> announced) {
+        FactionData data = FactionData.get(server);
+        long now = System.currentTimeMillis();
+        List<Faction[]> expired = new ArrayList<>();
+        for (Faction faction : data.all()) {
+            for (Map.Entry<UUID, Long> war : faction.warStarts().entrySet()) {
+                Optional<Faction> other = data.byId(war.getKey());
+                if (other.isEmpty() || faction.id().compareTo(war.getKey()) > 0) {
+                    continue; // handle each pair once
+                }
+                if (now >= war.getValue() + maxWarMillis()) {
+                    expired.add(new Faction[] {faction, other.get()});
+                } else if (now >= war.getValue() + preparationMillis() && announced.add(faction.id() + "|" + war.getKey())) {
+                    tell(server, faction, Component.translatable("message.projectrebirth.faction.war_active",
+                            Component.literal(other.get().name()).withStyle(other.get().color())).withStyle(ChatFormatting.RED));
+                    tell(server, other.get(), Component.translatable("message.projectrebirth.faction.war_active",
+                            Component.literal(faction.name()).withStyle(faction.color())).withStyle(ChatFormatting.RED));
+                }
+            }
+        }
+        for (Faction[] pair : expired) {
+            endWar(pair[0], pair[1]);
+            announced.remove(pair[0].id() + "|" + pair[1].id());
+            tell(server, pair[0], Component.translatable("message.projectrebirth.faction.war_expired", pair[1].name()));
+            tell(server, pair[1], Component.translatable("message.projectrebirth.faction.war_expired", pair[0].name()));
+        }
+        if (!expired.isEmpty()) {
+            data.setDirty();
+            changed(server);
+        }
+    }
+
+    private static void endWar(Faction a, Faction b) {
+        a.warStarts().remove(b.id());
+        b.warStarts().remove(a.id());
+        a.peaceOffers().remove(b.id());
+        b.peaceOffers().remove(a.id());
+    }
+
+    private static void tell(MinecraftServer server, Faction faction, Component message) {
+        for (UUID member : faction.members().keySet()) {
+            ServerPlayer online = server.getPlayerList().getPlayer(member);
+            if (online != null) {
+                online.sendSystemMessage(message);
+            }
+        }
     }
 
     /** Checks that the player may set a core for their faction here. */
@@ -431,7 +545,10 @@ public final class FactionService {
         return Result.ok("alliance_broken", other.get().name());
     }
 
-    /** War is declared by one side and ends any alliance or alliance offer between the two. */
+    /**
+     * War is declared by one side but binds both. It ends any alliance or alliance offer; the raid rules start after
+     * the preparation time.
+     */
     public static Result declareEnemy(ServerPlayer leader, UUID otherId) {
         FactionData data = FactionData.get(leader.server);
         Optional<Faction> own = factionWith(leader, role -> role == FactionRole.LEADER);
@@ -442,37 +559,56 @@ public final class FactionService {
         if (other.isEmpty() || other.get() == own.get()) {
             return Result.fail("no_such_faction", "?");
         }
+        if (own.get().enemies().contains(otherId)) {
+            return Result.fail("already_at_war", other.get().name());
+        }
         own.get().allies().remove(otherId);
         other.get().allies().remove(own.get().id());
         own.get().allyRequests().remove(otherId);
         other.get().allyRequests().remove(own.get().id());
-        own.get().enemies().add(otherId);
+        long now = System.currentTimeMillis();
+        own.get().warStarts().put(otherId, now);
+        other.get().warStarts().put(own.get().id(), now);
         data.setDirty();
-        notifyLeader(leader.server, other.get(), Component.translatable("message.projectrebirth.faction.war_declared_you",
-                Component.literal(own.get().name()).withStyle(own.get().color())));
+        int minutes = RebirthConfig.FACTION_WAR_PREPARATION_MINUTES.get();
+        tell(leader.server, other.get(), Component.translatable("message.projectrebirth.faction.war_declared_you",
+                Component.literal(own.get().name()).withStyle(own.get().color()), minutes).withStyle(ChatFormatting.RED));
+        tell(leader.server, own.get(), Component.translatable("message.projectrebirth.faction.war_declared_us",
+                Component.literal(other.get().name()).withStyle(other.get().color()), minutes).withStyle(ChatFormatting.RED));
         changed(leader.server);
         return Result.ok("war_declared", other.get().name());
     }
 
-    /** Takes back this side's declaration; if the other side declared war too, they stay enemies. */
-    public static Result makePeace(ServerPlayer leader, UUID otherId) {
+    /** Offers peace; if the other side already offered it, peace is made at once. */
+    public static Result offerPeace(ServerPlayer leader, UUID otherId) {
         FactionData data = FactionData.get(leader.server);
         Optional<Faction> own = factionWith(leader, role -> role == FactionRole.LEADER);
         Optional<Faction> other = data.byId(otherId);
         if (own.isEmpty()) {
             return Result.fail("not_leader");
         }
-        if (other.isEmpty() || !own.get().enemies().remove(otherId)) {
+        if (other.isEmpty() || !own.get().enemies().contains(otherId)) {
             return Result.fail("not_at_war");
         }
+        if (own.get().peaceOffers().contains(otherId)) {
+            endWar(own.get(), other.get());
+            data.setDirty();
+            tell(leader.server, other.get(), Component.translatable("message.projectrebirth.faction.peace_made", own.get().name()));
+            tell(leader.server, own.get(), Component.translatable("message.projectrebirth.faction.peace_made", other.get().name()));
+            changed(leader.server);
+            return Result.ok("peace_made", other.get().name());
+        }
+        other.get().peaceOffers().add(own.get().id());
         data.setDirty();
+        notifyLeader(leader.server, other.get(), Component.translatable("message.projectrebirth.faction.peace_offered_you",
+                Component.literal(own.get().name()).withStyle(own.get().color())));
         changed(leader.server);
-        return Result.ok("peace_made", other.get().name());
+        return Result.ok("peace_offered", other.get().name());
     }
 
-    /** Enemies if either side has declared war on the other. */
+    /** At war (a war is always recorded on both sides). */
     public static boolean areEnemies(Faction a, Faction b) {
-        return a.enemies().contains(b.id()) || b.enemies().contains(a.id());
+        return a.enemies().contains(b.id());
     }
 
     private static void link(Faction a, Faction b) {

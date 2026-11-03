@@ -54,6 +54,20 @@ public class FactionCoreBlock extends Block {
         }
     }
 
+    /** In peace only the own faction may break its core; enemies may during an active war while a defender is online. */
+    @SubscribeEvent
+    static void onBreak(BlockEvent.BreakEvent event) {
+        if (!(event.getState().getBlock() instanceof FactionCoreBlock) || !(event.getPlayer() instanceof ServerPlayer player)
+                || !(event.getLevel() instanceof Level level)) {
+            return;
+        }
+        FactionService.Result result = FactionService.mayBreakCore(player, level, event.getPos());
+        if (!result.success()) {
+            event.setCanceled(true);
+            player.displayClientMessage(result.message(), true);
+        }
+    }
+
     /** Right click shows whose core this is. */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {

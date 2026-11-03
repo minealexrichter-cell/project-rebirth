@@ -229,7 +229,11 @@ public class FactionGameTests {
         helper.assertTrue(FactionService.declareEnemy(leaderB, a.id()).success(), "A leader declares war");
         helper.assertTrue(a.allies().isEmpty() && b.allies().isEmpty() && FactionService.areEnemies(a, b), "War ends the alliance");
         helper.assertFalse(FactionService.proposeAlliance(leaderB, a.id()).success(), "No alliance while at war");
-        helper.assertTrue(FactionService.makePeace(leaderB, a.id()).success() && !FactionService.areEnemies(a, b), "Peace ends the war");
+        helper.assertTrue(FactionService.areEnemies(b, a), "A war binds both sides");
+        helper.assertTrue(FactionService.offerPeace(leaderB, a.id()).success() && FactionService.areEnemies(a, b),
+                "An offer alone does not end the war");
+        helper.assertTrue(FactionService.offerPeace(leaderA, b.id()).success() && !FactionService.areEnemies(a, b),
+                "Peace is made when the other side agrees");
         clean(server, "Pact Zeta", "Pact Eta");
         helper.succeed();
     }
@@ -280,6 +284,58 @@ public class FactionGameTests {
         helper.assertTrue(faction.cores().isEmpty(), "Destroying the core removes the territory");
         helper.assertTrue(FactionService.mayUse(stranger, inside, FactionService.Use.CONTAINER), "Without the core nothing is protected");
         clean(server, "Land Theta", "Land Iota", "Land Kappa");
+        helper.succeed();
+    }
+
+    /** Preparation, raid rules, offline protection, the core and the automatic end of a war. */
+    @GameTest(template = TEMPLATE)
+    public static void warRules(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        clean(server, "War Lambda", "War Mu", "War Nu");
+        ServerPlayer attacker = player(helper);
+        ServerPlayer defender = player(helper);
+        ServerPlayer neutral = player(helper);
+        FactionService.create(attacker, "War Lambda", ChatFormatting.RED);
+        FactionService.create(defender, "War Mu", ChatFormatting.BLUE);
+        FactionService.create(neutral, "War Nu", ChatFormatting.GRAY);
+        Faction a = factionOf(server, attacker);
+        Faction d = factionOf(server, defender);
+        BlockPos corePos = new BlockPos(2, 2, 2);
+        BlockPos core = helper.absolutePos(corePos);
+        helper.setBlock(corePos, FactionBlocks.FACTION_CORE.get());
+        FactionService.addCore(defender, helper.getLevel(), core);
+        BlockPos door = core.north(3);
+
+        helper.assertFalse(FactionService.mayBreakCore(neutral, helper.getLevel(), core).success(), "In peace outsiders cannot break a core");
+        helper.assertTrue(FactionService.mayBreakCore(defender, helper.getLevel(), core).success(), "The own faction can break its core");
+
+        helper.assertTrue(FactionService.declareEnemy(attacker, d.id()).success(), "War is declared");
+        long now = System.currentTimeMillis();
+        helper.assertTrue(FactionService.warState(a, d, now) == FactionService.WarState.PREPARING
+                && FactionService.warState(d, a, now) == FactionService.WarState.PREPARING, "The war starts with preparation on both sides");
+        helper.assertFalse(FactionService.mayUse(attacker, door, FactionService.Use.DOOR), "No raids during preparation");
+        helper.assertFalse(FactionService.mayBreakCore(attacker, helper.getLevel(), core).success(), "The core is safe during preparation");
+
+        long started = now - FactionService.preparationMillis() - 1000L;
+        a.warStarts().put(d.id(), started);
+        d.warStarts().put(a.id(), started);
+        helper.assertTrue(FactionService.anyoneOnline(server, d), "The defender is online");
+        helper.assertTrue(FactionService.mayUse(attacker, door, FactionService.Use.DOOR), "Enemies use doors in an active war");
+        helper.assertFalse(FactionService.mayUse(attacker, door, FactionService.Use.CONTAINER), "Enemies still cannot open chests");
+        helper.assertTrue(FactionService.mayBreakCore(attacker, helper.getLevel(), core).success(), "Enemies may break the core");
+        helper.assertFalse(FactionService.mayBreakCore(neutral, helper.getLevel(), core).success(), "Neutral players still may not");
+
+        server.getPlayerList().remove(defender);
+        helper.assertFalse(FactionService.anyoneOnline(server, d), "The defender left");
+        helper.assertFalse(FactionService.mayUse(attacker, door, FactionService.Use.DOOR), "No raids while nobody defends");
+        helper.assertFalse(FactionService.mayBreakCore(attacker, helper.getLevel(), core).success(), "The core is safe while nobody defends");
+
+        long expired = System.currentTimeMillis() - FactionService.maxWarMillis() - 1000L;
+        a.warStarts().put(d.id(), expired);
+        d.warStarts().put(a.id(), expired);
+        FactionService.tickWars(server, new java.util.HashSet<>());
+        helper.assertFalse(FactionService.areEnemies(a, d) || FactionService.areEnemies(d, a), "A war ends by itself after the maximum time");
+        clean(server, "War Lambda", "War Mu", "War Nu");
         helper.succeed();
     }
 }

@@ -1,8 +1,10 @@
 package com.projectrebirth.factions;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.projectrebirth.ProjectRebirth;
@@ -38,6 +40,8 @@ public final class FactionEvents {
     private static final UUID NO_TERRITORY = new UUID(0L, 0L);
     /** Territory each online player was in at the last check. */
     private static final Map<UUID, UUID> lastTerritory = new HashMap<>();
+    /** Wars whose start was already announced (see {@link FactionService#tickWars}). */
+    private static final Set<String> announcedWars = new HashSet<>();
 
     private FactionEvents() {
     }
@@ -139,6 +143,7 @@ public final class FactionEvents {
         if (server.getTickCount() % 20 != 0) {
             return;
         }
+        FactionService.tickWars(server, announcedWars);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Optional<Faction> here = FactionService.territoryAt(server, player.level(), player.blockPosition());
             UUID id = here.map(Faction::id).orElse(NO_TERRITORY);

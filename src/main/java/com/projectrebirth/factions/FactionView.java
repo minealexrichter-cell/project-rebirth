@@ -3,6 +3,8 @@ package com.projectrebirth.factions;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.GlobalPos;
@@ -15,7 +17,16 @@ import net.minecraft.network.codec.StreamCodec;
  * the names above heads.
  */
 public record FactionView(UUID id, String name, int colorId, UUID leader, boolean friendlyFire, List<Member> members,
-                          List<UUID> allies, List<UUID> enemies, List<UUID> allyRequests, List<GlobalPos> cores) {
+                          List<UUID> allies, List<War> wars, List<UUID> allyRequests, List<UUID> peaceOffers,
+                          List<GlobalPos> cores) {
+    /** A war with another faction and the server time it was declared. */
+    public record War(UUID enemy, long start) {
+        public static final StreamCodec<ByteBuf, War> STREAM_CODEC = StreamCodec.composite(
+                UUIDUtil.STREAM_CODEC, War::enemy,
+                ByteBufCodecs.VAR_LONG, War::start,
+                War::new);
+    }
+
     public record Member(UUID id, String name, FactionRole role) {
         public static final StreamCodec<ByteBuf, Member> STREAM_CODEC = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC, Member::id,
@@ -35,8 +46,9 @@ public record FactionView(UUID id, String name, int colorId, UUID leader, boolea
                 ByteBufCodecs.BOOL.encode(buf, view.friendlyFire());
                 Member.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buf, view.members());
                 UUIDS.encode(buf, view.allies());
-                UUIDS.encode(buf, view.enemies());
+                War.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buf, view.wars());
                 UUIDS.encode(buf, view.allyRequests());
+                UUIDS.encode(buf, view.peaceOffers());
                 GlobalPos.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buf, view.cores());
             },
             buf -> new FactionView(
@@ -47,6 +59,7 @@ public record FactionView(UUID id, String name, int colorId, UUID leader, boolea
                     ByteBufCodecs.BOOL.decode(buf),
                     Member.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buf),
                     UUIDS.decode(buf),
+                    War.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buf),
                     UUIDS.decode(buf),
                     UUIDS.decode(buf),
                     GlobalPos.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buf)));
@@ -56,8 +69,9 @@ public record FactionView(UUID id, String name, int colorId, UUID leader, boolea
                 .map(entry -> new Member(entry.getKey(), entry.getValue(), faction.role(entry.getKey())))
                 .toList();
         return new FactionView(faction.id(), faction.name(), faction.color().getId(), faction.leader(),
-                FactionService.friendlyFire(faction), members, List.copyOf(faction.allies()), List.copyOf(faction.enemies()),
-                List.copyOf(faction.allyRequests()), List.copyOf(faction.cores()));
+                FactionService.friendlyFire(faction), members, List.copyOf(faction.allies()),
+                faction.warStarts().entrySet().stream().map(war -> new War(war.getKey(), war.getValue())).toList(),
+                List.copyOf(faction.allyRequests()), List.copyOf(faction.peaceOffers()), List.copyOf(faction.cores()));
     }
 
     public ChatFormatting color() {
@@ -74,8 +88,13 @@ public record FactionView(UUID id, String name, int colorId, UUID leader, boolea
                 .orElse(FactionRole.RECRUIT);
     }
 
-    /** Enemies if either side has declared war. */
     public boolean isEnemyOf(FactionView other) {
-        return enemies.contains(other.id()) || other.enemies().contains(id);
+        return warStart(other.id()) != null;
+    }
+
+    /** When the war with this faction was declared (server time), or null if there is no war. */
+    @Nullable
+    public Long warStart(UUID other) {
+        return wars.stream().filter(war -> war.enemy().equals(other)).map(War::start).findFirst().orElse(null);
     }
 }

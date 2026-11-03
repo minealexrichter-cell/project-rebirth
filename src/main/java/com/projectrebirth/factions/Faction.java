@@ -34,7 +34,10 @@ public class Faction {
     private final Set<UUID> invited = new LinkedHashSet<>();
     private boolean friendlyFire;
     private final Set<UUID> allies = new LinkedHashSet<>();
-    private final Set<UUID> enemies = new LinkedHashSet<>();
+    /** Factions this one is at war with (always on both sides), with the real time the war was declared. */
+    private final Map<UUID, Long> warStarts = new LinkedHashMap<>();
+    /** Factions that offered peace to this one. */
+    private final Set<UUID> peaceOffers = new LinkedHashSet<>();
     /** Factions that proposed an alliance to this one. */
     private final Set<UUID> allyRequests = new LinkedHashSet<>();
     private final List<GlobalPos> cores = new ArrayList<>();
@@ -116,8 +119,17 @@ public class Faction {
         return allies;
     }
 
+    /** Enemies; removing from this view ends the war on this side, adding goes through {@link #warStarts}. */
     public Set<UUID> enemies() {
-        return enemies;
+        return warStarts.keySet();
+    }
+
+    public Map<UUID, Long> warStarts() {
+        return warStarts;
+    }
+
+    public Set<UUID> peaceOffers() {
+        return peaceOffers;
     }
 
     public Set<UUID> allyRequests() {
@@ -146,7 +158,15 @@ public class Faction {
         tag.put("Members", memberList);
         tag.put("Invited", uuids(invited));
         tag.put("Allies", uuids(allies));
-        tag.put("Enemies", uuids(enemies));
+        ListTag warList = new ListTag();
+        warStarts.forEach((other, start) -> {
+            CompoundTag war = new CompoundTag();
+            war.putUUID("Id", other);
+            war.putLong("Start", start);
+            warList.add(war);
+        });
+        tag.put("Wars", warList);
+        tag.put("PeaceOffers", uuids(peaceOffers));
         tag.put("AllyRequests", uuids(allyRequests));
         ListTag coreList = new ListTag();
         cores.forEach(core -> GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, core).result().ifPresent(coreList::add));
@@ -182,7 +202,15 @@ public class Faction {
         }
         readUuids(tag.getList("Invited", Tag.TAG_INT_ARRAY), faction.invited);
         readUuids(tag.getList("Allies", Tag.TAG_INT_ARRAY), faction.allies);
-        readUuids(tag.getList("Enemies", Tag.TAG_INT_ARRAY), faction.enemies);
+        for (Tag entry : tag.getList("Wars", Tag.TAG_COMPOUND)) {
+            CompoundTag war = (CompoundTag) entry;
+            faction.warStarts.put(war.getUUID("Id"), war.getLong("Start"));
+        }
+        // earlier saves kept one-sided "Enemies" without a start: such wars count as declared now
+        Set<UUID> oldEnemies = new LinkedHashSet<>();
+        readUuids(tag.getList("Enemies", Tag.TAG_INT_ARRAY), oldEnemies);
+        oldEnemies.forEach(other -> faction.warStarts.putIfAbsent(other, System.currentTimeMillis()));
+        readUuids(tag.getList("PeaceOffers", Tag.TAG_INT_ARRAY), faction.peaceOffers);
         readUuids(tag.getList("AllyRequests", Tag.TAG_INT_ARRAY), faction.allyRequests);
         for (Tag entry : tag.getList("Cores", Tag.TAG_COMPOUND)) {
             GlobalPos.CODEC.parse(NbtOps.INSTANCE, entry).result().ifPresent(faction.cores::add);

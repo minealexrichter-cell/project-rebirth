@@ -21,6 +21,9 @@ public final class ClientFactionCache {
     private static List<UUID> invites = List.of();
     private static boolean friendlyFireLocked;
     private static int coreRadius;
+    /** Server clock minus this computer's clock, so war timers match the server. */
+    private static long clockOffset;
+    private static long warPreparation;
     @Nullable
     private static UUID localPlayer;
     @Nullable
@@ -32,7 +35,10 @@ public final class ClientFactionCache {
     private ClientFactionCache() {
     }
 
-    static void update(List<FactionView> newFactions, List<UUID> newInvites, boolean locked, int radius, UUID player) {
+    static void update(List<FactionView> newFactions, List<UUID> newInvites, boolean locked, int radius, UUID player,
+                       long serverTime, long preparation) {
+        clockOffset = serverTime - System.currentTimeMillis();
+        warPreparation = preparation;
         factions = List.copyOf(newFactions);
         invites = List.copyOf(newInvites);
         friendlyFireLocked = locked;
@@ -57,6 +63,15 @@ public final class ClientFactionCache {
 
     public static List<FactionView> all() {
         return factions;
+    }
+
+    /** The server's current time, as far as this client can tell. */
+    public static long serverNow() {
+        return System.currentTimeMillis() + clockOffset;
+    }
+
+    public static long warPreparation() {
+        return warPreparation;
     }
 
     public static int coreRadius() {

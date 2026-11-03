@@ -13,6 +13,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
@@ -20,17 +21,18 @@ import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
 
 /**
  * Power armor; a wreck uses a burnt texture. The pilot does not see their own armor in first person.
- * The pilot's held items are drawn in the armor's fists (bones "right_hand" and "left_hand").
+ * The pilot's held items are drawn in the armor's fists (bones "right_hand" and "left_hand"), and the arms take
+ * the pilot's item poses (bow, crossbow, trident, shield).
  */
 public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
     private static final ResourceLocation WRECK_TEXTURE = ProjectRebirth.id("textures/entity/power_armor_wrecked.png");
     private static final String RIGHT_HAND = "right_hand";
     private static final String LEFT_HAND = "left_hand";
-    /** Items look tiny in the big fists at normal size. */
+    /** The fists are 1.5 times as wide as a player's hand. */
     private static final float ITEM_SCALE = 1.5f;
 
     public PowerArmorRenderer(EntityRendererProvider.Context context) {
-        super(context, new DefaultedEntityGeoModel<>(ProjectRebirth.id("power_armor"), false));
+        super(context, new ArmorModel());
         this.shadowRadius = 0.8f;
         addRenderLayer(new HeldItemLayer(this));
     }
@@ -48,6 +50,26 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             return;
         }
         super.render(armor, entityYaw, partialTick, poseStack, bufferSource, packedLight);
+    }
+
+    private static class ArmorModel extends DefaultedEntityGeoModel<PowerArmorEntity> {
+        ArmorModel() {
+            super(ProjectRebirth.id("power_armor"), false);
+        }
+
+        @Override
+        public void setCustomAnimations(PowerArmorEntity armor, long instanceId, AnimationState<PowerArmorEntity> state) {
+            super.setCustomAnimations(armor, instanceId, state);
+            Player pilot = armor.getPilot();
+            if (pilot == null || !armor.isActive()) {
+                return;
+            }
+            GeoBone rightArm = getAnimationProcessor().getBone("right_arm");
+            GeoBone leftArm = getAnimationProcessor().getBone("left_arm");
+            if (rightArm != null && leftArm != null) {
+                PilotArmPose.apply(armor, pilot, state.getPartialTick(), rightArm, leftArm);
+            }
+        }
     }
 
     private static class HeldItemLayer extends BlockAndItemGeoLayer<PowerArmorEntity> {
@@ -71,22 +93,29 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             return stack.isEmpty() ? null : stack;
         }
 
-        @Override
-        protected ItemDisplayContext getTransformTypeForStack(GeoBone bone, ItemStack stack, PowerArmorEntity armor) {
-            // Swapped on purpose: the half-turn in renderStackForBone mirrors the item sideways, which turns
-            // a left-hand layout into a right-hand one and back.
-            return bone.getName().equals(RIGHT_HAND) ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND;
-        }
-
+        /**
+         * Same transform as the vanilla held-item layer, so every item (sword handle, shield, bow, trident, crossbow)
+         * sits in the fist exactly as in a player's hand. The bone is at the bottom of the fist, where the vanilla
+         * layer ends up after moving down the arm.
+         */
         @Override
         protected void renderStackForBone(PoseStack poseStack, GeoBone bone, ItemStack stack, PowerArmorEntity armor,
                                           MultiBufferSource bufferSource, float partialTick, int packedLight, int packedOverlay) {
-            // GeckoLib's own example ("-90 around X") holds items upside down on this model (sword pointing to the
-            // ground, shield above the shoulder), so the item is first turned half a circle around the forward axis.
+            Player pilot = armor.getPilot();
+            if (pilot == null) {
+                return;
+            }
+            boolean left = bone.getName().equals(LEFT_HAND);
+            // GeckoLib space -> vanilla model space (which is upside down).
             poseStack.mulPose(Axis.ZP.rotationDegrees(180.0f));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
+            poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
             poseStack.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
-            super.renderStackForBone(poseStack, bone, stack, armor, bufferSource, partialTick, packedLight, packedOverlay);
+            poseStack.translate((left ? -1.0f : 1.0f) / 16.0f, 0.125f, 0.0f);
+            // Rendering for the pilot gives the item its live look: bow pulling, loaded crossbow and so on.
+            Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(pilot, stack,
+                    left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
+                    left, poseStack, bufferSource, packedLight);
         }
     }
 }

@@ -21,6 +21,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
+import static com.projectrebirth.client.screen.GuiShapes.SLOT;
+import static com.projectrebirth.client.screen.GuiShapes.panel;
+import static com.projectrebirth.client.screen.GuiShapes.playerInventory;
+import static com.projectrebirth.client.screen.GuiShapes.slot;
+import static com.projectrebirth.client.screen.GuiShapes.sunken;
+
 /**
  * Station window, drawn from plain rectangles (no texture of its own) plus vanilla button sprites.
  * Top: recipe list. Middle: status line, input slots with "ghost" images of the missing ingredients, progress
@@ -43,12 +49,6 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     private static final int STATUS_Y = 57;
     private static final int ARROW_X = 90;
     private static final int ARROW_Y = StationMenu.OUTPUT_Y;
-
-    private static final int PANEL = 0xFFC6C6C6;
-    private static final int LIGHT = 0xFFFFFFFF;
-    private static final int SHADOW = 0xFF555555;
-    private static final int SLOT = 0xFF8B8B8B;
-    private static final int SLOT_SHADOW = 0xFF373737;
 
     private int startRow;
 
@@ -77,14 +77,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
             slot(graphics, x + StationMenu.INPUT_X + (i % 3) * 18, y + StationMenu.INPUT_Y + (i / 3) * 18);
         }
         sunken(graphics, x + StationMenu.OUTPUT_X - 5, y + StationMenu.OUTPUT_Y - 5, 26, 26);
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 9; col++) {
-                slot(graphics, x + 8 + col * 18, y + StationMenu.INVENTORY_Y + row * 18);
-            }
-        }
-        for (int col = 0; col < 9; col++) {
-            slot(graphics, x + 8 + col * 18, y + StationMenu.INVENTORY_Y + 58);
-        }
+        playerInventory(graphics, x + 8, y + StationMenu.INVENTORY_Y);
         renderArrow(graphics, x + ARROW_X, y + ARROW_Y);
         renderRecipes(graphics, mouseX, mouseY);
         renderScrollbar(graphics);
@@ -275,28 +268,5 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         }
         long second = System.currentTimeMillis() / 1000L;
         return items[(int) (second % items.length)];
-    }
-
-    // ---------- plain shapes ----------
-
-    private static void panel(GuiGraphics graphics, int x, int y, int width, int height) {
-        graphics.fill(x, y, x + width, y + height, PANEL);
-        graphics.fill(x, y, x + width - 1, y + 1, LIGHT);
-        graphics.fill(x, y, x + 1, y + height - 1, LIGHT);
-        graphics.fill(x + 1, y + height - 1, x + width, y + height, SHADOW);
-        graphics.fill(x + width - 1, y + 1, x + width, y + height, SHADOW);
-    }
-
-    /** Standard 18 px slot frame around an item drawn at (itemX, itemY). */
-    private static void slot(GuiGraphics graphics, int itemX, int itemY) {
-        sunken(graphics, itemX - 1, itemY - 1, 18, 18);
-    }
-
-    private static void sunken(GuiGraphics graphics, int x, int y, int width, int height) {
-        graphics.fill(x, y, x + width, y + height, SLOT);
-        graphics.fill(x, y, x + width - 1, y + 1, SLOT_SHADOW);
-        graphics.fill(x, y, x + 1, y + height - 1, SLOT_SHADOW);
-        graphics.fill(x + 1, y + height - 1, x + width, y + height, LIGHT);
-        graphics.fill(x + width - 1, y + 1, x + width, y + height, LIGHT);
     }
 }

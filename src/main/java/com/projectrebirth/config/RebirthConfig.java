@@ -44,6 +44,8 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_PLATES;
 
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
+    public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
+    public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -161,6 +163,16 @@ public final class RebirthConfig {
         PRODUCTION_TIME_MULTIPLIER = builder
                 .comment("Multiplier for the production time of every station recipe (0.5 = twice as fast)")
                 .defineInRange("timeMultiplier", 1.0, 0.01, 100.0);
+        builder.pop();
+
+        builder.comment("Maintenance station: repairs packed power armor (critical integrity only here) and packed bodies.",
+                "Armor repair amounts are power_armor.repairStructuralPerIngot and repairCriticalPerPlate.").push("maintenance");
+        MAINTENANCE_STEP_TICKS = builder
+                .comment("Ticks per repair step; every step uses one material item (20 ticks = 1 second)")
+                .defineInRange("stepTicks", 40, 1, 72000);
+        MAINTENANCE_BODY_REPAIR_PER_ITEM = builder
+                .comment("Body integrity restored per iron ingot (robot bodies) or synthetic fiber (synthetic bodies)")
+                .defineInRange("bodyRepairPerItem", 8.0, 0.1, 1024.0);
         builder.pop();
         SERVER_SPEC = builder.build();
     }

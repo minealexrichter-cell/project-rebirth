@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": ["IXI", "CAC", "III"],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "X": { "item": "projectrebirth:actuator" },
+    "C": { "item": "projectrebirth:circuit_board" },
+    "A": { "item": "minecraft:anvil" }
+  },
+  "result": { "id": "projectrebirth:maintenance_station", "count": 1 }
+}

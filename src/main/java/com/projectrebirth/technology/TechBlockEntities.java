@@ -18,6 +18,11 @@ public final class TechBlockEntities {
             BLOCK_ENTITIES.register("station", () -> BlockEntityType.Builder.of(StationBlockEntity::new,
                     TechBlocks.STATIONS.values().stream().map(block -> block.get()).toArray(StationBlock[]::new)).build(null));
 
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MaintenanceBlockEntity>> MAINTENANCE =
+            BLOCK_ENTITIES.register("maintenance_station", () -> BlockEntityType.Builder.of(MaintenanceBlockEntity::new,
+                    TechBlocks.MAINTENANCE_STATION.get()).build(null));
+
     private TechBlockEntities() {
     }
 

@@ -69,7 +69,7 @@
   "message.projectrebirth.armor.wrecked": "Critical integrity lost: the armor is wrecked and you were thrown out",
   "message.projectrebirth.armor.hatch_blown": "Emergency hatch blown: you are out, the armor was damaged",
   "message.projectrebirth.armor.cannot_repair_wreck": "A wreck cannot be repaired, only dismantled (sneak + use)",
-  "message.projectrebirth.armor.need_materials": "Need iron ingots (structural) or armor plates (critical)",
+  "message.projectrebirth.armor.need_materials": "Iron ingots needed (the wrench repairs structural integrity only)",
   "message.projectrebirth.armor.nothing_to_repair": "The armor is fully repaired",
   "message.projectrebirth.armor.repaired": "Repaired: structural %s / %s, critical %s / %s",
   "message.projectrebirth.armor.rescue_not_needed": "There is nobody to rescue: use the tool on a shut-down armor with a pilot inside",
@@ -119,5 +119,15 @@
   "screen.projectrebirth.station.needs": "Needs:",
   "screen.projectrebirth.station.ingredient": "%s × %s",
   "screen.projectrebirth.station.time": "Time: %s s",
-  "screen.projectrebirth.station.remaining": "Remaining: %s s"
+  "screen.projectrebirth.station.remaining": "Remaining: %s s",
+  "block.projectrebirth.maintenance_station": "Maintenance Station",
+  "screen.projectrebirth.maintenance.empty": "Put in packed armor or a body",
+  "screen.projectrebirth.maintenance.done": "Fully repaired",
+  "screen.projectrebirth.maintenance.need_armor": "Needs armor plates or iron ingots",
+  "screen.projectrebirth.maintenance.need_plates": "Needs armor plates",
+  "screen.projectrebirth.maintenance.need_iron": "Needs iron ingots",
+  "screen.projectrebirth.maintenance.need_fiber": "Needs synthetic fiber",
+  "screen.projectrebirth.maintenance.repairing": "Repairing: %s%%",
+  "screen.projectrebirth.maintenance.integrity": "Integrity",
+  "message.projectrebirth.armor.critical_needs_station": "Critical integrity can only be repaired at a maintenance station"
 }

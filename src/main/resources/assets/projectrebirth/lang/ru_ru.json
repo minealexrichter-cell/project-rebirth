@@ -69,7 +69,7 @@
   "message.projectrebirth.armor.wrecked": "Критическая целостность потеряна: броня разрушена, вас выбросило наружу",
   "message.projectrebirth.armor.hatch_blown": "Аварийный люк сброшен: вы снаружи, броня повреждена",
   "message.projectrebirth.armor.cannot_repair_wreck": "Развалину нельзя починить, только разобрать (Shift + ПКМ)",
-  "message.projectrebirth.armor.need_materials": "Нужны железные слитки (структурная) или бронеплиты (критическая)",
+  "message.projectrebirth.armor.need_materials": "Нужны железные слитки (ключ чинит только структурную целостность)",
   "message.projectrebirth.armor.nothing_to_repair": "Броня полностью исправна",
   "message.projectrebirth.armor.repaired": "Отремонтировано: структурная %s / %s, критическая %s / %s",
   "message.projectrebirth.armor.rescue_not_needed": "Спасать некого: инструмент работает на отключённой броне с пилотом внутри",
@@ -119,5 +119,15 @@
   "screen.projectrebirth.station.needs": "Нужно:",
   "screen.projectrebirth.station.ingredient": "%s × %s",
   "screen.projectrebirth.station.time": "Время: %s с",
-  "screen.projectrebirth.station.remaining": "Осталось: %s с"
+  "screen.projectrebirth.station.remaining": "Осталось: %s с",
+  "block.projectrebirth.maintenance_station": "Станция обслуживания",
+  "screen.projectrebirth.maintenance.empty": "Положите упакованную броню или тело",
+  "screen.projectrebirth.maintenance.done": "Полностью исправно",
+  "screen.projectrebirth.maintenance.need_armor": "Нужны бронеплиты или железо",
+  "screen.projectrebirth.maintenance.need_plates": "Нужны бронеплиты",
+  "screen.projectrebirth.maintenance.need_iron": "Нужны железные слитки",
+  "screen.projectrebirth.maintenance.need_fiber": "Нужна синтетическая ткань",
+  "screen.projectrebirth.maintenance.repairing": "Ремонт: %s%%",
+  "screen.projectrebirth.maintenance.integrity": "Целостность",
+  "message.projectrebirth.armor.critical_needs_station": "Критическую целостность чинят только на станции обслуживания"
 }

@@ -15,6 +15,9 @@ public final class TechMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<StationMenu>> STATION =
             MENUS.register("station", () -> IMenuTypeExtension.create(StationMenu::new));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<MaintenanceMenu>> MAINTENANCE =
+            MENUS.register("maintenance_station", () -> IMenuTypeExtension.create(MaintenanceMenu::new));
+
     private TechMenus() {
     }
 

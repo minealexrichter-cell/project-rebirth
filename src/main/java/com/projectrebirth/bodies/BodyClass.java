@@ -56,6 +56,11 @@ public enum BodyClass implements StringRepresentable {
         return slimArms;
     }
 
+    /** Synthetic bodies (advanced and above) are repaired with synthetic fiber, robot bodies with iron. */
+    public boolean synthetic() {
+        return ordinal() >= ADVANCED_SYNTHETIC.ordinal();
+    }
+
     @Override
     public String getSerializedName() {
         return id;

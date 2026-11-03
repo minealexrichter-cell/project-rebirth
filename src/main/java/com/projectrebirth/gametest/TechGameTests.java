@@ -3,7 +3,14 @@ package com.projectrebirth.gametest;
 import java.util.List;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.bodies.BodyClass;
+import com.projectrebirth.bodies.BodyComponents;
+import com.projectrebirth.bodies.BodyItems;
+import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.FabricationRecipe;
+import com.projectrebirth.technology.Maintenance;
+import com.projectrebirth.technology.MaintenanceBlockEntity;
 import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.StationBlockEntity;
@@ -17,6 +24,7 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -169,6 +177,84 @@ public class TechGameTests {
             }
         }
         helper.succeed();
+    }
+
+    private static MaintenanceBlockEntity placeMaintenance(GameTestHelper helper) {
+        helper.setBlock(STATION_POS, TechBlocks.MAINTENANCE_STATION.get());
+        return helper.getBlockEntity(STATION_POS);
+    }
+
+    /** Plates go to critical integrity first, then iron to structural; a fully repaired armor item is "like new". */
+    @GameTest(template = TEMPLATE, timeoutTicks = 600)
+    public static void maintenanceRepairsArmorCriticalAndStructural(GameTestHelper helper) {
+        MaintenanceBlockEntity station = placeMaintenance(helper);
+        float maxStructural = Maintenance.maxStructural();
+        float maxCritical = Maintenance.maxCritical();
+        float perIngot = RebirthConfig.ARMOR_REPAIR_STRUCTURAL_PER_INGOT.get().floatValue();
+        float perPlate = RebirthConfig.ARMOR_REPAIR_CRITICAL_PER_PLATE.get().floatValue();
+        ItemStack armor = new ItemStack(PowerArmorRegistry.POWER_ARMOR_ITEM.get());
+        armor.set(PowerArmorRegistry.STORED_STRUCTURAL.get(), maxStructural - 3 * perIngot);
+        armor.set(PowerArmorRegistry.STORED_CRITICAL.get(), maxCritical - 2 * perPlate);
+        station.items().setStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT, armor);
+        station.items().setStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT, new ItemStack(Items.IRON_INGOT, 10));
+        station.items().setStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT + 1, new ItemStack(PowerArmorRegistry.ARMOR_PLATE.get(), 5));
+        int step = MaintenanceBlockEntity.stepTicks();
+
+        helper.runAfterDelay(2 * step + 5, () -> {
+            ItemStack partly = station.items().getStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT);
+            helper.assertTrue(Maintenance.armorCritical(partly) >= maxCritical
+                    && station.items().getStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT).getCount() == 10,
+                    "Critical integrity must be repaired first, with plates, got " + Maintenance.armorCritical(partly));
+        });
+        helper.runAfterDelay(6 * step + 10, () -> {
+            ItemStack repaired = station.items().getStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT);
+            helper.assertFalse(Maintenance.needsRepair(repaired), "The armor must be fully repaired");
+            helper.assertFalse(repaired.has(PowerArmorRegistry.STORED_STRUCTURAL.get()) || repaired.has(PowerArmorRegistry.STORED_CRITICAL.get()),
+                    "A fully repaired armor item must lose its damage data");
+            helper.assertTrue(station.items().getStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT).getCount() == 7,
+                    "Three iron ingots must be used");
+            helper.assertTrue(station.items().getStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT + 1).getCount() == 3,
+                    "Two plates must be used");
+            helper.succeed();
+        });
+    }
+
+    /** Robot bodies take iron, synthetic bodies take synthetic fiber and ignore iron. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 400)
+    public static void maintenanceRepairsBodiesWithTheirMaterial(GameTestHelper helper) {
+        MaintenanceBlockEntity robotStation = placeMaintenance(helper);
+        ItemStack robot = new ItemStack(BodyItems.item(BodyClass.BASIC_ROBOT));
+        robot.set(BodyComponents.STORED_INTEGRITY.get(), 5.0f);
+        robotStation.items().setStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT, robot);
+        robotStation.items().setStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT, new ItemStack(Items.IRON_INGOT, 10));
+
+        BlockPos syntheticPos = new BlockPos(0, 2, 0);
+        helper.setBlock(syntheticPos, TechBlocks.MAINTENANCE_STATION.get());
+        MaintenanceBlockEntity syntheticStation = helper.getBlockEntity(syntheticPos);
+        ItemStack synthetic = new ItemStack(BodyItems.item(BodyClass.ADVANCED_SYNTHETIC));
+        synthetic.set(BodyComponents.STORED_INTEGRITY.get(), 5.0f);
+        syntheticStation.items().setStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT, synthetic);
+        syntheticStation.items().setStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT, new ItemStack(Items.IRON_INGOT, 10));
+
+        float perItem = RebirthConfig.MAINTENANCE_BODY_REPAIR_PER_ITEM.get().floatValue();
+        int robotSteps = Mth.ceil((Maintenance.maxBodyIntegrity(robot) - 5.0f) / perItem);
+        helper.runAfterDelay((robotSteps + 1) * MaintenanceBlockEntity.stepTicks() + 5, () -> {
+            ItemStack repaired = robotStation.items().getStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT);
+            helper.assertFalse(Maintenance.needsRepair(repaired) || repaired.has(BodyComponents.STORED_INTEGRITY.get()),
+                    "The robot body must be fully repaired");
+            helper.assertTrue(robotStation.items().getStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT).getCount() == 10 - robotSteps,
+                    "Expected " + robotSteps + " iron ingots to be used");
+            ItemStack untouched = syntheticStation.items().getStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT);
+            helper.assertTrue(Maintenance.bodyIntegrity(untouched) == 5.0f
+                    && syntheticStation.items().getStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT).getCount() == 10,
+                    "A synthetic body must not be repaired with iron");
+            syntheticStation.items().setStackInSlot(MaintenanceBlockEntity.FIRST_MATERIAL_SLOT + 1, new ItemStack(TechItems.SYNTHETIC_FIBER.get(), 1));
+            helper.runAfterDelay(MaintenanceBlockEntity.stepTicks() + 5, () -> {
+                helper.assertTrue(Maintenance.bodyIntegrity(syntheticStation.items().getStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT))
+                        == Math.min(Maintenance.maxBodyIntegrity(untouched), 5.0f + perItem), "Synthetic fiber must repair the synthetic body");
+                helper.succeed();
+            });
+        });
     }
 
     /** Three copper and one tin make four bronze on a normal crafting table. */

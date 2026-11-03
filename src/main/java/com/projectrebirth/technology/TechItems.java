@@ -27,6 +27,7 @@ public final class TechItems {
     public static final DeferredItem<Item> SYNTHETIC_FIBER = ITEMS.registerSimpleItem("synthetic_fiber");
 
     public static final Map<Station, DeferredItem<BlockItem>> STATIONS = new EnumMap<>(Station.class);
+    public static final DeferredItem<BlockItem> MAINTENANCE_STATION = ITEMS.registerSimpleBlockItem(TechBlocks.MAINTENANCE_STATION);
 
     public static final Map<Metal, DeferredItem<BlockItem>> ORES = new EnumMap<>(Metal.class);
     public static final Map<Metal, DeferredItem<BlockItem>> DEEPSLATE_ORES = new EnumMap<>(Metal.class);

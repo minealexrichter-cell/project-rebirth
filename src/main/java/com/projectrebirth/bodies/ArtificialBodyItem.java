@@ -25,6 +25,10 @@ public class ArtificialBodyItem extends Item {
         this.bodyClass = bodyClass;
     }
 
+    public BodyClass bodyClass() {
+        return bodyClass;
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
         if (!(context.getLevel() instanceof ServerLevel level)) {

@@ -159,17 +159,17 @@ public class PowerArmorGameTests {
         mechanic.getInventory().add(new ItemStack(PowerArmorRegistry.ARMOR_PLATE.get(), 1));
         Item wrench = PowerArmorRegistry.REPAIR_WRENCH.get();
 
-        armor.interact(mechanic, InteractionHand.MAIN_HAND); // armor plate -> critical
-        near(helper, "critical after plate", maxCritical(), armor.getCritical());
-        helper.assertTrue(armor.isDisabled(), "Critical repair alone must not restart the armor");
-        mechanic.getCooldowns().removeCooldown(wrench);
         armor.interact(mechanic, InteractionHand.MAIN_HAND); // iron -> structural 15
         mechanic.getCooldowns().removeCooldown(wrench);
         armor.interact(mechanic, InteractionHand.MAIN_HAND); // iron -> structural 30, above the restart threshold
+        mechanic.getCooldowns().removeCooldown(wrench);
+        armor.interact(mechanic, InteractionHand.MAIN_HAND); // no iron left: the plate must not be used in the field
 
         helper.assertTrue(armor.isActive(), "The armor must restart once structural integrity is repaired enough");
         helper.assertTrue(mechanic.getInventory().countItem(Items.IRON_INGOT) == 0, "Both iron ingots must be used");
-        helper.assertTrue(mechanic.getInventory().countItem(PowerArmorRegistry.ARMOR_PLATE.get()) == 0, "The armor plate must be used");
+        helper.assertTrue(mechanic.getInventory().countItem(PowerArmorRegistry.ARMOR_PLATE.get()) == 1,
+                "The wrench must not repair critical integrity: the plate stays");
+        near(helper, "critical", maxCritical() - 10.0f, armor.getCritical());
         near(helper, "structural", 2 * RebirthConfig.ARMOR_REPAIR_STRUCTURAL_PER_INGOT.get().floatValue(), armor.getStructural());
         helper.succeed();
     }

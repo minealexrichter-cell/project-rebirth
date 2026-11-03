@@ -15,6 +15,7 @@ import com.projectrebirth.client.render.ArtificialBodyRenderer;
 import com.projectrebirth.client.render.BodyArmRenderer;
 import com.projectrebirth.client.render.HumanShellRenderer;
 import com.projectrebirth.client.render.PossessedPlayerRenderer;
+import com.projectrebirth.client.screen.MaintenanceScreen;
 import com.projectrebirth.client.screen.StationScreen;
 import com.projectrebirth.technology.TechMenus;
 
@@ -67,6 +68,7 @@ public class ProjectRebirthClient {
 
     private void registerScreens(RegisterMenuScreensEvent event) {
         event.register(TechMenus.STATION.get(), StationScreen::new);
+        event.register(TechMenus.MAINTENANCE.get(), MaintenanceScreen::new);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {

@@ -34,6 +34,7 @@ public final class ModCreativeTabs {
                 for (Station station : Station.values()) {
                     output.accept(TechItems.STATIONS.get(station).get());
                 }
+                output.accept(TechItems.MAINTENANCE_STATION.get());
                 output.accept(TechItems.CIRCUIT_BOARD.get());
                 output.accept(TechItems.PROCESSOR.get());
                 output.accept(TechItems.POWER_CELL.get());

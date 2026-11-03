@@ -20,6 +20,15 @@ public final class TechBlocks {
     /** Production stations, one block per {@link Station}, registered under the station's id. */
     public static final Map<Station, DeferredBlock<StationBlock>> STATIONS = new EnumMap<>(Station.class);
 
+    /** Repairs packed armor (the only place for critical integrity) and packed bodies. */
+    public static final DeferredBlock<MaintenanceStationBlock> MAINTENANCE_STATION = BLOCKS.registerBlock("maintenance_station",
+            MaintenanceStationBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
     /** Stone and deepslate ores; same hardness as the vanilla ores. */
     public static final Map<Metal, DeferredBlock<Block>> ORES = new EnumMap<>(Metal.class);
     public static final Map<Metal, DeferredBlock<Block>> DEEPSLATE_ORES = new EnumMap<>(Metal.class);

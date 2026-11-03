@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "projectrebirth:block/maintenance_station_top",
+    "front": "projectrebirth:block/maintenance_station_front",
+    "side": "projectrebirth:block/maintenance_station_side"
+  }
+}

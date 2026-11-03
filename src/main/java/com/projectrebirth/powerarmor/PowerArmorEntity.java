@@ -588,17 +588,17 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             say(player, "cannot_repair_wreck");
             return;
         }
-        if (getCritical() < getMaxCritical() && consume(player, PowerArmorRegistry.ARMOR_PLATE.get().getDefaultInstance())) {
-            entityData.set(CRITICAL, Math.min(getMaxCritical(),
-                    getCritical() + RebirthConfig.ARMOR_REPAIR_CRITICAL_PER_PLATE.get().floatValue()));
-        } else if (getStructural() < getMaxStructural() && consume(player, new ItemStack(Items.IRON_INGOT))) {
+        // In the field only the outer plating (structural integrity) can be patched up; critical systems need
+        // the maintenance station.
+        if (getStructural() < getMaxStructural() && consume(player, new ItemStack(Items.IRON_INGOT))) {
             entityData.set(STRUCTURAL, Math.min(getMaxStructural(),
                     getStructural() + RebirthConfig.ARMOR_REPAIR_STRUCTURAL_PER_INGOT.get().floatValue()));
             if (isDisabled() && getStructural() >= RebirthConfig.ARMOR_RESTART_FRACTION.get() * getMaxStructural()) {
                 restart();
             }
         } else {
-            say(player, getCritical() < getMaxCritical() || getStructural() < getMaxStructural() ? "need_materials" : "nothing_to_repair");
+            say(player, getStructural() < getMaxStructural() ? "need_materials"
+                    : getCritical() < getMaxCritical() ? "critical_needs_station" : "nothing_to_repair");
             return;
         }
         wrench.hurtAndBreak(1, player, EquipmentSlot.MAINHAND);

@@ -47,8 +47,8 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     private static final int CELL = 18;
     private static final int SCROLL_X = 156;
     private static final int STATUS_Y = 57;
-    private static final int ARROW_X = 90;
-    private static final int ARROW_Y = StationMenu.OUTPUT_Y;
+    public static final int ARROW_X = 90;
+    public static final int ARROW_Y = StationMenu.OUTPUT_Y;
 
     private int startRow;
 

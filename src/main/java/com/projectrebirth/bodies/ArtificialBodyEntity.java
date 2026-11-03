@@ -199,7 +199,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         storedInventory = tag.getList("BodyInventory", Tag.TAG_COMPOUND);
         // Bodies saved before this flag existed are already initialized.
-        statsInitialized = !tag.contains("StatsInitialized") || tag.getBoolean("StatsInitialized");
+        // Saves from before the flag existed already have health; a body summoned by command with extra data
+        // (for example /summon ... {Owner:...}) has none and still needs its class health.
+        statsInitialized = tag.contains("StatsInitialized") ? tag.getBoolean("StatsInitialized") : tag.contains("Health");
     }
 
     @Override

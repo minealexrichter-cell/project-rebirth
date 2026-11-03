@@ -2,7 +2,27 @@
 
 ## Звуки
 
-Все звуки мода взяты из набора **Sci-fi Sounds** от **Kenney** (www.kenney.nl) под лицензией
+**Сейчас (временно, по решению владельца) мод играет ванильные звуки Minecraft**: в
+`src/main/resources/assets/projectrebirth/sounds.json` каждое событие мода ссылается на ванильное звуковое событие
+(`"type": "event"`), своих файлов в моде нет. Ниже — подобранные ранее звуки Kenney; они лежат в
+`assets_src/sounds/kenney/` и в мод не входят. Чтобы вернуть их, скопируйте `assets_src/sounds/kenney/sounds/` в
+`src/main/resources/assets/projectrebirth/sounds/` и `assets_src/sounds/kenney/sounds.json` на место `sounds.json`.
+
+| Событие мода | Ванильное событие сейчас |
+|---|---|
+| шаги робота | `block.metal.step` (выше тоном) |
+| урон / уничтожение робота | `entity.iron_golem.hurt` / `entity.iron_golem.death` (выше тоном) |
+| шаги / урон брони | `entity.iron_golem.step` / `entity.iron_golem.hurt` (ниже тоном) |
+| отключение / разрушение брони | `block.beacon.deactivate` / `entity.generic.explode` |
+| вход / выход из брони | `block.iron_door.close` / `block.iron_door.open` |
+| работа станции (цикл) | `block.beacon.ambient` (выше тоном) |
+| конец операции | `block.note_block.chime` |
+| работа генератора (цикл) | `block.furnace.fire_crackle` |
+| перенос / возвращение | `block.beacon.activate` / `block.beacon.deactivate` |
+
+### Звуки Kenney (сейчас не используются)
+
+Эти звуки взяты из набора **Sci-fi Sounds** от **Kenney** (www.kenney.nl) под лицензией
 **Creative Commons Zero (CC0 1.0)**: их можно свободно использовать в любых проектах, указывать автора не обязательно
 (Kenney просит об этом как о любезности, поэтому он указан здесь). Текст лицензии:
 http://creativecommons.org/publicdomain/zero/1.0/
@@ -15,9 +35,9 @@ http://creativecommons.org/publicdomain/zero/1.0/
 объёмными (тише с расстоянием) только моно-звуки.
 
 Файлы скопированы без изменений и переименованы. Одни и те же файлы с разной громкостью и высотой тона служат
-нескольким событиям; это задано в `src/main/resources/assets/projectrebirth/sounds.json`.
+нескольким событиям; это задано в `assets_src/sounds/kenney/sounds.json`.
 
-| Файл мода (`assets/projectrebirth/sounds/`) | Исходный файл Sci-fi Sounds | События |
+| Файл (`assets_src/sounds/kenney/sounds/`) | Исходный файл Sci-fi Sounds | События |
 |---|---|---|
 | `metal/impact1–5.ogg` | `impactMetal_000–004.ogg` | шаги и урон робота, шаги и урон брони |
 | `body/robot_destroyed1–3.ogg` | `explosionCrunch_000–002.ogg` | уничтожение робота |

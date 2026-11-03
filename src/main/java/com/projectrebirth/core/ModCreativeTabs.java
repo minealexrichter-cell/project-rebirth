@@ -4,6 +4,7 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyItems;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
+import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.TechItems;
 
 import net.minecraft.core.registries.Registries;
@@ -20,6 +21,15 @@ public final class ModCreativeTabs {
             .title(Component.translatable("itemGroup.projectrebirth"))
             .icon(() -> BodyItems.item(BodyClass.BASIC_ROBOT).getDefaultInstance())
             .displayItems((parameters, output) -> {
+                for (Metal metal : Metal.values()) {
+                    output.accept(TechItems.ORES.get(metal).get());
+                    output.accept(TechItems.DEEPSLATE_ORES.get(metal).get());
+                }
+                for (Metal metal : Metal.values()) {
+                    output.accept(TechItems.RAW.get(metal).get());
+                    output.accept(TechItems.INGOTS.get(metal).get());
+                }
+                output.accept(TechItems.BRONZE_INGOT.get());
                 output.accept(TechItems.CIRCUIT_BOARD.get());
                 output.accept(TechItems.ASSEMBLY_STATION.get());
                 output.accept(BodyItems.TRANSFER_CAPSULE.get());

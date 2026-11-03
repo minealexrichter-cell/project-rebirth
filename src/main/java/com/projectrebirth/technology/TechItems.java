@@ -1,5 +1,8 @@
 package com.projectrebirth.technology;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import com.projectrebirth.ProjectRebirth;
 
 import net.minecraft.world.item.BlockItem;
@@ -15,6 +18,23 @@ public final class TechItems {
     public static final DeferredItem<Item> CIRCUIT_BOARD = ITEMS.registerSimpleItem("circuit_board");
 
     public static final DeferredItem<BlockItem> ASSEMBLY_STATION = ITEMS.registerSimpleBlockItem(TechBlocks.ASSEMBLY_STATION);
+
+    public static final Map<Metal, DeferredItem<BlockItem>> ORES = new EnumMap<>(Metal.class);
+    public static final Map<Metal, DeferredItem<BlockItem>> DEEPSLATE_ORES = new EnumMap<>(Metal.class);
+    public static final Map<Metal, DeferredItem<Item>> RAW = new EnumMap<>(Metal.class);
+    public static final Map<Metal, DeferredItem<Item>> INGOTS = new EnumMap<>(Metal.class);
+
+    static {
+        for (Metal metal : Metal.values()) {
+            ORES.put(metal, ITEMS.registerSimpleBlockItem(TechBlocks.ORES.get(metal)));
+            DEEPSLATE_ORES.put(metal, ITEMS.registerSimpleBlockItem(TechBlocks.DEEPSLATE_ORES.get(metal)));
+            RAW.put(metal, ITEMS.registerSimpleItem("raw_" + metal.id()));
+            INGOTS.put(metal, ITEMS.registerSimpleItem(metal.id() + "_ingot"));
+        }
+    }
+
+    /** Copper and tin alloy (crafted on a normal crafting table). */
+    public static final DeferredItem<Item> BRONZE_INGOT = ITEMS.registerSimpleItem("bronze_ingot");
 
     private TechItems() {
     }

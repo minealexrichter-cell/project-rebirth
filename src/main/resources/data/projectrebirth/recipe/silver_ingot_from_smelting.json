@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": [
+    { "tag": "c:raw_materials/silver" },
+    { "tag": "c:ores/silver" }
+  ],
+  "result": { "id": "projectrebirth:silver_ingot" },
+  "experience": 1.0,
+  "cookingtime": 200
+}

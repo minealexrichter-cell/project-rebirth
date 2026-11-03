@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "projectrebirth:tin_ore",
+    "projectrebirth:deepslate_tin_ore",
+    "projectrebirth:aluminum_ore",
+    "projectrebirth:deepslate_aluminum_ore",
+    "projectrebirth:silver_ore",
+    "projectrebirth:deepslate_silver_ore",
+    "projectrebirth:lithium_ore",
+    "projectrebirth:deepslate_lithium_ore",
+    "projectrebirth:titanium_ore",
+    "projectrebirth:deepslate_titanium_ore"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "projectrebirth:ore_tin",
+    "projectrebirth:ore_aluminum",
+    "projectrebirth:ore_silver",
+    "projectrebirth:ore_lithium",
+    "projectrebirth:ore_titanium"
+  ],
+  "step": "underground_ores"
+}

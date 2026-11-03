@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.client.render.ArmorArmRenderer;
 import com.projectrebirth.client.render.PowerArmorRenderer;
+import com.projectrebirth.powerarmor.ArmorSwingPayload;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
@@ -24,6 +25,7 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
@@ -54,6 +56,7 @@ public final class PowerArmorClient {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, PowerArmorClient::hidePilot);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::hideVehicleHearts);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::renderArmorHands);
+        NeoForge.EVENT_BUS.addListener(PowerArmorClient::onAttackKey);
         PowerArmorEntity.isLocalPlayer = entity -> entity == Minecraft.getInstance().player;
     }
 
@@ -77,6 +80,14 @@ public final class PowerArmorClient {
         armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
                 event.getEquipProgress(), swing, side);
         event.setCanceled(true);
+    }
+
+    /** Every attack of the pilot, even into the air, makes the armor punch for everyone to see. */
+    private static void onAttackKey(InputEvent.InteractionKeyMappingTriggered event) {
+        Player player = Minecraft.getInstance().player;
+        if (event.isAttack() && player != null && player.getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
+            PacketDistributor.sendToServer(ArmorSwingPayload.INSTANCE);
+        }
     }
 
     /** The armor's own integrity bars replace the vanilla "mount health" hearts. */

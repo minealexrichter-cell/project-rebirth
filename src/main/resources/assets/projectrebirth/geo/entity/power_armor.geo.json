@@ -54,7 +54,9 @@
             { "origin": [9, 12, -3], "size": [5, 16, 6], "uv": [78, 0] },
             { "origin": [8.5, 8, -3.5], "size": [6, 4, 7], "uv": [56, 56] }
           ]
-        }
+        },
+        { "name": "right_hand", "parent": "right_arm", "pivot": [-11.5, 9, 0] },
+        { "name": "left_hand", "parent": "left_arm", "pivot": [11.5, 9, 0] }
       ]
     }
   ]

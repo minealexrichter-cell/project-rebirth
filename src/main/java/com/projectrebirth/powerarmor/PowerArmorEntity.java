@@ -107,6 +107,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private boolean releasingPilot;
     /** 0..1 jump strength requested by the pilot (charged with the jump key), applied when on the ground. */
     private float pendingJump;
+    private int lastAttackAnimationTick;
 
     public PowerArmorEntity(EntityType<? extends PowerArmorEntity> type, Level level) {
         super(type, level);
@@ -441,8 +442,15 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         return super.isPickable();
     }
 
-    /** Punch animation, seen by everybody; called on the server when the pilot attacks. */
+    /**
+     * Punch animation, seen by everybody; called on the server when the pilot attacks. One attack can report
+     * itself twice (key press and hit), so a punch is not restarted while the previous one is still early.
+     */
     public void playAttackAnimation() {
+        if (tickCount - lastAttackAnimationTick < 8 && lastAttackAnimationTick != 0) {
+            return;
+        }
+        lastAttackAnimationTick = tickCount;
         triggerAnim(ACTION_CONTROLLER, ATTACK_ANIMATION);
     }
 

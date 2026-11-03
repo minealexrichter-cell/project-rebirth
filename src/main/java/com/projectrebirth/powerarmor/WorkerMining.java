@@ -26,9 +26,10 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 
 /**
- * Mining with the bare hands of a worker armor's pilot: the speed and tier of an unenchanted diamond tool, and in
- * the 3x3 mode the eight blocks around the target in the plane facing the pilot break too. Every one of those blocks
- * is checked like a block the player broke alone (faction territories, spawn protection, other mods' protection).
+ * Mining of a worker armor's pilot with the ability slot (hotbar slot 9) selected instead of a tool: the speed and
+ * tier of an unenchanted diamond tool, and in the 3x3 mode the eight blocks around the target in the plane facing the
+ * pilot break too. Every one of those blocks is checked like a block the player broke alone (faction territories,
+ * spawn protection, other mods' protection).
  */
 @EventBusSubscriber(modid = ProjectRebirth.MOD_ID)
 public final class WorkerMining {
@@ -40,11 +41,10 @@ public final class WorkerMining {
     private WorkerMining() {
     }
 
-    /** The worker armor whose pilot mines with bare hands right now, or null. */
+    /** The worker armor whose pilot mines right now (its ability slot is selected), or null. */
     @Nullable
     public static PowerArmorEntity miningArmor(Player player) {
-        if (player.getVehicle() instanceof PowerArmorEntity armor && armor.getVariant() == ArmorVariant.WORKER
-                && armor.isActive() && player.getMainHandItem().isEmpty()) {
+        if (ArmorAbility.selected(player) == ArmorVariant.WORKER && player.getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
             return armor;
         }
         return null;

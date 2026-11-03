@@ -7,6 +7,7 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.client.render.ArmorArmRenderer;
 import com.projectrebirth.client.render.PowerArmorRenderer;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
+import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
 import com.projectrebirth.powerarmor.MiningModePayload;
@@ -18,11 +19,13 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -31,6 +34,7 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -57,6 +61,8 @@ public final class PowerArmorClient {
         modEventBus.addListener(PowerArmorClient::registerKeys);
         modEventBus.addListener(PowerArmorClient::registerGuiLayers);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::onClientTick);
+        NeoForge.EVENT_BUS.addListener(PowerArmorClient::blockAbilityClick);
+        NeoForge.EVENT_BUS.addListener(PowerArmorClient::blockAbilityKey);
         // Runs before the possessed-body renderer so that a pilot is hidden in any body.
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, PowerArmorClient::hidePilot);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::hideVehicleHearts);
@@ -73,7 +79,7 @@ public final class PowerArmorClient {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (player == null || !(player.getVehicle() instanceof PowerArmorEntity armor) || armor.isWrecked()
-                || !event.getItemStack().isEmpty()) {
+                || !ArmorAbility.isBareHand(event.getItemStack())) {
             return;
         }
         if (armorArmRenderer == null) {
@@ -120,6 +126,34 @@ public final class PowerArmorClient {
         if (event.getEntity().getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()) {
             event.setCanceled(true);
         }
+    }
+
+    /**
+     * The ability icon in hotbar slot 9 cannot be taken, moved or swapped in any window. The server would put it back
+     * anyway; stopping the click here keeps it from even flickering.
+     */
+    private static void blockAbilityClick(ScreenEvent.MouseButtonPressed.Pre event) {
+        if (event.getScreen() instanceof AbstractContainerScreen<?> screen && touchesAbility(screen)) {
+            event.setCanceled(true);
+        }
+    }
+
+    /** Number keys and the off-hand key over a slot swap items; the 9 key would swap something into slot 9. */
+    private static void blockAbilityKey(ScreenEvent.KeyPressed.Pre event) {
+        if (!(event.getScreen() instanceof AbstractContainerScreen<?> screen) || screen.getSlotUnderMouse() == null) {
+            return;
+        }
+        Minecraft minecraft = Minecraft.getInstance();
+        boolean intoAbilitySlot = minecraft.player != null && minecraft.player.getVehicle() instanceof PowerArmorEntity
+                && minecraft.options.keyHotbarSlots[ArmorAbility.SLOT].matches(event.getKeyCode(), event.getScanCode());
+        if (intoAbilitySlot || touchesAbility(screen)) {
+            event.setCanceled(true);
+        }
+    }
+
+    private static boolean touchesAbility(AbstractContainerScreen<?> screen) {
+        Slot slot = screen.getSlotUnderMouse();
+        return slot != null && ArmorAbility.isAbility(slot.getItem()) || ArmorAbility.isAbility(screen.getMenu().getCarried());
     }
 
     /** Tells the server when the hatch key starts or stops being held; the server counts the time. */

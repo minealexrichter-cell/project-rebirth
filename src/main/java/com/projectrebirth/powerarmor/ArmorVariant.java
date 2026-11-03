@@ -8,9 +8,9 @@ import javax.annotation.Nullable;
  */
 public enum ArmorVariant {
     /** The armor of 0.1.0: armors saved before variants existed load as this one. */
-    COMBAT("combat", "power_armor", 100.0, 50.0, 0.12, 6.0, 0.6),
-    MOBILE("mobile", "mobile_power_armor", 70.0, 35.0, 0.18, 4.0, 1.0),
-    WORKER("worker", "worker_power_armor", 60.0, 30.0, 0.09, 2.0, 0.4);
+    COMBAT("combat", "power_armor", 100.0, 50.0, 0.12, 6.0, 0.6, 3.0),
+    MOBILE("mobile", "mobile_power_armor", 70.0, 35.0, 0.18, 4.0, 1.0, 15.0),
+    WORKER("worker", "worker_power_armor", 60.0, 30.0, 0.09, 2.0, 0.4, 3.0);
 
     private final String id;
     private final String itemId;
@@ -19,9 +19,10 @@ public enum ArmorVariant {
     private final double defaultMovementSpeed;
     private final double defaultPilotAttackBonus;
     private final double defaultJumpStrength;
+    private final double defaultSafeFall;
 
     ArmorVariant(String id, String itemId, double defaultMaxStructural, double defaultMaxCritical, double defaultMovementSpeed,
-                 double defaultPilotAttackBonus, double defaultJumpStrength) {
+                 double defaultPilotAttackBonus, double defaultJumpStrength, double defaultSafeFall) {
         this.id = id;
         this.itemId = itemId;
         this.defaultMaxStructural = defaultMaxStructural;
@@ -29,6 +30,7 @@ public enum ArmorVariant {
         this.defaultMovementSpeed = defaultMovementSpeed;
         this.defaultPilotAttackBonus = defaultPilotAttackBonus;
         this.defaultJumpStrength = defaultJumpStrength;
+        this.defaultSafeFall = defaultSafeFall;
     }
 
     /** Used in the config, in saves and in translation keys. */
@@ -63,6 +65,16 @@ public enum ArmorVariant {
 
     public double defaultJumpStrength() {
         return defaultJumpStrength;
+    }
+
+    /** Blocks the armor can fall without damage; the mobile armor must survive the landing of its own high jump. */
+    public double defaultSafeFall() {
+        return defaultSafeFall;
+    }
+
+    /** The item of this variant's hotbar ability slot (see {@link ArmorAbility}). */
+    public String abilityItemId() {
+        return id + "_armor_ability";
     }
 
     /** The variant saved under this id; unknown or missing ids (0.1.0 saves) are the combat armor. */

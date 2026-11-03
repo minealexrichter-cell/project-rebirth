@@ -3,6 +3,7 @@ package com.projectrebirth.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 
@@ -95,7 +96,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             }
             boolean mainHandIsRight = pilot.getMainArm() == HumanoidArm.RIGHT;
             ItemStack stack = rightFist == mainHandIsRight ? pilot.getMainHandItem() : pilot.getOffhandItem();
-            return stack.isEmpty() ? null : stack;
+            return ArmorAbility.isBareHand(stack) ? null : stack;
         }
 
         /**

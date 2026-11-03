@@ -245,6 +245,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         entityData.set(MAX_STRUCTURAL, stats().maxStructural().get().floatValue());
         entityData.set(MAX_CRITICAL, stats().maxCritical().get().floatValue());
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(stats().movementSpeed().get());
+        getAttribute(Attributes.SAFE_FALL_DISTANCE).setBaseValue(stats().safeFallDistance().get());
         if (!initialized) {
             entityData.set(STRUCTURAL, getMaxStructural());
             entityData.set(CRITICAL, getMaxCritical());
@@ -508,7 +509,17 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     @Override
     protected float getRiddenSpeed(Player player) {
-        return (float) getAttributeValue(Attributes.MOVEMENT_SPEED);
+        return pilotSpeed(player);
+    }
+
+    /** Speed of the armor under this pilot. Public for tests. */
+    public float pilotSpeed(Player player) {
+        float speed = (float) getAttributeValue(Attributes.MOVEMENT_SPEED);
+        // Mobile armor: faster while its ability slot is selected.
+        if (ArmorAbility.selected(player) == ArmorVariant.MOBILE) {
+            speed *= 1.0f + RebirthConfig.ARMOR_ABILITY_SPEED_BONUS.get().floatValue();
+        }
+        return speed;
     }
 
     @Override

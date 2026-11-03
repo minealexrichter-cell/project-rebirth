@@ -2,6 +2,7 @@ package com.projectrebirth.powerarmor;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import com.mojang.serialization.Codec;
 import com.projectrebirth.ProjectRebirth;
@@ -12,11 +13,14 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /** Everything the power armor registers: the armor entity, its items and item data. */
 public final class PowerArmorRegistry {
@@ -47,6 +51,24 @@ public final class PowerArmorRegistry {
     }
 
     public static final DeferredItem<PowerArmorItem> POWER_ARMOR_ITEM = ARMOR_ITEMS.get(ArmorVariant.COMBAT);
+
+    /** The phantom icons of the ability slot, one per variant (see ArmorAbility). */
+    private static final Map<ArmorVariant, DeferredItem<ArmorAbilityItem>> ABILITY_ITEMS = new EnumMap<>(ArmorVariant.class);
+
+    static {
+        for (ArmorVariant variant : ArmorVariant.values()) {
+            ABILITY_ITEMS.put(variant, ITEMS.register(variant.abilityItemId(), () -> new ArmorAbilityItem(variant, new Item.Properties().stacksTo(1))));
+        }
+    }
+
+    private static final DeferredRegister<AttachmentType<?>> ATTACHMENTS = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, ProjectRebirth.MOD_ID);
+
+    /** What lay in hotbar slot 9 when the pilot got in and found no other free slot; given back after getting out. */
+    public static final Supplier<AttachmentType<ItemStack>> SET_ASIDE = ATTACHMENTS.register("armor_set_aside",
+            () -> AttachmentType.builder(() -> ItemStack.EMPTY)
+                    .serialize(ItemStack.OPTIONAL_CODEC, stack -> !stack.isEmpty())
+                    .copyOnDeath()
+                    .build());
     /** Repairs armor (iron ingots for structural, armor plates for critical) and dismantles wrecks. */
     public static final DeferredItem<Item> REPAIR_WRENCH = ITEMS.register("repair_wrench",
             () -> new Item(new Item.Properties().durability(256)));
@@ -63,10 +85,15 @@ public final class PowerArmorRegistry {
         return ARMOR_ITEMS.get(variant).get();
     }
 
+    public static ArmorAbilityItem abilityItem(ArmorVariant variant) {
+        return ABILITY_ITEMS.get(variant).get();
+    }
+
     public static void register(IEventBus modEventBus) {
         ENTITY_TYPES.register(modEventBus);
         ITEMS.register(modEventBus);
         COMPONENTS.register(modEventBus);
+        ATTACHMENTS.register(modEventBus);
         modEventBus.addListener(PowerArmorRegistry::registerAttributes);
     }
 

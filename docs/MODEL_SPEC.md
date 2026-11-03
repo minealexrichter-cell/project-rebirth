@@ -89,6 +89,9 @@ root
 Плоские иконки 16×16 в `textures/item/<id>.png` (модель `item/generated`), кроме блоков (берут модель блока) и
 кабеля (своя модель `models/item/cable.json`).
 
+Значки слота способности брони: `combat_armor_ability` (контур меча), `mobile_armor_ability` (ботинок с крылом),
+`worker_armor_ability` (кирка) — 16×16, видны только в 9-м слоте хотбара, лучше контуром на прозрачном фоне.
+
 Предметы: 5 тел, 3 брони (`power_armor`, `mobile_power_armor`, `worker_power_armor`), `armor_plate`, `repair_wrench`
 (в руке, `handheld`), `rescue_tool`, `repair_kit`, детали (`circuit_board`, `processor`, `power_cell`, `actuator`,
 `synthetic_fiber`), слитки и сырьё металлов, `bronze_ingot`.

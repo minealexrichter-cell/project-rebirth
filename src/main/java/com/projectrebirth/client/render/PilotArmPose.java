@@ -1,5 +1,6 @@
 package com.projectrebirth.client.render;
 
+import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 
 import net.minecraft.client.Minecraft;
@@ -109,7 +110,7 @@ final class PilotArmPose {
     /** Same choice as the vanilla player renderer. */
     private static HumanoidModel.ArmPose armPose(Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.isEmpty()) {
+        if (ArmorAbility.isBareHand(stack)) {
             return HumanoidModel.ArmPose.EMPTY;
         }
         if (player.getUsedItemHand() == hand && player.getUseItemRemainingTicks() > 0) {

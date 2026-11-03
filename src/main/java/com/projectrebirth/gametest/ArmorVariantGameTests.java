@@ -9,6 +9,7 @@ import com.projectrebirth.factions.Faction;
 import com.projectrebirth.factions.FactionBlocks;
 import com.projectrebirth.factions.FactionData;
 import com.projectrebirth.factions.FactionService;
+import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
@@ -51,11 +52,13 @@ public class ArmorVariantGameTests {
         return armor;
     }
 
-    /** A pilot in the armor, looking east at the wall with empty hands. */
+    /** A pilot in the armor, looking east at the wall with the ability slot selected. */
     private static ServerPlayer pilot(GameTestHelper helper, PowerArmorEntity armor) {
         ServerPlayer pilot = helper.makeMockServerPlayerInLevel();
         pilot.setGameMode(GameType.SURVIVAL);
         helper.assertTrue(pilot.startRiding(armor, true), "The pilot must get in");
+        ArmorAbility.sync(pilot);
+        pilot.getInventory().selected = ArmorAbility.SLOT;
         pilot.setYRot(-90.0f);
         pilot.setXRot(0.0f);
         return pilot;
@@ -151,7 +154,7 @@ public class ArmorVariantGameTests {
 
         PowerArmorEntity armor = armor(helper, ArmorVariant.WORKER);
         ServerPlayer pilot = pilot(helper, armor);
-        helper.assertTrue(WorkerMining.miningArmor(pilot) == armor, "Bare hands in a worker armor mine");
+        helper.assertTrue(WorkerMining.miningArmor(pilot) == armor, "The ability slot of a worker armor mines");
         pilot.gameMode.destroyBlock(wall.get(0));
 
         for (BlockPos pos : wall) {
@@ -181,14 +184,17 @@ public class ArmorVariantGameTests {
                 worker.setWideMining(false);
             } else if (round == 1) {
                 worker.setWideMining(true);
+                pilot.getInventory().selected = 0;
                 pilot.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
             } else {
                 pilot.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+                pilot.getInventory().selected = ArmorAbility.SLOT;
                 pilot.stopRiding();
                 worker.discard();
                 PowerArmorEntity combat = armor(helper, ArmorVariant.COMBAT);
                 helper.assertTrue(pilot.startRiding(combat, true), "The pilot must get into the combat armor");
                 pilot.setYRot(-90.0f);
+                ArmorAbility.sync(pilot);
             }
             pilot.gameMode.destroyBlock(wall.get(0));
             long broken = wall.stream().filter(pos -> helper.getLevel().getBlockState(pos).isAir()).count();

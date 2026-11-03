@@ -25,7 +25,9 @@ public final class PowerArmorEvents {
         if (event.getEntity().getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()
                 && !event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             event.setCanceled(true);
-            if (!event.getEntity().level().isClientSide) {
+            // A landing armor hands its fall to the pilot too (vanilla does that for every vehicle); the armor already took
+            // its own fall damage, by its own safe fall height, so the pilot's share is dropped instead of passed on.
+            if (!event.getEntity().level().isClientSide && !event.getSource().is(DamageTypeTags.IS_FALL)) {
                 armor.hurt(event.getSource(), event.getAmount());
             }
         }

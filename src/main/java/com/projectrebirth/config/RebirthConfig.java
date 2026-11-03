@@ -42,6 +42,8 @@ public final class RebirthConfig {
 
     public static final ModConfigSpec.DoubleValue REPAIR_KIT_USE_SECONDS;
     public static final ModConfigSpec.DoubleValue REPAIR_KIT_FRACTION;
+    public static ModConfigSpec.DoubleValue ARMOR_ABILITY_ATTACK_BONUS;
+    public static ModConfigSpec.DoubleValue ARMOR_ABILITY_SPEED_BONUS;
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
@@ -156,8 +158,20 @@ public final class RebirthConfig {
             ModConfigSpec.DoubleValue jump = builder
                     .comment("Jump strength at full charge (0.42 is a player's jump, about 1.25 blocks; 0 disables jumping)")
                     .defineInRange("jumpStrength", variant.defaultJumpStrength(), 0.0, 3.0);
+            ModConfigSpec.DoubleValue safeFall = builder
+                    .comment("Blocks the armor can fall without damage (fall damage goes to structural integrity)")
+                    .defineInRange("safeFallDistance", variant.defaultSafeFall(), 0.0, 256.0);
+            if (variant == ArmorVariant.COMBAT) {
+                ARMOR_ABILITY_ATTACK_BONUS = builder
+                        .comment("Extra damage of a punch while the armor's ability slot (hotbar slot 9) is selected, on top of pilotAttackDamageBonus")
+                        .defineInRange("abilityAttackBonus", 6.0, 0.0, 1000.0);
+            } else if (variant == ArmorVariant.MOBILE) {
+                ARMOR_ABILITY_SPEED_BONUS = builder
+                        .comment("Extra speed while the armor's ability slot (hotbar slot 9) is selected: 0.4 = 40% faster than movementSpeed")
+                        .defineInRange("abilitySpeedBonus", 0.4, 0.0, 10.0);
+            }
             builder.pop();
-            ARMOR_STATS.put(variant, new ArmorStats(maxStructural, maxCritical, speed, attack, jump));
+            ARMOR_STATS.put(variant, new ArmorStats(maxStructural, maxCritical, speed, attack, jump, safeFall));
         }
         builder.pop();
 
@@ -294,7 +308,7 @@ public final class RebirthConfig {
 
     public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
                              ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
-                             ModConfigSpec.DoubleValue jumpStrength) {
+                             ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
     }
 
     public static BodyStats bodyStats(BodyClass bodyClass) {

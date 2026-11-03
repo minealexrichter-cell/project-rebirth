@@ -7,6 +7,8 @@ import java.util.Map;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.client.screen.StationScreen;
+import com.projectrebirth.powerarmor.ArmorVariant;
+import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.FabricationRecipe;
 import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.TechItems;
@@ -14,6 +16,7 @@ import com.projectrebirth.technology.TechRecipes;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.handlers.IGuiClickableArea;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.recipe.RecipeType;
@@ -21,6 +24,7 @@ import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -70,6 +74,13 @@ public class RebirthJeiPlugin implements IModPlugin {
         for (Station station : Station.values()) {
             registration.addRecipeCatalyst(new ItemStack(TechItems.STATIONS.get(station).get()), TYPES.get(station));
         }
+    }
+
+    /** The ability icons of the armor slot are not real items: keep them out of the item list. */
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime runtime) {
+        runtime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, java.util.Arrays.stream(ArmorVariant.values())
+                .map(variant -> new ItemStack(PowerArmorRegistry.abilityItem(variant))).toList());
     }
 
     /** Clicking the progress arrow in a station window opens the recipes of that station. */

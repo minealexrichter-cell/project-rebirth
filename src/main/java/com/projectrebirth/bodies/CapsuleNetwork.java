@@ -170,6 +170,7 @@ public final class CapsuleNetwork {
         BlockPos capsule = payload.capsule();
         Direction facing = capsuleFacing(player.serverLevel(), capsule);
         if (facing == null || player.distanceToSqr(Vec3.atBottomCenterOf(capsule)) > MAX_DISTANCE_SQR) {
+            TransferAnimationPayload.sendFailed(player);
             return;
         }
         if (payload.forget()) {

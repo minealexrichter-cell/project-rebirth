@@ -82,6 +82,7 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientFactionCache.clear());
         PowerArmorClient.register(modEventBus);
         BodyHud.register(modEventBus);
+        TransferAnimation.register();
         BodySounds.register();
         TechSoundsClient.register();
     }
@@ -126,7 +127,7 @@ public class ProjectRebirthClient {
         updateCapsuleScreen(player);
         while (RETURN_KEY.consumeClick()) {
             if (player != null && TransferService.isInArtificialBody(player)) {
-                PacketDistributor.sendToServer(ReturnToHumanPayload.INSTANCE);
+                TransferAnimation.requestTransfer(() -> PacketDistributor.sendToServer(ReturnToHumanPayload.INSTANCE));
             }
         }
         while (HUD_SETTINGS_KEY.consumeClick()) {
@@ -147,6 +148,8 @@ public class ProjectRebirthClient {
         CapsuleNetwork.OpenPayload data = CapsuleNetwork.received;
         if (data != null) {
             CapsuleNetwork.received = null;
+            // The server answers with the window when the transfer failed.
+            TransferAnimation.cancel();
             if (minecraft.screen instanceof CapsuleScreen screen && screen.capsule().equals(data.capsule())) {
                 screen.update(data);
             } else if (minecraft.screen == null || minecraft.screen instanceof CapsuleScreen) {

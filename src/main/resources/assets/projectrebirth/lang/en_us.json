@@ -323,8 +323,8 @@
   "hud.projectrebirth.armor.title": "%s: %s",
   "hud.projectrebirth.armor.state_ok": "normal",
   "hud.projectrebirth.armor.state_disabled": "shut down",
-  "key.projectrebirth.hud_settings": "HUD settings",
-  "screen.projectrebirth.hud_settings": "Project: Rebirth HUD",
+  "key.projectrebirth.hud_settings": "HUD and animation settings",
+  "screen.projectrebirth.hud_settings": "Project: Rebirth settings",
   "screen.projectrebirth.hud_settings.enabled": "HUD: %s",
   "screen.projectrebirth.hud_settings.scale": "Size: %s",
   "screen.projectrebirth.hud_settings.panel_x": "Panel, left edge: %s",
@@ -333,5 +333,7 @@
   "screen.projectrebirth.hud_settings.bar_y": "Integrity bar, up and down: %s",
   "screen.projectrebirth.hud_settings.reset": "Reset",
   "screen.projectrebirth.hud_settings.panel": "Status panel",
-  "screen.projectrebirth.hud_settings.bar": "Integrity bar"
+  "screen.projectrebirth.hud_settings.bar": "Integrity bar",
+  "screen.projectrebirth.hud_settings.animation": "Transfer animation: %s",
+  "screen.projectrebirth.hud_settings.animation_seconds": "Animation length, seconds: %s"
 }

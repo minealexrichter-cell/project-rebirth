@@ -323,8 +323,8 @@
   "hud.projectrebirth.armor.title": "%s: %s",
   "hud.projectrebirth.armor.state_ok": "норма",
   "hud.projectrebirth.armor.state_disabled": "отключена",
-  "key.projectrebirth.hud_settings": "Настройки HUD",
-  "screen.projectrebirth.hud_settings": "HUD Project: Rebirth",
+  "key.projectrebirth.hud_settings": "Настройки HUD и анимации",
+  "screen.projectrebirth.hud_settings": "Настройки Project: Rebirth",
   "screen.projectrebirth.hud_settings.enabled": "HUD: %s",
   "screen.projectrebirth.hud_settings.scale": "Размер: %s",
   "screen.projectrebirth.hud_settings.panel_x": "Панель, левый край: %s",
@@ -333,5 +333,7 @@
   "screen.projectrebirth.hud_settings.bar_y": "Полоса прочности, вверх и вниз: %s",
   "screen.projectrebirth.hud_settings.reset": "Сбросить",
   "screen.projectrebirth.hud_settings.panel": "Панель состояния",
-  "screen.projectrebirth.hud_settings.bar": "Полоса прочности"
+  "screen.projectrebirth.hud_settings.bar": "Полоса прочности",
+  "screen.projectrebirth.hud_settings.animation": "Анимация переноса: %s",
+  "screen.projectrebirth.hud_settings.animation_seconds": "Длительность анимации, секунд: %s"
 }

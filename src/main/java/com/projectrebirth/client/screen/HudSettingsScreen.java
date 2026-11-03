@@ -16,12 +16,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 /**
- * HUD settings: on/off, size and position. Changes apply at once and are saved on closing. Frames show where the
+ * Client settings: HUD on/off, size and position, and the transfer animation. Changes apply at once and are saved on closing. Frames show where the
  * panel and the bar are, since the real HUD is visible only in a body or an armor.
  */
 public class HudSettingsScreen extends Screen {
     private static final int COLUMN_WIDTH = 200;
-    private static final int ROW = 24;
+    private static final int ROW = 22;
+    private static final int ROWS = 9;
     /** The vanilla hearts start this far above the bottom of the screen and 91 left of its centre. */
     private static final int HEARTS_BOTTOM = 30;
     private static final int HEARTS_LEFT = 91;
@@ -38,7 +39,7 @@ public class HudSettingsScreen extends Screen {
     @Override
     protected void init() {
         int x = (width - COLUMN_WIDTH) / 2;
-        int y = Math.max(4, (height - 7 * ROW) / 2);
+        int y = Math.max(4, (height - ROWS * ROW) / 2);
         addRenderableWidget(Button.builder(enabledMessage(), button -> {
             RebirthClientConfig.HUD_ENABLED.set(!HudLayout.enabled());
             button.setMessage(enabledMessage());
@@ -53,16 +54,27 @@ public class HudSettingsScreen extends Screen {
                 value -> RebirthClientConfig.HUD_BAR_OFFSET_X.set((int) value)));
         addRenderableWidget(new Slider(x, y + 5 * ROW, "bar_y", -height, HEARTS_BOTTOM, 1, RebirthClientConfig.HUD_BAR_OFFSET_Y.get(),
                 value -> RebirthClientConfig.HUD_BAR_OFFSET_Y.set((int) value)));
+        addRenderableWidget(Button.builder(animationMessage(), button -> {
+            RebirthClientConfig.TRANSFER_ANIMATION_ENABLED.set(!RebirthClientConfig.TRANSFER_ANIMATION_ENABLED.get());
+            button.setMessage(animationMessage());
+        }).bounds(x, y + 6 * ROW, COLUMN_WIDTH, 20).build());
+        addRenderableWidget(new Slider(x, y + 7 * ROW, "animation_seconds", 1.0, 10.0, 0.5, RebirthClientConfig.TRANSFER_ANIMATION_SECONDS.get(),
+                RebirthClientConfig.TRANSFER_ANIMATION_SECONDS::set));
         int half = (COLUMN_WIDTH - 4) / 2;
         addRenderableWidget(Button.builder(Component.translatable("screen.projectrebirth.hud_settings.reset"), button -> reset())
-                .bounds(x, y + 6 * ROW, half, 20).build());
+                .bounds(x, y + 8 * ROW, half, 20).build());
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
-                .bounds(x + half + 4, y + 6 * ROW, half, 20).build());
+                .bounds(x + half + 4, y + 8 * ROW, half, 20).build());
     }
 
     private static Component enabledMessage() {
         return Component.translatable("screen.projectrebirth.hud_settings.enabled",
                 HudLayout.enabled() ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF);
+    }
+
+    private static Component animationMessage() {
+        return Component.translatable("screen.projectrebirth.hud_settings.animation",
+                RebirthClientConfig.TRANSFER_ANIMATION_ENABLED.get() ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF);
     }
 
     private void reset() {
@@ -72,6 +84,8 @@ public class HudSettingsScreen extends Screen {
         RebirthClientConfig.HUD_PANEL_Y.set(RebirthClientConfig.HUD_PANEL_Y.getDefault());
         RebirthClientConfig.HUD_BAR_OFFSET_X.set(RebirthClientConfig.HUD_BAR_OFFSET_X.getDefault());
         RebirthClientConfig.HUD_BAR_OFFSET_Y.set(RebirthClientConfig.HUD_BAR_OFFSET_Y.getDefault());
+        RebirthClientConfig.TRANSFER_ANIMATION_ENABLED.set(RebirthClientConfig.TRANSFER_ANIMATION_ENABLED.getDefault());
+        RebirthClientConfig.TRANSFER_ANIMATION_SECONDS.set(RebirthClientConfig.TRANSFER_ANIMATION_SECONDS.getDefault());
         rebuildWidgets();
     }
 
@@ -86,7 +100,7 @@ public class HudSettingsScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        int titleY = Math.max(4, (height - 7 * ROW) / 2) - 12;
+        int titleY = Math.max(4, (height - ROWS * ROW) / 2) - 12;
         graphics.drawCenteredString(font, title, width / 2, Math.max(0, titleY), 0xFFFFFF);
         if (HudLayout.enabled()) {
             float scale = HudLayout.scale();

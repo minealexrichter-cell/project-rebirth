@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.neoforged.neoforge.network.PacketDistributor;
+import com.projectrebirth.client.TransferAnimation;
 
 /**
  * Capsule window: the player's bodies with class, integrity, distance and state, and a transfer button for each.
@@ -87,7 +88,12 @@ public class CapsuleScreen extends Screen {
     }
 
     private void send(Entry entry, boolean forget) {
-        PacketDistributor.sendToServer(new CapsuleNetwork.ActionPayload(capsule, entry.id(), forget));
+        CapsuleNetwork.ActionPayload action = new CapsuleNetwork.ActionPayload(capsule, entry.id(), forget);
+        if (forget) {
+            PacketDistributor.sendToServer(action);
+        } else {
+            TransferAnimation.requestTransfer(() -> PacketDistributor.sendToServer(action));
+        }
     }
 
     @Override

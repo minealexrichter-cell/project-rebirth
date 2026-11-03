@@ -209,6 +209,8 @@ public final class TransferService {
 
     /** Puts the player's consciousness into the given body. The player's current inventory must already be stored or dropped. */
     private static void enterBody(ServerPlayer player, ArtificialBodyEntity body) {
+        ServerLevel fromLevel = player.serverLevel();
+        Vec3 from = player.position();
         BodyClass bodyClass = body.getBodyClass();
         ServerLevel level = (ServerLevel) body.level();
         float health = body.getHealth();
@@ -228,6 +230,7 @@ public final class TransferService {
         player.teleportTo(level, pos.x, pos.y, pos.z, yaw, player.getXRot());
         level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
         player.setHealth(Math.min(health, player.getMaxHealth()));
+        TransferAnimationPayload.sendArrived(player, fromLevel == level, from);
     }
 
     // ---------------------------------------------------------------- body -> human (voluntary)
@@ -275,6 +278,8 @@ public final class TransferService {
     }
 
     private static void restoreHumanBody(ServerPlayer player, ShellRegistry.ShellRecord record) {
+        ServerLevel fromLevel = player.serverLevel();
+        Vec3 from = player.position();
         leaveVehicle(player);
         ShellRegistry.get(player.server).remove(player.getUUID());
         ServerLevel level = player.server.getLevel(record.dimension());
@@ -295,6 +300,7 @@ public final class TransferService {
         player.teleportTo(level, record.position().x, record.position().y, record.position().z, record.yaw(), 0.0f);
         level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_RETURN.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
         player.setHealth(Math.max(1.0f, Math.min(health, player.getMaxHealth())));
+        TransferAnimationPayload.sendArrived(player, fromLevel == level, from);
     }
 
     // ---------------------------------------------------------------- controlled body destroyed

@@ -31,7 +31,11 @@ public record ReturnToHumanPayload() implements CustomPacketPayload {
 
     private static void handle(ReturnToHumanPayload payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player) {
-            player.displayClientMessage(TransferService.returnToHumanBody(player).message(), true);
+            TransferService.ReturnResult result = TransferService.returnToHumanBody(player);
+            player.displayClientMessage(result.message(), true);
+            if (result != TransferService.ReturnResult.SUCCESS) {
+                TransferAnimationPayload.sendFailed(player);
+            }
         }
     }
 }

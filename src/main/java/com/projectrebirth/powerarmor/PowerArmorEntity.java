@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.Parked;
 import com.projectrebirth.factions.FactionService;
 
 import net.minecraft.core.BlockPos;
@@ -34,6 +35,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -340,6 +342,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     @Override
     public void tick() {
         super.tick();
+        if (isParked()) {
+            Parked.holdRotation(this);
+        }
         if (level().isClientSide) {
             return;
         }
@@ -684,6 +689,51 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     @Override
     public boolean isPushable() {
         return false;
+    }
+
+    // An armor without a pilot is parked: a solid object that only falls (see Parked). With a pilot it moves as before.
+
+    private boolean isParked() {
+        return !isVehicle();
+    }
+
+    @Override
+    public boolean canBeCollidedWith() {
+        return isAlive() && isParked();
+    }
+
+    @Override
+    public boolean isPushedByFluid() {
+        return !isParked() && super.isPushedByFluid();
+    }
+
+    @Override
+    public void knockback(double strength, double x, double z) {
+        if (!isParked()) {
+            super.knockback(strength, x, z);
+        }
+    }
+
+    @Override
+    protected boolean canRide(Entity vehicle) {
+        return !isParked() && super.canRide(vehicle);
+    }
+
+    @Override
+    public void move(MoverType type, Vec3 movement) {
+        if (!isParked() || Parked.allowsMove(type)) {
+            super.move(type, movement);
+        }
+    }
+
+    @Override
+    public void travel(Vec3 input) {
+        if (isParked()) {
+            Parked.keepOnlyFalling(this);
+            super.travel(Vec3.ZERO);
+        } else {
+            super.travel(input);
+        }
     }
 
     @Override

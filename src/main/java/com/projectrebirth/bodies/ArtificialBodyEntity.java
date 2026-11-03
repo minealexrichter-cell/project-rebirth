@@ -5,6 +5,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.Parked;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -16,14 +17,17 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -181,6 +185,51 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
     @Override
     public boolean canBeLeashed() {
         return false;
+    }
+
+    // Nobody controls a body standing in the world (a controlled body is the player), so it is always parked.
+
+    @Override
+    public boolean canBeCollidedWith() {
+        return isAlive();
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    public boolean isPushedByFluid() {
+        return false;
+    }
+
+    @Override
+    public void knockback(double strength, double x, double z) {
+    }
+
+    @Override
+    protected boolean canRide(Entity vehicle) {
+        return false;
+    }
+
+    @Override
+    public void move(MoverType type, Vec3 movement) {
+        if (Parked.allowsMove(type)) {
+            super.move(type, movement);
+        }
+    }
+
+    @Override
+    public void travel(Vec3 input) {
+        Parked.keepOnlyFalling(this);
+        super.travel(Vec3.ZERO);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        Parked.holdRotation(this);
     }
 
     @Override

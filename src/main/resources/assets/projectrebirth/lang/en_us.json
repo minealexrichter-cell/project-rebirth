@@ -316,5 +316,22 @@
   "message.projectrebirth.faction.peace_offered_you": "Faction %s offers peace. Answer in the faction window (G), Diplomacy tab",
   "message.projectrebirth.faction.peace_offered": "Peace offered to %s",
   "message.projectrebirth.faction.core_protected": "The core of %s can only be broken by enemies during an active war",
-  "message.projectrebirth.faction.core_broken": "Core broken"
+  "message.projectrebirth.faction.core_broken": "Core broken",
+  "armor_variant.projectrebirth.combat": "Combat Armor",
+  "armor_variant.projectrebirth.mobile": "Mobile Armor",
+  "armor_variant.projectrebirth.worker": "Worker Armor",
+  "hud.projectrebirth.armor.title": "%s: %s",
+  "hud.projectrebirth.armor.state_ok": "normal",
+  "hud.projectrebirth.armor.state_disabled": "shut down",
+  "key.projectrebirth.hud_settings": "HUD settings",
+  "screen.projectrebirth.hud_settings": "Project: Rebirth HUD",
+  "screen.projectrebirth.hud_settings.enabled": "HUD: %s",
+  "screen.projectrebirth.hud_settings.scale": "Size: %s",
+  "screen.projectrebirth.hud_settings.panel_x": "Panel, left edge: %s",
+  "screen.projectrebirth.hud_settings.panel_y": "Panel, top edge: %s",
+  "screen.projectrebirth.hud_settings.bar_x": "Integrity bar, sideways: %s",
+  "screen.projectrebirth.hud_settings.bar_y": "Integrity bar, up and down: %s",
+  "screen.projectrebirth.hud_settings.reset": "Reset",
+  "screen.projectrebirth.hud_settings.panel": "Status panel",
+  "screen.projectrebirth.hud_settings.bar": "Integrity bar"
 }

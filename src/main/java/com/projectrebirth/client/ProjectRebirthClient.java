@@ -23,6 +23,8 @@ import com.projectrebirth.client.screen.MaintenanceScreen;
 import com.projectrebirth.client.screen.StationScreen;
 import com.projectrebirth.technology.TechMenus;
 import com.projectrebirth.factions.ClientFactionCache;
+import com.projectrebirth.client.screen.HudSettingsScreen;
+import com.projectrebirth.config.RebirthClientConfig;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
@@ -34,6 +36,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -43,6 +46,7 @@ import net.neoforged.neoforge.client.event.RenderArmEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -57,11 +61,15 @@ public class ProjectRebirthClient {
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.projectrebirth");
     private static final KeyMapping FACTION_KEY = new KeyMapping("key.projectrebirth.factions",
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.projectrebirth");
+    private static final KeyMapping HUD_SETTINGS_KEY = new KeyMapping("key.projectrebirth.hud_settings",
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "key.categories.projectrebirth");
 
     private final Map<BodyClass, PossessedPlayerRenderer> possessedRenderers = new EnumMap<>(BodyClass.class);
     private BodyArmRenderer armRenderer;
 
     public ProjectRebirthClient(IEventBus modEventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.CLIENT, RebirthClientConfig.CLIENT_SPEC);
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, (container, parent) -> new HudSettingsScreen(parent));
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::registerRenderers);
         modEventBus.addListener(this::createPossessedRenderers);
@@ -106,6 +114,7 @@ public class ProjectRebirthClient {
     private void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(RETURN_KEY);
         event.register(FACTION_KEY);
+        event.register(HUD_SETTINGS_KEY);
     }
 
     private void registerGuiLayers(RegisterGuiLayersEvent event) {
@@ -118,6 +127,11 @@ public class ProjectRebirthClient {
         while (RETURN_KEY.consumeClick()) {
             if (player != null && TransferService.isInArtificialBody(player)) {
                 PacketDistributor.sendToServer(ReturnToHumanPayload.INSTANCE);
+            }
+        }
+        while (HUD_SETTINGS_KEY.consumeClick()) {
+            if (Minecraft.getInstance().screen == null) {
+                Minecraft.getInstance().setScreen(new HudSettingsScreen(null));
             }
         }
         while (FACTION_KEY.consumeClick()) {
@@ -172,13 +186,15 @@ public class ProjectRebirthClient {
     private void renderBodyStatus(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (player == null || minecraft.options.hideGui) {
+        if (player == null || !HudLayout.enabled() || minecraft.options.hideGui) {
             return;
         }
         TransferService.state(player).body().ifPresent(bodyClass -> {
             Component line = Component.translatable("hud.projectrebirth.body",
                     Component.translatable(bodyClass.translationKey()), RETURN_KEY.getTranslatedKeyMessage());
-            graphics.drawString(minecraft.font, line, 4, 4, 0x7FE8FF);
+            HudLayout.pushPanel(graphics);
+            graphics.drawString(minecraft.font, line, 0, 0, 0x7FE8FF);
+            graphics.pose().popPose();
         });
     }
 }

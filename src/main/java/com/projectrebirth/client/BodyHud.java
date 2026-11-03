@@ -17,12 +17,12 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * HUD of a player in an artificial body: an integrity bar in place of the hearts, and no hunger bar (bodies have
- * no hunger). Only the vanilla health and food layers are replaced; other mods' layers stay. A simple bar for now,
- * the final look comes with the custom HUD.
+ * no hunger). Only the vanilla health and food layers are replaced; other mods' layers stay. With the HUD switched
+ * off in the settings the hearts come back; the hunger bar stays hidden, since a body has no hunger.
  */
 public final class BodyHud {
-    private static final int WIDTH = 81;
-    private static final int HEIGHT = 9;
+    private static final int WIDTH = HudLayout.BAR_WIDTH;
+    private static final int HEIGHT = HudLayout.BAR_HEIGHT;
 
     private BodyHud() {
     }
@@ -37,8 +37,9 @@ public final class BodyHud {
     }
 
     private static void hideVanillaBars(RenderGuiLayerEvent.Pre event) {
-        if ((event.getName().equals(VanillaGuiLayers.PLAYER_HEALTH) || event.getName().equals(VanillaGuiLayers.FOOD_LEVEL))
-                && inBody(Minecraft.getInstance().player)) {
+        boolean hidden = event.getName().equals(VanillaGuiLayers.FOOD_LEVEL)
+                || event.getName().equals(VanillaGuiLayers.PLAYER_HEALTH) && HudLayout.enabled();
+        if (hidden && inBody(Minecraft.getInstance().player)) {
             event.setCanceled(true);
         }
     }
@@ -51,12 +52,19 @@ public final class BodyHud {
     private static void renderIntegrity(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (!inBody(player) || minecraft.options.hideGui || minecraft.gameMode == null || !minecraft.gameMode.canHurtPlayer()) {
+        if (!HudLayout.enabled() || !inBody(player) || minecraft.options.hideGui || minecraft.gameMode == null || !minecraft.gameMode.canHurtPlayer()) {
             return;
         }
-        int x = graphics.guiWidth() / 2 - 91;
-        int y = graphics.guiHeight() - minecraft.gui.leftHeight;
-        minecraft.gui.leftHeight += HEIGHT + 1;
+        float scale = HudLayout.scale();
+        int height = Math.round(HEIGHT * scale);
+        int bottom = graphics.guiHeight() - minecraft.gui.leftHeight + HEIGHT;
+        minecraft.gui.leftHeight += height + 1;
+        graphics.pose().pushPose();
+        graphics.pose().translate(HudLayout.barX(graphics.guiWidth() / 2 - 91, graphics.guiWidth()),
+                HudLayout.barBottom(bottom, graphics.guiHeight()), 0.0f);
+        graphics.pose().scale(scale, scale, 1.0f);
+        int x = 0;
+        int y = -HEIGHT;
 
         float max = player.getMaxHealth();
         float fraction = max > 0 ? Mth.clamp(player.getHealth() / max, 0.0f, 1.0f) : 0.0f;
@@ -72,5 +80,6 @@ public final class BodyHud {
             text += " +" + Mth.ceil(absorption);
         }
         graphics.drawString(font, text, x + (WIDTH - font.width(text)) / 2, y + 1, 0xFFFFFF, true);
+        graphics.pose().popPose();
     }
 }

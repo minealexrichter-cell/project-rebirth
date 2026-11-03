@@ -176,12 +176,16 @@ public final class PowerArmorClient {
     private static void renderArmorStatus(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (player == null || minecraft.options.hideGui || !(player.getVehicle() instanceof PowerArmorEntity armor)) {
+        if (player == null || !HudLayout.enabled() || minecraft.options.hideGui || !(player.getVehicle() instanceof PowerArmorEntity armor)) {
             return;
         }
         Font font = minecraft.font;
-        int x = 4;
-        int y = 16;
+        HudLayout.pushPanel(graphics);
+        int x = 0;
+        Component state = Component.translatable(armor.isDisabled() ? "hud.projectrebirth.armor.state_disabled" : "hud.projectrebirth.armor.state_ok");
+        graphics.drawString(font, Component.translatable("hud.projectrebirth.armor.title", Component.translatable(armor.getVariant().translationKey()), state),
+                x, 12, armor.isDisabled() ? 0xFF5555 : 0x7FE8FF);
+        int y = 24;
         bar(graphics, font, x, y, Component.translatable("hud.projectrebirth.armor.structural"),
                 armor.getStructural(), armor.getMaxStructural(), 0xFF4FC3F7);
         bar(graphics, font, x, y + 12, Component.translatable("hud.projectrebirth.armor.critical"),
@@ -202,6 +206,7 @@ public final class PowerArmorClient {
                         : "hud.projectrebirth.armor.mining_single", MINING_KEY.getTranslatedKeyMessage()), x, y + 38, 0xFFD54F);
             }
         }
+        graphics.pose().popPose();
     }
 
     private static void bar(GuiGraphics graphics, Font font, int x, int y, Component label, float value, float max, int color) {

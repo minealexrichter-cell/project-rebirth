@@ -316,5 +316,22 @@
   "message.projectrebirth.faction.peace_offered_you": "Фракция %s предлагает мир. Ответьте в окне фракции (G), вкладка «Союзы»",
   "message.projectrebirth.faction.peace_offered": "Мир предложен: %s",
   "message.projectrebirth.faction.core_protected": "Ядро %s могут сломать только враги во время войны",
-  "message.projectrebirth.faction.core_broken": "Ядро сломано"
+  "message.projectrebirth.faction.core_broken": "Ядро сломано",
+  "armor_variant.projectrebirth.combat": "Боевая броня",
+  "armor_variant.projectrebirth.mobile": "Мобильная броня",
+  "armor_variant.projectrebirth.worker": "Рабочая броня",
+  "hud.projectrebirth.armor.title": "%s: %s",
+  "hud.projectrebirth.armor.state_ok": "норма",
+  "hud.projectrebirth.armor.state_disabled": "отключена",
+  "key.projectrebirth.hud_settings": "Настройки HUD",
+  "screen.projectrebirth.hud_settings": "HUD Project: Rebirth",
+  "screen.projectrebirth.hud_settings.enabled": "HUD: %s",
+  "screen.projectrebirth.hud_settings.scale": "Размер: %s",
+  "screen.projectrebirth.hud_settings.panel_x": "Панель, левый край: %s",
+  "screen.projectrebirth.hud_settings.panel_y": "Панель, верхний край: %s",
+  "screen.projectrebirth.hud_settings.bar_x": "Полоса прочности, вбок: %s",
+  "screen.projectrebirth.hud_settings.bar_y": "Полоса прочности, вверх и вниз: %s",
+  "screen.projectrebirth.hud_settings.reset": "Сбросить",
+  "screen.projectrebirth.hud_settings.panel": "Панель состояния",
+  "screen.projectrebirth.hud_settings.bar": "Полоса прочности"
 }

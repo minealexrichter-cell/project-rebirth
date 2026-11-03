@@ -8,6 +8,7 @@ import com.projectrebirth.bodies.BodyBlocks;
 import com.projectrebirth.bodies.BodyComponents;
 import com.projectrebirth.bodies.BodyEntities;
 import com.projectrebirth.bodies.BodyItems;
+import com.projectrebirth.bodies.CapsuleNetwork;
 import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModCreativeTabs;
@@ -50,6 +51,7 @@ public class ProjectRebirth {
         BodyEntities.register(modEventBus);
         BodyItems.register(modEventBus);
         ReturnToHumanPayload.register(modEventBus);
+        CapsuleNetwork.register(modEventBus);
         PowerArmorRegistry.register(modEventBus);
         HatchReleasePayload.register(modEventBus);
         ArmorSwingPayload.register(modEventBus);

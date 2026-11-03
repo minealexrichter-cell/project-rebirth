@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
@@ -29,6 +31,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -64,35 +67,39 @@ public final class TransferService {
 
     // ---------------------------------------------------------------- capsule -> body
 
+    /** Transfer into the nearest usable body around the capsule (admin command). */
     public static TransferResult transferFromCapsule(ServerPlayer player, BlockPos capsuleLower, Direction capsuleFacing) {
+        return transferFromCapsule(player, capsuleLower, capsuleFacing, null);
+    }
+
+    /**
+     * Transfer into the body chosen in the capsule window, or the nearest one if {@code chosenBody} is null.
+     * Everything is checked again here: the window only shows what the server allowed when it was opened.
+     */
+    public static TransferResult transferFromCapsule(ServerPlayer player, BlockPos capsuleLower, Direction capsuleFacing,
+                                                     @Nullable UUID chosenBody) {
         ServerLevel level = player.serverLevel();
-        if (isInArtificialBody(player)) {
-            return TransferResult.ALREADY_IN_BODY;
-        }
-        if (player.isPassenger() || player.isSleeping() || player.isDeadOrDying()) {
-            return TransferResult.NOT_POSSIBLE_NOW;
-        }
-        ShellRegistry registry = ShellRegistry.get(player.server);
-        if (registry.get(player.getUUID()).isPresent()) {
-            // A human player must never have a stored human body; refuse instead of overwriting its inventory.
-            ProjectRebirth.LOGGER.warn("Player {} is human but still has a stored human body; transfer refused", player.getScoreboardName());
-            return TransferResult.NOT_POSSIBLE_NOW;
+        TransferResult problem = capsuleProblem(player, capsuleLower);
+        if (problem != null) {
+            return problem;
         }
         long now = level.getGameTime();
-        Long last = LAST_TRANSFER.get(player.getUUID());
-        if (last != null && now - last < RebirthConfig.TRANSFER_COOLDOWN_SECONDS.get() * 20L) {
-            return TransferResult.COOLDOWN;
-        }
-        AABB capsuleSpace = new AABB(capsuleLower).expandTowards(0, 1, 0);
-        if (!level.getEntitiesOfClass(HumanShellEntity.class, capsuleSpace, HumanShellEntity::isAlive).isEmpty()) {
-            return TransferResult.CAPSULE_OCCUPIED;
-        }
-        Optional<ArtificialBodyEntity> target = findBodyNear(player, level, Vec3.atBottomCenterOf(capsuleLower));
-        if (target.isEmpty()) {
-            return TransferResult.NO_BODY;
+        Optional<ArtificialBodyEntity> target;
+        if (chosenBody == null) {
+            target = findBodyNear(player, level, Vec3.atBottomCenterOf(capsuleLower));
+            if (target.isEmpty()) {
+                return TransferResult.NO_BODY;
+            }
+        } else {
+            Choice choice = resolveChoice(player, level, Vec3.atBottomCenterOf(capsuleLower), chosenBody);
+            if (choice.problem() != null) {
+                return choice.problem();
+            }
+            target = Optional.of(choice.body());
         }
 
         // 1. The human body: inventory and health go to the registry, a visible shell stays in the capsule.
+        ShellRegistry registry = ShellRegistry.get(player.server);
         Vec3 shellPos = new Vec3(capsuleLower.getX() + 0.5, capsuleLower.getY() + 2.0 / 16.0, capsuleLower.getZ() + 0.5);
         float shellYaw = capsuleFacing.toYRot();
         ShellRegistry.ShellRecord record = new ShellRegistry.ShellRecord(UUID.randomUUID(), level.dimension(), shellPos, shellYaw,
@@ -118,6 +125,79 @@ public final class TransferService {
         return TransferResult.SUCCESS;
     }
 
+    /** Why this player cannot use the capsule at all right now, or null if they can. */
+    @Nullable
+    public static TransferResult capsuleProblem(ServerPlayer player, BlockPos capsuleLower) {
+        ServerLevel level = player.serverLevel();
+        long now = level.getGameTime();
+        if (isInArtificialBody(player)) {
+            return TransferResult.ALREADY_IN_BODY;
+        }
+        if (player.isPassenger() || player.isSleeping() || player.isDeadOrDying()) {
+            return TransferResult.NOT_POSSIBLE_NOW;
+        }
+        ShellRegistry registry = ShellRegistry.get(player.server);
+        if (registry.get(player.getUUID()).isPresent()) {
+            // A human player must never have a stored human body; refuse instead of overwriting its inventory.
+            ProjectRebirth.LOGGER.warn("Player {} is human but still has a stored human body; transfer refused", player.getScoreboardName());
+            return TransferResult.NOT_POSSIBLE_NOW;
+        }
+        Long last = LAST_TRANSFER.get(player.getUUID());
+        if (last != null && now - last < RebirthConfig.TRANSFER_COOLDOWN_SECONDS.get() * 20L) {
+            return TransferResult.COOLDOWN;
+        }
+        AABB capsuleSpace = new AABB(capsuleLower).expandTowards(0, 1, 0);
+        if (!level.getEntitiesOfClass(HumanShellEntity.class, capsuleSpace, HumanShellEntity::isAlive).isEmpty()) {
+            return TransferResult.CAPSULE_OCCUPIED;
+        }
+        return null;
+    }
+
+    private record Choice(@Nullable ArtificialBodyEntity body, @Nullable TransferResult problem) {
+    }
+
+    /** Checks a body chosen in the capsule window against the current state of the world and the transfer rules. */
+    private static Choice resolveChoice(ServerPlayer player, ServerLevel level, Vec3 capsuleCenter, UUID bodyId) {
+        BodyRegistry registry = BodyRegistry.get(player.server);
+        Optional<BodyRegistry.BodyRecord> record = registry.find(player.getUUID(), bodyId);
+        if (record.isEmpty()) {
+            return new Choice(null, TransferResult.BODY_UNAVAILABLE);
+        }
+        switch (record.get().state()) {
+            case DESTROYED -> {
+                return new Choice(null, TransferResult.BODY_DESTROYED);
+            }
+            case CONTROLLED -> {
+                return new Choice(null, TransferResult.BODY_OCCUPIED);
+            }
+            default -> {
+            }
+        }
+        if (!record.get().dimension().equals(level.dimension())) {
+            return new Choice(null, TransferResult.OTHER_DIMENSION);
+        }
+        if (!withinRadius(record.get().position(), capsuleCenter)) {
+            return new Choice(null, TransferResult.TOO_FAR);
+        }
+        if (level.getEntity(bodyId) instanceof ArtificialBodyEntity body && body.isAlive()) {
+            if (!body.canBeUsedBy(player)) {
+                return new Choice(null, TransferResult.BODY_UNAVAILABLE);
+            }
+            return withinRadius(body.position(), capsuleCenter) ? new Choice(body, null) : new Choice(null, TransferResult.TOO_FAR);
+        }
+        if (level.areEntitiesLoaded(new ChunkPos(BlockPos.containing(record.get().position())).toLong())) {
+            // Its chunk is loaded but the body is not there: it is gone (for example removed by a command).
+            registry.markDestroyed(player.getUUID(), bodyId, level.dimension(), record.get().position());
+            return new Choice(null, TransferResult.BODY_DESTROYED);
+        }
+        return new Choice(null, TransferResult.LOADING);
+    }
+
+    public static boolean withinRadius(Vec3 bodyPosition, Vec3 capsuleCenter) {
+        int radius = RebirthConfig.TRANSFER_RADIUS.get();
+        return bodyPosition.distanceToSqr(capsuleCenter) <= (double) radius * radius;
+    }
+
     private static Optional<ArtificialBodyEntity> findBodyNear(ServerPlayer player, ServerLevel level, Vec3 center) {
         int radius = RebirthConfig.TRANSFER_RADIUS.get();
         return level.getEntitiesOfClass(ArtificialBodyEntity.class, new AABB(center, center).inflate(radius),
@@ -134,6 +214,7 @@ public final class TransferService {
         Vec3 pos = body.position();
         float yaw = body.getYRot();
         ListTag inventory = body.getStoredInventory();
+        BodyRegistry.get(player.server).markControlled(player.getUUID(), body);
         body.setStoredInventory(new ListTag());
         body.discard();
         leaveVehicle(player);
@@ -169,6 +250,14 @@ public final class TransferService {
         if (body == null) {
             return ReturnResult.HUMAN_BODY_LOST;
         }
+        // The body keeps its id, so it stays the same entry in the capsule window.
+        BodyRegistry registry = BodyRegistry.get(player.server);
+        registry.controlled(player.getUUID()).ifPresent(controlled -> {
+            registry.remove(player.getUUID(), controlled.id());
+            if (level.getEntity(controlled.id()) == null) {
+                body.setUUID(controlled.id());
+            }
+        });
         float bodyHealth = player.getHealth();
         body.setOwner(player.getUUID());
         body.setStoredInventory(InventoryUtil.takeInventory(player));
@@ -222,6 +311,10 @@ public final class TransferService {
         player.getInventory().dropAll();
         deathLevel.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
         deathLevel.playSound(null, player.blockPosition(), SoundEvents.IRON_GOLEM_DEATH, SoundSource.PLAYERS, 1.0f, 1.2f);
+
+        BodyRegistry bodies = BodyRegistry.get(player.server);
+        bodies.controlled(player.getUUID()).ifPresent(controlled ->
+                bodies.markDestroyed(player.getUUID(), controlled.id(), deathLevel.dimension(), player.position()));
 
         Optional<ShellRegistry.ShellRecord> record = ShellRegistry.get(player.server).get(player.getUUID());
         if (record.isPresent() && player.server.getLevel(record.get().dimension()) != null) {
@@ -339,7 +432,14 @@ public final class TransferService {
         NOT_POSSIBLE_NOW("not_possible_now"),
         COOLDOWN("cooldown"),
         CAPSULE_OCCUPIED("capsule_occupied"),
-        NO_BODY("no_body");
+        NO_BODY("no_body"),
+        BODY_UNAVAILABLE("body_unavailable"),
+        BODY_DESTROYED("body_destroyed"),
+        BODY_OCCUPIED("body_occupied"),
+        OTHER_DIMENSION("other_dimension"),
+        TOO_FAR("too_far"),
+        /** The chosen body is in an unloaded chunk; the capsule loads it and tries again. */
+        LOADING("loading");
 
         private final String key;
 
@@ -348,7 +448,7 @@ public final class TransferService {
         }
 
         public Component message() {
-            return this == NO_BODY
+            return this == NO_BODY || this == TOO_FAR
                     ? Component.translatable("message.projectrebirth.transfer." + key, RebirthConfig.TRANSFER_RADIUS.get())
                     : Component.translatable("message.projectrebirth.transfer." + key);
         }

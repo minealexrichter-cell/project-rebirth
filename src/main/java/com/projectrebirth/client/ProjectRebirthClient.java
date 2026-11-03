@@ -9,12 +9,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyEntities;
+import com.projectrebirth.bodies.CapsuleNetwork;
 import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.bodies.TransferService;
 import com.projectrebirth.client.render.ArtificialBodyRenderer;
 import com.projectrebirth.client.render.BodyArmRenderer;
 import com.projectrebirth.client.render.HumanShellRenderer;
 import com.projectrebirth.client.render.PossessedPlayerRenderer;
+import com.projectrebirth.client.screen.CapsuleScreen;
 import com.projectrebirth.client.screen.FactionScreen;
 import com.projectrebirth.client.screen.MaintenanceScreen;
 import com.projectrebirth.client.screen.StationScreen;
@@ -108,6 +110,7 @@ public class ProjectRebirthClient {
 
     private void onClientTick(ClientTickEvent.Post event) {
         Player player = Minecraft.getInstance().player;
+        updateCapsuleScreen(player);
         while (RETURN_KEY.consumeClick()) {
             if (player != null && TransferService.isInArtificialBody(player)) {
                 PacketDistributor.sendToServer(ReturnToHumanPayload.INSTANCE);
@@ -117,6 +120,23 @@ public class ProjectRebirthClient {
             if (player != null && Minecraft.getInstance().screen == null) {
                 Minecraft.getInstance().setScreen(new FactionScreen());
             }
+        }
+    }
+
+    /** Opens or refreshes the capsule window from the server's data, and closes it once the transfer has happened. */
+    private static void updateCapsuleScreen(Player player) {
+        Minecraft minecraft = Minecraft.getInstance();
+        CapsuleNetwork.OpenPayload data = CapsuleNetwork.received;
+        if (data != null) {
+            CapsuleNetwork.received = null;
+            if (minecraft.screen instanceof CapsuleScreen screen && screen.capsule().equals(data.capsule())) {
+                screen.update(data);
+            } else if (minecraft.screen == null || minecraft.screen instanceof CapsuleScreen) {
+                minecraft.setScreen(new CapsuleScreen(data));
+            }
+        }
+        if (minecraft.screen instanceof CapsuleScreen && player != null && TransferService.isInArtificialBody(player)) {
+            minecraft.setScreen(null);
         }
     }
 

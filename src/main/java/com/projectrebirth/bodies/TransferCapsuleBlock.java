@@ -124,8 +124,15 @@ public class TransferCapsuleBlock extends HorizontalDirectionalBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (player instanceof ServerPlayer serverPlayer) {
             BlockPos lower = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
-            TransferService.TransferResult result = TransferService.transferFromCapsule(serverPlayer, lower, state.getValue(FACING));
-            serverPlayer.displayClientMessage(result.message(), true);
+            TransferService.TransferResult problem = TransferService.capsuleProblem(serverPlayer, lower);
+            if (problem != null) {
+                serverPlayer.displayClientMessage(problem.message(), true);
+            } else if (CapsuleNetwork.canShowWindow(serverPlayer)) {
+                CapsuleNetwork.openWindow(serverPlayer, lower);
+            } else {
+                // A client without the window (should not happen: the mod is required on both sides).
+                serverPlayer.displayClientMessage(TransferService.transferFromCapsule(serverPlayer, lower, state.getValue(FACING)).message(), true);
+            }
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

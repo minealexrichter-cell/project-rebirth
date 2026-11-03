@@ -101,6 +101,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         super.onAddedToLevel();
         if (!level().isClientSide) {
             applyClassStats();
+            BodyRegistry.get(getServer()).updateStanding(this);
         }
     }
 
@@ -152,11 +153,22 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         if (hasCustomName()) {
             stack.set(DataComponents.CUSTOM_NAME, getCustomName());
         }
+        if (owner != null) {
+            BodyRegistry.get(getServer()).remove(owner, getUUID());
+        }
         InventoryUtil.dropAll(this, storedInventory);
         storedInventory = new ListTag();
         discard();
         if (!player.getInventory().add(stack)) {
             player.drop(stack, false);
+        }
+    }
+
+    @Override
+    public void die(DamageSource source) {
+        super.die(source);
+        if (!level().isClientSide && owner != null) {
+            BodyRegistry.get(getServer()).markDestroyed(owner, getUUID(), level().dimension(), position());
         }
     }
 
@@ -232,6 +244,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         Parked.holdRotation(this);
         if (!level().isClientSide && tickCount % 20 == 0) {
             BodyRules.tickSelfRepair(this, bodyClass);
+            BodyRegistry.get(getServer()).updateStanding(this);
         }
     }
 

@@ -1,5 +1,7 @@
 package com.projectrebirth.bodies;
 
+import javax.annotation.Nullable;
+
 import com.mojang.serialization.Codec;
 
 import io.netty.buffer.ByteBuf;
@@ -53,6 +55,16 @@ public enum BodyClass implements StringRepresentable {
 
     public String id() {
         return id;
+    }
+
+    @Nullable
+    public static BodyClass byId(String id) {
+        for (BodyClass bodyClass : values()) {
+            if (bodyClass.id.equals(id)) {
+                return bodyClass;
+            }
+        }
+        return null;
     }
 
     /** 3-pixel arms like the slim player skin; the model texture uses the player skin layout for arms. */

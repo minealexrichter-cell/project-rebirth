@@ -41,6 +41,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public class TransferGameTests {
     private static final String TEMPLATE = "floor_3x3";
+    // Run apart from other tests: the nearest-body search must not find unowned bodies of neighbouring test areas.
+    private static final String BATCH = "transfer";
     private static final BlockPos CAPSULE = new BlockPos(0, 2, 0);
     private static final BlockPos BODY_POS = new BlockPos(2, 2, 2);
     private static final BodyClass BODY_CLASS = BodyClass.IMPROVED_ROBOT;
@@ -92,7 +94,7 @@ public class TransferGameTests {
         helper.assertTrue(expected == actual, what + ": expected " + expected + ", got " + actual);
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = BATCH)
     public static void transferAndVoluntaryReturnKeepEachInventorySeparate(GameTestHelper helper) {
         Setup setup = setUp(helper);
         ServerPlayer player = setup.player();
@@ -124,7 +126,7 @@ public class TransferGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = BATCH)
     public static void destroyedBodyReturnsToHumanAndDropsBodyItems(GameTestHelper helper) {
         Setup setup = setUp(helper);
         ServerPlayer player = setup.player();
@@ -141,7 +143,7 @@ public class TransferGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = BATCH)
     public static void humanBodyDeathDropsItsItemsAndThenBodyDeathIsRealDeath(GameTestHelper helper) {
         Setup setup = setUp(helper);
         ServerPlayer player = setup.player();
@@ -161,7 +163,7 @@ public class TransferGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = BATCH)
     public static void destroyedBodyMovesToBackupBodyWhenHumanBodyIsDead(GameTestHelper helper) {
         Setup setup = setUp(helper);
         ServerPlayer player = setup.player();
@@ -183,7 +185,7 @@ public class TransferGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = BATCH)
     public static void foreignBodyCannotBeUsed(GameTestHelper helper) {
         Setup setup = setUp(helper);
         setup.body().setOwner(UUID.randomUUID());

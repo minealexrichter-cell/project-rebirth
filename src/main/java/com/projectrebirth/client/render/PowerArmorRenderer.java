@@ -28,8 +28,6 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
     private static final ResourceLocation WRECK_TEXTURE = ProjectRebirth.id("textures/entity/power_armor_wrecked.png");
     private static final String RIGHT_HAND = "right_hand";
     private static final String LEFT_HAND = "left_hand";
-    /** A bit larger than in a player's hand to suit the big fists, but small enough to stay off the ground. */
-    private static final float ITEM_SCALE = 1.25f;
 
     public PowerArmorRenderer(EntityRendererProvider.Context context) {
         super(context, new ArmorModel());
@@ -60,7 +58,6 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         @Override
         public void setCustomAnimations(PowerArmorEntity armor, long instanceId, AnimationState<PowerArmorEntity> state) {
             super.setCustomAnimations(armor, instanceId, state);
-            PilotArmPose.reset();
             Player pilot = armor.getPilot();
             if (pilot == null || !armor.isActive()) {
                 return;
@@ -96,8 +93,8 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
 
         /**
          * Same transform as the vanilla held-item layer, so every item (sword handle, shield, bow, trident, crossbow)
-         * sits in the fist exactly as in a player's hand. The bone is at the bottom of the fist, where the vanilla
-         * layer ends up after moving down the arm.
+         * sits in the fist as in a player's hand, at the same size, and turns with the fist. The bone is in the upper
+         * part of the fist (higher than in a player's hand, so hanging items clear the ground under the long arms).
          */
         @Override
         protected void renderStackForBone(PoseStack poseStack, GeoBone bone, ItemStack stack, PowerArmorEntity armor,
@@ -107,13 +104,10 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
                 return;
             }
             boolean left = bone.getName().equals(LEFT_HAND);
-            // Undo the lift of an arm holding an item: the item rises with the fist but is not tilted.
-            poseStack.mulPose(Axis.XP.rotation(-PilotArmPose.liftOf(left ? HumanoidArm.LEFT : HumanoidArm.RIGHT)));
             // GeckoLib space -> vanilla model space (which is upside down).
             poseStack.mulPose(Axis.ZP.rotationDegrees(180.0f));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
-            poseStack.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
             poseStack.translate((left ? -1.0f : 1.0f) / 16.0f, 0.125f, 0.0f);
             // Rendering for the pilot gives the item its live look: bow pulling, loaded crossbow and so on.
             Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(pilot, stack,

@@ -22,8 +22,9 @@ import software.bernie.geckolib.cache.object.GeoBone;
 
 /**
  * Copies the vanilla player arm poses (drawing a bow, aiming or charging a crossbow, raising a trident, blocking
- * with a shield, ...) onto the armor's arms. The poses are computed by a hidden vanilla player model, so they match
- * exactly what a normal player looks like; the armor's own animations keep the arms in every other case.
+ * with a shield, ...) onto the arms of a power armor or an artificial body. The poses are computed by a hidden vanilla
+ * player model, so they match exactly what a normal player looks like; the model's own animations keep the arms in
+ * every other case.
  */
 final class PilotArmPose {
     /** An arm holding an item is carried slightly forward, like a player's (vanilla uses the same 18 degrees). */
@@ -35,37 +36,78 @@ final class PilotArmPose {
     private PilotArmPose() {
     }
 
+    /** Arms of a power armor: its punch is an animation of its own. */
     static void apply(PowerArmorEntity armor, Player pilot, float partialTick, GeoBone rightArm, GeoBone leftArm) {
+        float bodyYaw = Mth.rotLerp(partialTick, armor.yBodyRotO, armor.yBodyRot);
+        applyPoses(pilot, bodyYaw, partialTick, rightArm, leftArm, isPunching(armor));
+    }
+
+    /** Arms of an artificial body: item poses, plus the vanilla swing when the player hits or uses something. */
+    static void apply(Player player, float partialTick, GeoBone rightArm, GeoBone leftArm) {
+        float bodyYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
+        applyPoses(player, bodyYaw, partialTick, rightArm, leftArm, false);
+        applySwing(player, bodyYaw, partialTick, rightArm, leftArm);
+    }
+
+    /**
+     * The swing is added to the arm's current angles as the difference it makes on the vanilla model, so the arm
+     * starts and ends the swing where the animation or the pose has it.
+     */
+    private static void applySwing(Player player, float bodyYaw, float partialTick, GeoBone rightArm, GeoBone leftArm) {
+        float swing = player.getAttackAnim(partialTick);
+        if (swing <= 0.0f) {
+            return;
+        }
+        HumanoidModel<LivingEntity> vanilla = model();
+        vanilla.rightArmPose = sidePose(player, HumanoidArm.RIGHT);
+        vanilla.leftArmPose = sidePose(player, HumanoidArm.LEFT);
+        setup(vanilla, player, bodyYaw, partialTick, 0.0f);
+        float rightX = vanilla.rightArm.xRot, rightY = vanilla.rightArm.yRot, rightZ = vanilla.rightArm.zRot;
+        float leftX = vanilla.leftArm.xRot, leftY = vanilla.leftArm.yRot, leftZ = vanilla.leftArm.zRot;
+        setup(vanilla, player, bodyYaw, partialTick, swing);
+        add(rightArm, vanilla.rightArm.xRot - rightX, vanilla.rightArm.yRot - rightY, vanilla.rightArm.zRot - rightZ);
+        add(leftArm, vanilla.leftArm.xRot - leftX, vanilla.leftArm.yRot - leftY, vanilla.leftArm.zRot - leftZ);
+    }
+
+    private static void applyPoses(Player pilot, float bodyYaw, float partialTick, GeoBone rightArm, GeoBone leftArm, boolean punching) {
         HumanoidModel.ArmPose rightPose = sidePose(pilot, HumanoidArm.RIGHT);
         HumanoidModel.ArmPose leftPose = sidePose(pilot, HumanoidArm.LEFT);
         boolean poseRight = isPosed(rightPose, leftPose);
         boolean poseLeft = isPosed(leftPose, rightPose);
-        boolean punching = isPunching(armor);
         lift(rightArm, holdsPlainItem(pilot, HumanoidArm.RIGHT), punching);
         lift(leftArm, holdsPlainItem(pilot, HumanoidArm.LEFT), punching);
         if (!poseRight && !poseLeft) {
             return;
         }
 
+        HumanoidModel<LivingEntity> vanilla = model();
+        vanilla.rightArmPose = rightPose;
+        vanilla.leftArmPose = leftPose;
+        setup(vanilla, pilot, bodyYaw, partialTick, 0.0f);
+
+        if (poseRight) {
+            copy(vanilla.rightArm, rightArm);
+        }
+        if (poseLeft) {
+            copy(vanilla.leftArm, leftArm);
+        }
+    }
+
+    private static HumanoidModel<LivingEntity> model() {
         if (model == null) {
             model = new HumanoidModel<>(Minecraft.getInstance().getEntityModels().bakeLayer(ModelLayers.PLAYER));
         }
-        model.rightArmPose = rightPose;
-        model.leftArmPose = leftPose;
-        model.attackTime = 0.0f;
-        model.riding = false;
-        model.crouching = false;
-        model.young = false;
-        float headYaw = Mth.wrapDegrees(pilot.getViewYRot(partialTick) - Mth.rotLerp(partialTick, armor.yBodyRotO, armor.yBodyRot));
-        // Age 0: no idle arm sway, the armor has its own.
-        model.setupAnim(pilot, 0.0f, 0.0f, 0.0f, headYaw, pilot.getViewXRot(partialTick));
+        return model;
+    }
 
-        if (poseRight) {
-            copy(model.rightArm, rightArm);
-        }
-        if (poseLeft) {
-            copy(model.leftArm, leftArm);
-        }
+    private static void setup(HumanoidModel<LivingEntity> vanilla, Player player, float bodyYaw, float partialTick, float attackTime) {
+        vanilla.attackTime = attackTime;
+        vanilla.riding = false;
+        vanilla.crouching = false;
+        vanilla.young = false;
+        float headYaw = Mth.wrapDegrees(player.getViewYRot(partialTick) - bodyYaw);
+        // Age 0: no idle arm sway, our models have their own.
+        vanilla.setupAnim(player, 0.0f, 0.0f, 0.0f, headYaw, player.getViewXRot(partialTick));
     }
 
     /**
@@ -140,5 +182,12 @@ final class PilotArmPose {
         bone.setRotX(-part.xRot);
         bone.setRotY(-part.yRot);
         bone.setRotZ(part.zRot);
+    }
+
+    /** The same sign rule for a difference of vanilla angles. */
+    private static void add(GeoBone bone, float x, float y, float z) {
+        bone.setRotX(bone.getRotX() - x);
+        bone.setRotY(bone.getRotY() - y);
+        bone.setRotZ(bone.getRotZ() + z);
     }
 }

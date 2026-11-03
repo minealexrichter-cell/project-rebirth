@@ -2,6 +2,8 @@
 // Usage in Blockbench's console or through the MCP risky_eval tool, with a new geckolib_model project active:
 //   eval(require('fs').readFileSync('E:/Projects/Project-Rebirth-mod/blockbench/tools/build_models.js', 'utf8'));
 //   RebirthModels.build('basic_robot_body');
+// Then, in a SEPARATE call: RebirthModels.save('basic_robot_body'). The texture is not ready within the build call, and
+// saving there writes a blank PNG (the model is invisible in game).
 // All coordinates below are geo.json coordinates (the character faces -Z and its right side is -X); PR.build converts
 // them to Blockbench's. The bones and sizes follow docs/MODEL_SPEC.md: the main arm cubes of bodies use the player skin
 // layout, and the arm cubes of armors must match the table in client/render/ArmorArmRenderer.java.
@@ -487,7 +489,7 @@
                     k: [[0, 0, 8, 6, hair], [0, 6, 8, 1, shade(hair, 0.8)]],
                     tp: [[0, 0, 8, 8, hair]], bt: [[0, 0, 8, 8, skin]]},
                 headX: [
-                    C([-4, 29, -4], [8, 3, 8], {c: hair, n: 0.07, edge: false, f: [[1, 0, 2, 1, shade(hair, 1.15)]]}, {inflate: 0.3})
+                    C([-4, 30, -4], [8, 2, 8], {c: hair, n: 0.07, edge: false, f: [[1, 0, 2, 1, shade(hair, 1.15)]]}, {inflate: 0.3})
                 ],
                 torso: {c: suit, n: 0.02,
                     f: [...circuit, [3, 2, 2, 2, cyan], [0, -2, 8, 1, plate]],
@@ -530,7 +532,7 @@
                     k: [[0, 0, 8, 7, hair], [0, 7, 8, 1, shade(hair, 0.85)]],
                     tp: [[0, 0, 8, 8, hair]], bt: [[0, 0, 8, 8, shadow]]},
                 headX: [
-                    C([-4, 28, -4], [8, 4, 8], {c: hair, n: 0.05, edge: false, f: [[1, 3, 2, 1, skin], [5, 3, 2, 1, skin], [0, 0, 8, 1, shade(hair, 1.2)]],
+                    C([-4, 30, -4], [8, 2, 8], {c: hair, n: 0.05, edge: false, f: [[0, 0, 8, 1, shade(hair, 1.2)]],
                         k: [[1, 1, 2, 2, shade(hair, 1.2)]]}, {inflate: 0.25}),
                     C([-4, 24.5, 3], [8, 4, 1], {c: hair, n: 0.05, edge: false}, {inflate: 0.25})
                 ],

@@ -3,6 +3,7 @@ package com.projectrebirth.client.render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.ArtificialBodyEntity;
 import com.projectrebirth.bodies.BodyClass;
 
@@ -19,7 +20,9 @@ import software.bernie.geckolib.animatable.GeoReplacedEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoReplacedEntityRenderer;
 import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
 import software.bernie.geckolib.util.GeckoLibUtil;
@@ -27,17 +30,41 @@ import software.bernie.geckolib.util.RenderUtil;
 
 /**
  * Draws a player who controls an artificial body with that body's model instead of the player model, with the
- * items the player holds in the body's hands.
+ * items the player holds in the body's hands and the arm poses of a normal player (see PilotArmPose).
  */
 public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, PossessedPlayerRenderer.BodyAnimatable> {
     private static final String RIGHT_ARM = "right_arm";
     private static final String LEFT_ARM = "left_arm";
 
     public PossessedPlayerRenderer(EntityRendererProvider.Context context, BodyClass bodyClass) {
-        // The head follows where the player looks, like a normal player head.
-        super(context, BodyModels.create(bodyClass, true), new BodyAnimatable());
+        this(context, new PosedModel(bodyClass));
+    }
+
+    private PossessedPlayerRenderer(EntityRendererProvider.Context context, PosedModel model) {
+        super(context, model, new BodyAnimatable());
+        model.renderer = this;
         this.shadowRadius = 0.4f;
         addRenderLayer(new HeldItemLayer(this));
+    }
+
+    /** The body's model; the head follows where the player looks, like a normal player head. */
+    private static class PosedModel extends DefaultedEntityGeoModel<BodyAnimatable> {
+        private PossessedPlayerRenderer renderer;
+
+        PosedModel(BodyClass bodyClass) {
+            super(ProjectRebirth.id(bodyClass.id()), true);
+        }
+
+        @Override
+        public void setCustomAnimations(BodyAnimatable animatable, long instanceId, AnimationState<BodyAnimatable> state) {
+            super.setCustomAnimations(animatable, instanceId, state);
+            Player player = renderer.getCurrentEntity();
+            GeoBone rightArm = getAnimationProcessor().getBone(RIGHT_ARM);
+            GeoBone leftArm = getAnimationProcessor().getBone(LEFT_ARM);
+            if (player != null && rightArm != null && leftArm != null) {
+                PilotArmPose.apply(player, state.getPartialTick(), rightArm, leftArm);
+            }
+        }
     }
 
     /** One shared animatable per body class; GeckoLib keeps separate animation state for each player. */

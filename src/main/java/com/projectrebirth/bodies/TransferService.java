@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 
 import net.minecraft.core.BlockPos;
@@ -121,7 +122,7 @@ public final class TransferService {
         // 2. The consciousness moves into the artificial body.
         enterBody(player, target.get());
         LAST_TRANSFER.put(player.getUUID(), now);
-        level.playSound(null, capsuleLower, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.0f, 1.4f);
+        level.playSound(null, capsuleLower, ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
         return TransferResult.SUCCESS;
     }
 
@@ -225,6 +226,7 @@ public final class TransferService {
         player.setData(BodyAttachments.POSSESSION, PossessionState.of(bodyClass));
         applyBodyModifiers(player, bodyClass);
         player.teleportTo(level, pos.x, pos.y, pos.z, yaw, player.getXRot());
+        level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
         player.setHealth(Math.min(health, player.getMaxHealth()));
     }
 
@@ -291,6 +293,7 @@ public final class TransferService {
         player.getFoodData().setFoodLevel(record.foodLevel());
         player.getFoodData().setSaturation(record.saturation());
         player.teleportTo(level, record.position().x, record.position().y, record.position().z, record.yaw(), 0.0f);
+        level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_RETURN.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
         player.setHealth(Math.max(1.0f, Math.min(health, player.getMaxHealth())));
     }
 
@@ -310,7 +313,9 @@ public final class TransferService {
         InventoryUtil.flushTransientItems(player);
         player.getInventory().dropAll();
         deathLevel.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
-        deathLevel.playSound(null, player.blockPosition(), SoundEvents.IRON_GOLEM_DEATH, SoundSource.PLAYERS, 1.0f, 1.2f);
+        boolean robot = state(player).body().map(bodyClass -> !bodyClass.synthetic()).orElse(false);
+        deathLevel.playSound(null, player.blockPosition(), robot ? ModSounds.ROBOT_DESTROYED.get() : SoundEvents.PLAYER_DEATH,
+                SoundSource.PLAYERS, 1.0f, 1.0f);
 
         BodyRegistry bodies = BodyRegistry.get(player.server);
         bodies.controlled(player.getUUID()).ifPresent(controlled ->

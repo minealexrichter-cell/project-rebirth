@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.core.Parked;
 import com.projectrebirth.factions.FactionService;
 
@@ -48,6 +49,7 @@ import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -286,7 +288,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         invulnerableTime = 20;
         ticksSinceDamage = 0;
         level().broadcastDamageEvent(this, source);
-        playSound(SoundEvents.IRON_GOLEM_HURT, 1.0f, 0.8f);
+        playSound(ModSounds.ARMOR_HURT.get(), 1.0f, 1.0f);
 
         if (getCritical() <= 0.0f) {
             becomeWreck();
@@ -310,7 +312,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         entityData.set(STATE, STATE_DISABLED);
         entityData.set(HATCH_PROGRESS, 0.0f);
         hatchTicks = 0;
-        level().playSound(null, blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.NEUTRAL, 1.0f, 0.7f);
+        level().playSound(null, blockPosition(), ModSounds.ARMOR_SHUTDOWN.get(), SoundSource.NEUTRAL, 1.0f, 1.0f);
         Player pilot = getPilot();
         if (pilot != null) {
             pilot.sendSystemMessage(Component.translatable("message.projectrebirth.armor.shutdown"));
@@ -341,7 +343,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.EXPLOSION_EMITTER, getX(), getY() + 1.2, getZ(), 1, 0, 0, 0, 0);
             serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 1.5, getZ(), 30, 0.5, 0.8, 0.5, 0.02);
-            serverLevel.playSound(null, blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.NEUTRAL, 1.0f, 0.9f);
+            serverLevel.playSound(null, blockPosition(), ModSounds.ARMOR_WRECKED.get(), SoundSource.NEUTRAL, 1.2f, 1.0f);
         }
         if (pilot != null) {
             pilot.sendSystemMessage(Component.translatable("message.projectrebirth.armor.wrecked"));
@@ -550,6 +552,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     protected void addPassenger(Entity passenger) {
         super.addPassenger(passenger);
         if (!level().isClientSide && passenger instanceof Player player) {
+            level().playSound(null, blockPosition(), ModSounds.ARMOR_ENTER.get(), SoundSource.NEUTRAL, 1.0f, 1.0f);
             setPilotBonuses(player, getVariant());
         }
     }
@@ -558,6 +561,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     protected void removePassenger(Entity passenger) {
         super.removePassenger(passenger);
         if (!level().isClientSide && passenger instanceof Player player) {
+            level().playSound(null, blockPosition(), ModSounds.ARMOR_EXIT.get(), SoundSource.NEUTRAL, 1.0f, 1.0f);
             setPilotBonuses(player, null);
             hatchHeld = false;
         }
@@ -723,6 +727,12 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     }
 
     // ---------------------------------------------------------------- misc
+
+    /** Heavy metal steps instead of the block's own step sound. */
+    @Override
+    protected void playStepSound(BlockPos pos, BlockState state) {
+        playSound(ModSounds.ARMOR_STEP.get(), 1.0f, 1.0f);
+    }
 
     @Override
     public ItemStack getPickResult() {

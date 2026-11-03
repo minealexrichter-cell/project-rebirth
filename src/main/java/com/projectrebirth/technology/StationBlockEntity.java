@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.technology.energy.EnergyUtil;
 import com.projectrebirth.technology.energy.ModEnergyStorage;
 
@@ -14,6 +15,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -161,6 +163,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     void serverTick() {
         RecipeHolder<FabricationRecipe> holder = selectedRecipe();
         if (holder == null || !canWork(holder.value())) {
+            TechSounds.setWorking(this, false);
             if (progress != 0) {
                 progress = 0;
                 setChanged();
@@ -170,11 +173,14 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
         FabricationRecipe recipe = holder.value();
         if (!energy.consume(energyPerTick())) {
             // Out of energy: wait, keeping the progress made so far.
+            TechSounds.setWorking(this, false);
             return;
         }
+        TechSounds.setWorking(this, true);
         progress++;
         if (progress >= productionTime(recipe)) {
             progress = 0;
+            level.playSound(null, worldPosition, ModSounds.STATION_DONE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
             List<ItemStack> inputs = inputs();
             recipe.consume(inputs);
             for (int i = 0; i < INPUT_SLOTS; i++) {

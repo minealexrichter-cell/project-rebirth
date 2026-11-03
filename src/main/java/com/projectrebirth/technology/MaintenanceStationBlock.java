@@ -1,6 +1,7 @@
 package com.projectrebirth.technology;
 
 import com.mojang.serialization.MapCodec;
+import com.projectrebirth.core.ModSounds;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,7 +26,7 @@ public class MaintenanceStationBlock extends HorizontalDirectionalBlock implemen
 
     public MaintenanceStationBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TechSounds.WORKING, false));
     }
 
     @Override
@@ -35,7 +36,7 @@ public class MaintenanceStationBlock extends HorizontalDirectionalBlock implemen
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, TechSounds.WORKING);
     }
 
     @Override
@@ -58,8 +59,11 @@ public class MaintenanceStationBlock extends HorizontalDirectionalBlock implemen
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide || type != TechBlockEntities.MAINTENANCE.get()) {
+        if (type != TechBlockEntities.MAINTENANCE.get()) {
             return null;
+        }
+        if (level.isClientSide) {
+            return TechSounds.clientLoop(TechSounds.WORKING, ModSounds.STATION_WORKING.get());
         }
         return (tickLevel, pos, tickState, blockEntity) -> ((MaintenanceBlockEntity) blockEntity).serverTick();
     }

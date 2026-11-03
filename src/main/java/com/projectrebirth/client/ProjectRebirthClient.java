@@ -74,6 +74,8 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientFactionCache.clear());
         PowerArmorClient.register(modEventBus);
         BodyHud.register(modEventBus);
+        BodySounds.register();
+        TechSoundsClient.register();
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {

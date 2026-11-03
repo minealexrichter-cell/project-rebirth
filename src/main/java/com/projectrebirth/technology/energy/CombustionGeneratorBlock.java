@@ -1,7 +1,9 @@
 package com.projectrebirth.technology.energy;
 
 import com.mojang.serialization.MapCodec;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.technology.TechBlockEntities;
+import com.projectrebirth.technology.TechSounds;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -62,8 +64,11 @@ public class CombustionGeneratorBlock extends HorizontalDirectionalBlock impleme
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide || type != TechBlockEntities.COMBUSTION_GENERATOR.get()) {
+        if (type != TechBlockEntities.COMBUSTION_GENERATOR.get()) {
             return null;
+        }
+        if (level.isClientSide) {
+            return TechSounds.clientLoop(LIT, ModSounds.GENERATOR_RUNNING.get());
         }
         return (tickLevel, pos, tickState, blockEntity) -> ((CombustionGeneratorBlockEntity) blockEntity).serverTick();
     }

@@ -1,6 +1,7 @@
 package com.projectrebirth.technology;
 
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.technology.energy.EnergyUtil;
 import com.projectrebirth.technology.energy.ModEnergyStorage;
 
@@ -112,6 +113,7 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
         ItemStack target = items.getStackInSlot(SERVICE_SLOT);
         Item material = Maintenance.needsRepair(target) ? Maintenance.materialFor(target, this::hasMaterial) : null;
         if (material == null) {
+            TechSounds.setWorking(this, false);
             if (progress != 0) {
                 progress = 0;
                 setChanged();
@@ -119,8 +121,10 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
             return;
         }
         if (!energy.consume(energyPerTick())) {
+            TechSounds.setWorking(this, false);
             return;
         }
+        TechSounds.setWorking(this, true);
         progress++;
         if (progress >= stepTicks()) {
             progress = 0;
@@ -130,6 +134,9 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
             items.setStackInSlot(SERVICE_SLOT, repaired);
             if (level != null) {
                 level.playSound(null, worldPosition, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.4f, 1.4f);
+                if (!Maintenance.needsRepair(repaired)) {
+                    level.playSound(null, worldPosition, ModSounds.STATION_DONE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
+                }
             }
         }
         setChanged();

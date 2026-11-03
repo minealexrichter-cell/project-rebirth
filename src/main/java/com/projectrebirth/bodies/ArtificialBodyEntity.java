@@ -5,6 +5,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.core.Parked;
 
 import net.minecraft.core.component.DataComponents;
@@ -13,6 +14,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -177,6 +179,18 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         super.dropCustomDeathLoot(level, source, recentlyHit);
         InventoryUtil.dropAll(this, storedInventory);
         storedInventory = new ListTag();
+    }
+
+    // Robot bodies sound like machines; synthetic bodies keep the ordinary sounds.
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return bodyClass.synthetic() ? super.getHurtSound(source) : ModSounds.ROBOT_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return bodyClass.synthetic() ? super.getDeathSound() : ModSounds.ROBOT_DESTROYED.get();
     }
 
     @Override

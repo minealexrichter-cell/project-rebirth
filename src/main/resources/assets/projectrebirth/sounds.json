@@ -1,0 +1,84 @@
+{
+  "body.robot_step": {
+    "subtitle": "subtitles.projectrebirth.body.robot_step",
+    "sounds": [
+      { "name": "projectrebirth:metal/impact1", "volume": 0.3, "pitch": 1.5 },
+      { "name": "projectrebirth:metal/impact2", "volume": 0.3, "pitch": 1.5 },
+      { "name": "projectrebirth:metal/impact3", "volume": 0.3, "pitch": 1.5 },
+      { "name": "projectrebirth:metal/impact4", "volume": 0.3, "pitch": 1.5 },
+      { "name": "projectrebirth:metal/impact5", "volume": 0.3, "pitch": 1.5 }
+    ]
+  },
+  "body.robot_hurt": {
+    "subtitle": "subtitles.projectrebirth.body.robot_hurt",
+    "sounds": [
+      { "name": "projectrebirth:metal/impact1", "volume": 0.9, "pitch": 1.1 },
+      { "name": "projectrebirth:metal/impact2", "volume": 0.9, "pitch": 1.1 },
+      { "name": "projectrebirth:metal/impact3", "volume": 0.9, "pitch": 1.1 },
+      { "name": "projectrebirth:metal/impact4", "volume": 0.9, "pitch": 1.1 },
+      { "name": "projectrebirth:metal/impact5", "volume": 0.9, "pitch": 1.1 }
+    ]
+  },
+  "body.robot_destroyed": {
+    "subtitle": "subtitles.projectrebirth.body.robot_destroyed",
+    "sounds": [
+      "projectrebirth:body/robot_destroyed1", "projectrebirth:body/robot_destroyed2", "projectrebirth:body/robot_destroyed3"
+    ]
+  },
+  "armor.step": {
+    "subtitle": "subtitles.projectrebirth.armor.step",
+    "sounds": [
+      { "name": "projectrebirth:metal/impact1", "volume": 0.7, "pitch": 0.6 },
+      { "name": "projectrebirth:metal/impact2", "volume": 0.7, "pitch": 0.6 },
+      { "name": "projectrebirth:metal/impact3", "volume": 0.7, "pitch": 0.6 },
+      { "name": "projectrebirth:metal/impact4", "volume": 0.7, "pitch": 0.6 },
+      { "name": "projectrebirth:metal/impact5", "volume": 0.7, "pitch": 0.6 }
+    ]
+  },
+  "armor.hurt": {
+    "subtitle": "subtitles.projectrebirth.armor.hurt",
+    "sounds": [
+      { "name": "projectrebirth:metal/impact1", "volume": 1, "pitch": 0.75 },
+      { "name": "projectrebirth:metal/impact2", "volume": 1, "pitch": 0.75 },
+      { "name": "projectrebirth:metal/impact3", "volume": 1, "pitch": 0.75 },
+      { "name": "projectrebirth:metal/impact4", "volume": 1, "pitch": 0.75 },
+      { "name": "projectrebirth:metal/impact5", "volume": 1, "pitch": 0.75 }
+    ]
+  },
+  "armor.shutdown": {
+    "subtitle": "subtitles.projectrebirth.armor.shutdown",
+    "sounds": [ { "name": "projectrebirth:armor/enter3", "pitch": 0.5 } ]
+  },
+  "armor.wrecked": {
+    "subtitle": "subtitles.projectrebirth.armor.wrecked",
+    "sounds": [ "projectrebirth:armor/wrecked1", "projectrebirth:armor/wrecked2" ]
+  },
+  "armor.enter": {
+    "subtitle": "subtitles.projectrebirth.armor.enter",
+    "sounds": [ "projectrebirth:armor/enter1", "projectrebirth:armor/enter2", "projectrebirth:armor/enter3" ]
+  },
+  "armor.exit": {
+    "subtitle": "subtitles.projectrebirth.armor.exit",
+    "sounds": [ "projectrebirth:armor/exit1", "projectrebirth:armor/exit2", "projectrebirth:armor/exit3" ]
+  },
+  "station.working": {
+    "subtitle": "subtitles.projectrebirth.station.working",
+    "sounds": [ { "name": "projectrebirth:station/working", "volume": 0.4 } ]
+  },
+  "station.done": {
+    "subtitle": "subtitles.projectrebirth.station.done",
+    "sounds": [ { "name": "projectrebirth:station/done1", "volume": 0.4, "pitch": 1.2 } ]
+  },
+  "generator.running": {
+    "subtitle": "subtitles.projectrebirth.generator.running",
+    "sounds": [ { "name": "projectrebirth:generator/running", "volume": 0.35 } ]
+  },
+  "transfer.enter": {
+    "subtitle": "subtitles.projectrebirth.transfer.enter",
+    "sounds": [ "projectrebirth:transfer/enter1", "projectrebirth:transfer/enter2" ]
+  },
+  "transfer.return": {
+    "subtitle": "subtitles.projectrebirth.transfer.return",
+    "sounds": [ { "name": "projectrebirth:transfer/return1", "pitch": 0.8 }, { "name": "projectrebirth:transfer/return2", "pitch": 0.8 } ]
+  }
+}

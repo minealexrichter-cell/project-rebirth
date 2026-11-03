@@ -1,8 +1,12 @@
 {
   "variants": {
-    "facing=north": { "model": "projectrebirth:block/maintenance_station" },
-    "facing=east": { "model": "projectrebirth:block/maintenance_station", "y": 90 },
-    "facing=south": { "model": "projectrebirth:block/maintenance_station", "y": 180 },
-    "facing=west": { "model": "projectrebirth:block/maintenance_station", "y": 270 }
+    "facing=north,working=false": { "model": "projectrebirth:block/maintenance_station" },
+    "facing=north,working=true": { "model": "projectrebirth:block/maintenance_station" },
+    "facing=east,working=false": { "model": "projectrebirth:block/maintenance_station", "y": 90 },
+    "facing=east,working=true": { "model": "projectrebirth:block/maintenance_station", "y": 90 },
+    "facing=south,working=false": { "model": "projectrebirth:block/maintenance_station", "y": 180 },
+    "facing=south,working=true": { "model": "projectrebirth:block/maintenance_station", "y": 180 },
+    "facing=west,working=false": { "model": "projectrebirth:block/maintenance_station", "y": 270 },
+    "facing=west,working=true": { "model": "projectrebirth:block/maintenance_station", "y": 270 }
   }
 }

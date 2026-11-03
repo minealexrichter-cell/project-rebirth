@@ -17,6 +17,7 @@ import com.projectrebirth.technology.StationBlockEntity;
 import com.projectrebirth.technology.TechBlocks;
 import com.projectrebirth.technology.TechItems;
 import com.projectrebirth.technology.TechRecipes;
+import com.projectrebirth.technology.TechSounds;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -117,6 +118,8 @@ public class TechGameTests {
         station.items().setStackInSlot(4, new ItemStack(Items.REDSTONE, 2));
         station.select(recipeIndex(helper, Station.ELECTRONICS_FABRICATOR, "circuit_board"));
         int time = recipeTime(helper, Station.ELECTRONICS_FABRICATOR, "circuit_board");
+        helper.runAfterDelay(time / 2, () -> helper.assertTrue(station.getBlockState().getValue(TechSounds.WORKING),
+                "A producing station is marked working (its loop sound plays)"));
         helper.runAfterDelay(time / 2, () -> helper.assertTrue(
                 station.items().getStackInSlot(StationBlockEntity.OUTPUT_SLOT).isEmpty(), "Nothing may be made before the time is up"));
         helper.runAfterDelay(time + 5, () -> {
@@ -125,6 +128,7 @@ public class TechGameTests {
             helper.assertTrue(station.items().getStackInSlot(0).getCount() == 1, "One copper ingot must remain");
             helper.assertTrue(station.items().getStackInSlot(1).isEmpty() && station.items().getStackInSlot(4).isEmpty(),
                     "Silver and redstone must be used up");
+            helper.assertFalse(station.getBlockState().getValue(TechSounds.WORKING), "Out of materials it stops working");
             helper.succeed();
         });
     }

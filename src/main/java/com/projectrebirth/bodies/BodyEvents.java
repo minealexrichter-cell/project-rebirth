@@ -1,9 +1,15 @@
 package com.projectrebirth.bodies;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.core.ModSounds;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.EventPriority;
@@ -23,6 +29,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class BodyEvents {
     /** Artificial bodies do not starve and do not regenerate from food (natural regeneration needs 18+). */
     private static final int ARTIFICIAL_FOOD_LEVEL = 17;
+    /** Distance at which a player in a robot body makes the next step sound. Not saved. */
+    private static final Map<UUID, Float> NEXT_STEP = new HashMap<>();
 
     private BodyEvents() {
     }
@@ -69,7 +77,28 @@ public final class BodyEvents {
             if (player.tickCount % 20 == 0) {
                 BodyRules.tickSelfRepair(player, bodyClass);
             }
+            if (!bodyClass.synthetic()) {
+                robotSteps(player);
+            }
         });
+    }
+
+    /**
+     * A player in a robot body clanks: a metal step for every block walked (the client hides the player's own
+     * footsteps, see client/BodySounds). Counted from the distance the game already tracks for step sounds.
+     */
+    private static void robotSteps(ServerPlayer player) {
+        float walked = player.moveDist;
+        Float next = NEXT_STEP.get(player.getUUID());
+        if (next == null || next > walked + 2.0f || next < walked - 2.0f) {
+            NEXT_STEP.put(player.getUUID(), walked + 1.0f);
+            return;
+        }
+        if (walked >= next && player.onGround() && !player.isPassenger() && !player.isSpectator()) {
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.ROBOT_STEP.get(),
+                    SoundSource.PLAYERS, 1.0f, 1.0f);
+            NEXT_STEP.put(player.getUUID(), walked + 1.0f);
+        }
     }
 
     /** Checked on both sides; the server decides. A refused item is not used up. */
@@ -109,6 +138,10 @@ public final class BodyEvents {
             return;
         }
         BodyRules.onDamaged(entity);
+        if (entity instanceof Player player && BodyRules.bodyClassOf(player).map(bodyClass -> !bodyClass.synthetic()).orElse(false)) {
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.ROBOT_HURT.get(),
+                    SoundSource.PLAYERS, 1.0f, 1.0f);
+        }
         if (entity.isUsingItem() && entity.getUseItem().getItem() instanceof RepairKitItem) {
             entity.stopUsingItem();
             if (entity instanceof Player player) {

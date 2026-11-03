@@ -1,8 +1,12 @@
 {
   "variants": {
-    "facing=north": { "model": "projectrebirth:block/armor_workstation" },
-    "facing=east": { "model": "projectrebirth:block/armor_workstation", "y": 90 },
-    "facing=south": { "model": "projectrebirth:block/armor_workstation", "y": 180 },
-    "facing=west": { "model": "projectrebirth:block/armor_workstation", "y": 270 }
+    "facing=north,working=false": { "model": "projectrebirth:block/armor_workstation" },
+    "facing=north,working=true": { "model": "projectrebirth:block/armor_workstation" },
+    "facing=east,working=false": { "model": "projectrebirth:block/armor_workstation", "y": 90 },
+    "facing=east,working=true": { "model": "projectrebirth:block/armor_workstation", "y": 90 },
+    "facing=south,working=false": { "model": "projectrebirth:block/armor_workstation", "y": 180 },
+    "facing=south,working=true": { "model": "projectrebirth:block/armor_workstation", "y": 180 },
+    "facing=west,working=false": { "model": "projectrebirth:block/armor_workstation", "y": 270 },
+    "facing=west,working=true": { "model": "projectrebirth:block/armor_workstation", "y": 270 }
   }
 }

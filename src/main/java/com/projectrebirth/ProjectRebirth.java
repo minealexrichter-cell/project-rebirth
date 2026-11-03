@@ -12,6 +12,7 @@ import com.projectrebirth.bodies.CapsuleNetwork;
 import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModCreativeTabs;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.factions.FactionBlocks;
 import com.projectrebirth.factions.FactionSync;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
@@ -59,6 +60,7 @@ public class ProjectRebirth {
         MiningModePayload.register(modEventBus);
         FactionBlocks.register(modEventBus);
         FactionSync.register(modEventBus);
+        ModSounds.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, RebirthConfig.SERVER_SPEC);

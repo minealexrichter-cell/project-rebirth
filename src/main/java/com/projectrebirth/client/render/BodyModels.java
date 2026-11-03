@@ -8,9 +8,9 @@ import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 
 /**
- * Geo models of body classes. Model and texture are per class
- * (geo/entity/&lt;id&gt;.geo.json, textures/entity/&lt;id&gt;.png); all classes share one animation file,
- * animations/entity/body.animation.json, so every model must use the same bone names.
+ * Geo models of body classes. Model, animations and texture are per class (geo/entity/&lt;id&gt;.geo.json,
+ * animations/entity/&lt;id&gt;.animation.json, textures/entity/&lt;id&gt;.png). Every class must use the same bone names
+ * and animation names (animation.body.idle, walk, interact); see docs/MODEL_SPEC.md.
  */
 public final class BodyModels {
     private BodyModels() {
@@ -20,8 +20,7 @@ public final class BodyModels {
      * @param turnsHead true to point the "head" bone where the entity looks (overrides the head part of animations)
      */
     public static <T extends GeoAnimatable> DefaultedEntityGeoModel<T> create(BodyClass bodyClass, boolean turnsHead) {
-        return new DefaultedEntityGeoModel<T>(ProjectRebirth.id(bodyClass.id()), turnsHead)
-                .withAltAnimations(ProjectRebirth.id("body"));
+        return new DefaultedEntityGeoModel<>(ProjectRebirth.id(bodyClass.id()), turnsHead);
     }
 
     public static ResourceLocation texture(BodyClass bodyClass) {

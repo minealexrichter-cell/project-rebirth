@@ -17,23 +17,25 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
-import software.bernie.geckolib.model.DefaultedEntityGeoModel;
+import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
 
 /**
- * Power armor; a wreck uses a burnt texture. The pilot does not see their own armor in first person.
+ * Power armor. Each variant has its own model, animations and textures, named after its item id; a wreck uses the
+ * variant's burnt texture. The pilot does not see their own armor in first person.
  * The pilot's held items are drawn in the armor's fists (bones "right_hand" and "left_hand"), and the arms take
  * the pilot's item poses (bow, crossbow, trident, shield).
  */
 public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
-    private static final ResourceLocation WRECK_TEXTURE = ProjectRebirth.id("textures/entity/power_armor_wrecked.png");
-
-    /** One texture per variant on the same model; a wreck looks the same for every variant. */
     public static ResourceLocation texture(ArmorVariant variant) {
-        return variant == ArmorVariant.COMBAT ? ProjectRebirth.id("textures/entity/power_armor.png")
-                : ProjectRebirth.id("textures/entity/power_armor_" + variant.id() + ".png");
+        return ProjectRebirth.id("textures/entity/" + variant.itemId() + ".png");
     }
+
+    private static ResourceLocation wreckTexture(ArmorVariant variant) {
+        return ProjectRebirth.id("textures/entity/" + variant.itemId() + "_wrecked.png");
+    }
+
     private static final String RIGHT_HAND = "right_hand";
     private static final String LEFT_HAND = "left_hand";
 
@@ -45,7 +47,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(PowerArmorEntity armor) {
-        return armor.isWrecked() ? WRECK_TEXTURE : texture(armor.getVariant());
+        return armor.isWrecked() ? wreckTexture(armor.getVariant()) : texture(armor.getVariant());
     }
 
     @Override
@@ -58,9 +60,20 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         super.render(armor, entityYaw, partialTick, poseStack, bufferSource, packedLight);
     }
 
-    private static class ArmorModel extends DefaultedEntityGeoModel<PowerArmorEntity> {
-        ArmorModel() {
-            super(ProjectRebirth.id("power_armor"), false);
+    private static class ArmorModel extends GeoModel<PowerArmorEntity> {
+        @Override
+        public ResourceLocation getModelResource(PowerArmorEntity armor) {
+            return ProjectRebirth.id("geo/entity/" + armor.getVariant().itemId() + ".geo.json");
+        }
+
+        @Override
+        public ResourceLocation getTextureResource(PowerArmorEntity armor) {
+            return texture(armor.getVariant());
+        }
+
+        @Override
+        public ResourceLocation getAnimationResource(PowerArmorEntity armor) {
+            return ProjectRebirth.id("animations/entity/" + armor.getVariant().itemId() + ".animation.json");
         }
 
         @Override

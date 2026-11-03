@@ -3,8 +3,8 @@ package com.projectrebirth.powerarmor;
 import javax.annotation.Nullable;
 
 /**
- * Power armor variants. They share all the armor logic; they differ only by id (item, texture, translation) and by
- * config-driven stats, plus the worker armor's 3x3 mining. The values here are only defaults for the server config.
+ * Power armor variants. They share all the armor logic; they differ only by id (item, model, animations, textures,
+ * translation) and by config-driven stats, plus the worker armor's 3x3 mining. The values here are only defaults for the server config.
  */
 public enum ArmorVariant {
     /** The armor of 0.1.0: armors saved before variants existed load as this one. */

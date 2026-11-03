@@ -17,6 +17,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 /**
  * First-person arms of the power armor. The arm, shoulder and fist boxes copy the armor's geo model
  * (same sizes and texture UVs), arranged like a player arm so that the vanilla first-person hand motion fits.
@@ -25,26 +28,60 @@ public class ArmorArmRenderer {
     /** The armor arm is almost twice as long as a player arm. */
     private static final float SCALE = 0.62f;
 
-    private final ModelPart rightArm;
-    private final ModelPart leftArm;
+    /** Atlas positions of the arm boxes, the same in every variant's texture and geo model. */
+    private static final int RIGHT_V = 100;
+    private static final int LEFT_V = 70;
+    private static final int SHOULDER_U = 0;
+    private static final int ARM_U = 40;
+    private static final int FIST_U = 70;
+
+    /** A box of the arm, centred on the arm's axis; top is measured down from the shoulder joint. */
+    private record Box(int u, int rightV, int leftV, int width, int height, int depth, float top) {
+        /** Boxes with their own texture area on each arm. */
+        static Box own(int u, int width, int height, int depth, float top) {
+            return new Box(u, RIGHT_V, LEFT_V, width, height, depth, top);
+        }
+
+        /** Plates painted once and used by both arms. */
+        static Box shared(int u, int v, int width, int height, int depth, float top) {
+            return new Box(u, v, v, width, height, depth, top);
+        }
+    }
+
+    /** Must match the arm boxes of geo/entity/&lt;item id&gt;.geo.json; small details out of the first-person view are left out. */
+    private static Box[] boxes(ArmorVariant variant) {
+        return switch (variant) {
+            case COMBAT -> new Box[] {Box.own(SHOULDER_U, 7, 7, 9, -4), Box.own(ARM_U, 5, 16, 6, 3), Box.own(FIST_U, 6, 4, 7, 19),
+                    Box.shared(56, 12, 8, 3, 10, -5), Box.shared(92, 19, 7, 7, 8, 12)};
+            case MOBILE -> new Box[] {Box.own(SHOULDER_U, 5, 5, 7, -3), Box.own(ARM_U, 4, 15, 5, 2), Box.own(FIST_U, 5, 4, 6, 17),
+                    Box.shared(70, 19, 5, 5, 6, 11)};
+            case WORKER -> new Box[] {Box.own(SHOULDER_U, 8, 8, 10, -4), Box.own(ARM_U, 6, 14, 7, 4), Box.own(FIST_U, 8, 5, 9, 18),
+                    Box.shared(32, 34, 8, 5, 8, 13)};
+        };
+    }
+
+    private final Map<ArmorVariant, ModelPart> rightArms = new EnumMap<>(ArmorVariant.class);
+    private final Map<ArmorVariant, ModelPart> leftArms = new EnumMap<>(ArmorVariant.class);
 
     public ArmorArmRenderer() {
-        MeshDefinition mesh = new MeshDefinition();
-        PartDefinition root = mesh.getRoot();
-        // UVs must match geo/entity/power_armor.geo.json (shoulder, arm, fist).
-        root.addOrReplaceChild("right_arm", CubeListBuilder.create()
-                        .texOffs(24, 24).addBox(-4.5f, -4.0f, -4.5f, 7, 7, 9)
-                        .texOffs(56, 0).addBox(-3.5f, 3.0f, -3.0f, 5, 16, 6)
-                        .texOffs(30, 56).addBox(-4.0f, 19.0f, -3.5f, 6, 4, 7),
-                PartPose.offset(-5.0f, 2.0f, 0.0f));
-        root.addOrReplaceChild("left_arm", CubeListBuilder.create()
-                        .texOffs(56, 24).addBox(-2.5f, -4.0f, -4.5f, 7, 7, 9)
-                        .texOffs(78, 0).addBox(-1.5f, 3.0f, -3.0f, 5, 16, 6)
-                        .texOffs(56, 56).addBox(-2.0f, 19.0f, -3.5f, 6, 4, 7),
-                PartPose.offset(5.0f, 2.0f, 0.0f));
-        ModelPart baked = LayerDefinition.create(mesh, 128, 128).bakeRoot();
-        this.rightArm = baked.getChild("right_arm");
-        this.leftArm = baked.getChild("left_arm");
+        for (ArmorVariant variant : ArmorVariant.values()) {
+            MeshDefinition mesh = new MeshDefinition();
+            PartDefinition root = mesh.getRoot();
+            root.addOrReplaceChild("right_arm", cubes(variant, true), PartPose.offset(-5.0f, 2.0f, 0.0f));
+            root.addOrReplaceChild("left_arm", cubes(variant, false), PartPose.offset(5.0f, 2.0f, 0.0f));
+            ModelPart baked = LayerDefinition.create(mesh, 128, 128).bakeRoot();
+            rightArms.put(variant, baked.getChild("right_arm"));
+            leftArms.put(variant, baked.getChild("left_arm"));
+        }
+    }
+
+    private static CubeListBuilder cubes(ArmorVariant variant, boolean right) {
+        CubeListBuilder cubes = CubeListBuilder.create();
+        for (Box box : boxes(variant)) {
+            cubes.texOffs(box.u(), right ? box.rightV() : box.leftV()).addBox(-box.width() / 2.0f + (right ? -1.0f : 1.0f), box.top(), -box.depth() / 2.0f,
+                    box.width(), box.height(), box.depth());
+        }
+        return cubes;
     }
 
     /**
@@ -69,7 +106,7 @@ public class ArmorArmRenderer {
         poseStack.mulPose(Axis.YP.rotationDegrees(f * -135.0f));
         poseStack.translate(f * 5.6f, 0.0f, 0.0f);
         poseStack.scale(SCALE, SCALE, SCALE);
-        ModelPart arm = right ? rightArm : leftArm;
+        ModelPart arm = (right ? rightArms : leftArms).get(variant);
         arm.xRot = 0.0f;
         arm.render(poseStack, buffers.getBuffer(RenderType.entitySolid(PowerArmorRenderer.texture(variant))), packedLight, OverlayTexture.NO_OVERLAY);
         poseStack.popPose();

@@ -1,0 +1,11 @@
+{
+  "multipart": [
+    { "apply": { "model": "projectrebirth:block/cable_core" } },
+    { "when": { "north": "true" }, "apply": { "model": "projectrebirth:block/cable_arm", "uvlock": false } },
+    { "when": { "east": "true" }, "apply": { "model": "projectrebirth:block/cable_arm", "y": 90, "uvlock": false } },
+    { "when": { "south": "true" }, "apply": { "model": "projectrebirth:block/cable_arm", "y": 180, "uvlock": false } },
+    { "when": { "west": "true" }, "apply": { "model": "projectrebirth:block/cable_arm", "y": 270, "uvlock": false } },
+    { "when": { "up": "true" }, "apply": { "model": "projectrebirth:block/cable_arm", "x": 270, "uvlock": false } },
+    { "when": { "down": "true" }, "apply": { "model": "projectrebirth:block/cable_arm", "x": 90, "uvlock": false } }
+  ]
+}

@@ -2,6 +2,8 @@ package com.projectrebirth.technology;
 
 import java.util.List;
 
+import com.projectrebirth.technology.energy.EnergyUtil;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -40,7 +42,7 @@ public class StationMenu extends AbstractContainerMenu {
 
     private StationMenu(int containerId, Inventory inventory, BlockPos pos) {
         this(containerId, inventory, pos, stationAt(inventory.player, pos), null,
-                new ItemStackHandler(StationBlockEntity.INPUT_SLOTS + 1), new SimpleContainerData(3));
+                new ItemStackHandler(StationBlockEntity.INPUT_SLOTS + 1), new SimpleContainerData(StationBlockEntity.DATA_COUNT));
     }
 
     StationMenu(int containerId, Inventory inventory, StationBlockEntity blockEntity, IItemHandler items, ContainerData data) {
@@ -96,6 +98,14 @@ public class StationMenu extends AbstractContainerMenu {
     public float progress() {
         int total = data.get(StationBlockEntity.DATA_TOTAL);
         return total <= 0 ? 0.0f : Math.min(1.0f, data.get(StationBlockEntity.DATA_PROGRESS) / (float) total);
+    }
+
+    public int energy() {
+        return EnergyUtil.join(data.get(StationBlockEntity.DATA_ENERGY_LOW), data.get(StationBlockEntity.DATA_ENERGY_HIGH));
+    }
+
+    public int energyCapacity() {
+        return EnergyUtil.join(data.get(StationBlockEntity.DATA_CAPACITY_LOW), data.get(StationBlockEntity.DATA_CAPACITY_HIGH));
     }
 
     /** Remaining production time in ticks. */

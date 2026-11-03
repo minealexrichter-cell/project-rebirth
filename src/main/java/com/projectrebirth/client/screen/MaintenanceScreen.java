@@ -30,6 +30,10 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
     private static final int STATUS_Y = 46;
     private static final int BAR_Y = 58;
     private static final int BAR_X = 76;
+    private static final int ENERGY_X = 167;
+    private static final int ENERGY_Y = 16;
+    private static final int ENERGY_W = 6;
+    private static final int ENERGY_H = 66;
     private static final int BAR_WIDTH = 40;
 
     public MaintenanceScreen(MaintenanceMenu menu, Inventory inventory, Component title) {
@@ -43,6 +47,10 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
+        if (GuiShapes.inside(mouseX, mouseY, leftPos + ENERGY_X, topPos + ENERGY_Y, ENERGY_W, ENERGY_H)) {
+            graphics.renderComponentTooltip(font, StationScreen.energyTooltip(menu.energy(), menu.energyCapacity(),
+                    MaintenanceBlockEntity.energyPerTick()), mouseX, mouseY);
+        }
     }
 
     @Override
@@ -55,6 +63,7 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
         }
         sunken(graphics, x + MaintenanceMenu.SERVICE_X - 5, y + MaintenanceMenu.SLOT_Y - 5, 26, 26);
         playerInventory(graphics, x + 8, y + MaintenanceMenu.INVENTORY_Y);
+        GuiShapes.energyBar(graphics, x + ENERGY_X, y + ENERGY_Y, ENERGY_W, ENERGY_H, menu.energy(), menu.energyCapacity());
 
         int ax = x + ARROW_X;
         int ay = y + MaintenanceMenu.SLOT_Y;
@@ -104,6 +113,9 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
                 case SYNTHETIC_BODY -> "screen.projectrebirth.maintenance.need_fiber";
                 default -> "screen.projectrebirth.maintenance.need_iron";
             });
+        }
+        if (menu.energy() < MaintenanceBlockEntity.energyPerTick()) {
+            return Component.translatable("screen.projectrebirth.station.no_energy");
         }
         return Component.translatable("screen.projectrebirth.maintenance.repairing", Mth.floor(menu.progress() * 100));
     }

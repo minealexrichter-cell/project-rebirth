@@ -1,0 +1,16 @@
+{
+  "textures": {
+    "particle": "projectrebirth:block/cable",
+    "cable": "projectrebirth:block/cable"
+  },
+  "elements": [
+    { "from": [6, 6, 6], "to": [10, 10, 10], "faces": {
+      "north": { "uv": [4, 4, 12, 12], "texture": "#cable" },
+      "south": { "uv": [4, 4, 12, 12], "texture": "#cable" },
+      "east": { "uv": [4, 4, 12, 12], "texture": "#cable" },
+      "west": { "uv": [4, 4, 12, 12], "texture": "#cable" },
+      "up": { "uv": [4, 4, 12, 12], "texture": "#cable" },
+      "down": { "uv": [4, 4, 12, 12], "texture": "#cable" }
+    } }
+  ]
+}

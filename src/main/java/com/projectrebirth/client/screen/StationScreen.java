@@ -6,6 +6,7 @@ import java.util.List;
 import com.projectrebirth.technology.FabricationRecipe;
 import com.projectrebirth.technology.StationBlockEntity;
 import com.projectrebirth.technology.StationMenu;
+import com.projectrebirth.technology.energy.EnergyUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
@@ -49,6 +50,10 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     private static final int STATUS_Y = 57;
     public static final int ARROW_X = 90;
     public static final int ARROW_Y = StationMenu.OUTPUT_Y;
+    private static final int ENERGY_X = 158;
+    private static final int ENERGY_Y = 62;
+    private static final int ENERGY_W = 10;
+    private static final int ENERGY_H = 54;
 
     private int startRow;
 
@@ -66,6 +71,9 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         renderTooltip(graphics, mouseX, mouseY);
         renderRecipeTooltip(graphics, mouseX, mouseY);
         renderArrowTooltip(graphics, mouseX, mouseY);
+        if (GuiShapes.inside(mouseX, mouseY, leftPos + ENERGY_X, topPos + ENERGY_Y, ENERGY_W, ENERGY_H)) {
+            graphics.renderComponentTooltip(font, energyTooltip(menu.energy(), menu.energyCapacity(), StationBlockEntity.energyPerTick()), mouseX, mouseY);
+        }
     }
 
     @Override
@@ -79,6 +87,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         sunken(graphics, x + StationMenu.OUTPUT_X - 5, y + StationMenu.OUTPUT_Y - 5, 26, 26);
         playerInventory(graphics, x + 8, y + StationMenu.INVENTORY_Y);
         renderArrow(graphics, x + ARROW_X, y + ARROW_Y);
+        GuiShapes.energyBar(graphics, x + ENERGY_X, y + ENERGY_Y, ENERGY_W, ENERGY_H, menu.energy(), menu.energyCapacity());
         renderRecipes(graphics, mouseX, mouseY);
         renderScrollbar(graphics);
     }
@@ -103,6 +112,9 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
                 && output.getCount() + recipe.result().getCount() <= output.getMaxStackSize();
         if (!fits) {
             return Component.translatable("screen.projectrebirth.station.output_full");
+        }
+        if (menu.energy() < StationBlockEntity.energyPerTick()) {
+            return Component.translatable("screen.projectrebirth.station.no_energy");
         }
         return Component.translatable("screen.projectrebirth.station.working", Mth.floor(menu.progress() * 100));
     }
@@ -203,6 +215,10 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         }
         lines.add(Component.translatable("screen.projectrebirth.station.time", seconds(StationBlockEntity.productionTime(recipe)))
                 .withStyle(ChatFormatting.DARK_GRAY));
+        if (StationBlockEntity.energyPerTick() > 0) {
+            lines.add(Component.translatable("screen.projectrebirth.station.energy",
+                    EnergyUtil.format(StationBlockEntity.productionTime(recipe) * StationBlockEntity.energyPerTick())).withStyle(ChatFormatting.DARK_GRAY));
+        }
         graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
     }
 
@@ -227,6 +243,16 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
             graphics.renderTooltip(font, Component.translatable("screen.projectrebirth.station.remaining",
                     seconds(menu.remainingTicks())), mouseX, mouseY);
         }
+    }
+
+    /** "Energy: 1 200 / 20 000 FE", plus the use per tick when there is one. */
+    static List<Component> energyTooltip(int energy, int capacity, int perTick) {
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.translatable("screen.projectrebirth.energy", EnergyUtil.format(energy), EnergyUtil.format(capacity)));
+        if (perTick > 0) {
+            lines.add(Component.translatable("screen.projectrebirth.energy.use", perTick).withStyle(ChatFormatting.GRAY));
+        }
+        return lines;
     }
 
     private static String seconds(int ticks) {

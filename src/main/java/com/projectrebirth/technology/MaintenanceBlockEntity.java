@@ -1,6 +1,8 @@
 package com.projectrebirth.technology;
 
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.technology.energy.EnergyUtil;
+import com.projectrebirth.technology.energy.ModEnergyStorage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -30,6 +32,11 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
     public static final int MATERIAL_SLOTS = 3;
     public static final int DATA_PROGRESS = 0;
     public static final int DATA_TOTAL = 1;
+    public static final int DATA_ENERGY_LOW = 2;
+    public static final int DATA_ENERGY_HIGH = 3;
+    public static final int DATA_CAPACITY_LOW = 4;
+    public static final int DATA_CAPACITY_HIGH = 5;
+    public static final int DATA_COUNT = 6;
 
     private final ItemStackHandler items = new ItemStackHandler(1 + MATERIAL_SLOTS) {
         @Override
@@ -46,11 +53,21 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
             (slot, stack) -> slot != SERVICE_SLOT || Maintenance.needsRepair(stack),
             slot -> slot == SERVICE_SLOT && !Maintenance.needsRepair(items.getStackInSlot(SERVICE_SLOT)));
     private int progress;
+    private final ModEnergyStorage energy = new ModEnergyStorage(() -> RebirthConfig.STATION_ENERGY_CAPACITY.get(),
+            () -> Integer.MAX_VALUE, () -> 0, this::setChanged);
 
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
-            return index == DATA_PROGRESS ? progress : stepTicks();
+            return switch (index) {
+                case DATA_PROGRESS -> progress;
+                case DATA_TOTAL -> stepTicks();
+                case DATA_ENERGY_LOW -> EnergyUtil.low(energy.getEnergyStored());
+                case DATA_ENERGY_HIGH -> EnergyUtil.high(energy.getEnergyStored());
+                case DATA_CAPACITY_LOW -> EnergyUtil.low(energy.getMaxEnergyStored());
+                case DATA_CAPACITY_HIGH -> EnergyUtil.high(energy.getMaxEnergyStored());
+                default -> 0;
+            };
         }
 
         @Override
@@ -59,7 +76,7 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
 
         @Override
         public int getCount() {
-            return 2;
+            return DATA_COUNT;
         }
     };
 
@@ -79,6 +96,14 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
         return automation;
     }
 
+    public ModEnergyStorage energy() {
+        return energy;
+    }
+
+    public static int energyPerTick() {
+        return RebirthConfig.STATIONS_NEED_ENERGY.get() ? RebirthConfig.MAINTENANCE_ENERGY_PER_TICK.get() : 0;
+    }
+
     public static int stepTicks() {
         return RebirthConfig.MAINTENANCE_STEP_TICKS.get();
     }
@@ -91,6 +116,9 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
                 progress = 0;
                 setChanged();
             }
+            return;
+        }
+        if (!energy.consume(energyPerTick())) {
             return;
         }
         progress++;
@@ -140,6 +168,7 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
         super.saveAdditional(tag, registries);
         tag.put("items", items.serializeNBT(registries));
         tag.putInt("progress", progress);
+        tag.putInt("energy", energy.saved());
     }
 
     @Override
@@ -147,6 +176,7 @@ public class MaintenanceBlockEntity extends BlockEntity implements MenuProvider 
         super.loadAdditional(tag, registries);
         items.deserializeNBT(registries, tag.getCompound("items"));
         progress = tag.getInt("progress");
+        energy.load(tag.getInt("energy"));
     }
 
     @Override

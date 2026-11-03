@@ -48,6 +48,18 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
+    public static final ModConfigSpec.BooleanValue STATIONS_NEED_ENERGY;
+    public static final ModConfigSpec.IntValue STATION_ENERGY_CAPACITY;
+    public static final ModConfigSpec.IntValue STATION_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue MAINTENANCE_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue COMBUSTION_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue COMBUSTION_CAPACITY;
+    public static final ModConfigSpec.IntValue SOLAR_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue SOLAR_CAPACITY;
+    public static final ModConfigSpec.IntValue BATTERY_CAPACITY;
+    public static final ModConfigSpec.IntValue BATTERY_TRANSFER;
+    public static final ModConfigSpec.IntValue GENERATOR_OUTPUT;
+    public static final ModConfigSpec.IntValue CABLE_TRANSFER;
     public static final ModConfigSpec.BooleanValue FACTION_FRIENDLY_FIRE_DEFAULT;
     public static final ModConfigSpec.BooleanValue FACTION_LEADER_CAN_TOGGLE_FRIENDLY_FIRE;
     public static final ModConfigSpec.IntValue FACTION_MAX_MEMBERS;
@@ -204,6 +216,45 @@ public final class RebirthConfig {
         MAINTENANCE_BODY_REPAIR_PER_ITEM = builder
                 .comment("Body integrity restored per iron ingot (robot bodies) or synthetic fiber (synthetic bodies)")
                 .defineInRange("bodyRepairPerItem", 8.0, 0.1, 1024.0);
+        builder.pop();
+
+        builder.comment("Energy (NeoForge Energy, FE): generators, battery, cable and what the stations use").push("energy");
+        STATIONS_NEED_ENERGY = builder
+                .comment("Whether production and maintenance stations need energy. false = they work without it, as in 0.1.0")
+                .define("stationsNeedEnergy", true);
+        STATION_ENERGY_CAPACITY = builder
+                .comment("Energy buffer of every production and maintenance station")
+                .defineInRange("stationCapacity", 20000, 1, 100_000_000);
+        STATION_ENERGY_PER_TICK = builder
+                .comment("Energy a production station uses per tick while it works (20 ticks = 1 second)")
+                .defineInRange("stationEnergyPerTick", 20, 0, 1_000_000);
+        MAINTENANCE_ENERGY_PER_TICK = builder
+                .comment("Energy the maintenance station uses per tick while it repairs")
+                .defineInRange("maintenanceEnergyPerTick", 20, 0, 1_000_000);
+        COMBUSTION_ENERGY_PER_TICK = builder
+                .comment("Energy the combustion generator makes per tick while it burns; it burns anything a furnace burns, for as long as a furnace would")
+                .defineInRange("combustionEnergyPerTick", 40, 1, 1_000_000);
+        COMBUSTION_CAPACITY = builder
+                .comment("Energy buffer of the combustion generator")
+                .defineInRange("combustionCapacity", 20000, 1, 100_000_000);
+        SOLAR_ENERGY_PER_TICK = builder
+                .comment("Energy the solar panel makes per tick in daylight under the open sky (not in rain)")
+                .defineInRange("solarEnergyPerTick", 8, 1, 1_000_000);
+        SOLAR_CAPACITY = builder
+                .comment("Energy buffer of the solar panel")
+                .defineInRange("solarCapacity", 4000, 1, 100_000_000);
+        BATTERY_CAPACITY = builder
+                .comment("Energy the battery stores")
+                .defineInRange("batteryCapacity", 500000, 1, 1_000_000_000);
+        BATTERY_TRANSFER = builder
+                .comment("Energy per tick the battery takes in and gives out (it gives out only through its front)")
+                .defineInRange("batteryTransferPerTick", 1000, 1, 100_000_000);
+        GENERATOR_OUTPUT = builder
+                .comment("Energy per tick a generator gives to the blocks next to it")
+                .defineInRange("generatorOutputPerTick", 200, 1, 100_000_000);
+        CABLE_TRANSFER = builder
+                .comment("Energy one cable network passes on per delivery (each generator or battery delivers once per tick)")
+                .defineInRange("cableTransferPerTick", 2000, 1, 100_000_000);
         builder.pop();
 
         builder.comment("Factions created by players").push("factions");

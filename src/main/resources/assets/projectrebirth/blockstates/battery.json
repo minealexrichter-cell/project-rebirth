@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=north": { "model": "projectrebirth:block/battery" },
+    "facing=east": { "model": "projectrebirth:block/battery", "y": 90 },
+    "facing=south": { "model": "projectrebirth:block/battery", "y": 180 },
+    "facing=west": { "model": "projectrebirth:block/battery", "y": 270 },
+    "facing=up": { "model": "projectrebirth:block/battery_vertical" },
+    "facing=down": { "model": "projectrebirth:block/battery_vertical", "x": 180 }
+  }
+}

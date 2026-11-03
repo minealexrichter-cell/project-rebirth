@@ -1,5 +1,7 @@
 package com.projectrebirth.technology;
 
+import com.projectrebirth.technology.energy.EnergyUtil;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,7 +29,7 @@ public class MaintenanceMenu extends AbstractContainerMenu {
     /** Client side: the contents come from the server through slot and data syncing. */
     public MaintenanceMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf buf) {
         this(containerId, inventory, buf.readBlockPos(), new ItemStackHandler(1 + MaintenanceBlockEntity.MATERIAL_SLOTS),
-                new SimpleContainerData(2));
+                new SimpleContainerData(MaintenanceBlockEntity.DATA_COUNT));
     }
 
     MaintenanceMenu(int containerId, Inventory inventory, BlockPos pos, IItemHandler items, ContainerData data) {
@@ -55,6 +57,14 @@ public class MaintenanceMenu extends AbstractContainerMenu {
     }
 
     /** Progress of the current repair step from 0 to 1. */
+    public int energy() {
+        return EnergyUtil.join(data.get(MaintenanceBlockEntity.DATA_ENERGY_LOW), data.get(MaintenanceBlockEntity.DATA_ENERGY_HIGH));
+    }
+
+    public int energyCapacity() {
+        return EnergyUtil.join(data.get(MaintenanceBlockEntity.DATA_CAPACITY_LOW), data.get(MaintenanceBlockEntity.DATA_CAPACITY_HIGH));
+    }
+
     public float progress() {
         int total = data.get(MaintenanceBlockEntity.DATA_TOTAL);
         return total <= 0 ? 0.0f : Math.min(1.0f, data.get(MaintenanceBlockEntity.DATA_PROGRESS) / (float) total);

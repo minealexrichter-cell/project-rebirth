@@ -7,6 +7,7 @@ import java.util.Locale;
 import com.projectrebirth.technology.FabricationRecipe;
 import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.StationBlockEntity;
+import com.projectrebirth.technology.energy.EnergyUtil;
 import com.projectrebirth.technology.TechItems;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -26,7 +27,7 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 /** One JEI category per production station: up to six counted ingredients, an arrow with the time, the result. */
 public class StationRecipeCategory implements IRecipeCategory<FabricationRecipe> {
     private static final int WIDTH = 120;
-    private static final int HEIGHT = 48;
+    private static final int HEIGHT = 58;
 
     private final Station station;
     private final RecipeType<FabricationRecipe> type;
@@ -89,5 +90,11 @@ public class StationRecipeCategory implements IRecipeCategory<FabricationRecipe>
         Component time = Component.translatable("screen.projectrebirth.station.time",
                 String.format(Locale.ROOT, "%.1f", seconds));
         graphics.drawString(Minecraft.getInstance().font, time, 0, 39, 0xFF808080, false);
+        int perTick = StationBlockEntity.energyPerTick();
+        if (perTick > 0) {
+            Component energy = Component.translatable("screen.projectrebirth.station.energy",
+                    EnergyUtil.format(StationBlockEntity.productionTime(recipe) * perTick));
+            graphics.drawString(Minecraft.getInstance().font, energy, 0, 49, 0xFF808080, false);
+        }
     }
 }

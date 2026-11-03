@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["GGG", "ABA", "III"],
+  "key": { "G": { "item": "minecraft:glass" }, "A": { "item": "projectrebirth:aluminum_ingot" }, "B": { "item": "projectrebirth:circuit_board" }, "I": { "item": "minecraft:iron_ingot" } },
+  "result": { "id": "projectrebirth:solar_panel", "count": 1 }
+}

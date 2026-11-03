@@ -1,6 +1,7 @@
 package com.projectrebirth.technology;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.technology.energy.GeneratorMenu;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -17,6 +18,9 @@ public final class TechMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<MaintenanceMenu>> MAINTENANCE =
             MENUS.register("maintenance_station", () -> IMenuTypeExtension.create(MaintenanceMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<GeneratorMenu>> GENERATOR =
+            MENUS.register("combustion_generator", () -> IMenuTypeExtension.create(GeneratorMenu::new));
 
     private TechMenus() {
     }

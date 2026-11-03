@@ -4,6 +4,10 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.technology.energy.BatteryBlock;
+import com.projectrebirth.technology.energy.CableBlock;
+import com.projectrebirth.technology.energy.CombustionGeneratorBlock;
+import com.projectrebirth.technology.energy.SolarPanelBlock;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -28,6 +32,40 @@ public final class TechBlocks {
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
+
+    public static final DeferredBlock<CombustionGeneratorBlock> COMBUSTION_GENERATOR = BLOCKS.registerBlock("combustion_generator",
+            CombustionGeneratorBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .lightLevel(state -> state.getValue(CombustionGeneratorBlock.LIT) ? 13 : 0)
+                    .requiresCorrectToolForDrops());
+
+    public static final DeferredBlock<SolarPanelBlock> SOLAR_PANEL = BLOCKS.registerBlock("solar_panel",
+            SolarPanelBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_BLUE)
+                    .strength(2.0f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops());
+
+    public static final DeferredBlock<BatteryBlock> BATTERY = BLOCKS.registerBlock("battery",
+            BatteryBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops());
+
+    public static final DeferredBlock<CableBlock> CABLE = BLOCKS.registerBlock("cable",
+            CableBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_ORANGE)
+                    .strength(0.5f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion());
 
     /** Stone and deepslate ores; same hardness as the vanilla ores. */
     public static final Map<Metal, DeferredBlock<Block>> ORES = new EnumMap<>(Metal.class);

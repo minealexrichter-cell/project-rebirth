@@ -13,6 +13,24 @@ final class GuiShapes {
     private GuiShapes() {
     }
 
+    static final int ENERGY = 0xFFE0502A;
+    static final int ENERGY_TOP = 0xFFFF9A5C;
+
+    /** A vertical energy gauge filling up from the bottom. */
+    static void energyBar(GuiGraphics graphics, int x, int y, int width, int height, int energy, int capacity) {
+        sunken(graphics, x, y, width, height);
+        int inner = height - 2;
+        int filled = capacity <= 0 ? 0 : (int) Math.round((double) inner * Math.min(energy, capacity) / capacity);
+        if (filled > 0) {
+            graphics.fill(x + 1, y + height - 1 - filled, x + width - 1, y + height - 1, ENERGY);
+            graphics.fill(x + 1, y + height - 1 - filled, x + width - 1, y + height - filled, ENERGY_TOP);
+        }
+    }
+
+    static boolean inside(double mouseX, double mouseY, int x, int y, int width, int height) {
+        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    }
+
     static void panel(GuiGraphics graphics, int x, int y, int width, int height) {
         graphics.fill(x, y, x + width, y + height, PANEL);
         graphics.fill(x, y, x + width - 1, y + 1, LIGHT);

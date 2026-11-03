@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["LRL", "LPL", "III"],
+  "key": { "L": { "item": "projectrebirth:lithium_ingot" }, "R": { "item": "minecraft:redstone" }, "P": { "item": "projectrebirth:power_cell" }, "I": { "item": "minecraft:iron_ingot" } },
+  "result": { "id": "projectrebirth:battery", "count": 1 }
+}

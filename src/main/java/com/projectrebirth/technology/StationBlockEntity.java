@@ -6,6 +6,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.technology.energy.EnergyUtil;
+import com.projectrebirth.technology.energy.ModEnergyStorage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -34,6 +36,11 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     public static final int DATA_PROGRESS = 0;
     public static final int DATA_TOTAL = 1;
     public static final int DATA_SELECTED = 2;
+    public static final int DATA_ENERGY_LOW = 3;
+    public static final int DATA_ENERGY_HIGH = 4;
+    public static final int DATA_CAPACITY_LOW = 5;
+    public static final int DATA_CAPACITY_HIGH = 6;
+    public static final int DATA_COUNT = 7;
 
     private final ItemStackHandler items = new ItemStackHandler(INPUT_SLOTS + 1) {
         @Override
@@ -46,6 +53,9 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     private ResourceLocation selected;
     private int progress;
+    /** Takes energy from any side; nothing can be taken out. */
+    private final ModEnergyStorage energy = new ModEnergyStorage(() -> RebirthConfig.STATION_ENERGY_CAPACITY.get(),
+            () -> Integer.MAX_VALUE, () -> 0, this::setChanged);
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -54,6 +64,10 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
                 case DATA_PROGRESS -> progress;
                 case DATA_TOTAL -> selectedRecipe() == null ? 0 : productionTime(selectedRecipe().value());
                 case DATA_SELECTED -> selectedIndex();
+                case DATA_ENERGY_LOW -> EnergyUtil.low(energy.getEnergyStored());
+                case DATA_ENERGY_HIGH -> EnergyUtil.high(energy.getEnergyStored());
+                case DATA_CAPACITY_LOW -> EnergyUtil.low(energy.getMaxEnergyStored());
+                case DATA_CAPACITY_HIGH -> EnergyUtil.high(energy.getMaxEnergyStored());
                 default -> 0;
             };
         }
@@ -64,7 +78,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
 
         @Override
         public int getCount() {
-            return 3;
+            return DATA_COUNT;
         }
     };
 
@@ -83,6 +97,20 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     /** For hoppers and pipes: materials go into the input slots, only the product comes out. */
     public AutomationHandler automation() {
         return automation;
+    }
+
+    public ModEnergyStorage energy() {
+        return energy;
+    }
+
+    /** Ticks of work done on the current product. */
+    public int progress() {
+        return progress;
+    }
+
+    /** Energy for one tick of work; 0 when the config lets stations work without energy. */
+    public static int energyPerTick() {
+        return RebirthConfig.STATIONS_NEED_ENERGY.get() ? RebirthConfig.STATION_ENERGY_PER_TICK.get() : 0;
     }
 
     /** Picks the recipe at the given index of the station's list; picking the selected one again clears it. */
@@ -140,6 +168,10 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
         FabricationRecipe recipe = holder.value();
+        if (!energy.consume(energyPerTick())) {
+            // Out of energy: wait, keeping the progress made so far.
+            return;
+        }
         progress++;
         if (progress >= productionTime(recipe)) {
             progress = 0;
@@ -192,6 +224,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
             tag.putString("selected", selected.toString());
         }
         tag.putInt("progress", progress);
+        tag.putInt("energy", energy.saved());
     }
 
     @Override
@@ -200,6 +233,8 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
         items.deserializeNBT(registries, tag.getCompound("items"));
         selected = tag.contains("selected") ? ResourceLocation.tryParse(tag.getString("selected")) : null;
         progress = tag.getInt("progress");
+        // Stations from 0.1.0 have no energy yet; their progress is kept.
+        energy.load(tag.getInt("energy"));
     }
 
     @Override

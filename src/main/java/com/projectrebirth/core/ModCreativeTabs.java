@@ -36,6 +36,10 @@ public final class ModCreativeTabs {
                     output.accept(TechItems.STATIONS.get(station).get());
                 }
                 output.accept(TechItems.MAINTENANCE_STATION.get());
+                output.accept(TechItems.COMBUSTION_GENERATOR.get());
+                output.accept(TechItems.SOLAR_PANEL.get());
+                output.accept(TechItems.BATTERY.get());
+                output.accept(TechItems.CABLE.get());
                 output.accept(FactionBlocks.FACTION_CORE_ITEM.get());
                 output.accept(TechItems.CIRCUIT_BOARD.get());
                 output.accept(TechItems.PROCESSOR.get());

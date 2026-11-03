@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": ["CRC"],
+  "key": { "C": { "item": "minecraft:copper_ingot" }, "R": { "item": "minecraft:redstone" } },
+  "result": { "id": "projectrebirth:cable", "count": 6 }
+}

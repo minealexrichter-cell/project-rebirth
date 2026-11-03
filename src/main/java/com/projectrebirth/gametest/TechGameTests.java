@@ -87,7 +87,10 @@ public class TechGameTests {
 
     private static StationBlockEntity placeStation(GameTestHelper helper, Station station) {
         helper.setBlock(STATION_POS, TechBlocks.STATIONS.get(station).get());
-        return helper.getBlockEntity(STATION_POS);
+        StationBlockEntity placed = helper.getBlockEntity(STATION_POS);
+        // Charged: these tests are about recipes and timing; energy has its own tests.
+        placed.energy().generate(Integer.MAX_VALUE);
+        return placed;
     }
 
     private static int recipeIndex(GameTestHelper helper, Station station, String name) {
@@ -186,7 +189,9 @@ public class TechGameTests {
 
     private static MaintenanceBlockEntity placeMaintenance(GameTestHelper helper) {
         helper.setBlock(STATION_POS, TechBlocks.MAINTENANCE_STATION.get());
-        return helper.getBlockEntity(STATION_POS);
+        MaintenanceBlockEntity placed = helper.getBlockEntity(STATION_POS);
+        placed.energy().generate(Integer.MAX_VALUE);
+        return placed;
     }
 
     /** Plates go to critical integrity first, then iron to structural; a fully repaired armor item is "like new". */
@@ -236,6 +241,7 @@ public class TechGameTests {
         BlockPos syntheticPos = new BlockPos(0, 2, 0);
         helper.setBlock(syntheticPos, TechBlocks.MAINTENANCE_STATION.get());
         MaintenanceBlockEntity syntheticStation = helper.getBlockEntity(syntheticPos);
+        syntheticStation.energy().generate(Integer.MAX_VALUE);
         ItemStack synthetic = new ItemStack(BodyItems.item(BodyClass.ADVANCED_SYNTHETIC));
         synthetic.set(BodyComponents.STORED_INTEGRITY.get(), 5.0f);
         syntheticStation.items().setStackInSlot(MaintenanceBlockEntity.SERVICE_SLOT, synthetic);
@@ -268,6 +274,7 @@ public class TechGameTests {
         BlockPos stationPos = new BlockPos(2, 3, 2);
         helper.setBlock(stationPos, TechBlocks.STATIONS.get(Station.ELECTRONICS_FABRICATOR).get());
         StationBlockEntity station = helper.getBlockEntity(stationPos);
+        station.energy().generate(Integer.MAX_VALUE);
         helper.setBlock(new BlockPos(1, 3, 2), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.EAST));
         helper.setBlock(new BlockPos(2, 2, 2), Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.EAST));
         helper.setBlock(new BlockPos(3, 2, 2), Blocks.CHEST);

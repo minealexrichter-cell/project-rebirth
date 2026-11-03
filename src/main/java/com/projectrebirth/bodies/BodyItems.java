@@ -25,6 +25,9 @@ public final class BodyItems {
     public static final DeferredItem<DoubleHighBlockItem> TRANSFER_CAPSULE = ITEMS.register("transfer_capsule",
             () -> new DoubleHighBlockItem(BodyBlocks.TRANSFER_CAPSULE.get(), new Item.Properties()));
 
+    public static final DeferredItem<RepairKitItem> REPAIR_KIT = ITEMS.register("repair_kit",
+            () -> new RepairKitItem(new Item.Properties().stacksTo(16)));
+
     private BodyItems() {
     }
 

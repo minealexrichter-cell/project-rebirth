@@ -43,6 +43,7 @@ public final class ModCreativeTabs {
                 output.accept(TechItems.ACTUATOR.get());
                 output.accept(TechItems.SYNTHETIC_FIBER.get());
                 output.accept(BodyItems.TRANSFER_CAPSULE.get());
+                output.accept(BodyItems.REPAIR_KIT.get());
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }

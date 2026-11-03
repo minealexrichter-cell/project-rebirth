@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [" T ", "ACA", " F "],
+  "key": {
+    "T": { "item": "projectrebirth:tin_ingot" },
+    "A": { "item": "projectrebirth:aluminum_ingot" },
+    "C": { "item": "projectrebirth:circuit_board" },
+    "F": { "item": "projectrebirth:synthetic_fiber" }
+  },
+  "result": { "id": "projectrebirth:repair_kit", "count": 2 }
+}

@@ -20,7 +20,11 @@
   "message.projectrebirth.body.status": "%s: целостность %s / %s",
   "message.projectrebirth.body.no_space": "Недостаточно места, чтобы поставить тело",
   "message.projectrebirth.body.not_owner": "Это тело принадлежит другому игроку",
-  "message.projectrebirth.body.cannot_eat": "Искусственное тело не может есть",
+  "message.projectrebirth.body.cannot_eat": "Это тело не может это есть или пить",
+  "message.projectrebirth.repair_kit.not_in_body": "Ремкомплект работает только на искусственном теле, которым вы управляете",
+  "message.projectrebirth.repair_kit.intact": "Тело не повреждено",
+  "message.projectrebirth.repair_kit.done": "Тело отремонтировано",
+  "message.projectrebirth.repair_kit.interrupted": "Ремонт прерван уроном",
 
   "message.projectrebirth.transfer.success": "Сознание перенесено",
   "message.projectrebirth.transfer.already_in_body": "Сначала вернитесь в своё человеческое тело",
@@ -54,6 +58,7 @@
   "item.projectrebirth.power_armor": "Силовая броня",
   "entity.projectrebirth.power_armor": "Силовая броня",
   "item.projectrebirth.repair_wrench": "Ремонтный ключ",
+  "item.projectrebirth.repair_kit": "Ремкомплект тела",
   "item.projectrebirth.rescue_tool": "Аварийный инструмент",
   "item.projectrebirth.armor_plate": "Бронеплита",
 

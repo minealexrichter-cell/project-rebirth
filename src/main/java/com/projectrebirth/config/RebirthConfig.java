@@ -43,6 +43,8 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_IRON;
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_PLATES;
 
+    public static final ModConfigSpec.DoubleValue REPAIR_KIT_USE_SECONDS;
+    public static final ModConfigSpec.DoubleValue REPAIR_KIT_FRACTION;
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
@@ -160,9 +162,31 @@ public final class RebirthConfig {
             ModConfigSpec.DoubleValue attack = builder
                     .comment("Extra melee damage while controlling the body")
                     .defineInRange("attackDamageBonus", bodyClass.defaultAttackDamageBonus(), 0.0, 100.0);
+            ModConfigSpec.DoubleValue selfRepair = builder
+                    .comment("Integrity restored per second once the body has not been damaged for selfRepairDelaySeconds; 0 = no self-repair")
+                    .defineInRange("selfRepairPerSecond", bodyClass.defaultSelfRepairPerSecond(), 0.0, 100.0);
+            ModConfigSpec.IntValue selfRepairDelay = builder
+                    .comment("Seconds without damage before self-repair starts")
+                    .defineInRange("selfRepairDelaySeconds", 8, 0, 3600);
+            ModConfigSpec.BooleanValue canConsume = builder
+                    .comment("Whether the body may eat and drink the items of the tag projectrebirth:body_consumables",
+                            "(golden apples and potions by default). Other food and drinks are never allowed")
+                    .define("canConsume", bodyClass.defaultLivingBody());
+            ModConfigSpec.BooleanValue immuneToEffects = builder
+                    .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs)")
+                    .define("immuneToEffects", !bodyClass.defaultLivingBody());
             builder.pop();
-            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack));
+            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects));
         }
+        builder.pop();
+
+        builder.comment("Repair kit: used by a player in any artificial body, interrupted by damage").push("repair_kit");
+        REPAIR_KIT_USE_SECONDS = builder
+                .comment("How long the kit takes to use")
+                .defineInRange("useSeconds", 4.0, 0.25, 60.0);
+        REPAIR_KIT_FRACTION = builder
+                .comment("Part of the body's maximum integrity restored by one kit (0.35 = 35%)")
+                .defineInRange("repairFraction", 0.35, 0.01, 1.0);
         builder.pop();
 
         builder.comment("Production stations. Ingredients, results and base times of each recipe are data files",
@@ -216,6 +240,8 @@ public final class RebirthConfig {
     }
 
     public record BodyStats(ModConfigSpec.DoubleValue maxHealth, ModConfigSpec.DoubleValue armor,
-                            ModConfigSpec.DoubleValue speedMultiplier, ModConfigSpec.DoubleValue attackDamageBonus) {
+                            ModConfigSpec.DoubleValue speedMultiplier, ModConfigSpec.DoubleValue attackDamageBonus,
+                            ModConfigSpec.DoubleValue selfRepairPerSecond, ModConfigSpec.IntValue selfRepairDelaySeconds,
+                            ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects) {
     }
 }

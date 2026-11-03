@@ -267,7 +267,7 @@ public final class TransferService {
     private static void afterEmergencyReturn(ServerPlayer player, Component message) {
         int seconds = RebirthConfig.EMERGENCY_RETURN_INVULNERABILITY_SECONDS.get();
         if (seconds > 0) {
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, seconds * 20, 4, false, false, true));
+            BodyRules.addOwnEffect(player, new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, seconds * 20, 4, false, false, true));
         }
         player.sendSystemMessage(message);
     }

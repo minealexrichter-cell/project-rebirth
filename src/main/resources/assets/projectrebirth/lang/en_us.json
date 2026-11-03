@@ -20,7 +20,11 @@
   "message.projectrebirth.body.status": "%s: integrity %s / %s",
   "message.projectrebirth.body.no_space": "Not enough space to place the body",
   "message.projectrebirth.body.not_owner": "This body belongs to another player",
-  "message.projectrebirth.body.cannot_eat": "An artificial body cannot eat",
+  "message.projectrebirth.body.cannot_eat": "This body cannot eat or drink that",
+  "message.projectrebirth.repair_kit.not_in_body": "The repair kit works only on an artificial body you control",
+  "message.projectrebirth.repair_kit.intact": "The body is not damaged",
+  "message.projectrebirth.repair_kit.done": "Body repaired",
+  "message.projectrebirth.repair_kit.interrupted": "Repair interrupted by damage",
 
   "message.projectrebirth.transfer.success": "Consciousness transferred",
   "message.projectrebirth.transfer.already_in_body": "Return to your human body first",
@@ -54,6 +58,7 @@
   "item.projectrebirth.power_armor": "Power Armor",
   "entity.projectrebirth.power_armor": "Power Armor",
   "item.projectrebirth.repair_wrench": "Repair Wrench",
+  "item.projectrebirth.repair_kit": "Body Repair Kit",
   "item.projectrebirth.rescue_tool": "Emergency Rescue Tool",
   "item.projectrebirth.armor_plate": "Armor Plate",
 

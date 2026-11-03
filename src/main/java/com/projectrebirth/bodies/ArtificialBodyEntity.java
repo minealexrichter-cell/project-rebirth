@@ -230,6 +230,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
     public void tick() {
         super.tick();
         Parked.holdRotation(this);
+        if (!level().isClientSide && tickCount % 20 == 0) {
+            BodyRules.tickSelfRepair(this, bodyClass);
+        }
     }
 
     @Override

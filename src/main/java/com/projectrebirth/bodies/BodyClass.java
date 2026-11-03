@@ -14,11 +14,11 @@ import net.minecraft.util.StringRepresentable;
  * The values here are only defaults for the server config.
  */
 public enum BodyClass implements StringRepresentable {
-    BASIC_ROBOT(0, "basic_robot_body", false, 20.0, 2.0, 0.85, 0.0),
-    IMPROVED_ROBOT(1, "improved_robot_body", false, 26.0, 4.0, 0.95, 0.5),
-    ADVANCED_SYNTHETIC(2, "advanced_synthetic_body", true, 30.0, 6.0, 1.0, 1.0),
-    HIGHTECH_SYNTHETIC(3, "hightech_synthetic_body", true, 36.0, 8.0, 1.1, 2.0),
-    PREMIUM_SYNTHETIC(4, "premium_synthetic_body", true, 40.0, 10.0, 1.2, 3.0);
+    BASIC_ROBOT(0, "basic_robot_body", false, 20.0, 2.0, 0.85, 0.0, 0.0, false),
+    IMPROVED_ROBOT(1, "improved_robot_body", false, 26.0, 4.0, 0.95, 0.5, 0.0, false),
+    ADVANCED_SYNTHETIC(2, "advanced_synthetic_body", true, 30.0, 6.0, 1.0, 1.0, 0.25, false),
+    HIGHTECH_SYNTHETIC(3, "hightech_synthetic_body", true, 36.0, 8.0, 1.1, 2.0, 0.5, false),
+    PREMIUM_SYNTHETIC(4, "premium_synthetic_body", true, 40.0, 10.0, 1.2, 3.0, 0.75, true);
 
     public static final Codec<BodyClass> CODEC = StringRepresentable.fromEnum(BodyClass::values);
     public static final StreamCodec<ByteBuf, BodyClass> STREAM_CODEC = ByteBufCodecs.idMapper(
@@ -31,9 +31,11 @@ public enum BodyClass implements StringRepresentable {
     private final double defaultArmor;
     private final double defaultSpeedMultiplier;
     private final double defaultAttackDamageBonus;
+    private final double defaultSelfRepairPerSecond;
+    private final boolean defaultLivingBody;
 
     BodyClass(int networkId, String id, boolean slimArms, double defaultMaxHealth, double defaultArmor,
-              double defaultSpeedMultiplier, double defaultAttackDamageBonus) {
+              double defaultSpeedMultiplier, double defaultAttackDamageBonus, double defaultSelfRepairPerSecond, boolean defaultLivingBody) {
         this.networkId = networkId;
         this.id = id;
         this.slimArms = slimArms;
@@ -41,6 +43,8 @@ public enum BodyClass implements StringRepresentable {
         this.defaultArmor = defaultArmor;
         this.defaultSpeedMultiplier = defaultSpeedMultiplier;
         this.defaultAttackDamageBonus = defaultAttackDamageBonus;
+        this.defaultSelfRepairPerSecond = defaultSelfRepairPerSecond;
+        this.defaultLivingBody = defaultLivingBody;
     }
 
     private int networkId() {
@@ -84,5 +88,18 @@ public enum BodyClass implements StringRepresentable {
 
     public double defaultAttackDamageBonus() {
         return defaultAttackDamageBonus;
+    }
+
+    /** Integrity restored per second after a pause since the last damage; 0 = no self-repair (robot bodies). */
+    public double defaultSelfRepairPerSecond() {
+        return defaultSelfRepairPerSecond;
+    }
+
+    /**
+     * Only the premium body is close enough to a living one to drink potions, eat golden apples and be affected
+     * by potion effects; the others are machines.
+     */
+    public boolean defaultLivingBody() {
+        return defaultLivingBody;
     }
 }

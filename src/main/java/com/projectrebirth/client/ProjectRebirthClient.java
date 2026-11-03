@@ -70,6 +70,7 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener(this::onRenderArm);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientFactionCache.clear());
         PowerArmorClient.register(modEventBus);
+        BodyHud.register(modEventBus);
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {

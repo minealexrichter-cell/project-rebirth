@@ -48,22 +48,22 @@ public class ArmorArmRenderer {
         this.leftArm = baked.getChild("left_arm");
     }
 
-    /** Same motion as the vanilla first-person arm (ItemInHandRenderer#renderPlayerArm), with the armor arm model. */
+    /**
+     * Resting pose is the vanilla first-person arm pose (ItemInHandRenderer#renderPlayerArm without swing).
+     * The vanilla swing would sweep the long armor arm off the bottom of the screen, so a punch is drawn instead:
+     * the arm is thrust forward, up and towards the crosshair, then pulled back.
+     */
     public void render(PoseStack poseStack, MultiBufferSource buffers, int packedLight, float equipProgress, float swingProgress,
                        HumanoidArm side) {
         boolean right = side != HumanoidArm.LEFT;
         float f = right ? 1.0f : -1.0f;
-        float sqrtSwing = Mth.sqrt(swingProgress);
-        float swingX = -0.3f * Mth.sin(sqrtSwing * Mth.PI);
-        float swingY = 0.4f * Mth.sin(sqrtSwing * Mth.TWO_PI);
-        float swingZ = -0.4f * Mth.sin(swingProgress * Mth.PI);
+        // Fast thrust out, slower pull back.
+        float punch = swingProgress < 0.3f ? swingProgress / 0.3f : Mth.cos((swingProgress - 0.3f) / 0.7f * Mth.HALF_PI);
         poseStack.pushPose();
-        poseStack.translate(f * (swingX + 0.64f), swingY - 0.6f + equipProgress * -0.6f, swingZ - 0.72f);
+        poseStack.translate(f * -0.22f * punch, 0.18f * punch, -0.55f * punch);
+        poseStack.translate(f * 0.64f, -0.6f + equipProgress * -0.6f, -0.72f);
         poseStack.mulPose(Axis.YP.rotationDegrees(f * 45.0f));
-        float swingSq = Mth.sin(swingProgress * swingProgress * Mth.PI);
-        float swingSqrt = Mth.sin(sqrtSwing * Mth.PI);
-        poseStack.mulPose(Axis.YP.rotationDegrees(f * swingSqrt * 70.0f));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(f * swingSq * -20.0f));
+        poseStack.mulPose(Axis.XP.rotationDegrees(-25.0f * punch));
         poseStack.translate(f * -1.0f, 3.6f, 3.5f);
         poseStack.mulPose(Axis.ZP.rotationDegrees(f * 120.0f));
         poseStack.mulPose(Axis.XP.rotationDegrees(200.0f));

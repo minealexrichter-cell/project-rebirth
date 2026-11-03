@@ -58,24 +58,25 @@ public final class PowerArmorClient {
     }
 
     /**
-     * In first person the pilot sees the armor's arms. Empty hands show only the armor arm; with an item,
-     * the armor arm is drawn under the normal item view so items stay usable and visible.
+     * In first person the pilot sees the armor's arms instead of their own. A hand holding an item shows only
+     * the item (vanilla view). Both empty armor arms strike together whenever the pilot swings.
      */
     private static void renderArmorHands(RenderHandEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (player == null || !(player.getVehicle() instanceof PowerArmorEntity armor) || armor.isWrecked()) {
+        if (player == null || !(player.getVehicle() instanceof PowerArmorEntity armor) || armor.isWrecked()
+                || !event.getItemStack().isEmpty()) {
             return;
         }
         if (armorArmRenderer == null) {
             armorArmRenderer = new ArmorArmRenderer();
         }
         HumanoidArm side = event.getHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
+        // The player's swing (of either hand), not only this hand's: both armor arms punch at once.
+        float swing = player.getAttackAnim(event.getPartialTick());
         armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
-                event.getItemStack().isEmpty() ? event.getEquipProgress() : 0.0f, event.getSwingProgress(), side);
-        if (event.getItemStack().isEmpty()) {
-            event.setCanceled(true);
-        }
+                event.getEquipProgress(), swing, side);
+        event.setCanceled(true);
     }
 
     /** The armor's own integrity bars replace the vanilla "mount health" hearts. */

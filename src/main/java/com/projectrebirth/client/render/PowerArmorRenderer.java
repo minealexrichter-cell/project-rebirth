@@ -56,7 +56,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         super(context, new ArmorModel());
         this.shadowRadius = 0.8f;
         addRenderLayer(new HeldItemLayer(this));
-        addRenderLayer(new BannerLayer(this, context.bakeLayer(ModelLayers.BANNER).getChild("flag")));
+        addRenderLayer(new BannerLayer(this, context.bakeLayer(ModelLayers.BANNER)));
     }
 
     @Override
@@ -107,18 +107,36 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         }
     }
 
-    /** A vanilla banner with its pattern on the armor's back; it waves, and more so while the armor walks. */
+    /**
+     * A whole vanilla banner, with its pole and bar, standing on the armor's back and rising above its head. The flag
+     * has its pattern and waves, more so while the armor walks.
+     */
     private static class BannerLayer extends GeoRenderLayer<PowerArmorEntity> {
         private static final String TORSO = "torso";
         private static final float SCALE = 2.0f / 3.0f;
-        /** Height of the flag's top above the banner model's origin, in model pixels (see BannerRenderer). */
-        private static final float FLAG_TOP = 32.0f * SCALE;
-        private static final float TOP_ABOVE_PIVOT = 18.0f;
+        /** Height of the banner's top above the banner model's origin, in model pixels (see BannerRenderer). */
+        private static final float BANNER_TOP = 32.0f * SCALE;
+        private static final float TORSO_PIVOT = 16.0f;
+        /** How far the banner rises above the top of the armor. */
+        private static final float ABOVE_ARMOR = 14.0f;
         private final ModelPart flag;
+        private final ModelPart pole;
+        private final ModelPart bar;
 
-        BannerLayer(PowerArmorRenderer renderer, ModelPart flag) {
+        BannerLayer(PowerArmorRenderer renderer, ModelPart banner) {
             super(renderer);
-            this.flag = flag;
+            this.flag = banner.getChild("flag");
+            this.pole = banner.getChild("pole");
+            this.bar = banner.getChild("bar");
+        }
+
+        /** Height of the top of each armor model. */
+        private static float armorTop(ArmorVariant variant) {
+            return switch (variant) {
+                case COMBAT -> 41.0f;
+                case MOBILE -> 40.0f;
+                case WORKER -> 38.0f;
+            };
         }
 
         /** How far behind the armor's middle its back ends, per model. */
@@ -143,9 +161,12 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             ItemStack stack = armor.upgrades().entries().get(index).stack();
             poseStack.pushPose();
             RenderUtil.translateToPivotPoint(poseStack, bone);
-            poseStack.translate(0.0f, (TOP_ABOVE_PIVOT - FLAG_TOP) / 16.0f, back(armor.getVariant()) / 16.0f);
-            poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
+            float top = armorTop(armor.getVariant()) + ABOVE_ARMOR;
+            poseStack.translate(0.0f, (top - TORSO_PIVOT - BANNER_TOP) / 16.0f, back(armor.getVariant()) / 16.0f);
             poseStack.scale(SCALE, -SCALE, -SCALE);
+            VertexConsumer wood = ModelBakery.BANNER_BASE.buffer(bufferSource, RenderType::entitySolid);
+            pole.render(poseStack, wood, packedLight, packedOverlay);
+            bar.render(poseStack, wood, packedLight, packedOverlay);
             float time = armor.tickCount + partialTick;
             float walking = armor.walkAnimation.speed(partialTick);
             flag.xRot = (-0.0125f + 0.01f * Mth.cos(Mth.TWO_PI * time / 100.0f) - walking * 0.03f * (1.0f + Mth.sin(time * 0.4f))) * Mth.PI;

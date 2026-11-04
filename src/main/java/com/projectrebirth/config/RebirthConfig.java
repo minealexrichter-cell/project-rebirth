@@ -203,8 +203,11 @@ public final class RebirthConfig {
             ModConfigSpec.BooleanValue immuneToEffects = builder
                     .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs)")
                     .define("immuneToEffects", !bodyClass.defaultLivingBody());
+            ModConfigSpec.IntValue upgradeSlots = builder
+                    .comment("Upgrade slots of the body. If lowered, what is already installed stays, but nothing more fits")
+                    .defineInRange("upgradeSlots", bodyClass.defaultUpgradeSlots(), 0, 16);
             builder.pop();
-            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects));
+            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects, upgradeSlots));
         }
         builder.pop();
 
@@ -318,6 +321,7 @@ public final class RebirthConfig {
     public record BodyStats(ModConfigSpec.DoubleValue maxHealth, ModConfigSpec.DoubleValue armor,
                             ModConfigSpec.DoubleValue speedMultiplier, ModConfigSpec.DoubleValue attackDamageBonus,
                             ModConfigSpec.DoubleValue selfRepairPerSecond, ModConfigSpec.IntValue selfRepairDelaySeconds,
-                            ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects) {
+                            ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects,
+                            ModConfigSpec.IntValue upgradeSlots) {
     }
 }

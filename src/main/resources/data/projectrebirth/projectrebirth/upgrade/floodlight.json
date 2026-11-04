@@ -1,0 +1,10 @@
+{
+  "items": "projectrebirth:floodlight",
+  "kind": "floodlight",
+  "armor_slots": [
+    "head",
+    "chest_front",
+    "right_arm",
+    "left_arm"
+  ]
+}

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.projectrebirth.upgrades.UpgradeRegistry;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.core.ModSounds;
 
@@ -56,6 +57,7 @@ public final class BodyEvents {
             // Re-apply so that config changes made while the player was offline take effect.
             TransferService.state(player).body().ifPresent(bodyClass -> TransferService.applyBodyModifiers(player, bodyClass));
             player.syncData(BodyAttachments.POSSESSION);
+            player.syncData(UpgradeRegistry.CONTROLLED_BODY);
         }
     }
 

@@ -10,6 +10,10 @@ import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.core.Parked;
 import com.projectrebirth.factions.FactionService;
+import com.projectrebirth.upgrades.InstalledUpgrades;
+import com.projectrebirth.upgrades.UpgradeHost;
+import com.projectrebirth.upgrades.UpgradeLayout;
+import com.projectrebirth.upgrades.Upgrades;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,7 +74,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * A shut-down armor is left by blowing the hatch from inside (costs critical integrity), by a rescue tool
  * from outside, or it starts again after being repaired with the repair wrench.
  */
-public class PowerArmorEntity extends PathfinderMob implements GeoEntity, PlayerRideableJumping {
+public class PowerArmorEntity extends PathfinderMob implements GeoEntity, PlayerRideableJumping, UpgradeHost {
     public static final byte STATE_ACTIVE = 0;
     public static final byte STATE_DISABLED = 1;
     public static final byte STATE_WRECKED = 2;
@@ -106,6 +110,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     @Nullable
     private UUID owner;
+    private InstalledUpgrades upgrades = InstalledUpgrades.EMPTY;
     /** False only for an armor that has never been in a level; then it starts at full integrity. */
     private boolean initialized;
     private int ticksSinceDamage;
@@ -215,6 +220,21 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         return owner;
     }
 
+    @Override
+    public InstalledUpgrades upgrades() {
+        return upgrades;
+    }
+
+    @Override
+    public void setUpgrades(InstalledUpgrades upgrades) {
+        this.upgrades = upgrades;
+    }
+
+    @Override
+    public UpgradeLayout layout() {
+        return UpgradeLayout.ArmorParts.INSTANCE;
+    }
+
     public void setOwner(@Nullable UUID owner) {
         this.owner = owner;
     }
@@ -267,6 +287,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (source.is(DamageTypes.GENERIC_KILL) || source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
             // /kill and the void remove the armor completely; the pilot is put out first.
             releasePilot();
+            Upgrades.takeAll(this).forEach(this::spawnAtLocation);
             discard();
             return true;
         }
@@ -711,6 +732,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (getCritical() < getMaxCritical()) {
             stack.set(PowerArmorRegistry.STORED_CRITICAL.get(), getCritical());
         }
+        Upgrades.putOnStack(stack, upgrades);
+        upgrades = InstalledUpgrades.EMPTY;
         discard();
         if (!player.getInventory().add(stack)) {
             player.drop(stack, false);
@@ -722,6 +745,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             return;
         }
         discard();
+        Upgrades.takeAll(this).forEach(this::spawnAtLocation);
         spawnAtLocation(new ItemStack(Items.IRON_INGOT, RebirthConfig.ARMOR_DISMANTLE_IRON.get()));
         spawnAtLocation(new ItemStack(PowerArmorRegistry.ARMOR_PLATE.get(), RebirthConfig.ARMOR_DISMANTLE_PLATES.get()));
         level().playSound(null, blockPosition(), SoundEvents.ANVIL_DESTROY, SoundSource.PLAYERS, 0.8f, 1.0f);
@@ -815,6 +839,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         tag.putBoolean("Initialized", initialized);
         tag.putString("Variant", getVariant().id());
         tag.putBoolean("WideMining", isWideMining());
+        Upgrades.save(tag, registryAccess(), upgrades);
         if (owner != null) {
             tag.putUUID("Owner", owner);
         }
@@ -830,6 +855,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         // Armors from 0.1.0 have no variant: they are combat armors.
         setVariant(ArmorVariant.byId(tag.getString("Variant")));
         setWideMining(!tag.contains("WideMining") || tag.getBoolean("WideMining"));
+        upgrades = Upgrades.load(tag, registryAccess());
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
     }
 

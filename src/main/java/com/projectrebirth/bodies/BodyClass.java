@@ -86,6 +86,11 @@ public enum BodyClass implements StringRepresentable {
         return "entity.projectrebirth." + id;
     }
 
+    /** Upgrade slots: one for the simplest body, five for the best. */
+    public int defaultUpgradeSlots() {
+        return ordinal() + 1;
+    }
+
     public double defaultMaxHealth() {
         return defaultMaxHealth;
     }

@@ -2,6 +2,8 @@ package com.projectrebirth.powerarmor;
 
 import java.util.List;
 
+import com.projectrebirth.upgrades.Upgrades;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -59,6 +61,7 @@ public class PowerArmorItem extends Item {
         ItemStack stack = context.getItemInHand();
         Float structural = stack.get(PowerArmorRegistry.STORED_STRUCTURAL.get());
         Float critical = stack.get(PowerArmorRegistry.STORED_CRITICAL.get());
+        armor.setUpgrades(Upgrades.ofStack(stack));
         level.addFreshEntity(armor);
         // Maximums come from the config and are applied when the armor joins the level.
         armor.setIntegrity(structural != null ? structural : armor.getMaxStructural(),
@@ -79,6 +82,7 @@ public class PowerArmorItem extends Item {
             tooltip.add(Component.translatable("tooltip.projectrebirth.armor.critical", Mth.ceil(critical)).withStyle(ChatFormatting.GOLD));
         }
         tooltip.add(Component.translatable(variant.translationKey() + ".description").withStyle(ChatFormatting.BLUE));
+        Upgrades.addTooltip(stack, tooltip);
         tooltip.add(Component.translatable("tooltip.projectrebirth.armor.hint").withStyle(ChatFormatting.GRAY));
     }
 }

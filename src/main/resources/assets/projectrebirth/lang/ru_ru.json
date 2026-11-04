@@ -335,5 +335,22 @@
   "screen.projectrebirth.hud_settings.panel": "Панель состояния",
   "screen.projectrebirth.hud_settings.bar": "Полоса прочности",
   "screen.projectrebirth.hud_settings.animation": "Анимация переноса: %s",
-  "screen.projectrebirth.hud_settings.animation_seconds": "Длительность анимации, секунд: %s"
+  "screen.projectrebirth.hud_settings.animation_seconds": "Длительность анимации, секунд: %s",
+  "item.projectrebirth.copper_plating": "Медные бронепластины",
+  "item.projectrebirth.iron_plating": "Железные бронепластины",
+  "item.projectrebirth.titanium_plating": "Титановые бронепластины",
+  "item.projectrebirth.sealing_module": "Модуль герметизации",
+  "item.projectrebirth.jetpack": "Джетпак",
+  "item.projectrebirth.compressed_air_module": "Модуль сжатого воздуха",
+  "item.projectrebirth.floodlight": "Прожектор",
+  "tooltip.projectrebirth.upgrade.installed": "Установлено: %s",
+  "message.projectrebirth.upgrade.not_an_upgrade": "Это не улучшение",
+  "message.projectrebirth.upgrade.wrong_host": "Сюда такое улучшение не ставится",
+  "message.projectrebirth.upgrade.no_slot_chosen": "Выберите часть корпуса",
+  "message.projectrebirth.upgrade.wrong_slot": "На эту часть корпуса такое улучшение не ставится",
+  "message.projectrebirth.upgrade.slot_taken": "Этот слот уже занят",
+  "message.projectrebirth.upgrade.no_free_slots": "Нет свободных слотов",
+  "message.projectrebirth.upgrade.too_many": "Больше таких улучшений поставить нельзя",
+  "message.projectrebirth.upgrade.other_material": "Уже стоят пластины другого материала",
+  "message.projectrebirth.upgrade.incompatible": "Несовместимо с уже установленным улучшением"
 }

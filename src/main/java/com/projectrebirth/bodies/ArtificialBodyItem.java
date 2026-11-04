@@ -2,6 +2,8 @@ package com.projectrebirth.bodies;
 
 import java.util.List;
 
+import com.projectrebirth.upgrades.Upgrades;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
@@ -63,6 +65,7 @@ public class ArtificialBodyItem extends Item {
             body.setOwner(player.getUUID());
         }
         Float storedIntegrity = stack.get(BodyComponents.STORED_INTEGRITY.get());
+        body.setUpgrades(Upgrades.ofStack(stack));
         level.addFreshEntity(body);
         // Max health comes from the config and is applied when the body joins the level.
         body.setHealth(storedIntegrity != null ? storedIntegrity : body.getMaxHealth());
@@ -78,6 +81,7 @@ public class ArtificialBodyItem extends Item {
             tooltip.add(Component.translatable("tooltip.projectrebirth.body.damaged", Mth.ceil(storedIntegrity))
                     .withStyle(ChatFormatting.RED));
         }
+        Upgrades.addTooltip(stack, tooltip);
         tooltip.add(Component.translatable("tooltip.projectrebirth.body.hint").withStyle(ChatFormatting.GRAY));
     }
 }

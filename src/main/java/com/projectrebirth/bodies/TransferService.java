@@ -13,6 +13,8 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
+import com.projectrebirth.upgrades.InstalledUpgrades;
+import com.projectrebirth.upgrades.UpgradeRegistry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -217,8 +219,10 @@ public final class TransferService {
         Vec3 pos = body.position();
         float yaw = body.getYRot();
         ListTag inventory = body.getStoredInventory();
+        InstalledUpgrades upgrades = body.upgrades();
         BodyRegistry.get(player.server).markControlled(player.getUUID(), body);
         body.setStoredInventory(new ListTag());
+        body.setUpgrades(InstalledUpgrades.EMPTY);
         body.discard();
         leaveVehicle(player);
 
@@ -226,6 +230,7 @@ public final class TransferService {
         InventoryUtil.giveInventory(player, inventory);
         resetCondition(player);
         player.setData(BodyAttachments.POSSESSION, PossessionState.of(bodyClass));
+        player.setData(UpgradeRegistry.CONTROLLED_BODY, upgrades);
         applyBodyModifiers(player, bodyClass);
         player.teleportTo(level, pos.x, pos.y, pos.z, yaw, player.getXRot());
         level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -266,6 +271,8 @@ public final class TransferService {
         float bodyHealth = player.getHealth();
         body.setOwner(player.getUUID());
         body.setStoredInventory(InventoryUtil.takeInventory(player));
+        body.setUpgrades(player.getData(UpgradeRegistry.CONTROLLED_BODY));
+        player.setData(UpgradeRegistry.CONTROLLED_BODY, InstalledUpgrades.EMPTY);
         body.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0f);
         body.setYHeadRot(player.getYRot());
         body.setYBodyRot(player.getYRot());
@@ -318,6 +325,10 @@ public final class TransferService {
         ServerLevel deathLevel = player.serverLevel();
         InventoryUtil.flushTransientItems(player);
         player.getInventory().dropAll();
+        for (InstalledUpgrades.Installed upgrade : player.getData(UpgradeRegistry.CONTROLLED_BODY).entries()) {
+            player.drop(upgrade.stack().copy(), true, false);
+        }
+        player.setData(UpgradeRegistry.CONTROLLED_BODY, InstalledUpgrades.EMPTY);
         deathLevel.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
         boolean robot = state(player).body().map(bodyClass -> !bodyClass.synthetic()).orElse(false);
         deathLevel.playSound(null, player.blockPosition(), robot ? ModSounds.ROBOT_DESTROYED.get() : SoundEvents.PLAYER_DEATH,

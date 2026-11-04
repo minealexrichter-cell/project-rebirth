@@ -335,5 +335,22 @@
   "screen.projectrebirth.hud_settings.panel": "Status panel",
   "screen.projectrebirth.hud_settings.bar": "Integrity bar",
   "screen.projectrebirth.hud_settings.animation": "Transfer animation: %s",
-  "screen.projectrebirth.hud_settings.animation_seconds": "Animation length, seconds: %s"
+  "screen.projectrebirth.hud_settings.animation_seconds": "Animation length, seconds: %s",
+  "item.projectrebirth.copper_plating": "Copper Plating",
+  "item.projectrebirth.iron_plating": "Iron Plating",
+  "item.projectrebirth.titanium_plating": "Titanium Plating",
+  "item.projectrebirth.sealing_module": "Sealing Module",
+  "item.projectrebirth.jetpack": "Jetpack",
+  "item.projectrebirth.compressed_air_module": "Compressed Air Module",
+  "item.projectrebirth.floodlight": "Floodlight",
+  "tooltip.projectrebirth.upgrade.installed": "Installed: %s",
+  "message.projectrebirth.upgrade.not_an_upgrade": "This is not an upgrade",
+  "message.projectrebirth.upgrade.wrong_host": "This upgrade does not go here",
+  "message.projectrebirth.upgrade.no_slot_chosen": "Choose a part of the hull",
+  "message.projectrebirth.upgrade.wrong_slot": "This upgrade does not go on this part of the hull",
+  "message.projectrebirth.upgrade.slot_taken": "This slot is taken",
+  "message.projectrebirth.upgrade.no_free_slots": "No free slots",
+  "message.projectrebirth.upgrade.too_many": "No more of these fit",
+  "message.projectrebirth.upgrade.other_material": "Plating of another material is installed",
+  "message.projectrebirth.upgrade.incompatible": "Incompatible with an installed upgrade"
 }

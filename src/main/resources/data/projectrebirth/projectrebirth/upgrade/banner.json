@@ -1,0 +1,7 @@
+{
+  "items": "#minecraft:banners",
+  "kind": "banner",
+  "armor_slots": [
+    "chest_back"
+  ]
+}

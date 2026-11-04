@@ -1,0 +1,9 @@
+{
+  "items": "projectrebirth:compressed_air_module",
+  "kind": "compressed_air",
+  "armor_slots": [
+    "chest_back",
+    "right_leg",
+    "left_leg"
+  ]
+}

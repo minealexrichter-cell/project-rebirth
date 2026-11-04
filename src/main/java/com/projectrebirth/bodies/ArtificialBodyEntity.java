@@ -7,6 +7,10 @@ import javax.annotation.Nullable;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.core.Parked;
+import com.projectrebirth.upgrades.InstalledUpgrades;
+import com.projectrebirth.upgrades.UpgradeHost;
+import com.projectrebirth.upgrades.UpgradeLayout;
+import com.projectrebirth.upgrades.Upgrades;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -42,7 +46,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * per-class stats come from {@link RebirthConfig}. While a player controls the body, this entity
  * does not exist: the player is the body (see {@link TransferService}).
  */
-public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
+public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, UpgradeHost {
     public static final String MAIN_CONTROLLER = "main";
     public static final String INTERACT_ANIMATION = "interact";
 
@@ -58,6 +62,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
     @Nullable
     private UUID owner;
     private ListTag storedInventory = new ListTag();
+    private InstalledUpgrades upgrades = InstalledUpgrades.EMPTY;
     /** False only for a body that has never been in a level; saved so loaded bodies keep their damage. */
     private boolean statsInitialized;
 
@@ -99,6 +104,21 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
 
     public void setStoredInventory(ListTag inventory) {
         this.storedInventory = inventory;
+    }
+
+    @Override
+    public InstalledUpgrades upgrades() {
+        return upgrades;
+    }
+
+    @Override
+    public void setUpgrades(InstalledUpgrades upgrades) {
+        this.upgrades = upgrades;
+    }
+
+    @Override
+    public UpgradeLayout layout() {
+        return new UpgradeLayout.Counted(RebirthConfig.bodyStats(bodyClass).upgradeSlots().get());
     }
 
     @Override
@@ -158,6 +178,8 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         if (hasCustomName()) {
             stack.set(DataComponents.CUSTOM_NAME, getCustomName());
         }
+        Upgrades.putOnStack(stack, upgrades);
+        upgrades = InstalledUpgrades.EMPTY;
         if (owner != null) {
             BodyRegistry.get(getServer()).remove(owner, getUUID());
         }
@@ -182,6 +204,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         super.dropCustomDeathLoot(level, source, recentlyHit);
         InventoryUtil.dropAll(this, storedInventory);
         storedInventory = new ListTag();
+        Upgrades.takeAll(this).forEach(this::spawnAtLocation);
     }
 
     // Robot bodies sound like machines; synthetic bodies keep the ordinary sounds.
@@ -273,6 +296,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         }
         tag.put("BodyInventory", storedInventory);
         tag.putBoolean("StatsInitialized", statsInitialized);
+        Upgrades.save(tag, registryAccess(), upgrades);
     }
 
     @Override
@@ -280,6 +304,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
         super.readAdditionalSaveData(tag);
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         storedInventory = tag.getList("BodyInventory", Tag.TAG_COMPOUND);
+        upgrades = Upgrades.load(tag, registryAccess());
         // Bodies saved before this flag existed are already initialized.
         // Saves from before the flag existed already have health; a body summoned by command with extra data
         // (for example /summon ... {Owner:...}) has none and still needs its class health.

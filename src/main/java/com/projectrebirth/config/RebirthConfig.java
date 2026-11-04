@@ -50,6 +50,8 @@ public final class RebirthConfig {
     private static final Map<String, PlatingStats> PLATING = new HashMap<>();
     private static final Map<String, ArmorPlatingStats> ARMOR_PLATING = new HashMap<>();
     private static final Map<String, WeaponStats> WEAPONS = new HashMap<>();
+    public static final ModConfigSpec.IntValue WEAPON_HEAVY_HINT_INTERVAL;
+    public static final ModConfigSpec.DoubleValue WEAPON_HEAVY_WALK_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue ARMOR_JUMP_PER_AIR_MODULE;
     public static final ModConfigSpec.DoubleValue ARMOR_MAX_JUMP_STRENGTH;
     public static final ModConfigSpec.DoubleValue ARMOR_SAFE_FALL_PER_AIR_MODULE;
@@ -262,6 +264,10 @@ public final class RebirthConfig {
         builder.pop();
 
         builder.comment("Guns of power armor; each has its own section. Damage is per bullet or pellet (20 ticks = 1 second)").push("weapons");
+        WEAPON_HEAVY_HINT_INTERVAL = builder.comment("Outside power armor: ticks between the hints that a weapon is too heavy")
+                .defineInRange("heavyHintIntervalTicks", 60, 1, 72000);
+        WEAPON_HEAVY_WALK_MULTIPLIER = builder.comment("Outside power armor: walking speed is multiplied by this while a weapon is in hand; 1.0 = no slower")
+                .defineInRange("heavyWalkSpeedMultiplier", 1.0, 0.1, 1.0);
         defineWeapon(builder, "assault_rifle", 30, 2.5, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50, 0.6, 0.3, 0.05, 0.3);
         defineWeapon(builder, "battle_rifle", 10, 9.0, 128.0, 8, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50, 0.5, 1.8, 0.0, 0.0);
         defineWeapon(builder, "combat_shotgun", 6, 2.0, 24.0, 16, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16, 0.6, 3.5, 0.0, 0.0);

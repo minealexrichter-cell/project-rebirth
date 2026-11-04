@@ -1,0 +1,13 @@
+{
+  "entries": [
+    {
+      "enum": "net/minecraft/client/model/HumanoidModel$ArmPose",
+      "name": "PROJECTREBIRTH_HEAVY_WEAPON",
+      "constructor": "(ZLnet/neoforged/neoforge/client/IArmPoseTransformer;)V",
+      "parameters": {
+        "class": "com/projectrebirth/client/render/HeavyWeaponPose",
+        "field": "POSE"
+      }
+    }
+  ]
+}

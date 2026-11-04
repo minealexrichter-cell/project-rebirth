@@ -403,5 +403,6 @@
   "subtitles.projectrebirth.weapon.combat_shotgun.empty": "Shotgun clicks empty",
   "hud.projectrebirth.weapon.magazine": "Rounds: %s / %s",
   "hud.projectrebirth.weapon.reserve": "Spare: %s",
-  "hud.projectrebirth.weapon.reload_hint": "[%s] reload"
+  "hud.projectrebirth.weapon.reload_hint": "[%s] reload",
+  "message.projectrebirth.weapon.too_heavy": "Too heavy: you need power armor"
 }

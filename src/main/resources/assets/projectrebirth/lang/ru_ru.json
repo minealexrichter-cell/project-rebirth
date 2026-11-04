@@ -403,5 +403,6 @@
   "subtitles.projectrebirth.weapon.combat_shotgun.empty": "Дробовик: щелчок пустого магазина",
   "hud.projectrebirth.weapon.magazine": "Патроны: %s / %s",
   "hud.projectrebirth.weapon.reserve": "Запас: %s",
-  "hud.projectrebirth.weapon.reload_hint": "[%s] перезарядка"
+  "hud.projectrebirth.weapon.reload_hint": "[%s] перезарядка",
+  "message.projectrebirth.weapon.too_heavy": "Слишком тяжело: нужна силовая броня"
 }

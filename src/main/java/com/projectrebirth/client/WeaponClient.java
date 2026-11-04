@@ -3,13 +3,18 @@ package com.projectrebirth.client;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.client.render.HeavyWeaponPose;
 import com.projectrebirth.client.render.TracerParticle;
 import com.projectrebirth.config.RebirthClientConfig;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.weapons.WeaponDefinition;
 import com.projectrebirth.weapons.WeaponInputPayload;
+import com.projectrebirth.weapons.WeaponItem;
+import com.projectrebirth.weapons.WeaponRegistry;
 import com.projectrebirth.weapons.WeaponShotPayload;
 import com.projectrebirth.weapons.Weapons;
 
@@ -18,6 +23,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -27,9 +33,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -38,6 +48,10 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.neoforged.neoforge.client.event.RenderPlayerEvent;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
@@ -49,9 +63,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * is for the eye: zoom, recoil, the HUD and the effects of shots, also of other players' shots.
  */
 public final class WeaponClient {
-    /** Not R: that returns the player to their own body. */
     private static final KeyMapping RELOAD_KEY = new KeyMapping("key.projectrebirth.weapon_reload",
-            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Z, "key.categories.projectrebirth");
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.projectrebirth");
     private static final int TRACER_COLOR = 0xFFE9A0;
     private static final int FLASH_COLOR = 0xFFD070;
     private static final float TRACER_WIDTH = 0.035f;
@@ -62,6 +75,11 @@ public final class WeaponClient {
     private static final int RETICLE_LENGTH = 4;
     private static final int RETICLE_COLOR = 0xE0FFFFFF;
     private static final int MARGIN = 6;
+    private static final float HEAVY_HAND_X = 0.5f;
+    private static final float HEAVY_HAND_Y = -0.68f;
+    private static final float HEAVY_HAND_Z = -0.72f;
+    private static final float HEAVY_HAND_YAW = -30.0f;
+    private static final float HEAVY_HAND_PITCH = 25.0f;
 
     private static boolean triggerDown;
     private static boolean aimDown;
@@ -86,6 +104,11 @@ public final class WeaponClient {
         NeoForge.EVENT_BUS.addListener(WeaponClient::onComputeFov);
         NeoForge.EVENT_BUS.addListener(WeaponClient::onTurn);
         NeoForge.EVENT_BUS.addListener(WeaponClient::hideVanillaCrosshair);
+        modEventBus.addListener(WeaponClient::registerItemExtensions);
+        NeoForge.EVENT_BUS.addListener(WeaponClient::renderHeavyWeaponInHand);
+        // Last: a pilot or a body is drawn by other renderers, and they cancel this event.
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderPlayerEvent.Pre.class, WeaponClient::leanCarrier);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, RenderPlayerEvent.Post.class, WeaponClient::endLean);
         WeaponShotPayload.clientHandler = payload -> Minecraft.getInstance().execute(() -> onShot(payload));
     }
 
@@ -100,6 +123,56 @@ public final class WeaponClient {
 
     private static boolean readyToShoot(Player player) {
         return player != null && Weapons.holdsWeapon(player) && Weapons.isPilotOfWorkingArmor(player);
+    }
+
+    /** Without a power armor a weapon is only carried: see HeavyWeaponPose. */
+    private static boolean carries(LivingEntity entity) {
+        return entity.getMainHandItem().getItem() instanceof WeaponItem && !(entity.getVehicle() instanceof PowerArmorEntity);
+    }
+
+    private static void registerItemExtensions(RegisterClientExtensionsEvent event) {
+        event.registerItem(new IClientItemExtensions() {
+            @Override
+            public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
+                return hand == InteractionHand.MAIN_HAND && carries(entity) ? HeavyWeaponPose.POSE.getValue() : null;
+            }
+        }, WeaponRegistry.ASSAULT_RIFLE.get(), WeaponRegistry.BATTLE_RIFLE.get(), WeaponRegistry.COMBAT_SHOTGUN.get());
+    }
+
+    private static void leanCarrier(RenderPlayerEvent.Pre event) {
+        if (carries(event.getEntity())) {
+            event.getPoseStack().pushPose();
+            HeavyWeaponPose.leanWholeFigure(event.getPoseStack(), event.getEntity(), event.getPartialTick());
+        }
+    }
+
+    private static void endLean(RenderPlayerEvent.Post event) {
+        if (carries(event.getEntity())) {
+            event.getPoseStack().popPose();
+        }
+    }
+
+    /** In first person a carried weapon hangs low at the edge of the screen; a punch only jolts it. */
+    private static void renderHeavyWeaponInHand(RenderHandEvent event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null || event.getHand() != InteractionHand.MAIN_HAND || !carries(player)) {
+            return;
+        }
+        event.setCanceled(true);
+        boolean left = player.getMainArm() == HumanoidArm.LEFT;
+        float side = left ? -1.0f : 1.0f;
+        float sway = Mth.sin((player.tickCount + event.getPartialTick()) * 0.12f) * Math.min(1.0f, player.walkAnimation.speed());
+        float jolt = Mth.sin(event.getSwingProgress() * Mth.PI);
+        PoseStack pose = event.getPoseStack();
+        pose.pushPose();
+        pose.translate(side * (HEAVY_HAND_X + sway * 0.02f), HEAVY_HAND_Y + sway * 0.015f - event.getEquipProgress() * 0.6f + jolt * 0.08f, HEAVY_HAND_Z - jolt * 0.1f);
+        pose.mulPose(Axis.YP.rotationDegrees(side * HEAVY_HAND_YAW));
+        pose.mulPose(Axis.XP.rotationDegrees(HEAVY_HAND_PITCH + jolt * 12.0f));
+        minecraft.getEntityRenderDispatcher().getItemInHandRenderer().renderItem(player, event.getItemStack(),
+                left ? ItemDisplayContext.FIRST_PERSON_LEFT_HAND : ItemDisplayContext.FIRST_PERSON_RIGHT_HAND, left, pose,
+                event.getMultiBufferSource(), event.getPackedLight());
+        pose.popPose();
     }
 
     private static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
@@ -119,8 +192,11 @@ public final class WeaponClient {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         boolean ready = readyToShoot(player) && minecraft.screen == null;
-        boolean trigger = ready && minecraft.options.keyAttack.isDown();
-        boolean aim = ready && minecraft.options.keyUse.isDown();
+        // A carried weapon also reports its keys, so that the server can say it is too heavy; but not while working on a block with it in hand.
+        boolean carrying = player != null && minecraft.screen == null && carries(player)
+                && (minecraft.hitResult == null || minecraft.hitResult.getType() != HitResult.Type.BLOCK);
+        boolean trigger = (ready || carrying) && minecraft.options.keyAttack.isDown();
+        boolean aim = (ready || carrying) && minecraft.options.keyUse.isDown();
         if (player != null && trigger != triggerDown) {
             send(trigger ? WeaponInputPayload.Input.TRIGGER_DOWN : WeaponInputPayload.Input.TRIGGER_UP);
         }
@@ -130,7 +206,7 @@ public final class WeaponClient {
         triggerDown = player != null && trigger;
         aimDown = player != null && aim;
         while (RELOAD_KEY.consumeClick()) {
-            if (ready) {
+            if (ready || player != null && minecraft.screen == null && carries(player)) {
                 send(WeaponInputPayload.Input.RELOAD);
             }
         }

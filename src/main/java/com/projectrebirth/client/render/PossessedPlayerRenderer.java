@@ -7,6 +7,7 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.ArtificialBodyEntity;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.upgrades.UpgradeRegistry;
+import com.projectrebirth.weapons.WeaponItem;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -75,9 +76,28 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
     /** The body's model; the head follows where the player looks, like a normal player head. */
     private static class PosedModel extends DefaultedEntityGeoModel<BodyAnimatable> {
         private PossessedPlayerRenderer renderer;
+        private boolean leaning;
 
         PosedModel(BodyClass bodyClass) {
             super(ProjectRebirth.id(bodyClass.id()), true);
+        }
+
+        /**
+         * An animation that does not move the torso leaves it as it was, so the lean starts from the rest pose instead of
+         * adding up frame after frame, and that pose comes back when the weapon is put away.
+         */
+        private void carryLean(Player player, GeoBone torso) {
+            if (player == null || torso == null) {
+                return;
+            }
+            boolean carrying = player.getMainHandItem().getItem() instanceof WeaponItem;
+            if ((carrying || leaning) && !torso.hasRotationChanged()) {
+                torso.setRotX(torso.getInitialSnapshot().getRotX());
+            }
+            if (carrying) {
+                torso.setRotX(torso.getRotX() - HeavyWeaponPose.boneLean(player));
+            }
+            leaning = carrying;
         }
 
         @Override
@@ -101,6 +121,7 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
             GeoBone torso = getAnimationProcessor().getBone("torso");
             GeoBone root = getAnimationProcessor().getBone("root");
             GeoBone head = getAnimationProcessor().getBone("head");
+            carryLean(player, torso);
             if (player != null && rightArm != null && leftArm != null) {
                 PilotArmPose.apply(player, state.getPartialTick(), rightArm, leftArm,
                         getAnimationProcessor().getBone(RIGHT_FOREARM), getAnimationProcessor().getBone(LEFT_FOREARM), torso);

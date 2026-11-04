@@ -17,6 +17,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -25,6 +26,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -50,6 +54,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class Weapons {
     /** How much wider than its box an entity is for a bullet; a little forgiveness for the delay of the network. */
     private static final float HIT_MARGIN = 0.1f;
+    private static final ResourceLocation HEAVY_WALK = ProjectRebirth.id("heavy_weapon_walk");
     /** Ticks before an empty weapon can click again, however fast the trigger is pulled. */
     private static final int EMPTY_CLICK_INTERVAL = 5;
 
@@ -119,6 +124,7 @@ public final class Weapons {
     public static Shot pressTrigger(ServerPlayer player) {
         Held held = usable(player);
         if (held == null) {
+            hintTooHeavy(player);
             return null;
         }
         WeaponState state = state(player);
@@ -136,6 +142,9 @@ public final class Weapons {
     /** @return whether the player is aiming now */
     public static boolean setAiming(ServerPlayer player, boolean aiming) {
         boolean allowed = aiming && usable(player) != null;
+        if (aiming && !allowed) {
+            hintTooHeavy(player);
+        }
         state(player).aiming = allowed;
         showPose(player);
         return allowed;
@@ -169,11 +178,53 @@ public final class Weapons {
         return state(player).isReloading();
     }
 
+    /**
+     * Someone tried to use a weapon they can only carry. Not said to a pilot of a shut-down armor: that is not about weight.
+     *
+     * @return whether the hint was shown; it is not repeated for a few seconds
+     */
+    public static boolean hintTooHeavy(ServerPlayer player) {
+        if (!holdsWeapon(player) || player.getVehicle() instanceof PowerArmorEntity) {
+            return false;
+        }
+        WeaponState state = state(player);
+        long now = player.level().getGameTime();
+        if (now < state.nextHeavyHint) {
+            return false;
+        }
+        state.nextHeavyHint = now + RebirthConfig.WEAPON_HEAVY_HINT_INTERVAL.get();
+        player.displayClientMessage(Component.translatable("message.projectrebirth.weapon.too_heavy"), true);
+        return true;
+    }
+
+    /**
+     * The optional slower walk with a carried weapon; off by default. The multiplier is a parameter for tests.
+     */
+    public static void updateHeavyWalk(ServerPlayer player, double multiplier) {
+        AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
+        if (speed == null) {
+            return;
+        }
+        boolean slowed = multiplier < 1.0 && holdsWeapon(player) && !(player.getVehicle() instanceof PowerArmorEntity);
+        AttributeModifier current = speed.getModifier(HEAVY_WALK);
+        double amount = multiplier - 1.0;
+        if (slowed && (current == null || current.amount() != amount)) {
+            speed.removeModifier(HEAVY_WALK);
+            speed.addTransientModifier(new AttributeModifier(HEAVY_WALK, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        } else if (!slowed && current != null) {
+            speed.removeModifier(HEAVY_WALK);
+        }
+    }
+
     /** @return whether a reload has started */
     public static boolean startReload(ServerPlayer player) {
         Held held = usable(player);
         WeaponState state = state(player);
-        if (held == null || state.isReloading() || ammoIn(held.stack()) >= held.stats().magazine().get()) {
+        if (held == null) {
+            hintTooHeavy(player);
+            return false;
+        }
+        if (state.isReloading() || ammoIn(held.stack()) >= held.stats().magazine().get()) {
             return false;
         }
         if (player.getInventory().countItem(held.definition().ammo().value()) <= 0) {
@@ -367,6 +418,7 @@ public final class Weapons {
     @SubscribeEvent
     static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            updateHeavyWalk(player, RebirthConfig.WEAPON_HEAVY_WALK_MULTIPLIER.get());
             tick(player);
         }
     }

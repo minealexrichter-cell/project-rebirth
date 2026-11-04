@@ -30,6 +30,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -351,6 +352,43 @@ public class WeaponGameTests {
             WeaponRegistry.WeaponSounds sounds = WeaponRegistry.sounds(id);
             helper.assertTrue(sounds != null && sounds.shot().get() != null && sounds.reload().get() != null && sounds.empty().get() != null, "Sounds of " + id);
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void aCarriedWeaponSaysItIsTooHeavyOnlyNowAndThen(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        helper.assertFalse(Weapons.hintTooHeavy(player), "Nothing to say with empty hands");
+        give(player, WeaponRegistry.ASSAULT_RIFLE.get(), 5);
+        helper.assertTrue(Weapons.hintTooHeavy(player), "The first attempt gets the hint");
+        helper.assertFalse(Weapons.hintTooHeavy(player), "Not again right away");
+        helper.runAfterDelay(RebirthConfig.WEAPON_HEAVY_HINT_INTERVAL.get(), () -> {
+            helper.assertTrue(Weapons.hintTooHeavy(player), "After a while it can be said again");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void aPilotOfAShutDownArmorIsNotToldItIsTooHeavy(GameTestHelper helper) {
+        ServerPlayer pilot = pilot(helper, WeaponRegistry.ASSAULT_RIFLE.get(), 5);
+        helper.assertFalse(Weapons.hintTooHeavy(pilot), "In an armor weight is not the problem");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void aWeaponGivesNoMeleeBonusAndHasNoEffectOnWalkingByDefault(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        double speed = player.getAttributeValue(Attributes.MOVEMENT_SPEED);
+        double attack = player.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        give(player, WeaponRegistry.BATTLE_RIFLE.get(), 5);
+        Weapons.updateHeavyWalk(player, RebirthConfig.WEAPON_HEAVY_WALK_MULTIPLIER.getDefault());
+        helper.assertTrue(player.getAttributeValue(Attributes.MOVEMENT_SPEED) == speed, "No slower by default");
+        helper.assertTrue(player.getAttributeValue(Attributes.ATTACK_DAMAGE) == attack, "A blow is a blow of an empty hand");
+        Weapons.updateHeavyWalk(player, 0.5);
+        helper.assertTrue(Math.abs(player.getAttributeValue(Attributes.MOVEMENT_SPEED) - speed * 0.5) < 0.0001, "The option slows the carrier");
+        player.getInventory().selected = 3;
+        Weapons.updateHeavyWalk(player, 0.5);
+        helper.assertTrue(player.getAttributeValue(Attributes.MOVEMENT_SPEED) == speed, "Without the weapon in hand the speed comes back");
         helper.succeed();
     }
 

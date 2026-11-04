@@ -62,7 +62,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @Mod(value = ProjectRebirth.MOD_ID, dist = Dist.CLIENT)
 public class ProjectRebirthClient {
     private static final KeyMapping RETURN_KEY = new KeyMapping("key.projectrebirth.return_to_human",
-            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "key.categories.projectrebirth");
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Z, "key.categories.projectrebirth");
     private static final KeyMapping FACTION_KEY = new KeyMapping("key.projectrebirth.factions",
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories.projectrebirth");
     private static final KeyMapping HUD_SETTINGS_KEY = new KeyMapping("key.projectrebirth.hud_settings",

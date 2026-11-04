@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_upgrade_fabricator",
+  "sort": 30,
+  "time": 240,
+  "ingredients": [
+    {
+      "tag": "c:ingots/aluminum",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:compressed_air_module",
+    "count": 1
+  }
+}

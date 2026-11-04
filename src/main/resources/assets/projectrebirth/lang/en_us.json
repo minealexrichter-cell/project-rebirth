@@ -365,5 +365,16 @@
   "screen.projectrebirth.body_modification.install": "Install",
   "screen.projectrebirth.body_modification.remove": "Take out",
   "screen.projectrebirth.body_modification.installing": "Installing: %s%%",
-  "screen.projectrebirth.body_modification.slots": "Slots: %s / %s"
+  "screen.projectrebirth.body_modification.slots": "Slots: %s / %s",
+  "block.projectrebirth.armor_upgrade_fabricator": "Armor Upgrade Fabricator",
+  "item.projectrebirth.upgrade_mounting_tool": "Upgrade Mounting Tool",
+  "message.projectrebirth.armor.mounting_hint": "Shift + right click: open the mounting window",
+  "screen.projectrebirth.armor_mounting.title": "Upgrade Mounting",
+  "screen.projectrebirth.armor_mounting.head": "Head",
+  "screen.projectrebirth.armor_mounting.chest_front": "Chest, front",
+  "screen.projectrebirth.armor_mounting.chest_back": "Chest, back",
+  "screen.projectrebirth.armor_mounting.right_arm": "Right arm",
+  "screen.projectrebirth.armor_mounting.left_arm": "Left arm",
+  "screen.projectrebirth.armor_mounting.right_leg": "Right leg",
+  "screen.projectrebirth.armor_mounting.left_leg": "Left leg"
 }

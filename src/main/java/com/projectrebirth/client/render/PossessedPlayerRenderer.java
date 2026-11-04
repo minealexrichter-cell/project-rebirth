@@ -63,6 +63,18 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
         @Override
         public void setCustomAnimations(BodyAnimatable animatable, long instanceId, AnimationState<BodyAnimatable> state) {
             super.setCustomAnimations(animatable, instanceId, state);
+            float lookX = 0.0f;
+            float lookY = 0.0f;
+            GeoBone looking = getAnimationProcessor().getBone("head");
+            if (looking != null) {
+                lookX = looking.getRotX();
+                lookY = looking.getRotY();
+            }
+            WindowPose.apply(this);
+            if (looking != null) {
+                looking.setRotX(lookX);
+                looking.setRotY(lookY);
+            }
             Player player = renderer.getCurrentEntity();
             GeoBone rightArm = getAnimationProcessor().getBone(RIGHT_ARM);
             GeoBone leftArm = getAnimationProcessor().getBone(LEFT_ARM);

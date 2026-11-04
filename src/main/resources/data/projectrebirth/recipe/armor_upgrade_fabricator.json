@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IPI",
+    "XSX",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "projectrebirth:armor_plate"
+    },
+    "X": {
+      "item": "projectrebirth:actuator"
+    },
+    "S": {
+      "item": "minecraft:smithing_table"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:armor_upgrade_fabricator",
+    "count": 1
+  }
+}

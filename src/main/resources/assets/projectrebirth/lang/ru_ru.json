@@ -365,5 +365,16 @@
   "screen.projectrebirth.body_modification.install": "Установить",
   "screen.projectrebirth.body_modification.remove": "Снять",
   "screen.projectrebirth.body_modification.installing": "Установка: %s%%",
-  "screen.projectrebirth.body_modification.slots": "Слоты: %s / %s"
+  "screen.projectrebirth.body_modification.slots": "Слоты: %s / %s",
+  "block.projectrebirth.armor_upgrade_fabricator": "Цех модулей брони",
+  "item.projectrebirth.upgrade_mounting_tool": "Устройство монтажа улучшений",
+  "message.projectrebirth.armor.mounting_hint": "Shift + ПКМ: открыть окно монтажа",
+  "screen.projectrebirth.armor_mounting.title": "Монтаж улучшений",
+  "screen.projectrebirth.armor_mounting.head": "Голова",
+  "screen.projectrebirth.armor_mounting.chest_front": "Корпус спереди",
+  "screen.projectrebirth.armor_mounting.chest_back": "Корпус сзади",
+  "screen.projectrebirth.armor_mounting.right_arm": "Правая рука",
+  "screen.projectrebirth.armor_mounting.left_arm": "Левая рука",
+  "screen.projectrebirth.armor_mounting.right_leg": "Правая нога",
+  "screen.projectrebirth.armor_mounting.left_leg": "Левая нога"
 }

@@ -1,0 +1,20 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_upgrade_fabricator",
+  "sort": 10,
+  "time": 120,
+  "ingredients": [
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 8
+    },
+    {
+      "item": "projectrebirth:bronze_ingot",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:armor_copper_plating",
+    "count": 1
+  }
+}

@@ -70,6 +70,9 @@ public final class PowerArmorRegistry {
                     .copyOnDeath()
                     .build());
     /** Repairs armor (iron ingots for structural, armor plates for critical) and dismantles wrecks. */
+    /** Shift + right click on an armor opens its mounting window. Stays apart from the wrench, which packs the armor. */
+    public static final DeferredItem<Item> UPGRADE_MOUNTING_TOOL = ITEMS.registerSimpleItem("upgrade_mounting_tool", new Item.Properties().stacksTo(1));
+
     public static final DeferredItem<Item> REPAIR_WRENCH = ITEMS.register("repair_wrench",
             () -> new Item(new Item.Properties().durability(256)));
     /** Opens the hatch of a shut-down armor from outside to free the pilot. */

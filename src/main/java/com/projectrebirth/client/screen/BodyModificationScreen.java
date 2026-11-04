@@ -21,7 +21,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -162,7 +161,7 @@ public class BodyModificationScreen extends AbstractContainerScreen<BodyModifica
             ArtificialBodyEntity model = models.computeIfAbsent(item.bodyClass(), bodyClass -> BodyEntities.type(bodyClass).create(minecraft.level));
             if (model != null) {
                 model.setUpgrades(Upgrades.ofStack(menu.body()));
-                InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x + 8, y + 40, x + 58, y + 104, 26, 0.0625f, mouseX, mouseY, model);
+                GuiAtlas.model(graphics, x + 8, y + 40, x + 58, y + 104, 26, 0.0625f, mouseX, mouseY, model);
             }
         }
     }

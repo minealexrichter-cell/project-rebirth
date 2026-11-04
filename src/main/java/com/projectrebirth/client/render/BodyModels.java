@@ -5,6 +5,7 @@ import com.projectrebirth.bodies.BodyClass;
 
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 
 /**
@@ -20,7 +21,13 @@ public final class BodyModels {
      * @param turnsHead true to point the "head" bone where the entity looks (overrides the head part of animations)
      */
     public static <T extends GeoAnimatable> DefaultedEntityGeoModel<T> create(BodyClass bodyClass, boolean turnsHead) {
-        return new DefaultedEntityGeoModel<>(ProjectRebirth.id(bodyClass.id()), turnsHead);
+        return new DefaultedEntityGeoModel<>(ProjectRebirth.id(bodyClass.id()), turnsHead) {
+            @Override
+            public void setCustomAnimations(T animatable, long instanceId, AnimationState<T> state) {
+                super.setCustomAnimations(animatable, instanceId, state);
+                WindowPose.apply(this);
+            }
+        };
     }
 
     public static ResourceLocation texture(BodyClass bodyClass) {

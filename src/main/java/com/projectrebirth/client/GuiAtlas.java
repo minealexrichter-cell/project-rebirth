@@ -2,10 +2,13 @@ package com.projectrebirth.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.client.render.WindowPose;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * The mod's window and HUD parts, all from one texture (textures/gui/widgets.png, painted by
@@ -85,6 +88,17 @@ public final class GuiAtlas {
             blit(graphics, x + 1 + done, y + 1, 50, 34, Math.min(8, filled - done), Math.min(7, height - 2));
         }
         graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    /** A body or armor in a window: it turns after the mouse and otherwise stands still (see WindowPose). */
+    public static void model(GuiGraphics graphics, int x1, int y1, int x2, int y2, int scale, float yOffset,
+                             float mouseX, float mouseY, LivingEntity entity) {
+        WindowPose.begin();
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, yOffset, mouseX, mouseY, entity);
+        } finally {
+            WindowPose.end();
+        }
     }
 
     private static int filled(int size, int energy, int capacity) {

@@ -412,6 +412,29 @@
         return p;
     });
 
+    // Armor upgrade fabricator: a plate under a press.
+    const RUST_RED = '#c8553a';
+    block('armor_upgrade_fabricator_side', side(RUST_RED, 64));
+    block('armor_upgrade_fabricator_top', top(RUST_RED, 65, p => {
+        p.inset(4, 4, 8, 8, GUN).rect(5, 5, 6, 6, shade(RUST_RED, 0.8)).rect(5, 5, 6, 1, shade(RUST_RED, 1.2));
+    }));
+    block('armor_upgrade_fabricator_front', () => {
+        const p = casing(new Painter(66), RUST_RED);
+        p.inset(3, 3, 10, 10, '#14161a', 0.02);
+        p.grid([
+            '..LLLLLL..',
+            '..LddddL..',
+            '....dd....',
+            '....dd....',
+            '..........',
+            '.rrrrrrrr.',
+            '.rRRRRRRr.',
+            '.rrrrrrrr.',
+            '.dddddddd.',
+            '..........'], {L: '#c8d0d8', d: '#7a8590', r: RUST_RED, R: '#ef8a6e'}, 3, 3);
+        return p;
+    });
+
     // Body modification station: the outline of a body with a marked place on it.
     const VIOLET = '#9a6ae0';
     block('body_modification_station_side', side(VIOLET, 57));
@@ -769,6 +792,22 @@
     animated('implant_fabricator_top_on', 4, 3, i => {
         const p = baseOf('implant_fabricator_top');
         p.rect(7, 7, 2, 2, i % 2 ? TEAL : '#c9fff8');
+        return p;
+    });
+
+    // Armor upgrade fabricator: the press goes down and up, the plate glows when it is hit.
+    fanSide('armor_upgrade_fabricator', RUST_RED);
+    animated('armor_upgrade_fabricator_front_on', 4, 3, i => {
+        const p = baseOf('armor_upgrade_fabricator_front');
+        const down = [0, 1, 2, 1][i];
+        p.rect(3, 3, 10, 5, '#14161a');
+        p.rect(5, 3 + down, 6, 2, '#c8d0d8').rect(7, 5 + down, 2, 2, '#7a8590');
+        p.rect(5, 9, 6, 1, i === 2 ? '#ffd9a0' : '#ef8a6e');
+        return p;
+    });
+    animated('armor_upgrade_fabricator_top_on', 4, 3, i => {
+        const p = baseOf('armor_upgrade_fabricator_top');
+        p.rect(7, 7, 2, 2, i % 2 ? '#ffd9a0' : RUST_RED);
         return p;
     });
 

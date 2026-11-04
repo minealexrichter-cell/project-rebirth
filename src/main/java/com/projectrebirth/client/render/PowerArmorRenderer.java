@@ -79,6 +79,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         @Override
         public void setCustomAnimations(PowerArmorEntity armor, long instanceId, AnimationState<PowerArmorEntity> state) {
             super.setCustomAnimations(armor, instanceId, state);
+            WindowPose.apply(this);
             Player pilot = armor.getPilot();
             if (pilot == null || !armor.isActive()) {
                 return;

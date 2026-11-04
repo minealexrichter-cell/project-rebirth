@@ -30,8 +30,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
@@ -631,6 +633,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             useWrench(player, stack);
         } else if (stack.is(PowerArmorRegistry.RESCUE_TOOL.get())) {
             useRescueTool(player, stack);
+        } else if (stack.is(PowerArmorRegistry.UPGRADE_MOUNTING_TOOL.get())) {
+            useMountingTool(player);
         } else if (isWrecked()) {
             say(player, "wreck");
         } else if (isVehicle()) {
@@ -650,6 +654,21 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     private static void say(Player player, String key) {
         player.displayClientMessage(Component.translatable("message.projectrebirth.armor." + key), true);
+    }
+
+    private void useMountingTool(Player player) {
+        if (!player.isShiftKeyDown()) {
+            say(player, "mounting_hint");
+        } else if (isWrecked()) {
+            say(player, "wreck");
+        } else if (isVehicle()) {
+            say(player, "occupied");
+        } else if (!canBeUsedBy(player)) {
+            say(player, "not_owner");
+        } else if (player instanceof ServerPlayer serverPlayer && ArmorMountingMenu.mayMount(player, this)) {
+            serverPlayer.openMenu(new SimpleMenuProvider((id, inventory, who) -> new ArmorMountingMenu(id, inventory, this),
+                    Component.translatable("screen.projectrebirth.armor_mounting.title")), buf -> buf.writeVarInt(getId()));
+        }
     }
 
     private void useWrench(Player player, ItemStack wrench) {

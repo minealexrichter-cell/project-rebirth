@@ -64,6 +64,12 @@ public final class ModCreativeTabs {
                 }
                 output.accept(PowerArmorRegistry.ARMOR_PLATE.get());
                 output.accept(PowerArmorRegistry.REPAIR_WRENCH.get());
+                output.accept(PowerArmorRegistry.UPGRADE_MOUNTING_TOOL.get());
+                output.accept(UpgradeRegistry.ARMOR_COPPER_PLATING.get());
+                output.accept(UpgradeRegistry.ARMOR_IRON_PLATING.get());
+                output.accept(UpgradeRegistry.ARMOR_TITANIUM_PLATING.get());
+                output.accept(UpgradeRegistry.COMPRESSED_AIR_MODULE.get());
+                output.accept(UpgradeRegistry.FLOODLIGHT.get());
                 output.accept(PowerArmorRegistry.RESCUE_TOOL.get());
             })
             .build());

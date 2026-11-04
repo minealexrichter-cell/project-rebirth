@@ -1,6 +1,7 @@
 package com.projectrebirth.technology;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.powerarmor.ArmorMountingMenu;
 import com.projectrebirth.technology.energy.GeneratorMenu;
 
 import net.minecraft.core.registries.Registries;
@@ -21,6 +22,9 @@ public final class TechMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<BodyModificationMenu>> BODY_MODIFICATION =
             MENUS.register("body_modification_station", () -> IMenuTypeExtension.create(BodyModificationMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<ArmorMountingMenu>> ARMOR_MOUNTING =
+            MENUS.register("armor_mounting", () -> IMenuTypeExtension.create(ArmorMountingMenu::new));
 
     public static final DeferredHolder<MenuType<?>, MenuType<GeneratorMenu>> GENERATOR =
             MENUS.register("combustion_generator", () -> IMenuTypeExtension.create(GeneratorMenu::new));

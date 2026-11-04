@@ -1,0 +1,20 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_upgrade_fabricator",
+  "sort": 40,
+  "time": 260,
+  "ingredients": [
+    {
+      "tag": "c:ingots/titanium",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:armor_titanium_plating",
+    "count": 1
+  }
+}

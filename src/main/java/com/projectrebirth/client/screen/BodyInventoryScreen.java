@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.client.event.ScreenEvent;
@@ -31,7 +32,10 @@ public class BodyInventoryScreen extends InventoryScreen {
     public static final int ARROW_WIDTH = 16;
     public static final int ARROW_HEIGHT = 11;
 
-    /** How far the panel reaches above the vanilla window. It leaves the window where the recipe book expects it. */
+    /**
+     * How far the panel reaches above the vanilla window, for a name of one line. It leaves the window where the recipe
+     * book expects it; the smallest screen has room for a name of two lines.
+     */
     private static final int HEADER = 26;
     private static final int SLOT_SIZE = 18;
     /** Upgrade slots stand on both sides of the model, where armor slots used to be. */
@@ -58,19 +62,25 @@ public class BodyInventoryScreen extends InventoryScreen {
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        GuiAtlas.panel(graphics, x, y - HEADER, imageWidth, imageHeight + HEADER);
+        List<FormattedCharSequence> name = font.split(bodyName(), imageWidth - 2 * 8);
+        int header = HEADER + (Math.min(name.size(), 2) - 1) * font.lineHeight;
+        GuiAtlas.panel(graphics, x, y - header, imageWidth, imageHeight + header);
+        for (int i = 0; i < Math.min(name.size(), 2); i++) {
+            graphics.drawString(font, name.get(i), x + 8, y - header + 5 + i * font.lineHeight, 0x404040, false);
+        }
         renderHeader(graphics, x, y);
         renderSlotFrames(graphics, x, y);
         GuiAtlas.smallArrow(graphics, x + ARROW_X, y + ARROW_Y);
         renderUpgradeCells(graphics, x, y);
-        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x + 26, y + 8, x + 75, y + 78, 30, 0.0625f, mouseX, mouseY, player);
+        GuiAtlas.model(graphics, x + 26, y + 8, x + 75, y + 78, 30, 0.0625f, mouseX, mouseY, player);
+    }
+
+    private Component bodyName() {
+        return TransferService.state(player).body().map(BodyClass::translationKey).map(Component::translatable)
+                .map(Component.class::cast).orElse(Component.empty());
     }
 
     private void renderHeader(GuiGraphics graphics, int x, int y) {
-        Component name = TransferService.state(player).body().map(BodyClass::translationKey).map(Component::translatable)
-                .map(Component.class::cast).orElse(Component.empty());
-        graphics.drawString(font, name, x + 8, y - HEADER + 5, 0x404040, false);
-
         float max = player.getMaxHealth();
         float fraction = max > 0 ? Mth.clamp(player.getHealth() / max, 0.0f, 1.0f) : 0.0f;
         int color = fraction > 0.5f ? 0xFF4FC3F7 : fraction > 0.25f ? 0xFFFFC107 : 0xFFE53935;

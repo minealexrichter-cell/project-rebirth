@@ -771,14 +771,16 @@
                 idle: {length: 2.8, bob: -0.45, arm: -4, armZ: 3, sway: 0.6, ease: 'easeInOutSine'},
                 // A light run: leaning forward, heels kicking high, arms bent and pumping.
                 walk: {length: 0.5, stride: 44, knee: [8, 22, 30, 105, 45], arm: 38, armLag: 0.02, armOut: 5, elbow: [62, 34], bob: 0.8, roll: 1, lean: 13, twist: 9},
-                // Two fast jabs, right then left, with the body snapping from side to side.
-                attack: {length: 0.4, loop: 'once', ease: 'easeOutQuad', bones: {
-                    right_arm: {r: {'0.000': [0, 0, 0], '0.060': [-92, -6, -2], '0.130': [-50, 0, 2], '0.400': [0, 0, 0]}},
-                    right_forearm: {r: {'0.000': [0, 0, 0], '0.030': [-90, 0, 0], '0.060': [-4, 0, 0], '0.130': [-85, 0, 0], '0.400': [0, 0, 0]}},
-                    left_arm: {r: {'0.000': [0, 0, 0], '0.060': [-50, 0, -2], '0.180': [-92, 6, 2], '0.260': [-45, 0, -2], '0.400': [0, 0, 0]}},
-                    left_forearm: {r: {'0.000': [0, 0, 0], '0.120': [-90, 0, 0], '0.180': [-4, 0, 0], '0.260': [-85, 0, 0], '0.400': [0, 0, 0]}},
-                    torso: {r: {'0.000': [0, 0, 0], '0.060': [5, -14, 0], '0.180': [5, 14, 0], '0.400': [0, 0, 0]}},
-                    head: {r: {'0.000': [0, 0, 0], '0.060': [0, 8, 0], '0.180': [0, -8, 0], '0.400': [0, 0, 0]}}
+                // A slash with the right hand: from up and out on the right, across the body and down to the left.
+                // The left arm only pulls back to balance. In the file a positive Y turn moves the right side back.
+                attack: {length: 0.5, loop: 'once', ease: 'easeOutQuad', bones: {
+                    right_arm: {r: {'0.000': [0, 0, 0], '0.110': [-135, 45, 12], '0.190': [-95, 0, 0], '0.270': [-55, -55, -6], '0.340': [-48, -62, -6], '0.500': [0, 0, 0]}},
+                    right_forearm: {r: {'0.000': [0, 0, 0], '0.110': [-45, 0, 0], '0.190': [-10, 0, 0], '0.270': [-5, 0, 0], '0.340': [-22, 0, 0], '0.500': [0, 0, 0]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '0.110': [-18, 0, -8], '0.270': [28, 0, -14], '0.500': [0, 0, 0]}},
+                    left_forearm: {r: {'0.000': [0, 0, 0], '0.110': [-55, 0, 0], '0.270': [-40, 0, 0], '0.500': [0, 0, 0]}},
+                    torso: {r: {'0.000': [0, 0, 0], '0.110': [-3, 24, 2], '0.190': [4, 0, 0], '0.270': [10, -30, -3], '0.340': [9, -32, -3], '0.500': [0, 0, 0]},
+                        p: {'0.000': [0, 0, 0], '0.270': [0, -0.6, -0.8], '0.500': [0, 0, 0]}},
+                    head: {r: {'0.000': [0, 0, 0], '0.110': [0, -14, 0], '0.270': [-6, 18, 0], '0.500': [0, 0, 0]}}
                 }},
                 shutdown: SLUMP(16, 1.2, 12, 'easeInOutSine'),
                 wrecked: COLLAPSE(26, -12, 8, 3.5)

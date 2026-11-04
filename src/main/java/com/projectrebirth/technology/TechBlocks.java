@@ -23,6 +23,8 @@ public final class TechBlocks {
 
     /** Production stations, one block per {@link Station}, registered under the station's id. */
     public static final Map<Station, DeferredBlock<StationBlock>> STATIONS = new EnumMap<>(Station.class);
+    /** Light of a station or a battery at work: its screens glow. */
+    private static final int ACTIVE_LIGHT = 5;
 
     /** Repairs packed armor (the only place for critical integrity) and packed bodies. */
     public static final DeferredBlock<MaintenanceStationBlock> MAINTENANCE_STATION = BLOCKS.registerBlock("maintenance_station",
@@ -31,6 +33,8 @@ public final class TechBlocks {
                     .mapColor(MapColor.METAL)
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TechSounds.WORKING) ? ACTIVE_LIGHT : 0)
                     .requiresCorrectToolForDrops());
 
     public static final DeferredBlock<CombustionGeneratorBlock> COMBUSTION_GENERATOR = BLOCKS.registerBlock("combustion_generator",
@@ -40,6 +44,7 @@ public final class TechBlocks {
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
                     .lightLevel(state -> state.getValue(CombustionGeneratorBlock.LIT) ? 13 : 0)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
 
     public static final DeferredBlock<SolarPanelBlock> SOLAR_PANEL = BLOCKS.registerBlock("solar_panel",
@@ -57,6 +62,8 @@ public final class TechBlocks {
                     .mapColor(MapColor.METAL)
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TechSounds.WORKING) ? ACTIVE_LIGHT : 0)
                     .requiresCorrectToolForDrops());
 
     public static final DeferredBlock<CableBlock> CABLE = BLOCKS.registerBlock("cable",
@@ -77,6 +84,8 @@ public final class TechBlocks {
                     .mapColor(MapColor.METAL)
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TechSounds.WORKING) ? ACTIVE_LIGHT : 0)
                     .requiresCorrectToolForDrops())));
         }
         for (Metal metal : Metal.values()) {

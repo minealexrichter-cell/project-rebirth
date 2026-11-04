@@ -31,7 +31,7 @@ public final class TechSounds {
     }
 
     /** Changes the block state only when the working state really changes (so not every tick). */
-    static void setWorking(BlockEntity blockEntity, boolean working) {
+    public static void setWorking(BlockEntity blockEntity, boolean working) {
         Level level = blockEntity.getLevel();
         BlockState state = blockEntity.getBlockState();
         if (level != null && state.hasProperty(WORKING) && state.getValue(WORKING) != working) {

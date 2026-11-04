@@ -2,6 +2,7 @@ package com.projectrebirth.technology.energy;
 
 import javax.annotation.Nullable;
 
+import com.projectrebirth.technology.TechSounds;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.technology.TechBlockEntities;
 
@@ -24,6 +25,7 @@ public class BatteryBlockEntity extends BlockEntity {
     private final IEnergyStorage input = energy.inputOnly();
     private final IEnergyStorage output = energy.outputOnly();
     private int lastSignal = -1;
+    private int lastStored = -1;
 
     public BatteryBlockEntity(BlockPos pos, BlockState state) {
         super(TechBlockEntities.BATTERY.get(), pos, state);
@@ -54,6 +56,12 @@ public class BatteryBlockEntity extends BlockEntity {
 
     void serverTick() {
         EnergyUtil.push(level, worldPosition, energy, RebirthConfig.BATTERY_TRANSFER.get(), front());
+        // Works while its charge changes; checked once a second so that the block state does not flicker.
+        if (level.getGameTime() % 20 == 0) {
+            int stored = energy.getEnergyStored();
+            TechSounds.setWorking(this, lastStored >= 0 && stored != lastStored);
+            lastStored = stored;
+        }
         int signal = signal();
         if (signal != lastSignal) {
             lastSignal = signal;

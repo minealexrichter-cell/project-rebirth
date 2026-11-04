@@ -1,6 +1,7 @@
 package com.projectrebirth.technology.energy;
 
 import com.mojang.serialization.MapCodec;
+import com.projectrebirth.technology.TechSounds;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.technology.TechBlockEntities;
 
@@ -19,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /** A flat solar panel. Right-click shows its charge and whether it is producing. */
@@ -28,6 +30,12 @@ public class SolarPanelBlock extends BaseEntityBlock {
 
     public SolarPanelBlock(Properties properties) {
         super(properties);
+        registerDefaultState(stateDefinition.any().setValue(TechSounds.WORKING, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(TechSounds.WORKING);
     }
 
     @Override

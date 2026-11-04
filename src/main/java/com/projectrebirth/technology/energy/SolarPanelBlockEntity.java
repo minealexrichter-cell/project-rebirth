@@ -1,5 +1,6 @@
 package com.projectrebirth.technology.energy;
 
+import com.projectrebirth.technology.TechSounds;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.technology.TechBlockEntities;
 
@@ -40,6 +41,7 @@ public class SolarPanelBlockEntity extends BlockEntity {
     void serverTick() {
         if (level.getGameTime() % 20 == 0) {
             producing = seesSun();
+            TechSounds.setWorking(this, producing);
         }
         if (producing) {
             energy.generate(RebirthConfig.SOLAR_ENERGY_PER_TICK.get());

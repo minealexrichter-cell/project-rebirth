@@ -1,6 +1,7 @@
 package com.projectrebirth.technology.energy;
 
 import com.mojang.serialization.MapCodec;
+import com.projectrebirth.technology.TechSounds;
 import com.projectrebirth.technology.TechBlockEntities;
 
 import net.minecraft.core.BlockPos;
@@ -32,7 +33,7 @@ public class BatteryBlock extends BaseEntityBlock {
 
     public BatteryBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(TechSounds.WORKING, false));
     }
 
     @Override
@@ -42,7 +43,7 @@ public class BatteryBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, TechSounds.WORKING);
     }
 
     @Override

@@ -1,7 +1,499 @@
 {
-  "parent": "minecraft:block/cube_column",
+  "parent": "minecraft:block/block",
   "textures": {
-    "end": "projectrebirth:block/faction_core_top",
-    "side": "projectrebirth:block/faction_core_side"
-  }
+    "side": "projectrebirth:block/faction_core_side",
+    "top": "projectrebirth:block/faction_core_top",
+    "parts": "projectrebirth:block/machine_parts",
+    "particle": "projectrebirth:block/faction_core_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        13,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "down": {
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        2,
+        13,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        3,
+        0
+      ],
+      "to": [
+        16,
+        13,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        3,
+        14
+      ],
+      "to": [
+        2,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        3,
+        14
+      ],
+      "to": [
+        16,
+        13,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        3,
+        5
+      ],
+      "to": [
+        11,
+        13,
+        11
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            5,
+            3,
+            11,
+            13
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            5,
+            3,
+            11,
+            13
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            5,
+            3,
+            11,
+            13
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            5,
+            3,
+            11,
+            13
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            9,
+            3,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            9,
+            3,
+            11
+          ]
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "y",
+        "angle": 45
+      },
+      "neoforge_data": {
+        "block_light": 15
+      }
+    }
+  ]
 }

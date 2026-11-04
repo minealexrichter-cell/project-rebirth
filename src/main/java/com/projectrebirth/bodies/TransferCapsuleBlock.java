@@ -41,8 +41,9 @@ public class TransferCapsuleBlock extends HorizontalDirectionalBlock {
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
 
     // Boxes for a north-facing capsule (open side at z = 0): floor, back wall, two front pillars, roof.
+    // The roof is higher than two blocks (up to 2.25) so that a player with a hat fits inside.
     private static final double[][] LOWER_BOXES = {{0, 0, 0, 16, 2, 16}, {0, 2, 14, 16, 16, 16}, {0, 2, 0, 2, 16, 2}, {14, 2, 0, 16, 16, 2}};
-    private static final double[][] UPPER_BOXES = {{0, 0, 14, 16, 14, 16}, {0, 14, 0, 16, 16, 16}, {0, 0, 0, 2, 14, 2}, {14, 0, 0, 16, 14, 2}};
+    private static final double[][] UPPER_BOXES = {{0, 0, 14, 16, 18, 16}, {0, 18, 0, 16, 20, 16}, {0, 0, 0, 2, 18, 2}, {14, 0, 0, 16, 18, 2}};
     private static final Map<Direction, VoxelShape> LOWER_SHAPES = rotatedShapes(LOWER_BOXES);
     private static final Map<Direction, VoxelShape> UPPER_SHAPES = rotatedShapes(UPPER_BOXES);
 
@@ -72,7 +73,9 @@ public class TransferCapsuleBlock extends HorizontalDirectionalBlock {
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         BlockPos pos = context.getClickedPos();
         Level level = context.getLevel();
-        if (pos.getY() < level.getMaxBuildHeight() - 1 && level.getBlockState(pos.above()).canBeReplaced(context)) {
+        // The roof reaches into the third block, so that block must be free as well.
+        if (pos.getY() < level.getMaxBuildHeight() - 2 && level.getBlockState(pos.above()).canBeReplaced(context)
+                && level.getBlockState(pos.above(2)).canBeReplaced(context)) {
             return defaultBlockState()
                     .setValue(FACING, context.getHorizontalDirection().getOpposite())
                     .setValue(HALF, DoubleBlockHalf.LOWER);

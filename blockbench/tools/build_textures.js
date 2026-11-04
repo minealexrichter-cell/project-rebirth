@@ -414,17 +414,7 @@
         p.rect(4, 12, 8, 1, '#2a2a2c').rect(5, 11, 2, 1, '#242426').rect(9, 11, 2, 1, '#242426');
         return p;
     });
-    block('combustion_generator_front_on', () => {
-        const p = firebox(new Painter(63));
-        p.grid([
-            '....r..r',
-            '.r..rr.r',
-            '.rr.orrr',
-            'rrorooor',
-            'roooyooo',
-            'ooyyyyyo'], {r: '#d8421b', o: '#f58a1f', y: '#ffe05a'}, 4, 8);
-        return p;
-    });
+    const litFirebox = () => firebox(new Painter(63));
 
     // Solar panel: blue cells; the model is 6 high and shows the lower part of the side.
     block('solar_panel_top', () => {
@@ -552,6 +542,244 @@
             p.rect(3, i, 10, 1, '#4a545f');
         }
         p.rect(6, 6, 4, 4, '#117d97').rect(7, 7, 2, 2, CYAN);
+        return p;
+    });
+
+    // Solid colours of the 3D parts of block models, in 4x4 squares (see build_block_models.js).
+    block('machine_parts', () => {
+        const p = new Painter(121);
+        const colors = ['#8c97a3', '#59626c', '#343a42', '#1e2228', '#c77b3b', '#d6a32a', '#23262b', '#6e4a31',
+            '#37e6ff', '#35d07f', '#e5483d', '#f0c92f', '#f08a24', '#7b8f3a', '#e6e9ec', null];
+        colors.forEach((c, i) => {
+            const x = (i % 4) * 4, y = Math.floor(i / 4) * 4;
+            if (c) {
+                p.noise(x, y, 4, 4, c, 0.03);
+            } else {
+                hazard(p, x, y, 4, 4);
+            }
+        });
+        return p;
+    });
+
+    // ---------------------------------------------------------------- animated textures of active blocks
+
+    /** A vertical strip of frames with its .mcmeta; the game plays it by itself. */
+    function animated(id, frames, frametime, draw) {
+        TEXTURES['block/' + id] = () => {
+            const strip = document.createElement('canvas');
+            strip.width = 16;
+            strip.height = 16 * frames;
+            const ctx = strip.getContext('2d');
+            for (let i = 0; i < frames; i++) {
+                ctx.drawImage(draw(i).canvas, 0, i * 16);
+            }
+            return {canvas: strip, mcmeta: {animation: {frametime, interpolate: false}}};
+        };
+    }
+
+    const baseOf = id => TEXTURES['block/' + id]();
+
+    /** The side of a running machine: a fan turns in the middle. */
+    function fanSide(id, accent) {
+        animated(id + '_side_on', 4, 2, i => {
+            const p = baseOf(id + '_side');
+            p.inset(4, 4, 8, 8, '#14171b', 0.02);
+            const blades = [
+                ['..xx....', '..xxx...', '...xx.xx', '...ooxxx', 'xxxoo...', 'xx.xx...', '...xxx..', '....xx..'],
+                ['.x....x.', 'xxx..xxx', '.xxxxxx.', '...oo...', '...oo...', '.xxxxxx.', 'xxx..xxx', '.x....x.'],
+                ['....xx..', '...xxx..', 'xx.xx...', 'xxxoo...', '...ooxxx', '...xx.xx', '..xxx...', '..xx....'],
+                ['...xx...', '...xx...', 'x..xx..x', 'xxxooxxx', 'xxxooxxx', 'x..xx..x', '...xx...', '...xx...']];
+            p.grid(blades[i], {x: '#7b8794', o: accent}, 4, 4);
+            return p;
+        });
+    }
+
+    function blink(on, color) {
+        return on ? color : shade(color, 0.35);
+    }
+
+    // Electronics fabricator: code runs on the screen, lights blink, signals run along the traces.
+    fanSide('electronics_fabricator', GREEN);
+    animated('electronics_fabricator_front_on', 8, 3, i => {
+        const p = baseOf('electronics_fabricator_front');
+        p.inset(3, 3, 10, 6, '#0a2318', 0.02);
+        const code = [[1, 4], [3, 2], [6, 3], [2, 5], [0, 3], [5, 4], [1, 2], [4, 5]];
+        for (let row = 0; row < 4; row++) {
+            const [x, w] = code[(row + i) % 8];
+            p.rect(4 + x, 4 + row, w, 1, row === 3 ? '#b6ffd8' : GREEN);
+        }
+        p.px(blink(i % 2 === 0, '#ff5a4d'), [10, 11]).px(blink(i % 4 < 2, GREEN), [12, 11]);
+        p.rect(4, 11, 4, 1, i % 4 < 2 ? '#1a4a33' : DARK);
+        return p;
+    });
+    animated('electronics_fabricator_top_on', 4, 3, i => {
+        const p = baseOf('electronics_fabricator_top');
+        const pulse = [[[4, 4], [11, 4]], [[6, 5], [8, 5]], [[4, 7], [11, 7]], [[6, 10], [11, 10]]][i];
+        p.px('#fff4b0', ...pulse);
+        p.px(GREEN, [7, 8]);
+        return p;
+    });
+
+    // Assembly station: the arm on the screen works, sparks fly, the hazard stripes run, the turntable turns.
+    fanSide('assembly_station', ORANGE);
+    animated('assembly_station_front_on', 6, 3, i => {
+        const p = baseOf('assembly_station_front');
+        p.inset(3, 3, 10, 7, '#111418', 0.02);
+        const reach = [0, 1, 2, 2, 1, 0][i];
+        p.grid(['ooo', 'oOo', '.oo'], {o: ORANGE, O: '#ffd18a'}, 4, 3);
+        p.rect(6, 6, 2 + reach, 1, ORANGE).rect(7 + reach, 7, 2, 1, ORANGE);
+        p.rect(9 + reach, 8, 1, 1, LIGHT).rect(8 + reach, 8, 1, 1, LIGHT);
+        if (reach === 2) {
+            p.px('#fff27a', [11, 8], [12, 7], [10, 9]);
+        }
+        for (let x = 0; x < 10; x++) {
+            for (let y = 0; y < 2; y++) {
+                p.rect(3 + x, 11 + y, 1, 1, (x + y + i) % 4 < 2 ? '#f2c025' : '#23262b');
+            }
+        }
+        return p;
+    });
+    animated('assembly_station_top_on', 4, 2, i => {
+        const p = baseOf('assembly_station_top');
+        p.inset(4, 4, 8, 8, GUN);
+        const arms = [
+            ['...xx...', '...xx...', '...xx...', 'xxxooxxx', 'xxxooxxx', '...xx...', '...xx...', '...xx...'],
+            ['x......x', '.x....x.', '..x..x..', '...oo...', '...oo...', '..x..x..', '.x....x.', 'x......x']][i % 2];
+        p.grid(arms, {x: LIGHT, o: ORANGE}, 4, 4);
+        return p;
+    });
+
+    // Armor workstation: a scanning line runs over the helmet, its visor glows, the signal lights blink.
+    animated('armor_workstation_front_on', 8, 2, i => {
+        const p = baseOf('armor_workstation_front');
+        const line = i < 5 ? 3 + i * 2 : 3 + (8 - i) * 2;
+        p.rect(4, 6, 8, 2, i % 2 ? '#ff7a6e' : '#ff4b3e');
+        p.rect(3, line, 10, 1, CYAN);
+        return p;
+    });
+    animated('armor_workstation_top_on', 4, 4, i => {
+        const p = baseOf('armor_workstation_top');
+        p.rect(7, 7, 2, 2, i % 2 ? '#ff8a7a' : '#a82a22');
+        return p;
+    });
+    animated('armor_workstation_side_on', 4, 4, i => {
+        const p = baseOf('armor_workstation_side');
+        p.px(blink(i === 0, CYAN), [5, 5]).px(blink(i === 1, CYAN), [10, 5]).px(blink(i === 2, CYAN), [10, 10]).px(blink(i === 3, CYAN), [5, 10]);
+        return p;
+    });
+
+    // Maintenance station: the wrench turns, the warning stripes run, a warning light blinks.
+    fanSide('maintenance_station', YELLOW);
+    animated('maintenance_station_front_on', 4, 4, i => {
+        const p = baseOf('maintenance_station_front');
+        if (i % 2) {
+            p.inset(3, 3, 10, 10, '#15181c', 0.02);
+            p.grid([
+                '.LL.......',
+                '..LL......',
+                'LdLL......',
+                'LLLLL.....',
+                '.ddLLL....',
+                '...dLLL...',
+                '....dLLL..',
+                '.....dLLL.',
+                '......dyy.',
+                '..........'], {L: '#c8d0d8', d: '#7a8590', y: YELLOW}, 3, 3);
+        }
+        p.rect(3, 3, 10, 1, i < 2 ? YELLOW : shade(YELLOW, 0.4));
+        return p;
+    });
+    animated('maintenance_station_top_on', 4, 2, i => {
+        const p = baseOf('maintenance_station_top');
+        for (let x = 0; x < 10; x++) {
+            for (let y = 0; y < 10; y++) {
+                if (x < 2 || x > 7 || y < 2 || y > 7) {
+                    p.rect(3 + x, 3 + y, 1, 1, (x + y + i) % 4 < 2 ? '#f2c025' : '#23262b');
+                }
+            }
+        }
+        return p;
+    });
+
+    // Combustion generator: the fire moves, the vents and the exhaust glow.
+    const FIRE = [
+        ['....r..r', '.r..rr.r', '.rr.orrr', 'rrorooor', 'roooyooo', 'ooyyyyyo'],
+        ['.r....r.', '.rr.r.rr', 'rror.rro', 'rooorooy', 'ooyooyyo', 'oyyyyyyo'],
+        ['...r.r..', 'r..rrr.r', 'rr.oorrr', 'roooyoor', 'ooyyyooo', 'oyyyyyyy'],
+        ['r.....r.', 'rr.r..r.', 'orrrr.rr', 'ooorrooo', 'oyooooyo', 'yyyoyyyo'],
+        ['..r..r..', '.rr.rr.r', 'rrorroor', 'oooooyor', 'yooyyooo', 'oyyyyyyo'],
+        ['.r.r...r', '.rrrr.rr', 'rooorrro', 'ooyooooo', 'oyyyyooy', 'yyyyyyoo']];
+    animated('combustion_generator_front_on', 6, 2, i => litFirebox().grid(FIRE[i], {r: '#d8421b', o: '#f58a1f', y: '#ffe05a'}, 4, 8));
+    animated('combustion_generator_side_on', 4, 3, i => {
+        const p = baseOf('combustion_generator_side');
+        [4, 6, 8, 10].forEach((y, row) => p.rect(4, y, 8, 1, mix('#59626c', '#f58a1f', (row + i) % 4 === 3 ? 0.9 : 0.35)));
+        return p;
+    });
+    animated('combustion_generator_top_on', 4, 3, i => {
+        const p = baseOf('combustion_generator_top');
+        p.rect(7, 7, 2, 2, ['#f58a1f', '#ffb347', '#d8421b', '#ffb347'][i]);
+        return p;
+    });
+
+    // Solar panel: a shine runs across the cells.
+    animated('solar_panel_top_on', 8, 3, i => {
+        const p = baseOf('solar_panel_top');
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                const onCell = x % 5 !== 0 && y % 5 !== 0;
+                if (onCell && (x + y) % 16 >= i * 4 && (x + y) % 16 < i * 4 + 3 && i < 4) {
+                    p.rect(x, y, 1, 1, '#a9d0ff');
+                }
+            }
+        }
+        return p;
+    });
+
+    // Battery: the core pulses and the charge bar runs while energy flows.
+    animated('battery_front_on', 6, 2, i => {
+        const p = baseOf('battery_front');
+        const glow = ['#1d8fa8', '#37e6ff', '#a6f6ff', '#ffffff', '#a6f6ff', '#37e6ff'][i];
+        p.rect(6, 6, 4, 4, shade(glow, 0.7)).rect(7, 7, 2, 2, glow);
+        return p;
+    });
+    animated('battery_side_on', 5, 3, i => {
+        const p = baseOf('battery_side');
+        p.inset(5, 3, 6, 10, '#0c1e26', 0.02);
+        const colors = [GREEN, GREEN, YELLOW, '#ff5a4d'];
+        [10, 8, 6, 4].forEach((y, row) => {
+            if (row <= i) {
+                p.rect(6, y, 4, 1, colors[row]);
+            }
+        });
+        return p;
+    });
+
+    // Always working: the faction core's crystal and the capsule's light line.
+    const coreSide = TEXTURES['block/faction_core_side'], coreTop = TEXTURES['block/faction_core_top'];
+    const pulse = (p, f, x, y, w, h) => {
+        const data = p.ctx.getImageData(x, y, w, h);
+        for (let k = 0; k < data.data.length; k += 4) {
+            if (data.data[k + 2] > 120) {
+                data.data[k] = Math.min(255, data.data[k] * f);
+                data.data[k + 1] = Math.min(255, data.data[k + 1] * f);
+                data.data[k + 2] = Math.min(255, data.data[k + 2] * f);
+            }
+        }
+        p.ctx.putImageData(data, x, y);
+        return p;
+    };
+    const PULSE = [0.65, 0.75, 0.9, 1.1, 1.25, 1.1, 0.9, 0.75];
+    animated('faction_core_side', 8, 4, i => pulse(coreSide(), PULSE[i], 3, 2, 10, 12));
+    animated('faction_core_top', 8, 4, i => pulse(coreTop(), PULSE[i], 3, 3, 10, 10));
+    const capsuleBack = TEXTURES['block/transfer_capsule_back'];
+    animated('transfer_capsule_back', 8, 3, i => {
+        const p = capsuleBack();
+        p.rect(7, 0, 2, 16, '#148aa6');
+        for (let y = 0; y < 16; y++) {
+            if ((y + i * 2) % 16 < 3) {
+                p.rect(7, y, 2, 1, '#d8fbff');
+            }
+        }
         return p;
     });
 
@@ -1013,7 +1241,16 @@
 
     function saveAll() {
         const ids = Object.keys(TEXTURES);
-        ids.forEach(id => savePng(TEXTURES[id]().canvas, ASSETS + id + '.png'));
+        ids.forEach(id => {
+            const result = TEXTURES[id]();
+            savePng(result.canvas, ASSETS + id + '.png');
+            const meta = ASSETS + id + '.png.mcmeta';
+            if (result.mcmeta) {
+                fs.writeFileSync(meta, JSON.stringify(result.mcmeta, null, 2) + '\n');
+            } else if (fs.existsSync(meta)) {
+                fs.unlinkSync(meta);
+            }
+        });
         return ids.length;
     }
 
@@ -1030,7 +1267,7 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ids.forEach((id, i) => {
             const x = (i % cols) * cell + 3, y = Math.floor(i / cols) * cell + 3;
-            ctx.drawImage(TEXTURES[id]().canvas, x, y, 16 * s, 16 * s);
+            ctx.drawImage(TEXTURES[id]().canvas, 0, 0, 16, 16, x, y, 16 * s, 16 * s);
         });
         savePng(canvas, path);
         return ids;

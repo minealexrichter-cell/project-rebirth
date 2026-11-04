@@ -56,5 +56,5 @@ http://creativecommons.org/publicdomain/zero/1.0/
 ## Модели и текстуры
 
 Все модели и текстуры сделаны для мода программно: тела и броня — скриптом в Blockbench
-`blockbench/tools/build_models.js`, текстуры блоков и предметов — скриптом `blockbench/tools/build_textures.js`.
+`blockbench/tools/build_models.js`, текстуры блоков и предметов — скриптом `blockbench/tools/build_textures.js`, объёмные модели блоков — скриптом `blockbench/tools/build_block_models.js`.
 Сторонних моделей и текстур нет.

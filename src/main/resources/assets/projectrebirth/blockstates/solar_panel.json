@@ -1,5 +1,10 @@
 {
   "variants": {
-    "": { "model": "projectrebirth:block/solar_panel" }
+    "working=false": {
+      "model": "projectrebirth:block/solar_panel"
+    },
+    "working=true": {
+      "model": "projectrebirth:block/solar_panel_on"
+    }
   }
 }

@@ -23,6 +23,7 @@ public final class FactionBlocks {
                     .strength(25.0f, 1200.0f)
                     .sound(SoundType.NETHERITE_BLOCK)
                     .lightLevel(state -> 7)
+                    .noOcclusion()
                     .pushReaction(PushReaction.BLOCK)
                     .requiresCorrectToolForDrops());
     public static final DeferredItem<BlockItem> FACTION_CORE_ITEM = ITEMS.registerSimpleBlockItem(FACTION_CORE);

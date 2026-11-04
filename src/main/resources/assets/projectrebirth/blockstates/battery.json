@@ -1,10 +1,50 @@
 {
   "variants": {
-    "facing=north": { "model": "projectrebirth:block/battery" },
-    "facing=east": { "model": "projectrebirth:block/battery", "y": 90 },
-    "facing=south": { "model": "projectrebirth:block/battery", "y": 180 },
-    "facing=west": { "model": "projectrebirth:block/battery", "y": 270 },
-    "facing=up": { "model": "projectrebirth:block/battery_vertical" },
-    "facing=down": { "model": "projectrebirth:block/battery_vertical", "x": 180 }
+    "facing=north,working=false": {
+      "model": "projectrebirth:block/battery"
+    },
+    "facing=east,working=false": {
+      "model": "projectrebirth:block/battery",
+      "y": 90
+    },
+    "facing=south,working=false": {
+      "model": "projectrebirth:block/battery",
+      "y": 180
+    },
+    "facing=west,working=false": {
+      "model": "projectrebirth:block/battery",
+      "y": 270
+    },
+    "facing=up,working=false": {
+      "model": "projectrebirth:block/battery",
+      "x": 270
+    },
+    "facing=down,working=false": {
+      "model": "projectrebirth:block/battery",
+      "x": 90
+    },
+    "facing=north,working=true": {
+      "model": "projectrebirth:block/battery_on"
+    },
+    "facing=east,working=true": {
+      "model": "projectrebirth:block/battery_on",
+      "y": 90
+    },
+    "facing=south,working=true": {
+      "model": "projectrebirth:block/battery_on",
+      "y": 180
+    },
+    "facing=west,working=true": {
+      "model": "projectrebirth:block/battery_on",
+      "y": 270
+    },
+    "facing=up,working=true": {
+      "model": "projectrebirth:block/battery_on",
+      "x": 270
+    },
+    "facing=down,working=true": {
+      "model": "projectrebirth:block/battery_on",
+      "x": 90
+    }
   }
 }

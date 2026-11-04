@@ -2,7 +2,6 @@ package com.projectrebirth.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.projectrebirth.ProjectRebirth;
-import com.projectrebirth.client.render.WindowPose;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -98,12 +97,7 @@ public final class GuiAtlas {
     /** A body or armor in a window: it turns after the mouse and otherwise stands still (see WindowPose). */
     public static void model(GuiGraphics graphics, int x1, int y1, int x2, int y2, int scale, float yOffset,
                              float mouseX, float mouseY, LivingEntity entity) {
-        WindowPose.begin();
-        try {
-            InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, yOffset, mouseX, mouseY, entity);
-        } finally {
-            WindowPose.end();
-        }
+        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, yOffset, mouseX, mouseY, entity);
     }
 
     private static int filled(int size, int energy, int capacity) {

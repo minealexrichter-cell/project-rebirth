@@ -17,6 +17,7 @@ import com.projectrebirth.client.render.BodyArmRenderer;
 import com.projectrebirth.client.render.HumanShellRenderer;
 import com.projectrebirth.client.render.PossessedPlayerRenderer;
 import com.projectrebirth.client.screen.ArmorMountingScreen;
+import com.projectrebirth.client.render.WindowPose;
 import com.projectrebirth.client.screen.BodyInventoryScreen;
 import com.projectrebirth.client.screen.BodyModificationScreen;
 import com.projectrebirth.client.screen.CapsuleScreen;
@@ -82,6 +83,7 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
         NeoForge.EVENT_BUS.addListener(this::onRenderPlayer);
         NeoForge.EVENT_BUS.addListener(this::onRenderArm);
+        WindowPose.register();
         NeoForge.EVENT_BUS.addListener(BodyInventoryScreen::onScreenOpening);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientFactionCache.clear());
         PowerArmorClient.register(modEventBus);

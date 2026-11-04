@@ -1,13 +1,18 @@
 # Project: Rebirth: статус разработки
 
-Текущий этап: **блок J: финальный вид перед 1.0.0**, сделан состав, выбранный владельцем (ждёт его оценки; не выпущено). `docs/PLAN_0.2.md`. Выпуски: теги `v0.1.0`, `v0.2.0`, `v0.2.1`, `v0.2.2`, `v0.3.0`, `v0.3.1`.
+Текущий этап: **выпуск 1.0.0 подготовлен**. План `docs/PLAN_0.2.md` выполнен; следующего этапа владелец не назначал. Выпуски: теги `v0.1.0`, `v0.2.0`, `v0.2.1`, `v0.2.2`, `v0.3.0`, `v0.3.1`, `v1.0.0`.
 Этап 5: базовая часть (`24a7378`), роли, территории, союзы (`84d7202`), правила войны (`1e64feb`).
 Этап 0 (`3c41d69`, `11768c5`), этап 1 (`2e5bef0`), этап 2 (`8919723`, `a1a4006`), этап 3 завершены.
 Этап 4: руды `5d85d65`, станции `9a7819b`, станция обслуживания и ремонт `3f7c904`.
 Ручную проверку этапа 1 владелец взял на себя; результаты не сообщались. По этапу 2 владелец нашёл две проблемы
 (рука от первого лица, голова не следует за взглядом); обе исправлены в `a1a4006`.
 
-## Блок J: панель, кабель, окна, HUD (не выпущено)
+## Выпуск 1.0.0
+
+Версия 0.3.1 плюс блок J; владелец принял блок и решил готовить 1.0.0. Перед выпуском: автотесты, сборка jar, чтение версии и содержимого jar.
+**Не проверено:** этот jar вне среды разработки (обычный лаунчер, чистый сервер); мод с другими модами; долгая игра и баланс.
+
+## Блок J: панель, кабель, окна, HUD (принято владельцем, вошло в 1.0.0)
 
 Владелец выбрал состав: модель кабеля, окна станций, вид полос HUD; своих звуков перед 1.0.0 не выбрал. Добавил: кабель подключается к солнечной панели только снизу, панель поворачивается при установке, как ступеньки.
 
@@ -1159,26 +1164,26 @@ Gradle сам не находит Microsoft JDK 21, поэтому её путь
 | `geo/entity/<класс>.geo.json`, 5 штук | ПРИНЯТЫ владельцем (0.2.2), сделаны в Blockbench; после 0.3.0 добавлены колени и локти |
 | `textures/entity/<класс>.png`, 5 штук | ПРИНЯТЫ владельцем (0.2.2), раскладка скина игрока |
 | `animations/entity/<класс>.animation.json`, 5 штук | Движения после 0.3.0 (`idle`, `walk`, `run`, `sneak`, `crouch`) ПРИНЯТЫ владельцем; `interact` не менялась и не проверена |
-| `models/block/transfer_capsule_{lower,upper}.json`, `textures/block/transfer_capsule_*.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| `textures/block/assembly_station_*.png`, `textures/item/*.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| модели функциональных блоков, капсула | НОВЫЕ, `build_block_models.js`, владелец ещё не оценивал |
-| модель кабеля `models/block/cable_{core,arm,item}.json`, `textures/block/{cable,cable_node}.png` | НОВЫЕ (блок J): проверены в игре, владелец ещё не оценивал |
-| `textures/gui/widgets.png` | НОВАЯ (блок J): окна и HUD; проверена в игре, владелец ещё не оценивал |
-| анимированные текстуры `*_on.png`, `faction_core_*`, `transfer_capsule_back` | НОВЫЕ, смена кадров; владелец ещё не оценивал |
+| `models/block/transfer_capsule_{lower,upper}.json`, `textures/block/transfer_capsule_*.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| `textures/block/assembly_station_*.png`, `textures/item/*.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| модели функциональных блоков, капсула | НОВЫЕ, `build_block_models.js`, приняты владельцем с блоком J |
+| модель кабеля `models/block/cable_{core,arm,item}.json`, `textures/block/{cable,cable_node}.png` | НОВЫЕ (блок J): проверены в игре, приняты владельцем с блоком J |
+| `textures/gui/widgets.png` | НОВАЯ (блок J): окна и HUD; проверена в игре, приняты владельцем с блоком J |
+| анимированные текстуры `*_on.png`, `faction_core_*`, `transfer_capsule_back` | НОВЫЕ, смена кадров; приняты владельцем с блоком J |
 | человеческое тело | ванильная модель игрока со скином владельца (не заглушка) |
 | `geo/entity/{power_armor,mobile_power_armor,worker_power_armor}.geo.json` | ПРИНЯТЫ владельцем (0.2.2), сделаны в Blockbench |
 | `textures/entity/<вариант>.png`, `<вариант>_wrecked.png` (128×128) | ПРИНЯТЫ владельцем (0.2.2): обычная и обгоревшая у каждого вида |
 | `animations/entity/<вариант>.animation.json`, 3 штуки | ПРИНЯТЫ владельцем (0.2.2): `idle`, `walk`, `attack`, `shutdown`, `wrecked` |
-| `textures/item/power_armor.png`, `armor_plate.png`, `repair_wrench.png`, `rescue_tool.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| руды: `textures/block/{,deepslate_}<металл>_ore.png`, `textures/item/raw_<металл>.png`, `<металл>_ingot.png`, `bronze_ingot.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| станции: `textures/block/{electronics_fabricator,armor_workstation,maintenance_station}_{front,side,top}.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| детали: `textures/item/{processor,power_cell,actuator,synthetic_fiber}.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| ядро фракции: `textures/block/faction_core_{side,top}.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| ремкомплект: `textures/item/repair_kit.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| энергия: `textures/block/{combustion_generator_*,solar_panel_*,battery_*,cable}.png`, модели кабеля (сердцевина и отвод), панели (полублок) | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| варианты брони: `textures/item/{mobile,worker}_power_armor.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| значки слота способности: `textures/item/{combat,mobile,worker}_armor_ability.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
-| звуки | ВРЕМЕННО ванильные звуки игры (`sounds.json`); звуки Kenney (CC0) отложены в `assets_src/sounds/kenney/`, см. `docs/CREDITS.md` |
+| `textures/item/power_armor.png`, `armor_plate.png`, `repair_wrench.png`, `rescue_tool.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| руды: `textures/block/{,deepslate_}<металл>_ore.png`, `textures/item/raw_<металл>.png`, `<металл>_ingot.png`, `bronze_ingot.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| станции: `textures/block/{electronics_fabricator,armor_workstation,maintenance_station}_{front,side,top}.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| детали: `textures/item/{processor,power_cell,actuator,synthetic_fiber}.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| ядро фракции: `textures/block/faction_core_{side,top}.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| ремкомплект: `textures/item/repair_kit.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| энергия: `textures/block/{combustion_generator_*,solar_panel_*,battery_*,cable}.png`, модели кабеля (сердцевина и отвод), панели (полублок) | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| варианты брони: `textures/item/{mobile,worker}_power_armor.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| значки слота способности: `textures/item/{combat,mobile,worker}_armor_ability.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, приняты владельцем с блоком J |
+| звуки | по решению владельца ванильные звуки игры (`sounds.json`); звуки Kenney (CC0) отложены в `assets_src/sounds/kenney/`, см. `docs/CREDITS.md` |
 | окно фракций, окно настроек HUD | рисуются кодом, своей текстуры нет (владелец не включил их в блок J) |
 
 Правила для финальной модели брони: кости `root`, `torso`, `head`, `right_arm`, `left_arm`, `right_leg`, `left_leg`,

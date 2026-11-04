@@ -492,7 +492,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
      * itself twice (key press and hit), so a punch is not restarted while the previous one is still early.
      */
     public void playAttackAnimation() {
-        if (tickCount - lastAttackAnimationTick < 8 && lastAttackAnimationTick != 0) {
+        // The mobile armor's slash is one flowing movement: frequent clicks must not cut it off and jerk the arm back.
+        int minTicks = getVariant() == ArmorVariant.MOBILE ? 12 : 8;
+        if (tickCount - lastAttackAnimationTick < minTicks && lastAttackAnimationTick != 0) {
             return;
         }
         lastAttackAnimationTick = tickCount;

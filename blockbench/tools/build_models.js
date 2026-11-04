@@ -596,6 +596,45 @@
     }
 
     /**
+     * One flowing movement through the given moments, sampled often. An easing on each keyframe would stop the limb at
+     * every keyframe; here it keeps its speed through them and only rests at the start and the end.
+     */
+    function flowing(length, bones) {
+        const STEP = 0.025;
+        const sample = points => {
+            const times = Object.keys(points).map(parseFloat).sort((a, b) => a - b);
+            const values = times.map(t => points[t.toFixed(3)]);
+            const slope = (i, axis) => (i === 0 || i === times.length - 1) ? 0
+                : (values[i + 1][axis] - values[i - 1][axis]) / (times[i + 1] - times[i - 1]);
+            const out = {};
+            const count = Math.round(length / STEP);
+            for (let n = 0; n <= count; n++) {
+                const t = n === count ? length : n * STEP;
+                let i = 0;
+                while (i < times.length - 2 && t > times[i + 1]) {
+                    i++;
+                }
+                const h = times[i + 1] - times[i], k = (t - times[i]) / h;
+                out[t.toFixed(3)] = [0, 1, 2].map(axis => {
+                    const a = values[i][axis], b = values[i + 1][axis];
+                    const value = (2 * k * k * k - 3 * k * k + 1) * a + (k * k * k - 2 * k * k + k) * h * slope(i, axis)
+                        + (-2 * k * k * k + 3 * k * k) * b + (k * k * k - k * k) * h * slope(i + 1, axis);
+                    return Math.round(value * 100) / 100;
+                });
+            }
+            return out;
+        };
+        const out = {};
+        for (const [bone, channels] of Object.entries(bones)) {
+            out[bone] = {};
+            for (const [channel, points] of Object.entries(channels)) {
+                out[bone][channel] = sample(points);
+            }
+        }
+        return {length, loop: 'once', bones: out};
+    }
+
+    /**
      * A walk with knees and elbows, sampled from curves. Phase 0: the right foot lands in front.
      * Thigh and upper arm: negative is forward. Shin: positive bends the knee back. Forearm: negative bends the elbow.
      */
@@ -773,15 +812,15 @@
                 walk: {length: 0.5, stride: 44, knee: [8, 22, 30, 105, 45], arm: 38, armLag: 0.02, armOut: 5, elbow: [62, 34], bob: 0.8, roll: 1, lean: 13, twist: 9},
                 // A slash with the right hand: from up and out on the right, across the body and down to the left.
                 // The left arm only pulls back to balance. In the file a positive Y turn moves the right side back.
-                attack: {length: 0.5, loop: 'once', ease: 'easeOutQuad', bones: {
-                    right_arm: {r: {'0.000': [0, 0, 0], '0.110': [-135, 45, 12], '0.190': [-95, 0, 0], '0.270': [-55, -55, -6], '0.340': [-48, -62, -6], '0.500': [0, 0, 0]}},
-                    right_forearm: {r: {'0.000': [0, 0, 0], '0.110': [-45, 0, 0], '0.190': [-10, 0, 0], '0.270': [-5, 0, 0], '0.340': [-22, 0, 0], '0.500': [0, 0, 0]}},
-                    left_arm: {r: {'0.000': [0, 0, 0], '0.110': [-18, 0, -8], '0.270': [28, 0, -14], '0.500': [0, 0, 0]}},
-                    left_forearm: {r: {'0.000': [0, 0, 0], '0.110': [-55, 0, 0], '0.270': [-40, 0, 0], '0.500': [0, 0, 0]}},
-                    torso: {r: {'0.000': [0, 0, 0], '0.110': [-3, 24, 2], '0.190': [4, 0, 0], '0.270': [10, -30, -3], '0.340': [9, -32, -3], '0.500': [0, 0, 0]},
-                        p: {'0.000': [0, 0, 0], '0.270': [0, -0.6, -0.8], '0.500': [0, 0, 0]}},
-                    head: {r: {'0.000': [0, 0, 0], '0.110': [0, -14, 0], '0.270': [-6, 18, 0], '0.500': [0, 0, 0]}}
-                }},
+                attack: flowing(0.6, {
+                    right_arm: {r: {'0.000': [0, 0, 0], '0.160': [-135, 45, 12], '0.320': [-58, -52, -6], '0.400': [-50, -60, -6], '0.600': [0, 0, 0]}},
+                    right_forearm: {r: {'0.000': [0, 0, 0], '0.160': [-45, 0, 0], '0.300': [-6, 0, 0], '0.400': [-18, 0, 0], '0.600': [0, 0, 0]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '0.160': [-18, 0, -8], '0.340': [26, 0, -13], '0.600': [0, 0, 0]}},
+                    left_forearm: {r: {'0.000': [0, 0, 0], '0.160': [-55, 0, 0], '0.340': [-40, 0, 0], '0.600': [0, 0, 0]}},
+                    torso: {r: {'0.000': [0, 0, 0], '0.160': [-3, 22, 2], '0.330': [10, -28, -3], '0.420': [8, -28, -3], '0.600': [0, 0, 0]},
+                        p: {'0.000': [0, 0, 0], '0.330': [0, -0.6, -0.8], '0.600': [0, 0, 0]}},
+                    head: {r: {'0.000': [0, 0, 0], '0.160': [0, -12, 0], '0.340': [-5, 16, 0], '0.600': [0, 0, 0]}}
+                }),
                 shutdown: SLUMP(16, 1.2, 12, 'easeInOutSine'),
                 wrecked: COLLAPSE(26, -12, 8, 3.5)
             })

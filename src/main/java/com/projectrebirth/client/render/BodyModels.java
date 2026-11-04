@@ -10,7 +10,7 @@ import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 /**
  * Geo models of body classes. Model, animations and texture are per class (geo/entity/&lt;id&gt;.geo.json,
  * animations/entity/&lt;id&gt;.animation.json, textures/entity/&lt;id&gt;.png). Every class must use the same bone names
- * and animation names (animation.body.idle, walk, interact); see docs/MODEL_SPEC.md.
+ * and animation names (animation.body.idle, walk, run, sneak, crouch, interact); see docs/MODEL_SPEC.md.
  */
 public final class BodyModels {
     private BodyModels() {

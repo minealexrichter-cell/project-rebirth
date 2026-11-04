@@ -48,6 +48,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity {
 
     public static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.body.idle");
     public static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.body.walk");
+    public static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.body.run");
+    public static final RawAnimation SNEAK = RawAnimation.begin().thenLoop("animation.body.sneak");
+    public static final RawAnimation CROUCH = RawAnimation.begin().thenLoop("animation.body.crouch");
     private static final RawAnimation INTERACT = RawAnimation.begin().thenPlay("animation.body.interact");
 
     private final BodyClass bodyClass;

@@ -298,10 +298,162 @@
         return {length: l, loop: 'loop', ease: c.ease, bones};
     }
 
+    const STEP_TIME = 0.05; // Blockbench's animation snapping
+    const THIGH = 6, SHIN = 6, HIP_HEIGHT = 12; // Bodies: the knee is at height 6.
+    const DEG = 180 / Math.PI;
+
+    /** Thigh and shin angles that put the foot at (forward, below) from the hip. The knee always bends forward. */
+    function legAngles(forward, below) {
+        const reach = Math.min(Math.hypot(forward, below), THIGH + SHIN - 0.02);
+        const aim = Math.atan2(forward, below);
+        const hip = Math.acos((THIGH * THIGH + reach * reach - SHIN * SHIN) / (2 * THIGH * reach));
+        const knee = Math.PI - Math.acos((THIGH * THIGH + SHIN * SHIN - reach * reach) / (2 * THIGH * SHIN));
+        return [-(aim + hip) * DEG, knee * DEG];
+    }
+
+    /** One channel of a loop: fn gets the phase 0..1 of the loop and returns the three values. */
+    function looped(length, step, fn) {
+        const count = Math.round(length / step);
+        const out = {};
+        for (let i = 0; i <= count; i++) {
+            out[(length * i / count).toFixed(3)] = fn((i % count) / count).map(v => Math.round(v * 100) / 100);
+        }
+        return out;
+    }
+
+    /**
+     * The movement of every body: the feet follow a path and the legs are solved from it, so that the same code gives
+     * a robot's stomp and a person's walk. What differs between the classes is only the data:
+     * hold: part of each step the machine stands still (0 for a smooth movement); soft: its motors start and stop softly;
+     * square: the foot goes up, across and down instead of along an arc; stance: part of the cycle a foot is on the ground;
+     * stride, lift, shift: the foot path in pixels; hip: height of the hips; bob, bobAt: how much and when they drop;
+     * lean, roll, twist, pelvis, sway: the body (twist and pelvis turn shoulders and hips against each other);
+     * arm, lag: arm swing and how far it trails the legs; elbow: [bend, added bend when forward]; elbowLag: forearm trailing;
+     * headRoll: part of the body's roll the head takes back; antenna: its spring after a footfall.
+     */
+    function bodyGait(c) {
+        const S = c.stride, H = c.lift, st = c.stance || 0.5, hold = c.hold || 0, shift = c.shift || 0;
+        const warp = t => {
+            if (!hold) {
+                return t;
+            }
+            const half = (((t % 1) + 1) % 1) * 2, k = Math.floor(half);
+            let v = Math.min((half - k) / (1 - hold), 1);
+            if (c.soft) {
+                v = v * v * (3 - 2 * v);
+            }
+            return (k + v) / 2;
+        };
+        const foot = f => {
+            f = ((f % 1) + 1) % 1;
+            if (f < st) {
+                return [shift + S * (1 - 2 * f / st), 0];
+            }
+            const u = (f - st) / (1 - st);
+            if (c.square) {
+                const across = Math.max(0, Math.min(1, (u - 0.15) / 0.7));
+                return [shift - S + 2 * S * across, H * Math.min(1, Math.min(u, 1 - u) / 0.15)];
+            }
+            return [shift - S + 2 * S * u * u * (3 - 2 * u), H * Math.sin(Math.PI * Math.pow(u, 0.8))];
+        };
+        const hip = t => c.hip - c.bob * (1 + Math.cos(4 * Math.PI * (warp(t) - (c.bobAt || 0)))) / 2;
+        const leg = (t, side) => {
+            const [x, y] = foot(warp(t) + (side > 0 ? 0 : 0.5));
+            return legAngles(x + side * (c.stagger || 0), hip(t) - y);
+        };
+        const arm = t => (c.arm || 0) * Math.cos(2 * Math.PI * (t - (c.lag || 0)));
+        const forward = t => (c.arm ? 0.5 - arm(t) / (2 * c.arm) : 0);
+        const armPitch = t => (c.armBase || 0) + arm(warp(t)) - c.lean * (c.armHang === undefined ? 0.8 : c.armHang);
+        const elbow = t => -(c.elbow[0] + c.elbow[1] * forward(warp(t) - (c.elbowLag || 0)));
+        const splay = c.splay || 0, out = c.armOut || 0;
+        const bones = {
+            root: {
+                p: looped(c.length, STEP_TIME, t => [0, hip(t) - HIP_HEIGHT, 0]),
+                r: looped(c.length, STEP_TIME, t => [0, -(c.pelvis || 0) * Math.cos(2 * Math.PI * warp(t)), (c.sway || 0) * Math.sin(2 * Math.PI * warp(t))])
+            },
+            right_leg: {r: looped(c.length, STEP_TIME, t => [leg(t, 1)[0], 0, splay])},
+            left_leg: {r: looped(c.length, STEP_TIME, t => [leg(t, -1)[0], 0, -splay])},
+            right_shin: {r: looped(c.length, STEP_TIME, t => [leg(t, 1)[1], 0, 0])},
+            left_shin: {r: looped(c.length, STEP_TIME, t => [leg(t, -1)[1], 0, 0])},
+            right_arm: {r: looped(c.length, STEP_TIME, t => [armPitch(t), 0, out])},
+            left_arm: {r: looped(c.length, STEP_TIME, t => [armPitch(t + 0.5), 0, -out])},
+            right_forearm: {r: looped(c.length, STEP_TIME, t => [elbow(t), 0, 0])},
+            left_forearm: {r: looped(c.length, STEP_TIME, t => [elbow(t + 0.5), 0, 0])},
+            torso: {r: looped(c.length, STEP_TIME, t => [c.lean, ((c.twist || 0) + (c.pelvis || 0)) * Math.cos(2 * Math.PI * warp(t)), (c.roll || 0) * Math.sin(2 * Math.PI * warp(t))])},
+            head: {r: looped(c.length, STEP_TIME, t => [0, 0, -(c.headRoll || 0) * ((c.roll || 0) + (c.sway || 0)) * Math.sin(2 * Math.PI * warp(t))])}
+        };
+        if (c.antenna) {
+            bones.antenna = {r: looped(c.length, STEP_TIME, t => {
+                const half = t * 2, u = half - Math.floor(half);
+                return [0, 0, (Math.floor(half) ? -1 : 1) * c.antenna * Math.exp(-4 * u) * Math.sin(5 * Math.PI * u)];
+            })};
+        }
+        return {length: c.length, loop: 'loop', bones};
+    }
+
+    /** A machine standing still: it looks around in separate moves and its spring antenna reacts to each of them. */
+    function machineIdle(c) {
+        const L = c.length, m = c.move, Y = c.scan, [a, b, d] = c.moves, [ax, az] = c.arm;
+        const keys = (...pairs) => Object.fromEntries(pairs.map(([t, v]) => [t.toFixed(3), v]));
+        const still = v => keys([0, v], [L, v]);
+        const armKeys = side => keys([0, [ax, 0, side * az]], [b, [ax, 0, side * az]],
+            [b + 0.1, [ax - (side > 0 ? c.twitch : 0), 0, side * az]], [b + 0.35, [ax, 0, side * az]], [L, [ax, 0, side * az]]);
+        const bones = {
+            head: {r: keys([0, [0, 0, 0]], [a, [0, 0, 0]], [a + m, [0, Y, 0]], [b, [0, Y, 0]], [b + m, [0, -Y, 0]], [d, [0, -Y, 0]], [d + m, [0, 0, 0]], [L, [0, 0, 0]])},
+            torso: {p: keys([0, [0, 0, 0]], [L / 2, [0, -c.settle, 0]], [L, [0, 0, 0]])},
+            right_arm: {r: armKeys(1)},
+            left_arm: {r: armKeys(-1)},
+            right_leg: {r: still([0, 0, c.splay])},
+            left_leg: {r: still([0, 0, -c.splay])}
+        };
+        const spring = {'0.000': [0, 0, 0]};
+        [a, b, d].forEach(t => [[0.1, 1], [0.2, -0.6], [0.3, 0.3], [0.4, 0]].forEach(([dt, k]) => {
+            spring[(t + dt).toFixed(3)] = [0, 0, k * c.antenna];
+        }));
+        spring[L.toFixed(3)] = [0, 0, 0];
+        bones.antenna = {r: spring};
+        return {length: L, loop: 'loop', ease: c.ease, bones};
+    }
+
+    /**
+     * A living body standing still: breathing, the weight slowly going from leg to leg, looking around.
+     * breaths and glances: how many in one loop; weight: side lean; knee: how much the free leg gives way.
+     */
+    function livingIdle(c) {
+        const STEP = 0.25, turn = (t, n) => Math.sin(2 * Math.PI * n * t);
+        const leg = (t, side) => legAngles(side * 0.5, 11.85 + side * c.knee * turn(t, 1));
+        const armOut = (t, side) => side * (c.armOut + 0.4 * turn(t, c.breaths));
+        return {length: c.length, loop: 'loop', bones: {
+            root: {
+                p: looped(c.length, STEP, () => [0, -0.15, 0]),
+                r: looped(c.length, STEP, t => [0, 0, c.weight * turn(t, 1)])
+            },
+            torso: {
+                p: looped(c.length, STEP, t => [0, c.breath * (1 + turn(t, c.breaths)) / 2, 0]),
+                r: looped(c.length, STEP, t => [-c.chest * turn(t, c.breaths), 0, -c.weight * 0.6 * turn(t, 1)])
+            },
+            head: {r: looped(c.length, STEP, t => [c.nod * turn(t, c.breaths), c.look * turn(t, c.glances), 0])},
+            right_leg: {r: looped(c.length, STEP, t => [leg(t, 1)[0], 0, 0])},
+            left_leg: {r: looped(c.length, STEP, t => [leg(t, -1)[0], 0, 0])},
+            right_shin: {r: looped(c.length, STEP, t => [leg(t, 1)[1], 0, 0])},
+            left_shin: {r: looped(c.length, STEP, t => [leg(t, -1)[1], 0, 0])},
+            right_arm: {r: looped(c.length, STEP, t => [c.armBase, 0, armOut(t, 1)])},
+            left_arm: {r: looped(c.length, STEP, t => [c.armBase, 0, armOut(t, -1)])},
+            right_forearm: {r: looped(c.length, STEP, t => [-c.elbow - 1.5 * turn(t, c.breaths), 0, 0])},
+            left_forearm: {r: looped(c.length, STEP, t => [-c.elbow - 1.5 * turn(t, c.breaths), 0, 0])}
+        }};
+    }
+
+    /** idle and interact as given; style holds the character of the class, walk, run and sneak what differs from it. */
     function bodyAnimations(cfg) {
+        const of = part => bodyGait(Object.assign({}, cfg.style, part));
         return {
-            'animation.body.idle': idle(cfg.idle),
-            'animation.body.walk': walk(cfg.walk),
+            'animation.body.idle': cfg.idle,
+            'animation.body.walk': of(cfg.walk),
+            'animation.body.run': of(cfg.run),
+            'animation.body.sneak': of(cfg.sneak),
+            // The same bent pose, without steps, and only barely moving.
+            'animation.body.crouch': of(Object.assign({}, cfg.sneak, {length: 3, hold: 0, stride: 0, lift: 0, stagger: 1.5, arm: 0, bob: 0.12, roll: 0, sway: 0, twist: 0, pelvis: 0})),
             'animation.body.interact': cfg.interact
         };
     }
@@ -338,6 +490,7 @@
         const steel = '#7d848c', dark = '#3a3f46', joint = '#4c5158', rust = '#8c5a38', amber = '#ffb02e';
         SPECS.basic_robot_body = {
             res: 64, seed: 101,
+            joints: {knee: 6, elbow: 17},
             bones: bodyBones({
                 head: {c: steel, n: 0.08,
                     f: [[1, 2, 6, 2, dark], [2, 2, 4, 1, amber], [3, 3, 2, 1, shade(amber, 0.7)],
@@ -377,8 +530,12 @@
                 ]
             }),
             animations: bodyAnimations({
-                idle: {length: 3, bob: -0.2, arm: -2, armZ: 1, antenna: 14},
-                walk: {length: 1.1, stride: 22, arm: 16, bob: -0.5, roll: 2.5},
+                // Old servos: abrupt starts and stops, a pause on every step, stiff arms, feet set down like a machine's.
+                idle: machineIdle({length: 6, moves: [1.2, 2.8, 4.4], move: 0.15, scan: 24, settle: 0.1, arm: [-1, 3], twitch: 5, splay: 2, antenna: 22}),
+                style: {square: true, hip: 11.8, splay: 2, armOut: 3, elbow: [5, 0], antenna: 18},
+                walk: {length: 1.2, hold: 0.3, stride: 4.5, lift: 1, bob: 0.7, lean: 0, roll: 3, arm: 13},
+                run: {length: 0.8, hold: 0.15, stride: 6.5, lift: 3.5, hip: 11.4, bob: 0.9, lean: 7, roll: 3, arm: 26, elbow: [28, 0]},
+                sneak: {length: 1.5, hold: 0.3, stride: 3, lift: 1.5, hip: 10.4, bob: 0.3, lean: 8, roll: 1.5, arm: 5, elbow: [25, 0], splay: 3},
                 interact: {length: 0.8, loop: 'once', bones: {
                     right_arm: {r: {'0.000': [0, 0, 0], '0.150': [-150, 0, 10], '0.300': [-150, 0, -6], '0.450': [-150, 0, 10], '0.800': [0, 0, 0]}},
                     antenna: {r: {'0.000': [0, 0, 0], '0.200': [0, 0, 22], '0.400': [0, 0, -22], '0.800': [0, 0, 0]}}
@@ -392,6 +549,7 @@
         const white = '#dfe5ea', blue = '#2f6fc4', dark = '#20262e', cyan = '#55e8ff', grey = '#8a939c';
         SPECS.improved_robot_body = {
             res: 64, seed: 202,
+            joints: {knee: 6, elbow: 17},
             bones: bodyBones({
                 head: {c: white, n: 0.03,
                     f: [[0, 2, 8, 3, dark], [1, 3, 2, 1, cyan], [5, 3, 2, 1, cyan], [2, 6, 4, 1, grey], [3, 0, 2, 2, blue]],
@@ -429,8 +587,12 @@
                 ]
             }),
             animations: bodyAnimations({
-                idle: {length: 3.5, bob: -0.25, arm: -3, armZ: 2, antenna: 8, ease: 'easeInOutSine'},
-                walk: {length: 0.9, stride: 30, arm: 26, bob: -0.5, roll: 2, ease: 'easeInOutSine'},
+                // Good motors: still step by step and perfectly even, but soft, and without the rattle.
+                idle: machineIdle({length: 7, moves: [1.5, 3.2, 5], move: 0.5, scan: 16, settle: 0.15, arm: [-2, 2], twitch: 2, splay: 1, antenna: 8, ease: 'easeInOutSine'}),
+                style: {soft: true, hip: 11.7, splay: 1, armOut: 1.5, elbow: [18, 0], antenna: 7},
+                walk: {length: 1, hold: 0.1, stride: 5.5, lift: 1.3, bob: 0.45, lean: 1, roll: 1.2, twist: 1.5, arm: 20},
+                run: {length: 0.7, hold: 0.05, stride: 7.5, lift: 4, hip: 11.2, bob: 0.7, lean: 9, roll: 1.2, twist: 2.5, arm: 38, elbow: [55, 0]},
+                sneak: {length: 1.4, hold: 0.15, stride: 3.5, lift: 1.5, hip: 10.2, bob: 0.25, lean: 12, roll: 0.8, arm: 7, elbow: [28, 0]},
                 interact: {length: 0.9, loop: 'once', ease: 'easeInOutSine', bones: {
                     right_arm: {r: {'0.000': [0, 0, 0], '0.250': [-90, 25, 0], '0.650': [-90, 25, 0], '0.900': [0, 0, 0]}},
                     torso: {r: {'0.000': [0, 0, 0], '0.250': [0, 8, 0], '0.650': [0, 8, 0], '0.900': [0, 0, 0]}}
@@ -444,6 +606,7 @@
         const skin = '#d9d4cc', seam = '#a59f96', suit = '#59616b', dark = '#333941', cyan = '#6fe3f5';
         SPECS.advanced_synthetic_body = {
             res: 64, seed: 303,
+            joints: {knee: 6, elbow: 17},
             bones: bodyBones({
                 slim: true,
                 head: {c: skin, n: 0.02,
@@ -468,8 +631,12 @@
                 legX: [C([-4.25, 0, -2.75], [4.5, 2, 5], {c: dark, n: 0.03, tp: [[0, 0, 5, 1, skin]]})]
             }),
             animations: bodyAnimations({
-                idle: {length: 4, bob: -0.2, arm: -3, armZ: 2, sway: 0.6, ease: 'easeInOutSine'},
-                walk: {length: 1, stride: 34, arm: 30, bob: -0.35, roll: 1, ease: 'easeInOutSine'},
+                // A mannequin learning to walk: already a human gait, but careful and a little too even.
+                idle: livingIdle({length: 6, breaths: 2, glances: 1, breath: 0.1, chest: 0.5, nod: 0.5, look: 10, weight: 0.3, knee: 0.1, armBase: -2, armOut: 2, elbow: 5}),
+                style: {stance: 0.56, hip: 11.5, armOut: 1, headRoll: 0.5},
+                walk: {length: 1.05, stride: 6, lift: 1.7, bob: 0.55, lean: 1.5, roll: 1, twist: 4, pelvis: 1, sway: 0.3, arm: 24, lag: 0.02, elbow: [10, 14], elbowLag: 0.03},
+                run: {length: 0.7, stance: 0.42, bobAt: 0.21, stride: 8, lift: 5, hip: 11, bob: 0.9, lean: 9, roll: 1, twist: 7, pelvis: 2, sway: 0.5, arm: 44, lag: 0.02, elbow: [60, 25], elbowLag: 0.03},
+                sneak: {length: 1.4, stride: 3.5, lift: 1.5, hip: 10, bob: 0.25, lean: 18, roll: 1, twist: 3, arm: 8, elbow: [25, 12]},
                 interact: INTERACT_NOD
             })
         };
@@ -481,6 +648,7 @@
         const circuit = [[1, 1, 1, 5, cyan], [1, 6, 3, 1, cyan], [6, 2, 1, 6, cyan], [4, 8, 3, 1, cyan]];
         SPECS.hightech_synthetic_body = {
             res: 64, seed: 404,
+            joints: {knee: 6, elbow: 17},
             bones: bodyBones({
                 slim: true,
                 head: {c: skin, n: 0.02,
@@ -507,8 +675,12 @@
                 legX: [C([-4.25, 0, -3], [4.5, 2, 5.5], {c: plate, n: 0.03, f: [[0, 1, 5, 1, cyan]]})]
             }),
             animations: bodyAnimations({
-                idle: {length: 4.5, bob: -0.25, arm: -2, armZ: 3, sway: 0.8, ease: 'easeInOutSine'},
-                walk: {length: 0.85, stride: 36, arm: 24, bob: -0.3, roll: 1.2, lean: 2, ease: 'easeInOutSine'},
+                // An athlete: collected and leaning into the movement, long steps, a real sprinter's run.
+                idle: livingIdle({length: 6, breaths: 2, glances: 2, breath: 0.12, chest: 0.6, nod: 0.5, look: 12, weight: 0.5, knee: 0.15, armBase: -4, armOut: 3, elbow: 12}),
+                style: {stance: 0.58, hip: 11.3, armOut: 1.5, headRoll: 0.6},
+                walk: {length: 0.95, stride: 7, lift: 2.1, bob: 0.6, lean: 3.5, roll: 1.2, twist: 6, pelvis: 2, sway: 0.6, arm: 26, lag: 0.03, elbow: [14, 20], elbowLag: 0.05},
+                run: {length: 0.6, stance: 0.38, bobAt: 0.19, stride: 9, lift: 6.5, shift: -1, hip: 10.8, bob: 1, lean: 14, roll: 1.2, twist: 10, pelvis: 3, sway: 0.7, arm: 52, lag: 0.02, elbow: [78, 22], elbowLag: 0.04},
+                sneak: {length: 1.3, stride: 4, lift: 1.8, hip: 9.8, bob: 0.3, lean: 22, roll: 1.2, twist: 4, pelvis: 1, arm: 10, elbow: [35, 15], elbowLag: 0.04},
                 interact: {length: 1, loop: 'once', ease: 'easeInOutSine', bones: {
                     right_arm: {r: {'0.000': [0, 0, 0], '0.300': [-75, -35, 0], '0.700': [-75, -35, 0], '1.000': [0, 0, 0]}},
                     torso: {r: {'0.000': [0, 0, 0], '0.300': [6, 0, 0], '0.700': [6, 0, 0], '1.000': [0, 0, 0]}}
@@ -522,6 +694,7 @@
         const skin = '#e3b799', shadow = '#c99b7e', hair = '#3e2a20', white = '#e9e7e2', gold = '#d6a83a', dark = '#2c2d36', eye = '#2f6fb0';
         SPECS.premium_synthetic_body = {
             res: 64, seed: 505,
+            joints: {knee: 6, elbow: 17},
             bones: bodyBones({
                 slim: true,
                 head: {c: skin, n: 0.015, edge: false,
@@ -553,8 +726,12 @@
                 legX: [C([-4.25, 0, -3], [4.5, 2, 5.5], {c: '#1c1a1e', n: 0.02, f: [[0, 0, 5, 1, gold]]})]
             }),
             animations: bodyAnimations({
-                idle: {length: 5, bob: -0.2, arm: -2.5, armZ: 2.5, sway: 1.2, ease: 'easeInOutSine'},
-                walk: {length: 1, stride: 38, arm: 34, bob: -0.25, roll: 1.5, twist: 3, ease: 'easeInOutSine'},
+                // A person: relaxed, the weight goes from foot to foot, hips and shoulders turn against each other, arms trail.
+                idle: livingIdle({length: 8, breaths: 3, glances: 2, breath: 0.14, chest: 0.7, nod: 0.6, look: 14, weight: 1.2, knee: 0.25, armBase: -2.5, armOut: 2.5, elbow: 8}),
+                style: {stance: 0.6, hip: 11.4, armOut: 0.5, headRoll: 0.7},
+                walk: {length: 1.05, stride: 6.5, lift: 2, bob: 0.7, lean: 1, roll: 1.8, twist: 7, pelvis: 3, sway: 0.9, arm: 30, lag: 0.05, elbow: [8, 22], elbowLag: 0.08},
+                run: {length: 0.65, stance: 0.4, bobAt: 0.2, stride: 8.5, lift: 6, shift: -0.7, hip: 10.9, bob: 1.1, lean: 10, roll: 2, twist: 12, pelvis: 4, sway: 1.2, arm: 55, lag: 0.03, elbow: [72, 26], elbowLag: 0.05},
+                sneak: {length: 1.3, stride: 4, lift: 1.8, hip: 9.8, bob: 0.3, lean: 24, roll: 1.5, twist: 5, pelvis: 2, sway: 0.5, arm: 10, lag: 0.05, elbow: [30, 18], elbowLag: 0.08},
                 interact: {length: 1.2, loop: 'once', ease: 'easeInOutSine', bones: {
                     right_arm: {r: {'0.000': [0, 0, 0], '0.300': [-160, 0, 12], '0.500': [-160, 0, -12], '0.700': [-160, 0, 12], '0.900': [-160, 0, -4], '1.200': [0, 0, 0]}},
                     torso: {r: {'0.000': [0, 0, 0], '0.300': [0, 0, -3], '0.900': [0, 0, -3], '1.200': [0, 0, 0]}}

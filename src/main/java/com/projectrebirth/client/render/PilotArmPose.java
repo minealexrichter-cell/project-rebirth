@@ -55,10 +55,36 @@ final class PilotArmPose {
     }
 
     /** Arms of an artificial body: item poses, plus the vanilla swing when the player hits or uses something. */
-    static void apply(Player player, float partialTick, GeoBone rightArm, GeoBone leftArm) {
+    static void apply(Player player, float partialTick, GeoBone rightArm, GeoBone leftArm,
+                      @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm, @Nullable GeoBone torso) {
         float bodyYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
         applyPoses(player, bodyYaw, partialTick, rightArm, leftArm, false);
+        HumanoidModel.ArmPose rightPose = sidePose(player, HumanoidArm.RIGHT);
+        HumanoidModel.ArmPose leftPose = sidePose(player, HumanoidArm.LEFT);
+        settlePosedArm(isPosed(rightPose, leftPose), rightArm, rightForearm, torso);
+        settlePosedArm(isPosed(leftPose, rightPose), leftArm, leftForearm, torso);
         applySwing(player, bodyYaw, partialTick, rightArm, leftArm);
+        // The vanilla swing is made for a straight arm: the elbow opens during it and bends back afterwards.
+        float open = 1.0f - Mth.sin(player.getAttackAnim(partialTick) * Mth.PI);
+        if (rightForearm != null) {
+            rightForearm.setRotX(rightForearm.getRotX() * open);
+        }
+        if (leftForearm != null) {
+            leftForearm.setRotX(leftForearm.getRotX() * open);
+        }
+    }
+
+    /** A vanilla pose is made for an upright body and a straight arm: it must aim the same when the body leans. */
+    private static void settlePosedArm(boolean posed, GeoBone arm, @Nullable GeoBone forearm, @Nullable GeoBone torso) {
+        if (!posed) {
+            return;
+        }
+        if (forearm != null) {
+            forearm.setRotX(0.0f);
+        }
+        if (torso != null) {
+            arm.setRotX(arm.getRotX() - torso.getRotX());
+        }
     }
 
     /**

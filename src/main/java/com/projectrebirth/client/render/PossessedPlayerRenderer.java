@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +22,9 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.cache.object.GeoBone;
+import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
 import software.bernie.geckolib.renderer.GeoReplacedEntityRenderer;
 import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
@@ -35,6 +38,8 @@ import software.bernie.geckolib.util.RenderUtil;
 public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, PossessedPlayerRenderer.BodyAnimatable> {
     private static final String RIGHT_ARM = "right_arm";
     private static final String LEFT_ARM = "left_arm";
+    private static final String RIGHT_FOREARM = "right_forearm";
+    private static final String LEFT_FOREARM = "left_forearm";
 
     public PossessedPlayerRenderer(EntityRendererProvider.Context context, BodyClass bodyClass) {
         this(context, new PosedModel(bodyClass));
@@ -61,8 +66,17 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
             Player player = renderer.getCurrentEntity();
             GeoBone rightArm = getAnimationProcessor().getBone(RIGHT_ARM);
             GeoBone leftArm = getAnimationProcessor().getBone(LEFT_ARM);
+            GeoBone torso = getAnimationProcessor().getBone("torso");
+            GeoBone root = getAnimationProcessor().getBone("root");
+            GeoBone head = getAnimationProcessor().getBone("head");
             if (player != null && rightArm != null && leftArm != null) {
-                PilotArmPose.apply(player, state.getPartialTick(), rightArm, leftArm);
+                PilotArmPose.apply(player, state.getPartialTick(), rightArm, leftArm,
+                        getAnimationProcessor().getBone(RIGHT_FOREARM), getAnimationProcessor().getBone(LEFT_FOREARM), torso);
+            }
+            // The head looks where the player looks, however the walk leans and turns the body under it.
+            if (head != null && torso != null && root != null) {
+                head.setRotX(head.getRotX() - torso.getRotX());
+                head.setRotY(head.getRotY() - torso.getRotY() - root.getRotY());
             }
         }
     }
@@ -79,7 +93,17 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
         @Override
         public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
             controllers.add(new AnimationController<>(this, "main", 3,
-                    state -> state.setAndContinue(state.isMoving() ? ArtificialBodyEntity.WALK : ArtificialBodyEntity.IDLE)));
+                    state -> state.setAndContinue(animationOf(state.getData(DataTickets.ENTITY), state.isMoving()))));
+        }
+
+        private static RawAnimation animationOf(Entity entity, boolean moving) {
+            if (entity != null && entity.isCrouching()) {
+                return moving ? ArtificialBodyEntity.SNEAK : ArtificialBodyEntity.CROUCH;
+            }
+            if (!moving) {
+                return ArtificialBodyEntity.IDLE;
+            }
+            return entity != null && entity.isSprinting() ? ArtificialBodyEntity.RUN : ArtificialBodyEntity.WALK;
         }
 
         @Override
@@ -89,8 +113,8 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
     }
 
     /**
-     * The body's arms have the proportions of a player's arm with the pivot at the shoulder, so items are placed
-     * exactly like the vanilla held-item layer does it from the shoulder.
+     * Items hang from the forearm, so they follow the elbow. The body's arms have the proportions of a player's arm, so
+     * the place is the vanilla one from the shoulder, shortened by the upper arm.
      */
     private static class HeldItemLayer extends BlockAndItemGeoLayer<BodyAnimatable> {
         private final PossessedPlayerRenderer renderer;
@@ -103,8 +127,8 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
         @Override
         protected ItemStack getStackForBone(GeoBone bone, BodyAnimatable animatable) {
             Player player = renderer.getCurrentEntity();
-            boolean right = bone.getName().equals(RIGHT_ARM);
-            if (player == null || !right && !bone.getName().equals(LEFT_ARM)) {
+            boolean right = bone.getName().equals(RIGHT_FOREARM);
+            if (player == null || !right && !bone.getName().equals(LEFT_FOREARM)) {
                 return null;
             }
             boolean mainHandIsRight = player.getMainArm() == HumanoidArm.RIGHT;
@@ -112,7 +136,7 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
             return stack.isEmpty() ? null : stack;
         }
 
-        /** The arm's rotation is already applied by the time layers run: only move to the shoulder pivot here. */
+        /** The arm's rotation is already applied by the time layers run: only move to the elbow pivot here. */
         @Override
         public void renderForBone(PoseStack poseStack, BodyAnimatable animatable, GeoBone bone, RenderType renderType,
                                   MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight,
@@ -131,12 +155,13 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
         protected void renderStackForBone(PoseStack poseStack, GeoBone bone, ItemStack stack, BodyAnimatable animatable,
                                           MultiBufferSource bufferSource, float partialTick, int packedLight, int packedOverlay) {
             Player player = renderer.getCurrentEntity();
-            boolean left = bone.getName().equals(LEFT_ARM);
+            boolean left = bone.getName().equals(LEFT_FOREARM);
+            float upperArm = (bone.getParent().getPivotY() - bone.getPivotY()) / 16.0f;
             // GeckoLib space -> vanilla model space (upside down), then the vanilla shoulder-to-hand transform.
             poseStack.mulPose(Axis.ZP.rotationDegrees(180.0f));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
-            poseStack.translate((left ? -1.0f : 1.0f) / 16.0f, 0.125f, -0.625f);
+            poseStack.translate((left ? -1.0f : 1.0f) / 16.0f, 0.125f, upperArm - 0.625f);
             Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(player, stack,
                     left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
                     left, poseStack, bufferSource, packedLight);

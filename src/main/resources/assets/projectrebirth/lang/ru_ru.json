@@ -352,5 +352,8 @@
   "message.projectrebirth.upgrade.no_free_slots": "Нет свободных слотов",
   "message.projectrebirth.upgrade.too_many": "Больше таких улучшений поставить нельзя",
   "message.projectrebirth.upgrade.other_material": "Уже стоят пластины другого материала",
-  "message.projectrebirth.upgrade.incompatible": "Несовместимо с уже установленным улучшением"
+  "message.projectrebirth.upgrade.incompatible": "Несовместимо с уже установленным улучшением",
+  "item.projectrebirth.armor_copper_plating": "Медная обшивка брони",
+  "item.projectrebirth.armor_iron_plating": "Железная обшивка брони",
+  "item.projectrebirth.armor_titanium_plating": "Титановая обшивка брони"
 }

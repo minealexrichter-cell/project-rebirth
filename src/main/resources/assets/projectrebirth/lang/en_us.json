@@ -352,5 +352,8 @@
   "message.projectrebirth.upgrade.no_free_slots": "No free slots",
   "message.projectrebirth.upgrade.too_many": "No more of these fit",
   "message.projectrebirth.upgrade.other_material": "Plating of another material is installed",
-  "message.projectrebirth.upgrade.incompatible": "Incompatible with an installed upgrade"
+  "message.projectrebirth.upgrade.incompatible": "Incompatible with an installed upgrade",
+  "item.projectrebirth.armor_copper_plating": "Copper Armor Plating",
+  "item.projectrebirth.armor_iron_plating": "Iron Armor Plating",
+  "item.projectrebirth.armor_titanium_plating": "Titanium Armor Plating"
 }

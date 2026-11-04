@@ -49,6 +49,9 @@ public final class UpgradeRegistry {
     public static final DeferredItem<Item> COPPER_PLATING = upgradeItem("copper_plating", 16);
     public static final DeferredItem<Item> IRON_PLATING = upgradeItem("iron_plating", 16);
     public static final DeferredItem<Item> TITANIUM_PLATING = upgradeItem("titanium_plating", 16);
+    public static final DeferredItem<Item> ARMOR_COPPER_PLATING = upgradeItem("armor_copper_plating", 16);
+    public static final DeferredItem<Item> ARMOR_IRON_PLATING = upgradeItem("armor_iron_plating", 16);
+    public static final DeferredItem<Item> ARMOR_TITANIUM_PLATING = upgradeItem("armor_titanium_plating", 16);
     public static final DeferredItem<Item> SEALING_MODULE = upgradeItem("sealing_module", 1);
     public static final DeferredItem<Item> JETPACK = upgradeItem("jetpack", 1);
     public static final DeferredItem<Item> COMPRESSED_AIR_MODULE = upgradeItem("compressed_air_module", 1);

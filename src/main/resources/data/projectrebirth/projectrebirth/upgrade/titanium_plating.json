@@ -6,12 +6,5 @@
     "slots": 1,
     "max_count": 5,
     "one_material_only": true
-  },
-  "armor_slots": [
-    "chest_front",
-    "right_arm",
-    "left_arm",
-    "right_leg",
-    "left_leg"
-  ]
+  }
 }

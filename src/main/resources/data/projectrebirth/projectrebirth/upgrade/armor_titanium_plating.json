@@ -1,0 +1,12 @@
+{
+  "items": "projectrebirth:armor_titanium_plating",
+  "kind": "armor_plating",
+  "material": "titanium",
+  "armor_slots": [
+    "chest_front",
+    "right_arm",
+    "left_arm",
+    "right_leg",
+    "left_leg"
+  ]
+}

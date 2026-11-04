@@ -161,12 +161,26 @@ public class UpgradeGameTests {
         assertRefused(helper, armor, stack(UpgradeRegistry.FLOODLIGHT.get()), null, Upgrades.Problem.NO_SLOT_CHOSEN);
         assertRefused(helper, armor, stack(UpgradeRegistry.FLOODLIGHT.get()), ArmorSlot.RIGHT_LEG, Upgrades.Problem.WRONG_SLOT);
         // Different materials on different parts are allowed on an armor.
-        assertFits(helper, armor, stack(UpgradeRegistry.COPPER_PLATING.get()), ArmorSlot.RIGHT_LEG);
-        assertFits(helper, armor, stack(UpgradeRegistry.TITANIUM_PLATING.get()), ArmorSlot.LEFT_LEG);
+        assertFits(helper, armor, stack(UpgradeRegistry.ARMOR_COPPER_PLATING.get()), ArmorSlot.RIGHT_LEG);
+        assertFits(helper, armor, stack(UpgradeRegistry.ARMOR_TITANIUM_PLATING.get()), ArmorSlot.LEFT_LEG);
         assertRefused(helper, armor, stack(UpgradeRegistry.COMPRESSED_AIR_MODULE.get()), ArmorSlot.LEFT_LEG, Upgrades.Problem.SLOT_TAKEN);
         assertFits(helper, armor, stack(UpgradeRegistry.COMPRESSED_AIR_MODULE.get()), ArmorSlot.CHEST_BACK);
         assertRefused(helper, armor, stack(Items.RED_BANNER), ArmorSlot.CHEST_BACK, Upgrades.Problem.SLOT_TAKEN);
         helper.assertTrue(armor.upgrades().indexOf(ArmorSlot.LEFT_LEG) >= 0 && armor.upgrades().indexOf(ArmorSlot.HEAD) < 0, "Find by slot");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void bodiesAndArmorsHaveTheirOwnUpgrades(GameTestHelper helper) {
+        ArtificialBodyEntity body = body(helper, BodyClass.PREMIUM_SYNTHETIC);
+        PowerArmorEntity armor = armor(helper);
+        assertRefused(helper, armor, stack(UpgradeRegistry.COPPER_PLATING.get()), ArmorSlot.RIGHT_ARM, Upgrades.Problem.WRONG_HOST);
+        assertRefused(helper, armor, stack(UpgradeRegistry.JETPACK.get()), ArmorSlot.CHEST_BACK, Upgrades.Problem.WRONG_HOST);
+        assertRefused(helper, body, stack(UpgradeRegistry.ARMOR_COPPER_PLATING.get()), null, Upgrades.Problem.WRONG_HOST);
+        assertRefused(helper, body, stack(UpgradeRegistry.COMPRESSED_AIR_MODULE.get()), null, Upgrades.Problem.WRONG_HOST);
+        // Every upgrade of the mod's data goes on one of the two, never on both.
+        access(helper).registryOrThrow(UpgradeRegistry.UPGRADES).forEach(definition ->
+                helper.assertTrue(definition.body().isPresent() != !definition.armorSlots().isEmpty(), "Exactly one host for " + definition.kind()));
         helper.succeed();
     }
 
@@ -219,7 +233,7 @@ public class UpgradeGameTests {
         PowerArmorEntity armor = armor(helper);
         armor.setVariant(ArmorVariant.MOBILE);
         armor.setOwner(player.getUUID());
-        assertFits(helper, armor, stack(UpgradeRegistry.IRON_PLATING.get()), ArmorSlot.LEFT_ARM);
+        assertFits(helper, armor, stack(UpgradeRegistry.ARMOR_IRON_PLATING.get()), ArmorSlot.LEFT_ARM);
         InstalledUpgrades installed = armor.upgrades();
 
         player.setItemInHand(InteractionHand.MAIN_HAND, stack(PowerArmorRegistry.REPAIR_WRENCH.get()));
@@ -286,17 +300,17 @@ public class UpgradeGameTests {
     @GameTest(template = TEMPLATE)
     public static void wreckKeepsUpgradesUntilDismantled(GameTestHelper helper) {
         PowerArmorEntity armor = armor(helper);
-        assertFits(helper, armor, stack(UpgradeRegistry.COPPER_PLATING.get()), ArmorSlot.RIGHT_ARM);
+        assertFits(helper, armor, stack(UpgradeRegistry.ARMOR_COPPER_PLATING.get()), ArmorSlot.RIGHT_ARM);
         armor.setIntegrity(0.0f, 0.0f);
         helper.assertTrue(armor.isWrecked(), "The armor must become a wreck");
-        helper.assertTrue(dropped(helper, UpgradeRegistry.COPPER_PLATING.get()) == 0, "A wreck keeps its upgrades");
+        helper.assertTrue(dropped(helper, UpgradeRegistry.ARMOR_COPPER_PLATING.get()) == 0, "A wreck keeps its upgrades");
 
         Player mechanic = helper.makeMockPlayer(GameType.SURVIVAL);
         mechanic.setItemInHand(InteractionHand.MAIN_HAND, stack(PowerArmorRegistry.REPAIR_WRENCH.get()));
         mechanic.setShiftKeyDown(true);
         armor.interact(mechanic, InteractionHand.MAIN_HAND);
         helper.assertTrue(armor.isRemoved(), "Dismantling must remove the wreck");
-        helper.assertTrue(dropped(helper, UpgradeRegistry.COPPER_PLATING.get()) == 1, "Dismantling must drop the plating once");
+        helper.assertTrue(dropped(helper, UpgradeRegistry.ARMOR_COPPER_PLATING.get()) == 1, "Dismantling must drop the plating once");
         helper.succeed();
     }
 

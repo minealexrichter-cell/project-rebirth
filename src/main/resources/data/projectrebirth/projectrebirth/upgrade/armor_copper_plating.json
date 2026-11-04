@@ -1,0 +1,12 @@
+{
+  "items": "projectrebirth:armor_copper_plating",
+  "kind": "armor_plating",
+  "material": "copper",
+  "armor_slots": [
+    "chest_front",
+    "right_arm",
+    "left_arm",
+    "right_leg",
+    "left_leg"
+  ]
+}

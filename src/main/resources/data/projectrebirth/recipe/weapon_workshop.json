@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IPI",
+    "XSX",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "projectrebirth:armor_plate"
+    },
+    "X": {
+      "item": "projectrebirth:circuit_board"
+    },
+    "S": {
+      "item": "minecraft:anvil"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:weapon_workshop",
+    "count": 1
+  }
+}

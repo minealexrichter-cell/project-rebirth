@@ -10,6 +10,7 @@ import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.TechItems;
 import com.projectrebirth.upgrades.UpgradeRegistry;
+import com.projectrebirth.weapons.WeaponRegistry;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -70,6 +71,12 @@ public final class ModCreativeTabs {
                 output.accept(UpgradeRegistry.ARMOR_TITANIUM_PLATING.get());
                 output.accept(UpgradeRegistry.COMPRESSED_AIR_MODULE.get());
                 output.accept(UpgradeRegistry.FLOODLIGHT.get());
+                output.accept(WeaponRegistry.ASSAULT_RIFLE.get());
+                output.accept(WeaponRegistry.BATTLE_RIFLE.get());
+                output.accept(WeaponRegistry.COMBAT_SHOTGUN.get());
+                output.accept(WeaponRegistry.ASSAULT_RIFLE_AMMO.get());
+                output.accept(WeaponRegistry.BATTLE_RIFLE_AMMO.get());
+                output.accept(WeaponRegistry.SHOTGUN_SHELL.get());
                 output.accept(PowerArmorRegistry.RESCUE_TOOL.get());
             })
             .build());

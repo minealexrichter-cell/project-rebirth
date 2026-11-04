@@ -1,0 +1,5 @@
+{
+  "ammo": "projectrebirth:shotgun_shell",
+  "fire_mode": "semi_automatic",
+  "reload": "single_round"
+}

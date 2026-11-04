@@ -49,6 +49,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
     private static final Map<String, PlatingStats> PLATING = new HashMap<>();
     private static final Map<String, ArmorPlatingStats> ARMOR_PLATING = new HashMap<>();
+    private static final Map<String, WeaponStats> WEAPONS = new HashMap<>();
     public static final ModConfigSpec.DoubleValue ARMOR_JUMP_PER_AIR_MODULE;
     public static final ModConfigSpec.DoubleValue ARMOR_MAX_JUMP_STRENGTH;
     public static final ModConfigSpec.DoubleValue ARMOR_SAFE_FALL_PER_AIR_MODULE;
@@ -260,6 +261,12 @@ public final class RebirthConfig {
                 .defineInRange("energyPerTick", 20, 0, 1_000_000);
         builder.pop();
 
+        builder.comment("Guns of power armor; each has its own section. Damage is per bullet or pellet (20 ticks = 1 second)").push("weapons");
+        defineWeapon(builder, "assault_rifle", 30, 2.5, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50);
+        defineWeapon(builder, "battle_rifle", 10, 9.0, 128.0, 8, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50);
+        defineWeapon(builder, "combat_shotgun", 6, 2.0, 24.0, 16, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16);
+        builder.pop();
+
         builder.comment("What the upgrades of power armor do").push("armor_upgrades");
         builder.comment("Plating, per hull part, added to the armor's maximum integrity").push("plating");
         defineArmorPlating(builder, "copper", 10.0, 0.0);
@@ -381,6 +388,39 @@ public final class RebirthConfig {
     public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
                              ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
                              ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
+    }
+
+    private static void defineWeapon(ModConfigSpec.Builder builder, String id, int magazine, double damage, double range, int shotInterval, int pellets,
+                                     double spread, double spreadPerShot, double maxExtraSpread, double spreadRecovery, double aimSpread,
+                                     double falloffStart, double damageAtRange, int reloadTicks) {
+        builder.push(id);
+        WEAPONS.put(id, new WeaponStats(
+                builder.comment("Rounds in the magazine").defineInRange("magazine", magazine, 1, 1000),
+                builder.comment("Damage of one bullet or pellet").defineInRange("damage", damage, 0.0, 1000.0),
+                builder.comment("How far it hits, in blocks").defineInRange("range", range, 1.0, 512.0),
+                builder.comment("Ticks between shots").defineInRange("shotIntervalTicks", shotInterval, 1, 1200),
+                builder.comment("Pellets per shot").defineInRange("pellets", pellets, 1, 64),
+                builder.comment("Spread, in degrees from the aim").defineInRange("spreadDegrees", spread, 0.0, 45.0),
+                builder.comment("Degrees of spread added by each shot of a burst").defineInRange("spreadPerShot", spreadPerShot, 0.0, 45.0),
+                builder.comment("The most degrees a burst can add").defineInRange("maxExtraSpread", maxExtraSpread, 0.0, 45.0),
+                builder.comment("Degrees of added spread lost per tick without firing").defineInRange("spreadRecoveryPerTick", spreadRecovery, 0.0, 45.0),
+                builder.comment("Spread is multiplied by this while aiming").defineInRange("aimSpreadMultiplier", aimSpread, 0.0, 1.0),
+                builder.comment("Distance in blocks up to which it does full damage").defineInRange("falloffStart", falloffStart, 0.0, 512.0),
+                builder.comment("Share of the damage left at full range").defineInRange("damageAtRange", damageAtRange, 0.0, 1.0),
+                builder.comment("Ticks to reload: the magazine, or one round if the weapon loads round by round").defineInRange("reloadTicks", reloadTicks, 1, 1200)));
+        builder.pop();
+    }
+
+    /** The numbers of a weapon, or null if the config does not know it. */
+    public static WeaponStats weapon(String id) {
+        return WEAPONS.get(id);
+    }
+
+    public record WeaponStats(ModConfigSpec.IntValue magazine, ModConfigSpec.DoubleValue damage, ModConfigSpec.DoubleValue range,
+                              ModConfigSpec.IntValue shotIntervalTicks, ModConfigSpec.IntValue pellets, ModConfigSpec.DoubleValue spreadDegrees,
+                              ModConfigSpec.DoubleValue spreadPerShot, ModConfigSpec.DoubleValue maxExtraSpread,
+                              ModConfigSpec.DoubleValue spreadRecoveryPerTick, ModConfigSpec.DoubleValue aimSpreadMultiplier,
+                              ModConfigSpec.DoubleValue falloffStart, ModConfigSpec.DoubleValue damageAtRange, ModConfigSpec.IntValue reloadTicks) {
     }
 
     private static void defineArmorPlating(ModConfigSpec.Builder builder, String material, double structural, double critical) {

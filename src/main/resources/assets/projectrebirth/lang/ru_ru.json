@@ -1,10 +1,8 @@
 {
   "itemGroup.projectrebirth": "Project: Rebirth",
-
   "item.projectrebirth.circuit_board": "Печатная плата",
   "block.projectrebirth.assembly_station": "Сборочная станция",
   "block.projectrebirth.transfer_capsule": "Капсула переноса сознания",
-
   "item.projectrebirth.basic_robot_body": "Базовое роботизированное тело",
   "item.projectrebirth.improved_robot_body": "Улучшенное роботизированное тело",
   "item.projectrebirth.advanced_synthetic_body": "Продвинутое синтетическое тело",
@@ -16,7 +14,6 @@
   "entity.projectrebirth.hightech_synthetic_body": "Высокотехнологичное синтетическое тело",
   "entity.projectrebirth.premium_synthetic_body": "Премиальное синтетическое тело",
   "entity.projectrebirth.human_shell": "Человеческое тело",
-
   "message.projectrebirth.body.status": "%s: целостность %s / %s",
   "message.projectrebirth.body.no_space": "Недостаточно места, чтобы поставить тело",
   "message.projectrebirth.body.not_owner": "Это тело принадлежит другому игроку",
@@ -25,7 +22,6 @@
   "message.projectrebirth.repair_kit.intact": "Тело не повреждено",
   "message.projectrebirth.repair_kit.done": "Тело отремонтировано",
   "message.projectrebirth.repair_kit.interrupted": "Ремонт прерван уроном",
-
   "message.projectrebirth.transfer.success": "Сознание перенесено",
   "message.projectrebirth.transfer.already_in_body": "Сначала вернитесь в своё человеческое тело",
   "message.projectrebirth.transfer.not_possible_now": "Перенос сейчас невозможен",
@@ -61,23 +57,19 @@
   "message.projectrebirth.transfer.body_destroyed_human": "Тело уничтожено. Сознание вернулось в человеческое тело.",
   "message.projectrebirth.transfer.body_destroyed_backup": "Тело уничтожено. Сознание перешло в резервное тело: %s.",
   "message.projectrebirth.transfer.no_body_left": "Тело уничтожено, и вернуться больше некуда.",
-
   "message.projectrebirth.command.human": "человеческое тело",
   "message.projectrebirth.command.shell_at": "человеческое тело в капсуле: %s %s %s %s, здоровье %s",
   "message.projectrebirth.command.no_shell": "сохранённого человеческого тела нет",
   "message.projectrebirth.command.status": "%s: %s, здоровье %s / %s; %s",
   "message.projectrebirth.command.not_capsule": "В этой точке нет капсулы переноса",
-
   "tooltip.projectrebirth.body.damaged": "Повреждено: целостность %s",
   "tooltip.projectrebirth.body.hint": "ПКМ по блоку: поставить. Shift + ПКМ по телу: упаковать.",
-
   "hud.projectrebirth.body": "Тело: %s  [%s] вернуться",
   "key.categories.projectrebirth": "Project: Rebirth",
   "key.projectrebirth.return_to_human": "Вернуться в человеческое тело",
   "key.projectrebirth.emergency_hatch": "Аварийный сброс люка (удерживать)",
   "key.projectrebirth.mining_mode": "Рабочая броня: добыча 3×3 / 1 блок",
   "message.projectrebirth.transfer.in_vehicle": "Сначала выйдите из транспорта",
-
   "item.projectrebirth.power_armor": "Боевая силовая броня",
   "item.projectrebirth.mobile_power_armor": "Мобильная силовая броня",
   "item.projectrebirth.worker_power_armor": "Рабочая силовая броня",
@@ -95,7 +87,6 @@
   "item.projectrebirth.repair_kit": "Ремкомплект тела",
   "item.projectrebirth.rescue_tool": "Аварийный инструмент",
   "item.projectrebirth.armor_plate": "Бронеплита",
-
   "message.projectrebirth.armor.entered": "Силовая броня: структурная %s / %s, критическая %s / %s",
   "message.projectrebirth.armor.no_space": "Недостаточно места, чтобы поставить броню",
   "message.projectrebirth.armor.wreck": "Эта броня разрушена и не подлежит ремонту. Shift + ремонтный ключ: разобрать.",
@@ -115,11 +106,9 @@
   "message.projectrebirth.armor.rescued": "Люк вскрыт, пилот свободен",
   "message.projectrebirth.armor.rescued_by": "%s вскрыл люк вашей брони снаружи",
   "message.projectrebirth.armor.dismantled": "Развалина разобрана на детали",
-
   "tooltip.projectrebirth.armor.structural": "Структурная целостность: %s",
   "tooltip.projectrebirth.armor.critical": "Критическая целостность: %s",
   "tooltip.projectrebirth.armor.hint": "ПКМ по блоку: поставить. ПКМ по броне: сесть, Shift: выйти.",
-
   "hud.projectrebirth.armor.structural": "Структурная",
   "hud.projectrebirth.armor.critical": "Критическая",
   "hud.projectrebirth.armor.disabled": "ОТКЛЮЧЕНА: держите [%s] для сброса люка",
@@ -389,5 +378,18 @@
   "subtitles.projectrebirth.floodlight.on": "Прожектор включён",
   "subtitles.projectrebirth.floodlight.off": "Прожектор выключен",
   "hud.projectrebirth.armor.floodlight_on": "Прожектор включён [%s]",
-  "hud.projectrebirth.armor.floodlight_off": "Прожектор выключен [%s]"
+  "hud.projectrebirth.armor.floodlight_off": "Прожектор выключен [%s]",
+  "block.projectrebirth.weapon_workshop": "Оружейная мастерская",
+  "item.projectrebirth.assault_rifle": "Автоматическая винтовка",
+  "item.projectrebirth.battle_rifle": "Полуавтоматическая винтовка",
+  "item.projectrebirth.combat_shotgun": "Боевой дробовик",
+  "item.projectrebirth.assault_rifle_ammo": "Патроны автоматической винтовки",
+  "item.projectrebirth.battle_rifle_ammo": "Патроны полуавтоматической винтовки",
+  "item.projectrebirth.shotgun_shell": "Дробовой патрон",
+  "key.projectrebirth.weapon_reload": "Перезарядка оружия",
+  "message.projectrebirth.weapon.no_ammo": "Нет патронов для этого оружия",
+  "tooltip.projectrebirth.weapon.magazine": "Магазин: %s / %s",
+  "tooltip.projectrebirth.weapon.needs_armor": "Стреляет только из силовой брони",
+  "death.attack.projectrebirth.bullet": "%1$s застрелен(а)",
+  "death.attack.projectrebirth.bullet.player": "%1$s застрелен(а): %2$s"
 }

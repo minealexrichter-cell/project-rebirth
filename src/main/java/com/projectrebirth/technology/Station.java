@@ -21,7 +21,9 @@ public enum Station implements StringRepresentable {
     /** Gadgets for artificial bodies. */
     IMPLANT_FABRICATOR("implant_fabricator"),
     /** Upgrades for power armor. */
-    ARMOR_UPGRADE_FABRICATOR("armor_upgrade_fabricator");
+    ARMOR_UPGRADE_FABRICATOR("armor_upgrade_fabricator"),
+    /** Guns of power armor and their ammunition. */
+    WEAPON_WORKSHOP("weapon_workshop");
 
     public static final Codec<Station> CODEC = StringRepresentable.fromEnum(Station::values);
     public static final StreamCodec<ByteBuf, Station> STREAM_CODEC = ByteBufCodecs.idMapper(i -> values()[i], Station::ordinal);

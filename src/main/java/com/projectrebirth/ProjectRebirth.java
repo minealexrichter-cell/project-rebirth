@@ -27,6 +27,7 @@ import com.projectrebirth.technology.TechItems;
 import com.projectrebirth.technology.TechMenus;
 import com.projectrebirth.technology.TechRecipes;
 import com.projectrebirth.upgrades.UpgradeRegistry;
+import com.projectrebirth.weapons.WeaponRegistry;
 
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -65,6 +66,7 @@ public class ProjectRebirth {
         FactionBlocks.register(modEventBus);
         FactionSync.register(modEventBus);
         UpgradeRegistry.register(modEventBus);
+        WeaponRegistry.register(modEventBus);
         Jetpack.register(modEventBus);
         ModSounds.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

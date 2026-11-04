@@ -1,10 +1,8 @@
 {
   "itemGroup.projectrebirth": "Project: Rebirth",
-
   "item.projectrebirth.circuit_board": "Circuit Board",
   "block.projectrebirth.assembly_station": "Assembly Station",
   "block.projectrebirth.transfer_capsule": "Consciousness Transfer Capsule",
-
   "item.projectrebirth.basic_robot_body": "Basic Robotic Body",
   "item.projectrebirth.improved_robot_body": "Improved Robotic Body",
   "item.projectrebirth.advanced_synthetic_body": "Advanced Synthetic Body",
@@ -16,7 +14,6 @@
   "entity.projectrebirth.hightech_synthetic_body": "High-Tech Synthetic Body",
   "entity.projectrebirth.premium_synthetic_body": "Premium Synthetic Body",
   "entity.projectrebirth.human_shell": "Human Body",
-
   "message.projectrebirth.body.status": "%s: integrity %s / %s",
   "message.projectrebirth.body.no_space": "Not enough space to place the body",
   "message.projectrebirth.body.not_owner": "This body belongs to another player",
@@ -25,7 +22,6 @@
   "message.projectrebirth.repair_kit.intact": "The body is not damaged",
   "message.projectrebirth.repair_kit.done": "Body repaired",
   "message.projectrebirth.repair_kit.interrupted": "Repair interrupted by damage",
-
   "message.projectrebirth.transfer.success": "Consciousness transferred",
   "message.projectrebirth.transfer.already_in_body": "Return to your human body first",
   "message.projectrebirth.transfer.not_possible_now": "Transfer is not possible right now",
@@ -61,23 +57,19 @@
   "message.projectrebirth.transfer.body_destroyed_human": "The body was destroyed. Consciousness returned to the human body.",
   "message.projectrebirth.transfer.body_destroyed_backup": "The body was destroyed. Consciousness moved to a backup body: %s.",
   "message.projectrebirth.transfer.no_body_left": "The body was destroyed and there is no body left to return to.",
-
   "message.projectrebirth.command.human": "human body",
   "message.projectrebirth.command.shell_at": "human body in capsule at %s %s %s %s, health %s",
   "message.projectrebirth.command.no_shell": "no stored human body",
   "message.projectrebirth.command.status": "%s: %s, health %s / %s; %s",
   "message.projectrebirth.command.not_capsule": "There is no transfer capsule at this position",
-
   "tooltip.projectrebirth.body.damaged": "Damaged: integrity %s",
   "tooltip.projectrebirth.body.hint": "Use on a block to place. Sneak + use on the body to pack it up.",
-
   "hud.projectrebirth.body": "Body: %s  [%s] return",
   "key.categories.projectrebirth": "Project: Rebirth",
   "key.projectrebirth.return_to_human": "Return to human body",
   "key.projectrebirth.emergency_hatch": "Emergency hatch release (hold)",
   "key.projectrebirth.mining_mode": "Worker armor: 3x3 / single block mining",
   "message.projectrebirth.transfer.in_vehicle": "Leave the vehicle first",
-
   "item.projectrebirth.power_armor": "Combat Power Armor",
   "item.projectrebirth.mobile_power_armor": "Mobile Power Armor",
   "item.projectrebirth.worker_power_armor": "Worker Power Armor",
@@ -95,7 +87,6 @@
   "item.projectrebirth.repair_kit": "Body Repair Kit",
   "item.projectrebirth.rescue_tool": "Emergency Rescue Tool",
   "item.projectrebirth.armor_plate": "Armor Plate",
-
   "message.projectrebirth.armor.entered": "Power armor: structural %s / %s, critical %s / %s",
   "message.projectrebirth.armor.no_space": "Not enough space to place the armor",
   "message.projectrebirth.armor.wreck": "This armor is an unrepairable wreck. Sneak + use a repair wrench to dismantle it.",
@@ -115,11 +106,9 @@
   "message.projectrebirth.armor.rescued": "Hatch opened, the pilot is free",
   "message.projectrebirth.armor.rescued_by": "%s opened your armor's hatch from outside",
   "message.projectrebirth.armor.dismantled": "The wreck was dismantled for parts",
-
   "tooltip.projectrebirth.armor.structural": "Structural integrity: %s",
   "tooltip.projectrebirth.armor.critical": "Critical integrity: %s",
   "tooltip.projectrebirth.armor.hint": "Use on a block to place. Use the armor to get in, sneak to get out.",
-
   "hud.projectrebirth.armor.structural": "Structural",
   "hud.projectrebirth.armor.critical": "Critical",
   "hud.projectrebirth.armor.disabled": "SHUT DOWN: hold [%s] to blow the hatch",
@@ -389,5 +378,18 @@
   "subtitles.projectrebirth.floodlight.on": "Floodlight on",
   "subtitles.projectrebirth.floodlight.off": "Floodlight off",
   "hud.projectrebirth.armor.floodlight_on": "Floodlight on [%s]",
-  "hud.projectrebirth.armor.floodlight_off": "Floodlight off [%s]"
+  "hud.projectrebirth.armor.floodlight_off": "Floodlight off [%s]",
+  "block.projectrebirth.weapon_workshop": "Weapon Workshop",
+  "item.projectrebirth.assault_rifle": "Assault Rifle",
+  "item.projectrebirth.battle_rifle": "Battle Rifle",
+  "item.projectrebirth.combat_shotgun": "Combat Shotgun",
+  "item.projectrebirth.assault_rifle_ammo": "Assault Rifle Rounds",
+  "item.projectrebirth.battle_rifle_ammo": "Battle Rifle Rounds",
+  "item.projectrebirth.shotgun_shell": "Shotgun Shell",
+  "key.projectrebirth.weapon_reload": "Reload weapon",
+  "message.projectrebirth.weapon.no_ammo": "No rounds for this weapon",
+  "tooltip.projectrebirth.weapon.magazine": "Magazine: %s / %s",
+  "tooltip.projectrebirth.weapon.needs_armor": "Fires only from power armor",
+  "death.attack.projectrebirth.bullet": "%1$s was shot",
+  "death.attack.projectrebirth.bullet.player": "%1$s was shot by %2$s"
 }

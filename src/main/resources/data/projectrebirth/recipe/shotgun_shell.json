@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "weapon_workshop",
+  "sort": 40,
+  "time": 40,
+  "ingredients": [
+    {
+      "tag": "c:ingots/copper",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/iron",
+      "count": 1
+    },
+    {
+      "item": "minecraft:gunpowder",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:shotgun_shell",
+    "count": 4
+  }
+}

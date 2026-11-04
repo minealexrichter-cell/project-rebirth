@@ -87,6 +87,7 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener(BodyInventoryScreen::onScreenOpening);
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientFactionCache.clear());
         PowerArmorClient.register(modEventBus);
+        WeaponClient.register(modEventBus);
         BodyHud.register(modEventBus);
         JetpackClient.register();
         TransferAnimation.register();

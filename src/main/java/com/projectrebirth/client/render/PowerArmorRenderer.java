@@ -1,5 +1,7 @@
 package com.projectrebirth.client.render;
 
+import java.util.Map;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -27,6 +29,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import software.bernie.geckolib.animation.AnimationState;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
@@ -49,6 +52,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         return ProjectRebirth.id("textures/entity/" + variant.itemId() + "_wrecked.png");
     }
 
+    private Map<String, Integer> platingColors = Map.of();
     private static final String RIGHT_HAND = "right_hand";
     private static final String LEFT_HAND = "left_hand";
 
@@ -72,6 +76,20 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             return;
         }
         super.render(armor, entityYaw, partialTick, poseStack, bufferSource, packedLight);
+    }
+
+    @Override
+    public void preRender(PoseStack poseStack, PowerArmorEntity animatable, BakedGeoModel model, MultiBufferSource bufferSource, VertexConsumer buffer,
+                          boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        platingColors = UpgradeVisuals.applyToArmor(getGeoModel(), animatable.registryAccess(), animatable.upgrades());
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    }
+
+    @Override
+    public void renderRecursively(PoseStack poseStack, PowerArmorEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource,
+                                  VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay,
+                platingColors.getOrDefault(bone.getName(), colour));
     }
 
     private static class ArmorModel extends GeoModel<PowerArmorEntity> {
@@ -112,13 +130,8 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
      * has its pattern and waves, more so while the armor walks.
      */
     private static class BannerLayer extends GeoRenderLayer<PowerArmorEntity> {
-        private static final String TORSO = "torso";
+        private static final String MOUNT = "slot_back_banner";
         private static final float SCALE = 2.0f / 3.0f;
-        /** Height of the banner's top above the banner model's origin, in model pixels (see BannerRenderer). */
-        private static final float BANNER_TOP = 32.0f * SCALE;
-        private static final float TORSO_PIVOT = 16.0f;
-        /** How far the banner rises above the top of the armor. */
-        private static final float ABOVE_ARMOR = 14.0f;
         private final ModelPart flag;
         private final ModelPart pole;
         private final ModelPart bar;
@@ -130,28 +143,10 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             this.bar = banner.getChild("bar");
         }
 
-        /** Height of the top of each armor model. */
-        private static float armorTop(ArmorVariant variant) {
-            return switch (variant) {
-                case COMBAT -> 41.0f;
-                case MOBILE -> 40.0f;
-                case WORKER -> 38.0f;
-            };
-        }
-
-        /** How far behind the armor's middle its back ends, per model. */
-        private static float back(ArmorVariant variant) {
-            return switch (variant) {
-                case COMBAT -> 8.5f;
-                case MOBILE -> 7.5f;
-                case WORKER -> 9.5f;
-            };
-        }
-
         @Override
         public void renderForBone(PoseStack poseStack, PowerArmorEntity armor, GeoBone bone, RenderType renderType,
                                   MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
-            if (!bone.getName().equals(TORSO) || armor.isWrecked()) {
+            if (!bone.getName().equals(MOUNT) || armor.isWrecked()) {
                 return;
             }
             int index = armor.upgrades().indexOf(ArmorSlot.CHEST_BACK);
@@ -161,8 +156,6 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             ItemStack stack = armor.upgrades().entries().get(index).stack();
             poseStack.pushPose();
             RenderUtil.translateToPivotPoint(poseStack, bone);
-            float top = armorTop(armor.getVariant()) + ABOVE_ARMOR;
-            poseStack.translate(0.0f, (top - TORSO_PIVOT - BANNER_TOP) / 16.0f, back(armor.getVariant()) / 16.0f);
             poseStack.scale(SCALE, -SCALE, -SCALE);
             VertexConsumer wood = ModelBakery.BANNER_BASE.buffer(bufferSource, RenderType::entitySolid);
             pole.render(poseStack, wood, packedLight, packedOverlay);

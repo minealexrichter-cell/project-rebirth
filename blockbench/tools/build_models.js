@@ -755,7 +755,7 @@
     }
 
     /** Uv areas of the three arm cubes that the first-person arm also draws; see ArmorArmRenderer. */
-    const ARM_UV = {shoulderR: [0, 100], armR: [40, 100], fistR: [70, 100], shoulderL: [0, 70], armL: [40, 70], fistL: [70, 70]};
+    const ARM_UV = {shoulderR: [0, 100], armR: [40, 100], fistR: [70, 100], shoulderL: [0, 70], armL: [40, 70], fistL: [70, 70], plate: [110, 100]};
     const ARM_LEFT_UV = {0: ARM_UV.shoulderL, 1: ARM_UV.armL, 2: ARM_UV.fistL};
 
     /** A value on a closed curve: smooth between the [phase, value] points; phase 0..1 wraps around. */
@@ -1228,6 +1228,79 @@
         fs.mkdirSync(ROOT + 'blockbench', {recursive: true});
         fs.writeFileSync(ROOT + 'blockbench/' + id + '.bbmodel', Codecs.project.compile());
         return {saved: id};
+    }
+
+    // ------------------------------------------------------------------ upgrades
+
+    // Bones of the upgrades, added after everything else so that the paint of the accepted models stays the same. The code
+    // shows them by what is installed. All plates are light grey: the renderer draws them in the colour of their material.
+    const PLATE = {c: '#dcdfe3', n: 0.03};
+    const LAMP = {c: '#3a3f46', n: 0.03, f: [[0, 0, 3, 3, '#fff2b0']], edge: false};
+    const TANK = {c: '#8a939c', n: 0.03, tp: [[0, 0, 5, 3, '#c9352b']], edge: false};
+    const minOf = (cubes, axis) => Math.min(...cubes.map(c => c.o[axis]));
+    const maxOf = (cubes, axis) => Math.max(...cubes.map(c => c.o[axis] + c.s[axis]));
+
+    function bodyUpgradeBones(spec) {
+        const bone = name => spec.bones.find(b => b.name === name);
+        const torso = bone('torso'), arm = bone('right_arm'), leg = bone('right_leg'), head = bone('head');
+        const faceHigh = head.cubes.filter(c => c.o[1] <= 27 && c.o[1] + c.s[1] >= 25);
+        const knee = spec.joints.knee, elbow = spec.joints.elbow;
+        const thigh = leg.cubes.filter(c => c.o[1] + c.s[1] > knee);
+        const upperArm = arm.cubes.filter(c => c.o[1] < 21);
+        const armPlate = C([minOf(upperArm, 0) - 1, elbow + 0.5, -2], [1, 3.5, 4], PLATE);
+        const legPlate = C([-3.5, knee + 1, minOf(thigh, 2) - 1], [3, 4, 1], PLATE);
+        const back = maxOf(torso.cubes, 2);
+        const jets = {c: '#3a3f46', n: 0.03, bt: [[0, 0, 2, 2, '#ff8a24']], edge: false};
+        const nozzle = C([-2.5, 12.5, back + 0.25], [2, 2, 1.5], jets);
+        spec.bones.push(
+            {name: 'upgrade_plating_torso', parent: 'torso', pivot: torso.pivot, cubes: [C([-3.5, 15, minOf(torso.cubes, 2) - 1], [7, 6, 1], PLATE)]},
+            {name: 'upgrade_plating_right_arm', parent: 'right_arm', pivot: arm.pivot, cubes: [armPlate]},
+            {name: 'upgrade_plating_left_arm', parent: 'left_arm', pivot: bone('left_arm').pivot, cubes: [mirror(armPlate)]},
+            {name: 'upgrade_plating_right_leg', parent: 'right_leg', pivot: leg.pivot, cubes: [legPlate]},
+            {name: 'upgrade_plating_left_leg', parent: 'left_leg', pivot: bone('left_leg').pivot, cubes: [mirror(legPlate)]},
+            {name: 'upgrade_seal', parent: 'head', pivot: head.pivot, cubes: [C([-3, 25, minOf(faceHigh, 2) - 1], [6, 2.5, 1], {c: '#20262e', n: 0.03, f: [[1, 1, 4, 1, '#55c8ff']], edge: false})]},
+            {name: 'upgrade_jetpack', parent: 'torso', pivot: torso.pivot, cubes: [
+                C([-3, 14.5, back], [6, 7.5, 2], {c: '#59616b', n: 0.04, k: [[1, 1, 4, 1, '#ff8a24'], [1, 3, 4, 3, '#20262e']]}),
+                nozzle, mirror(nozzle)]},
+            {name: 'jetpack_nozzle_right', parent: 'upgrade_jetpack', pivot: [-1.5, 12.5, back + 1], cubes: []},
+            {name: 'jetpack_nozzle_left', parent: 'upgrade_jetpack', pivot: [1.5, 12.5, back + 1], cubes: []}
+        );
+    }
+
+    function armorUpgradeBones(spec) {
+        const bone = name => spec.bones.find(b => b.name === name);
+        const torso = bone('torso'), head = bone('head'), arm = bone('right_arm'), leftArm = bone('left_arm'), leg = bone('right_leg'), leftLeg = bone('left_leg');
+        const hull = torso.cubes.reduce((best, c) => (c.s[0] * c.s[1] > best.s[0] * best.s[1] ? c : best));
+        const front = minOf(torso.cubes, 2), back = maxOf(torso.cubes, 2), top = maxOf(head.cubes, 1);
+        const shoulder = arm.cubes[0], upper = arm.cubes[1];
+        const elbow = spec.joints.elbow, knee = spec.joints.knee;
+        const lowLeg = leg.cubes.filter(c => c.o[1] + c.s[1] > knee);
+        const main = leg.cubes[0];
+        const armPlate = C([upper.o[0] - 1, elbow + 1, upper.o[2]], [1, shoulder.o[1] - elbow - 2, upper.s[2]], PLATE, {uv: ARM_UV.plate});
+        const armLamp = C([shoulder.o[0] + shoulder.s[0] / 2 - 1.5, shoulder.o[1] + shoulder.s[1], -1.5], [3, 2, 3], LAMP);
+        const legPlate = C([main.o[0] + 1, knee + 1, minOf(lowLeg, 2) - 1], [main.s[0] - 2, 5, 1], PLATE);
+        const legTank = C([main.o[0] + main.s[0] / 2 - 1.5, knee + 1, maxOf(lowLeg, 2)], [3, 4, 2], TANK);
+        const part = (name, parent, pivot, cubes) => ({name, parent, pivot, cubes});
+        spec.bones.push(
+            part('slot_head_floodlight', 'head', head.pivot, [C([-1.5, top, -2.5], [3, 2, 3], LAMP)]),
+            part('slot_chest_plating', 'torso', torso.pivot, [C([-5, hull.o[1] + 3, front - 1], [10, 8, 1], PLATE)]),
+            part('slot_chest_floodlight', 'torso', torso.pivot, [C([-1.5, hull.o[1] + 8, front - 1.5], [3, 3, 1.5], LAMP)]),
+            part('slot_back_air', 'torso', torso.pivot, [C([-2.5, hull.o[1] + 2, back], [5, 8, 3], TANK)]),
+            // The mount of the banner: its pole stands on the back, and the banner rises 14 pixels above the armor.
+            part('slot_back_banner', 'torso', [0, top + 14 - 32 * 2 / 3, back], []),
+            part('slot_right_arm_plating', 'right_arm', arm.pivot, [armPlate]),
+            part('slot_left_arm_plating', 'left_arm', leftArm.pivot, [mirror(armPlate)]),
+            part('slot_right_arm_floodlight', 'right_arm', arm.pivot, [armLamp]),
+            part('slot_left_arm_floodlight', 'left_arm', leftArm.pivot, [mirror(armLamp)]),
+            part('slot_right_leg_plating', 'right_leg', leg.pivot, [legPlate]),
+            part('slot_left_leg_plating', 'left_leg', leftLeg.pivot, [mirror(legPlate)]),
+            part('slot_right_leg_air', 'right_leg', leg.pivot, [legTank]),
+            part('slot_left_leg_air', 'left_leg', leftLeg.pivot, [mirror(legTank)])
+        );
+    }
+
+    for (const spec of Object.values(SPECS)) {
+        (spec.armTable ? armorUpgradeBones : bodyUpgradeBones)(spec);
     }
 
     window.RebirthModels = {build, save, SPECS};

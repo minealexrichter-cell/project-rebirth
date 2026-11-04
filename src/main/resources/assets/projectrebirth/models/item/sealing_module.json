@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "projectrebirth:item/processor"
+    "layer0": "projectrebirth:item/sealing_module"
   }
 }

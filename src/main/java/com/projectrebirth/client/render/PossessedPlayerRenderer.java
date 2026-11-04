@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.ArtificialBodyEntity;
 import com.projectrebirth.bodies.BodyClass;
+import com.projectrebirth.upgrades.UpgradeRegistry;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -23,6 +24,7 @@ import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.model.DefaultedEntityGeoModel;
@@ -36,6 +38,7 @@ import software.bernie.geckolib.util.RenderUtil;
  * items the player holds in the body's hands and the arm poses of a normal player (see PilotArmPose).
  */
 public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, PossessedPlayerRenderer.BodyAnimatable> {
+    private int platingColor = UpgradeVisuals.NO_TINT;
     private static final String RIGHT_ARM = "right_arm";
     private static final String LEFT_ARM = "left_arm";
     private static final String RIGHT_FOREARM = "right_forearm";
@@ -50,6 +53,23 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
         model.renderer = this;
         this.shadowRadius = 0.4f;
         addRenderLayer(new HeldItemLayer(this));
+    }
+
+    @Override
+    public void preRender(PoseStack poseStack, BodyAnimatable animatable, BakedGeoModel model, MultiBufferSource bufferSource, VertexConsumer buffer,
+                          boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        Player player = getCurrentEntity();
+        if (player != null) {
+            platingColor = UpgradeVisuals.applyToBody(getGeoModel(), player.registryAccess(), player.getData(UpgradeRegistry.CONTROLLED_BODY));
+        }
+        super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    }
+
+    @Override
+    public void renderRecursively(PoseStack poseStack, BodyAnimatable animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource,
+                                  VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        super.renderRecursively(poseStack, animatable, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay,
+                bone.getName().startsWith(UpgradeVisuals.BODY_PLATING_PREFIX) ? platingColor : colour);
     }
 
     /** The body's model; the head follows where the player looks, like a normal player head. */

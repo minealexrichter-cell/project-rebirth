@@ -17,6 +17,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
@@ -57,12 +59,13 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
     public static final RawAnimation CROUCH = RawAnimation.begin().thenLoop("animation.body.crouch");
     private static final RawAnimation INTERACT = RawAnimation.begin().thenPlay("animation.body.interact");
 
+    private static final EntityDataAccessor<InstalledUpgrades> UPGRADES = SynchedEntityData.defineId(ArtificialBodyEntity.class, InstalledUpgrades.ENTITY_DATA);
+
     private final BodyClass bodyClass;
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     @Nullable
     private UUID owner;
     private ListTag storedInventory = new ListTag();
-    private InstalledUpgrades upgrades = InstalledUpgrades.EMPTY;
     /** False only for a body that has never been in a level; saved so loaded bodies keep their damage. */
     private boolean statsInitialized;
 
@@ -70,6 +73,12 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         super(type, level);
         this.bodyClass = bodyClass;
         setPersistenceRequired();
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(UPGRADES, InstalledUpgrades.EMPTY);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -108,12 +117,12 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
 
     @Override
     public InstalledUpgrades upgrades() {
-        return upgrades;
+        return entityData.get(UPGRADES);
     }
 
     @Override
     public void setUpgrades(InstalledUpgrades upgrades) {
-        this.upgrades = upgrades;
+        entityData.set(UPGRADES, upgrades);
         if (!level().isClientSide && statsInitialized) {
             applyArmor();
         }
@@ -146,8 +155,8 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
 
     private void applyArmor() {
         double armor = RebirthConfig.bodyStats(bodyClass).armor().get();
-        getAttribute(Attributes.ARMOR).setBaseValue(armor + BodyGadgets.armorBonus(registryAccess(), upgrades));
-        getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(BodyGadgets.toughnessBonus(registryAccess(), upgrades));
+        getAttribute(Attributes.ARMOR).setBaseValue(armor + BodyGadgets.armorBonus(registryAccess(), upgrades()));
+        getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(BodyGadgets.toughnessBonus(registryAccess(), upgrades()));
     }
 
     @Override
@@ -187,8 +196,8 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (hasCustomName()) {
             stack.set(DataComponents.CUSTOM_NAME, getCustomName());
         }
-        Upgrades.putOnStack(stack, upgrades);
-        upgrades = InstalledUpgrades.EMPTY;
+        Upgrades.putOnStack(stack, upgrades());
+        entityData.set(UPGRADES, InstalledUpgrades.EMPTY);
         if (owner != null) {
             BodyRegistry.get(getServer()).remove(owner, getUUID());
         }
@@ -305,7 +314,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         }
         tag.put("BodyInventory", storedInventory);
         tag.putBoolean("StatsInitialized", statsInitialized);
-        Upgrades.save(tag, registryAccess(), upgrades);
+        Upgrades.save(tag, registryAccess(), upgrades());
     }
 
     @Override
@@ -313,7 +322,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         super.readAdditionalSaveData(tag);
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         storedInventory = tag.getList("BodyInventory", Tag.TAG_COMPOUND);
-        upgrades = Upgrades.load(tag, registryAccess());
+        entityData.set(UPGRADES, Upgrades.load(tag, registryAccess()));
         // Bodies saved before this flag existed are already initialized.
         // Saves from before the flag existed already have health; a body summoned by command with extra data
         // (for example /summon ... {Owner:...}) has none and still needs its class health.

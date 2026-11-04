@@ -1355,6 +1355,131 @@
         '.ss.............',
         '................'], OUTLINE));
 
+    // Upgrades of bodies and armors: gadgets are small, armor upgrades are heavy.
+    const PLATE_ROWS = [
+        '................',
+        '................',
+        '...kkkkkkkkkk...',
+        '..kHHHHHHHHHHk..',
+        '..kHmmmmmmmmdk..',
+        '..kHmHmmmmHmdk..',
+        '..kHmmmmmmmmdk..',
+        '..kHmmmmmmmmdk..',
+        '..kHmmmmmmmmdk..',
+        '...kHmmmmmmdk...',
+        '...kHmmmmmmdk...',
+        '....kHmmmmdk....',
+        '.....kHmmdk.....',
+        '......kkkk......',
+        '................',
+        '................'];
+    const ARMOR_PLATE_ROWS = [
+        '................',
+        '.kkkkkkkkkkkkkk.',
+        '.kHHHHHHHHHHHdk.',
+        '.kHmHmmmmmmHmdk.',
+        '.kHmmmmmmmmmmdk.',
+        '.kHmmmmmmmmmmdk.',
+        '.kkkkkkkkkkkkkk.',
+        '.kHHHHHHHHHHHdk.',
+        '.kHmHmmmmmmHmdk.',
+        '.kHmmmmmmmmmmdk.',
+        '.kHmmmmmmmmmmdk.',
+        '.kkkkkkkkkkkkkk.',
+        '.kHmHmmmmmmHmdk.',
+        '.kdddddddddddddk'.slice(0, 15) + '.',
+        '.kkkkkkkkkkkkkk.',
+        '................'];
+    [['copper', '#f0a877', '#c9743f', '#8f4c22'], ['iron', '#eef1f4', '#b9bfc6', '#7d858c'], ['titanium', '#c4d6ef', '#8199bd', '#55698a']].forEach(([id, H, m, d]) => {
+        item(id + '_plating', () => icon(PLATE_ROWS, {k: '#14181d', H, m, d}));
+        item('armor_' + id + '_plating', () => icon(ARMOR_PLATE_ROWS, {k: '#14181d', H, m, d}));
+    });
+    item('sealing_module', () => icon([
+        '................',
+        '................',
+        '....kkkkkkkk....',
+        '...kHHHHHHHdk...',
+        '...kHssssssdk...',
+        '..kkkkkkkkkkkk..',
+        '..kbbbbbbbbbbk..',
+        '..kbcccbbcccbk..',
+        '..kbbbbbbbbbbk..',
+        '..kkkkkkkkkkkk..',
+        '...kHssssssdk...',
+        '...kHsskkssdk...',
+        '...kHsskkssdk...',
+        '....kkkkkkkk....',
+        '................',
+        '................'], {k: '#14181d', H: '#b9c2cc', s: '#6d7680', d: '#3a4149', b: '#20262e', c: '#55c8ff'}));
+    item('jetpack', () => icon([
+        '................',
+        '...kkkk..kkkk...',
+        '..kHssdkkHssdk..',
+        '..kHssdkkHssdk..',
+        '..kHrrdkkHrrdk..',
+        '..kHssdkkHssdk..',
+        '..kHssdkkHssdk..',
+        '..kHssdkkHssdk..',
+        '..kHssdkkHssdk..',
+        '..kkkkkkkkkkkk..',
+        '...kddk..kddk...',
+        '...kddk..kddk...',
+        '....oo....oo....',
+        '...oyyo..oyyo...',
+        '....oo....oo....',
+        '................'], {k: '#14181d', H: '#b9c2cc', s: '#6d7680', d: '#3a4149', r: '#e5483d', o: '#ff8a24', y: '#ffe27a'}));
+    item('compressed_air_module', () => icon([
+        '................',
+        '......kkkk......',
+        '......kCCk......',
+        '.....kkkkkk.....',
+        '....kHHHHHdk....',
+        '....kHssssdk....',
+        '....kHrrrrdk....',
+        '....kHssssdk....',
+        '....kHssssdk....',
+        '....kHrrrrdk....',
+        '....kHssssdk....',
+        '....kHssssdk....',
+        '....kHssssdk....',
+        '....kddddddk....',
+        '.....kkkkkk.....',
+        '................'], {k: '#14181d', C: '#c8d0d8', H: '#c9d2da', s: '#7d8996', d: '#3a4149', r: '#c9352b'}));
+    item('floodlight', () => icon([
+        '................',
+        '..kkkkkkkkk.....',
+        '.kHsssssssdk....',
+        '.kHLLLLLLLdk.y..',
+        '.kHLWWWWWLdk..y.',
+        '.kHLWWWWWLdk....',
+        '.kHLWWWWWLdk.yy.',
+        '.kHLWWWWWLdk....',
+        '.kHLLLLLLLdk..y.',
+        '.kHsssssssdk.y..',
+        '..kkkkkkkkk.....',
+        '.....kdk........',
+        '.....kdk........',
+        '...kkkkkkk......',
+        '...kddddddk.....'.slice(0, 16),
+        '................'], {k: '#14181d', H: '#b9c2cc', s: '#6d7680', d: '#3a4149', L: '#ffe9a0', W: '#fffbe0', y: '#fff2b0'}));
+    item('upgrade_mounting_tool', () => icon([
+        '................',
+        '...........kkk..',
+        '..........kHHdk.',
+        '.........kHssdk.',
+        '.........kHskk..',
+        '........kHsk.c..',
+        '.......kHsk..c..',
+        '......kHsk..cc..',
+        '.....kkkk.......',
+        '....kyyyk.......',
+        '...kyyyk........',
+        '..kyyyk.........',
+        '..kyyk..........',
+        '..kkk...........',
+        '................',
+        '................'], {k: '#14181d', H: '#c9d2da', s: '#7d8996', d: '#3a4149', y: '#e8b420', c: '#55c8ff'}));
+
     // ---------------------------------------------------------------- window and HUD parts
 
     // One 256x256 texture; client/GuiAtlas.java knows where each part is. The panel stays light: window text is dark.

@@ -60,6 +60,24 @@ public class ArmorArmRenderer {
         };
     }
 
+    /** The arm plate's texture area, fixed like the arm boxes (see ARM_UV in blockbench/tools/build_models.js). */
+    private static final int PLATE_U = 110;
+    private static final int PLATE_V = 100;
+
+    /** Width and depth of the upper arm, and the plate's height and top measured from the shoulder joint; must match the geo model. */
+    private record PlateSize(int armWidth, int armDepth, int height, int top) {
+    }
+
+    private static PlateSize plate(ArmorVariant variant) {
+        return switch (variant) {
+            case COMBAT -> new PlateSize(5, 6, 6, 4);
+            case MOBILE -> new PlateSize(4, 5, 6, 3);
+            case WORKER -> new PlateSize(6, 7, 5, 5);
+        };
+    }
+
+    private final Map<ArmorVariant, ModelPart> rightPlates = new EnumMap<>(ArmorVariant.class);
+    private final Map<ArmorVariant, ModelPart> leftPlates = new EnumMap<>(ArmorVariant.class);
     private final Map<ArmorVariant, ModelPart> rightArms = new EnumMap<>(ArmorVariant.class);
     private final Map<ArmorVariant, ModelPart> leftArms = new EnumMap<>(ArmorVariant.class);
 
@@ -69,10 +87,22 @@ public class ArmorArmRenderer {
             PartDefinition root = mesh.getRoot();
             root.addOrReplaceChild("right_arm", cubes(variant, true), PartPose.offset(-5.0f, 2.0f, 0.0f));
             root.addOrReplaceChild("left_arm", cubes(variant, false), PartPose.offset(5.0f, 2.0f, 0.0f));
+            root.addOrReplaceChild("right_plate", plateCube(variant, true), PartPose.offset(-5.0f, 2.0f, 0.0f));
+            root.addOrReplaceChild("left_plate", plateCube(variant, false), PartPose.offset(5.0f, 2.0f, 0.0f));
             ModelPart baked = LayerDefinition.create(mesh, 128, 128).bakeRoot();
             rightArms.put(variant, baked.getChild("right_arm"));
             leftArms.put(variant, baked.getChild("left_arm"));
+            rightPlates.put(variant, baked.getChild("right_plate"));
+            leftPlates.put(variant, baked.getChild("left_plate"));
         }
+    }
+
+    /** On the outer side of the upper arm. */
+    private static CubeListBuilder plateCube(ArmorVariant variant, boolean right) {
+        PlateSize size = plate(variant);
+        float outer = right ? -size.armWidth() / 2.0f - 2.0f : size.armWidth() / 2.0f + 1.0f;
+        return CubeListBuilder.create().texOffs(PLATE_U, PLATE_V)
+                .addBox(outer, size.top(), -size.armDepth() / 2.0f, 1, size.height(), size.armDepth());
     }
 
     private static CubeListBuilder cubes(ArmorVariant variant, boolean right) {
@@ -88,9 +118,10 @@ public class ArmorArmRenderer {
      * Resting pose is the vanilla first-person arm pose (ItemInHandRenderer#renderPlayerArm without swing).
      * The vanilla swing would sweep the long armor arm off the bottom of the screen, so a punch is drawn instead:
      * the arm is thrust forward, up and towards the crosshair, then pulled back.
+     * {@code plateColor}: the colour of the plate on this arm, 0 for none.
      */
     public void render(PoseStack poseStack, MultiBufferSource buffers, int packedLight, float equipProgress, float swingProgress,
-                       HumanoidArm side, ArmorVariant variant) {
+                       HumanoidArm side, ArmorVariant variant, int plateColor) {
         boolean right = side != HumanoidArm.LEFT;
         float f = right ? 1.0f : -1.0f;
         // Fast thrust out, slower pull back.
@@ -109,6 +140,11 @@ public class ArmorArmRenderer {
         ModelPart arm = (right ? rightArms : leftArms).get(variant);
         arm.xRot = 0.0f;
         arm.render(poseStack, buffers.getBuffer(RenderType.entitySolid(PowerArmorRenderer.texture(variant))), packedLight, OverlayTexture.NO_OVERLAY);
+        if (plateColor != 0) {
+            ModelPart plate = (right ? rightPlates : leftPlates).get(variant);
+            plate.xRot = 0.0f;
+            plate.render(poseStack, buffers.getBuffer(RenderType.entitySolid(PowerArmorRenderer.texture(variant))), packedLight, OverlayTexture.NO_OVERLAY, plateColor);
+        }
         poseStack.popPose();
     }
 }

@@ -75,6 +75,37 @@ root
 рука 40,100 и 40,70, кулак 70,100 и 70,70, накладки у каждого варианта свои. Если эти размеры или раскладка
 изменятся, числа в коде нужно поменять (скажите мне).
 
+**Рука с обшивкой от первого лица** — ещё один брусок на внешней стороне плеча, его UV 110,100 у всех вариантов; размеры записаны в `ArmorArmRenderer` (`PlateSize`).
+
+## Улучшения на моделях
+
+Части улучшений — отдельные кости моделей GeckoLib. Они скрыты, пока улучшение не установлено; код показывает их по списку установленного
+(`client/render/UpgradeVisuals`). Кости вложены в те части тела, на которых сидят, поэтому двигаются вместе с ними. Анимации эти кости не трогают.
+Если вы заменяете модель, сохраните имена костей, иначе деталь перестанет появляться.
+
+Пластины рисуются светло-серыми, а цвет материала (медь, железо, титан) код накладывает при показе. Поэтому в одной текстуре хватает одного участка на все материалы.
+
+**Тела** (все 5 классов):
+
+| Кость | Что это |
+|---|---|
+| `upgrade_plating_torso`, `upgrade_plating_right_arm`, `upgrade_plating_left_arm`, `upgrade_plating_right_leg`, `upgrade_plating_left_leg` | бронепластины; любая кость с началом имени `upgrade_plating` окрашивается в цвет материала |
+| `upgrade_seal` | маска герметизации на голове |
+| `upgrade_jetpack` | ранец на спине |
+| `jetpack_nozzle_right`, `jetpack_nozzle_left` | точки сопел внутри ранца |
+
+**Броня** (все 3 вида), отдельная кость на каждое сочетание слота и улучшения:
+
+| Слот | Кости |
+|---|---|
+| голова | `slot_head_floodlight` |
+| грудь | `slot_chest_plating`, `slot_chest_floodlight` |
+| спина | `slot_back_air`, `slot_back_banner` (точка крепления: само знамя рисует код, это целое ванильное знамя) |
+| правая рука | `slot_right_arm_plating`, `slot_right_arm_floodlight` |
+| левая рука | `slot_left_arm_plating`, `slot_left_arm_floodlight` |
+| правая нога | `slot_right_leg_plating`, `slot_right_leg_air` |
+| левая нога | `slot_left_leg_plating`, `slot_left_leg_air` |
+
 ## 3. Блоки
 
 Все блоки — **ванильные JSON-модели** (Blockbench: «Java Block/Item»), текстуры 16×16 в `textures/block/`.
@@ -101,6 +132,9 @@ root
 Предметы: 5 тел, 3 брони (`power_armor`, `mobile_power_armor`, `worker_power_armor`), `armor_plate`, `repair_wrench`
 (в руке, `handheld`), `rescue_tool`, `repair_kit`, детали (`circuit_board`, `processor`, `power_cell`, `actuator`,
 `synthetic_fiber`), слитки и сырьё металлов, `bronze_ingot`.
+
+Улучшения: `copper_plating`, `iron_plating`, `titanium_plating`, `armor_copper_plating`, `armor_iron_plating`, `armor_titanium_plating`,
+`sealing_module`, `jetpack`, `compressed_air_module`, `floodlight`, `upgrade_mounting_tool`.
 
 ## 5. Интерфейс
 

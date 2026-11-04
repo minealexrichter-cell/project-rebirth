@@ -33,6 +33,14 @@
 					]
 				},
 				{
+					"name": "upgrade_plating_right_leg",
+					"parent": "right_leg",
+					"pivot": [-2, 12, 0],
+					"cubes": [
+						{"origin": [-3.5, 7, -3], "size": [3, 4, 1], "uv": [54, 24]}
+					]
+				},
+				{
 					"name": "left_leg",
 					"parent": "root",
 					"pivot": [2, 12, 0],
@@ -47,6 +55,14 @@
 					"cubes": [
 						{"origin": [0, 0, -2], "size": [4, 6, 4], "uv": [16, 54]},
 						{"origin": [-0.25, 0, -3], "size": [4.5, 2, 5.5], "uv": [24, 32]}
+					]
+				},
+				{
+					"name": "upgrade_plating_left_leg",
+					"parent": "left_leg",
+					"pivot": [2, 12, 0],
+					"cubes": [
+						{"origin": [0.5, 7, -3], "size": [3, 4, 1], "uv": [54, 24]}
 					]
 				},
 				{
@@ -69,12 +85,20 @@
 					]
 				},
 				{
+					"name": "upgrade_seal",
+					"parent": "head",
+					"pivot": [0, 24, 0],
+					"cubes": [
+						{"origin": [-3, 25, -5], "size": [6, 2.5, 1], "uv": [34, 42]}
+					]
+				},
+				{
 					"name": "right_arm",
 					"parent": "torso",
 					"pivot": [-5.5, 22, 0],
 					"cubes": [
 						{"origin": [-7, 17, -2], "size": [3, 7, 4], "uv": [40, 16]},
-						{"origin": [-7.5, 21.5, -2.5], "size": [4, 3, 5], "uv": [44, 32]}
+						{"origin": [-7.5, 21.5, -2.5], "size": [4, 3, 5], "uv": [0, 40]}
 					]
 				},
 				{
@@ -86,12 +110,20 @@
 					]
 				},
 				{
+					"name": "upgrade_plating_right_arm",
+					"parent": "right_arm",
+					"pivot": [-5.5, 22, 0],
+					"cubes": [
+						{"origin": [-8, 17.5, -2], "size": [1, 3.5, 4], "uv": [54, 16]}
+					]
+				},
+				{
 					"name": "left_arm",
 					"parent": "torso",
 					"pivot": [5.5, 22, 0],
 					"cubes": [
 						{"origin": [4, 17, -2], "size": [3, 7, 4], "uv": [32, 48]},
-						{"origin": [3.5, 21.5, -2.5], "size": [4, 3, 5], "uv": [44, 32]}
+						{"origin": [3.5, 21.5, -2.5], "size": [4, 3, 5], "uv": [0, 40]}
 					]
 				},
 				{
@@ -101,6 +133,42 @@
 					"cubes": [
 						{"origin": [4, 12, -2], "size": [3, 5, 4], "uv": [32, 55]}
 					]
+				},
+				{
+					"name": "upgrade_plating_left_arm",
+					"parent": "left_arm",
+					"pivot": [5.5, 22, 0],
+					"cubes": [
+						{"origin": [7, 17.5, -2], "size": [1, 3.5, 4], "uv": [54, 16]}
+					]
+				},
+				{
+					"name": "upgrade_plating_torso",
+					"parent": "torso",
+					"pivot": [0, 12, 0],
+					"cubes": [
+						{"origin": [-3.5, 15, -4], "size": [7, 6, 1], "uv": [18, 40]}
+					]
+				},
+				{
+					"name": "upgrade_jetpack",
+					"parent": "torso",
+					"pivot": [0, 12, 0],
+					"cubes": [
+						{"origin": [-3, 14.5, 3], "size": [6, 7.5, 2], "uv": [44, 32]},
+						{"origin": [-2.5, 12.5, 3.25], "size": [2, 2, 1.5], "uv": [48, 42]},
+						{"origin": [0.5, 12.5, 3.25], "size": [2, 2, 1.5], "uv": [48, 42]}
+					]
+				},
+				{
+					"name": "jetpack_nozzle_right",
+					"parent": "upgrade_jetpack",
+					"pivot": [-1.5, 12.5, 4]
+				},
+				{
+					"name": "jetpack_nozzle_left",
+					"parent": "upgrade_jetpack",
+					"pivot": [1.5, 12.5, 4]
 				}
 			]
 		}

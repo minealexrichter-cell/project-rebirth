@@ -9,6 +9,11 @@ import com.projectrebirth.client.render.PowerArmorRenderer;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
 import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.ArmorUpgradeEffects;
+import net.minecraft.world.item.ItemStack;
+import com.projectrebirth.client.render.UpgradeVisuals;
+import com.projectrebirth.upgrades.ArmorSlot;
+import com.projectrebirth.upgrades.InstalledUpgrades;
+import com.projectrebirth.upgrades.Upgrades;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.Floodlight;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
@@ -93,7 +98,7 @@ public final class PowerArmorClient {
         // The player's swing (of either hand), not only this hand's: both armor arms punch at once.
         float swing = player.getAttackAnim(event.getPartialTick());
         armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
-                event.getEquipProgress(), swing, side, armor.getVariant());
+                event.getEquipProgress(), swing, side, armor.getVariant(), armorPlateColor(armor, side == HumanoidArm.RIGHT));
         event.setCanceled(true);
     }
 
@@ -162,6 +167,18 @@ public final class PowerArmorClient {
     }
 
     /** Tells the server when the hatch key starts or stops being held; the server counts the time. */
+    /** The colour of the plate on the pilot's arm, 0 for none. */
+    private static int armorPlateColor(PowerArmorEntity armor, boolean rightArm) {
+        InstalledUpgrades upgrades = armor.upgrades();
+        int index = upgrades.indexOf(rightArm ? ArmorSlot.RIGHT_ARM : ArmorSlot.LEFT_ARM);
+        if (index < 0) {
+            return 0;
+        }
+        ItemStack stack = upgrades.entries().get(index).stack();
+        boolean plate = Upgrades.definition(armor.registryAccess(), stack).filter(definition -> definition.kind().equals(ArmorUpgradeEffects.PLATING)).isPresent();
+        return plate ? UpgradeVisuals.colorOf(armor.registryAccess(), stack) : 0;
+    }
+
     private static void onClientTick(ClientTickEvent.Post event) {
         Player player = Minecraft.getInstance().player;
         while (FLOODLIGHT_KEY.consumeClick()) {

@@ -55,6 +55,6 @@ http://creativecommons.org/publicdomain/zero/1.0/
 
 ## Модели и текстуры
 
-Все модели и текстуры сделаны для мода программно (тела и броня — скриптом в Blockbench,
-`blockbench/tools/build_models.js`; приняты владельцем), модели и текстуры блоков и предметов пока временные
-(см. `docs/STATUS.md`); сторонних моделей и текстур нет.
+Все модели и текстуры сделаны для мода программно: тела и броня — скриптом в Blockbench
+`blockbench/tools/build_models.js`, текстуры блоков и предметов — скриптом `blockbench/tools/build_textures.js`.
+Сторонних моделей и текстур нет.

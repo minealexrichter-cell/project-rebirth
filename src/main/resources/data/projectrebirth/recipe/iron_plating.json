@@ -1,0 +1,20 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 20,
+  "time": 160,
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:bronze_ingot",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:iron_plating",
+    "count": 1
+  }
+}

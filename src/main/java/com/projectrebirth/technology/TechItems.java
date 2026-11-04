@@ -28,6 +28,7 @@ public final class TechItems {
 
     public static final Map<Station, DeferredItem<BlockItem>> STATIONS = new EnumMap<>(Station.class);
     public static final DeferredItem<BlockItem> MAINTENANCE_STATION = ITEMS.registerSimpleBlockItem(TechBlocks.MAINTENANCE_STATION);
+    public static final DeferredItem<BlockItem> BODY_MODIFICATION_STATION = ITEMS.registerSimpleBlockItem(TechBlocks.BODY_MODIFICATION_STATION);
     public static final DeferredItem<BlockItem> COMBUSTION_GENERATOR = ITEMS.registerSimpleBlockItem(TechBlocks.COMBUSTION_GENERATOR);
     public static final DeferredItem<BlockItem> SOLAR_PANEL = ITEMS.registerSimpleBlockItem(TechBlocks.SOLAR_PANEL);
     public static final DeferredItem<BlockItem> BATTERY = ITEMS.registerSimpleBlockItem(TechBlocks.BATTERY);

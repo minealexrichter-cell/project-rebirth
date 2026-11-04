@@ -46,6 +46,8 @@ public final class RebirthConfig {
     public static ModConfigSpec.DoubleValue ARMOR_ABILITY_SPEED_BONUS;
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
+    public static final ModConfigSpec.IntValue BODY_MODIFICATION_INSTALL_TICKS;
+    public static final ModConfigSpec.IntValue BODY_MODIFICATION_ENERGY_PER_TICK;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
     public static final ModConfigSpec.BooleanValue STATIONS_NEED_ENERGY;
     public static final ModConfigSpec.IntValue STATION_ENERGY_CAPACITY;
@@ -235,6 +237,15 @@ public final class RebirthConfig {
         MAINTENANCE_BODY_REPAIR_PER_ITEM = builder
                 .comment("Body integrity restored per iron ingot (robot bodies) or synthetic fiber (synthetic bodies)")
                 .defineInRange("bodyRepairPerItem", 8.0, 0.1, 1024.0);
+        builder.pop();
+
+        builder.comment("Body modification station: installs gadgets into packed bodies. Taking one out is instant and free.").push("body_modification");
+        BODY_MODIFICATION_INSTALL_TICKS = builder
+                .comment("Ticks to install one gadget (20 ticks = 1 second)")
+                .defineInRange("installTicks", 100, 1, 72000);
+        BODY_MODIFICATION_ENERGY_PER_TICK = builder
+                .comment("Energy used per tick while installing; none if energy.stationsNeedEnergy is false")
+                .defineInRange("energyPerTick", 20, 0, 1_000_000);
         builder.pop();
 
         builder.comment("Energy (NeoForge Energy, FE): generators, battery, cable and what the stations use").push("energy");

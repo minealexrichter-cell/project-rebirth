@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 50,
+  "time": 400,
+  "ingredients": [
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 4
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:jetpack",
+    "count": 1
+  }
+}

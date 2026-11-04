@@ -157,6 +157,22 @@ public final class Upgrades {
         return pieces;
     }
 
+    /**
+     * Puts upgrades into a new packed body or armor. Returns the pieces that did not fit, all of them if the item holds
+     * no upgrades; the caller must give them to someone.
+     */
+    public static List<ItemStack> moveAll(RegistryAccess access, InstalledUpgrades upgrades, ItemStack target) {
+        List<ItemStack> left = new ArrayList<>();
+        UpgradeHost host = UpgradeHost.ofPacked(target);
+        for (InstalledUpgrades.Installed entry : upgrades.entries()) {
+            ItemStack piece = entry.stack().copy();
+            if (host == null || install(access, host, piece, entry.slot().orElse(null)) != null) {
+                left.add(piece);
+            }
+        }
+        return left;
+    }
+
     public static InstalledUpgrades ofStack(ItemStack stack) {
         return stack.getOrDefault(UpgradeRegistry.INSTALLED.get(), InstalledUpgrades.EMPTY);
     }

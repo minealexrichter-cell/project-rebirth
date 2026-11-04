@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 30,
+  "time": 200,
+  "ingredients": [
+    {
+      "item": "projectrebirth:synthetic_fiber",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/tin",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:sealing_module",
+    "count": 1
+  }
+}

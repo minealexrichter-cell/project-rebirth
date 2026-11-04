@@ -1,0 +1,20 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 10,
+  "time": 100,
+  "ingredients": [
+    {
+      "item": "minecraft:copper_ingot",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:bronze_ingot",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:copper_plating",
+    "count": 1
+  }
+}

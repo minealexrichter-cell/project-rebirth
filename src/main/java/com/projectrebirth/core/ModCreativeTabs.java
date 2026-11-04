@@ -9,6 +9,7 @@ import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.TechItems;
+import com.projectrebirth.upgrades.UpgradeRegistry;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -37,6 +38,7 @@ public final class ModCreativeTabs {
                     output.accept(TechItems.STATIONS.get(station).get());
                 }
                 output.accept(TechItems.MAINTENANCE_STATION.get());
+                output.accept(TechItems.BODY_MODIFICATION_STATION.get());
                 output.accept(TechItems.COMBUSTION_GENERATOR.get());
                 output.accept(TechItems.SOLAR_PANEL.get());
                 output.accept(TechItems.BATTERY.get());
@@ -49,6 +51,11 @@ public final class ModCreativeTabs {
                 output.accept(TechItems.SYNTHETIC_FIBER.get());
                 output.accept(BodyItems.TRANSFER_CAPSULE.get());
                 output.accept(BodyItems.REPAIR_KIT.get());
+                output.accept(UpgradeRegistry.COPPER_PLATING.get());
+                output.accept(UpgradeRegistry.IRON_PLATING.get());
+                output.accept(UpgradeRegistry.TITANIUM_PLATING.get());
+                output.accept(UpgradeRegistry.SEALING_MODULE.get());
+                output.accept(UpgradeRegistry.JETPACK.get());
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }

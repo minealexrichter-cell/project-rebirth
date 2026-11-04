@@ -30,6 +30,11 @@ public final class TechBlockEntities {
                     TechBlocks.MAINTENANCE_STATION.get()).build(null));
 
     @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BodyModificationBlockEntity>> BODY_MODIFICATION =
+            BLOCK_ENTITIES.register("body_modification_station", () -> BlockEntityType.Builder.of(BodyModificationBlockEntity::new,
+                    TechBlocks.BODY_MODIFICATION_STATION.get()).build(null));
+
+    @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CombustionGeneratorBlockEntity>> COMBUSTION_GENERATOR =
             BLOCK_ENTITIES.register("combustion_generator", () -> BlockEntityType.Builder.of(CombustionGeneratorBlockEntity::new,
                     TechBlocks.COMBUSTION_GENERATOR.get()).build(null));
@@ -59,9 +64,11 @@ public final class TechBlockEntities {
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STATION.get(), (station, side) -> station.automation());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MAINTENANCE.get(), (station, side) -> station.automation());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BODY_MODIFICATION.get(), (station, side) -> station.automation());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, COMBUSTION_GENERATOR.get(), (generator, side) -> generator.automation());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, STATION.get(), (station, side) -> station.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, MAINTENANCE.get(), (station, side) -> station.energy());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, BODY_MODIFICATION.get(), (station, side) -> station.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, COMBUSTION_GENERATOR.get(), (generator, side) -> generator.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, SOLAR_PANEL.get(), SolarPanelBlockEntity::forSide);
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, BATTERY.get(), BatteryBlockEntity::forSide);

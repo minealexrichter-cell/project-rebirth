@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ICI",
+    "XSX",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "projectrebirth:circuit_board"
+    },
+    "X": {
+      "item": "projectrebirth:actuator"
+    },
+    "S": {
+      "item": "minecraft:smithing_table"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:implant_fabricator",
+    "count": 1
+  }
+}

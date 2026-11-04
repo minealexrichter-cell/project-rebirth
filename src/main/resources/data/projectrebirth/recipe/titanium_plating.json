@@ -1,0 +1,20 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 40,
+  "time": 240,
+  "ingredients": [
+    {
+      "tag": "c:ingots/titanium",
+      "count": 5
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:titanium_plating",
+    "count": 1
+  }
+}

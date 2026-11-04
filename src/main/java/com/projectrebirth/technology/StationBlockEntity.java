@@ -9,6 +9,7 @@ import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.technology.energy.EnergyUtil;
 import com.projectrebirth.technology.energy.ModEnergyStorage;
+import com.projectrebirth.upgrades.Upgrades;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -181,19 +182,45 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
         if (progress >= productionTime(recipe)) {
             progress = 0;
             level.playSound(null, worldPosition, ModSounds.STATION_DONE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
+            List<ItemStack> before = inputs();
             List<ItemStack> inputs = inputs();
             recipe.consume(inputs);
             for (int i = 0; i < INPUT_SLOTS; i++) {
                 items.setStackInSlot(i, inputs.get(i));
             }
+            ItemStack result = recipe.result().copy();
+            List<ItemStack> left = carryUpgrades(before, inputs, result);
             ItemStack output = items.getStackInSlot(OUTPUT_SLOT);
             if (output.isEmpty()) {
-                items.setStackInSlot(OUTPUT_SLOT, recipe.result().copy());
+                items.setStackInSlot(OUTPUT_SLOT, result);
             } else {
-                output.grow(recipe.result().getCount());
+                output.grow(result.getCount());
             }
+            left.forEach(this::giveBack);
         }
         setChanged();
+    }
+
+    /** A better body keeps the upgrades of the one it was made from. Returns the pieces that do not fit in the result. */
+    private List<ItemStack> carryUpgrades(List<ItemStack> before, List<ItemStack> after, ItemStack result) {
+        List<ItemStack> left = new ArrayList<>();
+        for (int i = 0; i < INPUT_SLOTS; i++) {
+            if (!before.get(i).isEmpty() && after.get(i).isEmpty()) {
+                left.addAll(Upgrades.moveAll(level.registryAccess(), Upgrades.ofStack(before.get(i)), result));
+            }
+        }
+        return left;
+    }
+
+    /** Into the input slots, where the player sees it; to the ground if they are full. */
+    private void giveBack(ItemStack stack) {
+        ItemStack rest = stack;
+        for (int i = 0; i < INPUT_SLOTS && !rest.isEmpty(); i++) {
+            rest = items.insertItem(i, rest, false);
+        }
+        if (!rest.isEmpty()) {
+            Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), rest);
+        }
     }
 
     private boolean canWork(FabricationRecipe recipe) {

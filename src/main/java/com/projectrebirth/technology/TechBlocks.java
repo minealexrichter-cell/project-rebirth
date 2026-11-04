@@ -37,6 +37,17 @@ public final class TechBlocks {
                     .lightLevel(state -> state.getValue(TechSounds.WORKING) ? ACTIVE_LIGHT : 0)
                     .requiresCorrectToolForDrops());
 
+    /** Installs gadgets into packed bodies. */
+    public static final DeferredBlock<BodyModificationStationBlock> BODY_MODIFICATION_STATION = BLOCKS.registerBlock("body_modification_station",
+            BodyModificationStationBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(TechSounds.WORKING) ? ACTIVE_LIGHT : 0)
+                    .requiresCorrectToolForDrops());
+
     public static final DeferredBlock<CombustionGeneratorBlock> COMBUSTION_GENERATOR = BLOCKS.registerBlock("combustion_generator",
             CombustionGeneratorBlock::new,
             BlockBehaviour.Properties.of()

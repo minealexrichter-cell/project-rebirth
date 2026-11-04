@@ -17,6 +17,7 @@ import com.projectrebirth.client.render.BodyArmRenderer;
 import com.projectrebirth.client.render.HumanShellRenderer;
 import com.projectrebirth.client.render.PossessedPlayerRenderer;
 import com.projectrebirth.client.screen.BodyInventoryScreen;
+import com.projectrebirth.client.screen.BodyModificationScreen;
 import com.projectrebirth.client.screen.CapsuleScreen;
 import com.projectrebirth.client.screen.FactionScreen;
 import com.projectrebirth.client.screen.GeneratorScreen;
@@ -93,6 +94,7 @@ public class ProjectRebirthClient {
         event.register(TechMenus.STATION.get(), StationScreen::new);
         event.register(TechMenus.MAINTENANCE.get(), MaintenanceScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
+        event.register(TechMenus.BODY_MODIFICATION.get(), BodyModificationScreen::new);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {

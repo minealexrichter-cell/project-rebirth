@@ -389,6 +389,52 @@
         return p;
     });
 
+    // Implant fabricator: a chip with contacts.
+    const TEAL = '#35c4b4';
+    block('implant_fabricator_side', side(TEAL, 54));
+    block('implant_fabricator_top', top(TEAL, 55, p => {
+        p.inset(4, 4, 8, 8, GUN).rect(6, 6, 4, 4, TEAL).rect(7, 7, 2, 2, LIGHT);
+    }));
+    block('implant_fabricator_front', () => {
+        const p = casing(new Painter(56), TEAL);
+        p.inset(3, 3, 10, 10, '#101518', 0.02);
+        p.grid([
+            '..c.c.c.c.',
+            '.dddddddd.',
+            'cdttttttdc',
+            '.dtLLLLtd.',
+            'cdtLttLtdc',
+            '.dtLttLtd.',
+            'cdtLLLLtdc',
+            '.dttttttd.',
+            '.dddddddd.',
+            '..c.c.c.c.'], {d: shade(TEAL, 0.45), t: TEAL, L: LIGHT, c: '#c9882e'}, 3, 3);
+        return p;
+    });
+
+    // Body modification station: the outline of a body with a marked place on it.
+    const VIOLET = '#9a6ae0';
+    block('body_modification_station_side', side(VIOLET, 57));
+    block('body_modification_station_top', top(VIOLET, 58, p => {
+        p.inset(4, 3, 8, 10, GUN).rect(5, 4, 6, 8, shade(VIOLET, 0.75)).rect(7, 5, 2, 6, LIGHT);
+    }));
+    block('body_modification_station_front', () => {
+        const p = casing(new Painter(59), VIOLET);
+        p.inset(3, 3, 10, 10, '#12121a', 0.02);
+        p.grid([
+            '....LL....',
+            '....LL....',
+            '...LLLL...',
+            '..L.LL.L..',
+            '..L.vv.L..',
+            '....vv....',
+            '....LL....',
+            '...L..L...',
+            '...L..L...',
+            '..........'], {L: '#c8d0d8', v: VIOLET}, 3, 3);
+        return p;
+    });
+
     // Combustion generator: firebox and vents.
     const BRICK = '#6a4a3c';
     block('combustion_generator_side', () => {
@@ -709,6 +755,33 @@
                 }
             }
         }
+        return p;
+    });
+
+    // Implant fabricator: the chip's middle pulses and the contacts light in turn.
+    fanSide('implant_fabricator', TEAL);
+    animated('implant_fabricator_front_on', 4, 3, i => {
+        const p = baseOf('implant_fabricator_front');
+        p.rect(7, 7, 2, 2, i % 2 ? '#c9fff8' : TEAL);
+        p.rect(5 + i * 2, 3, 1, 1, '#fff0b0').rect(5 + i * 2, 12, 1, 1, '#fff0b0');
+        return p;
+    });
+    animated('implant_fabricator_top_on', 4, 3, i => {
+        const p = baseOf('implant_fabricator_top');
+        p.rect(7, 7, 2, 2, i % 2 ? TEAL : '#c9fff8');
+        return p;
+    });
+
+    // Body modification station: a scanning line runs down the body.
+    fanSide('body_modification_station', VIOLET);
+    animated('body_modification_station_front_on', 8, 2, i => {
+        const p = baseOf('body_modification_station_front');
+        p.rect(3, 3 + (i < 5 ? i * 2 : (8 - i) * 2), 10, 1, CYAN);
+        return p;
+    });
+    animated('body_modification_station_top_on', 4, 3, i => {
+        const p = baseOf('body_modification_station_top');
+        p.rect(7, 5 + i, 2, 2, CYAN);
         return p;
     });
 

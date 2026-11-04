@@ -136,6 +136,22 @@
         box([0, 8, 2], [0.5, 11, 3], 'white')
     ]);
 
+    station('implant_fabricator', 'cyan', 'steel', on => [
+        // A tray of implants under a small lit hood.
+        box([2, 14, 2], [14, 15, 8], 'gun', {up: 'dark'}),
+        box([4, 15, 3], [6, 15.5, 7], on ? 'cyan' : 'steel', undefined, on ? GLOW : undefined),
+        box([7, 15, 3], [9, 15.5, 7], 'copper'),
+        box([10, 15, 3], [12, 15.5, 7], on ? 'cyan' : 'steel', undefined, on ? GLOW : undefined),
+        box([6, 14, 10], [10, 16, 14], 'steel', {up: 'gun'})
+    ]);
+
+    station('body_modification_station', 'white', 'dark', on => [
+        // A padded table with an arm above it.
+        box([3, 14, 3], [13, 15, 13], 'white', {up: 'rubber'}),
+        box([2, 14, 13], [4, 16, 15], 'gun'),
+        box([3, 15.5, 7], [13, 16, 9], on ? 'cyan' : 'mid', undefined, on ? GLOW : undefined)
+    ]);
+
     [false, true].forEach(on => {
         MODELS['combustion_generator' + (on ? '_on' : '')] = {
             parent: 'minecraft:block/block',
@@ -316,7 +332,7 @@
     }
 
     const STATES = {};
-    ['electronics_fabricator', 'assembly_station', 'armor_workstation', 'maintenance_station'].forEach(id => {
+    ['electronics_fabricator', 'assembly_station', 'armor_workstation', 'maintenance_station', 'implant_fabricator', 'body_modification_station'].forEach(id => {
         const variants = {};
         Object.entries(ROTATIONS).forEach(([facing, y]) => {
             variants['facing=' + facing + ',working=false'] = variant(id, rotation(y));

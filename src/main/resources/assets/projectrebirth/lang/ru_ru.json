@@ -355,5 +355,8 @@
   "message.projectrebirth.upgrade.incompatible": "Несовместимо с уже установленным улучшением",
   "item.projectrebirth.armor_copper_plating": "Медная обшивка брони",
   "item.projectrebirth.armor_iron_plating": "Железная обшивка брони",
-  "item.projectrebirth.armor_titanium_plating": "Титановая обшивка брони"
+  "item.projectrebirth.armor_titanium_plating": "Титановая обшивка брони",
+  "screen.projectrebirth.body.slots": "Слоты: %s / %s",
+  "screen.projectrebirth.body.free_slot": "Свободный слот улучшения",
+  "message.projectrebirth.body.no_armor": "Искусственное тело не носит обычную броню"
 }

@@ -355,5 +355,8 @@
   "message.projectrebirth.upgrade.incompatible": "Incompatible with an installed upgrade",
   "item.projectrebirth.armor_copper_plating": "Copper Armor Plating",
   "item.projectrebirth.armor_iron_plating": "Iron Armor Plating",
-  "item.projectrebirth.armor_titanium_plating": "Titanium Armor Plating"
+  "item.projectrebirth.armor_titanium_plating": "Titanium Armor Plating",
+  "screen.projectrebirth.body.slots": "Slots: %s / %s",
+  "screen.projectrebirth.body.free_slot": "Free upgrade slot",
+  "message.projectrebirth.body.no_armor": "An artificial body wears no ordinary armor"
 }

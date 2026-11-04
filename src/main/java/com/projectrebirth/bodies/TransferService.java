@@ -230,6 +230,8 @@ public final class TransferService {
         InventoryUtil.giveInventory(player, inventory);
         resetCondition(player);
         player.setData(BodyAttachments.POSSESSION, PossessionState.of(bodyClass));
+        // A body from 1.0.0 may still be wearing armor.
+        BodyInventory.clearArmor(player);
         player.setData(UpgradeRegistry.CONTROLLED_BODY, upgrades);
         applyBodyModifiers(player, bodyClass);
         player.teleportTo(level, pos.x, pos.y, pos.z, yaw, player.getXRot());

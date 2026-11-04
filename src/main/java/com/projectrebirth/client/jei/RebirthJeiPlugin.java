@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.client.screen.BodyInventoryScreen;
 import com.projectrebirth.client.screen.StationScreen;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
@@ -14,6 +15,7 @@ import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.TechItems;
 import com.projectrebirth.technology.TechRecipes;
 
+import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.VanillaTypes;
@@ -86,6 +88,14 @@ public class RebirthJeiPlugin implements IModPlugin {
     /** Clicking the progress arrow in a station window opens the recipes of that station. */
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+        // The vanilla inventory's arrow is registered for the vanilla screen only.
+        registration.addGuiContainerHandler(BodyInventoryScreen.class, new IGuiContainerHandler<>() {
+            @Override
+            public Collection<IGuiClickableArea> getGuiClickableAreas(BodyInventoryScreen screen, double mouseX, double mouseY) {
+                return List.of(IGuiClickableArea.createBasic(BodyInventoryScreen.ARROW_X, BodyInventoryScreen.ARROW_Y,
+                        BodyInventoryScreen.ARROW_WIDTH, BodyInventoryScreen.ARROW_HEIGHT, RecipeTypes.CRAFTING));
+            }
+        });
         registration.addGuiContainerHandler(StationScreen.class, new IGuiContainerHandler<>() {
             @Override
             public Collection<IGuiClickableArea> getGuiClickableAreas(StationScreen screen, double mouseX, double mouseY) {

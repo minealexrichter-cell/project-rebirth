@@ -47,6 +47,11 @@ public final class GuiAtlas {
         }
     }
 
+    /** The small 16 x 11 arrow of the inventory's crafting grid. */
+    public static void smallArrow(GuiGraphics graphics, int x, int y) {
+        blit(graphics, x, y, 60, 34, 16, 11);
+    }
+
     /** An energy gauge filling up from the bottom. */
     public static void energyVertical(GuiGraphics graphics, int x, int y, int width, int height, int energy, int capacity) {
         recess(graphics, x, y, width, height);

@@ -1318,6 +1318,12 @@
         arrow(34, '#8f969c', '#8f969c', '#6d747b');
         arrow(52, '#3fc8e6', '#3fc8e6', '#b8f2ff');
 
+        // Small arrow, 16x11: the inventory's crafting arrow.
+        rect(60, 38, 10, 3, '#8f969c');
+        for (let i = 0; i < 6; i++) {
+            rect(70 + i, 34 + i, 1, 11 - 2 * i, '#8f969c');
+        }
+
         // Energy, a piece of the gauge: upright 8x4 and lying 4x8.
         rect(30, 34, 8, 3, '#ff8a3c'); rect(30, 34, 8, 1, '#ffc27a'); rect(30, 37, 8, 1, '#a8461c');
         rect(40, 34, 3, 8, '#ff8a3c'); rect(40, 34, 3, 1, '#ffc27a'); rect(43, 34, 1, 8, '#a8461c');

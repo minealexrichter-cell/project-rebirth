@@ -86,7 +86,8 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
             GeoBone rightArm = getAnimationProcessor().getBone("right_arm");
             GeoBone leftArm = getAnimationProcessor().getBone("left_arm");
             if (rightArm != null && leftArm != null) {
-                PilotArmPose.apply(armor, pilot, state.getPartialTick(), rightArm, leftArm);
+                PilotArmPose.apply(armor, pilot, state.getPartialTick(), rightArm, leftArm,
+                        getAnimationProcessor().getBone("right_forearm"), getAnimationProcessor().getBone("left_forearm"));
             }
         }
     }

@@ -581,10 +581,64 @@
     const ARM_UV = {shoulderR: [0, 100], armR: [40, 100], fistR: [70, 100], shoulderL: [0, 70], armL: [40, 70], fistL: [70, 70]};
     const ARM_LEFT_UV = {0: ARM_UV.shoulderL, 1: ARM_UV.armL, 2: ARM_UV.fistL};
 
+    /** A value on a closed curve: smooth between the [phase, value] points; phase 0..1 wraps around. */
+    function curve(points, phase) {
+        const t = ((phase % 1) + 1) % 1;
+        for (let i = 0; i < points.length; i++) {
+            const [a, va] = points[i];
+            const [b, vb] = points[i + 1] || [points[0][0] + 1, points[0][1]];
+            if (t >= a && t < b) {
+                const k = (t - a) / (b - a);
+                return va + (vb - va) * (1 - Math.cos(k * Math.PI)) / 2;
+            }
+        }
+        return points[0][1];
+    }
+
+    /**
+     * A walk with knees and elbows, sampled from curves. Phase 0: the right foot lands in front.
+     * Thigh and upper arm: negative is forward. Shin: positive bends the knee back. Forearm: negative bends the elbow.
+     */
+    function gait(c) {
+        const SAMPLES = 16;
+        const thigh = [[0, -c.stride], [0.15, -c.stride * 0.75], [0.35, 0], [0.55, c.stride * 0.95], [0.72, c.stride * 0.15], [0.87, -c.stride * 0.85]];
+        const shin = [[0, c.knee[0]], [0.12, c.knee[1]], [0.35, c.knee[0]], [0.55, c.knee[2]], [0.72, c.knee[3]], [0.9, c.knee[4]]];
+        const channel = fn => {
+            const out = {};
+            for (let i = 0; i <= SAMPLES; i++) {
+                const t = (i % SAMPLES) / SAMPLES;
+                out[(c.length * i / SAMPLES).toFixed(3)] = fn(t).map(v => Math.round(v * 100) / 100);
+            }
+            return out;
+        };
+        const armAngle = t => c.arm * Math.cos(2 * Math.PI * (t - c.armLag));
+        const roll = t => c.roll * Math.sin(2 * Math.PI * t);
+        const twist = t => c.twist * Math.cos(2 * Math.PI * t);
+        const splay = c.splay || 0;
+        return {length: c.length, loop: 'loop', bones: {
+            right_leg: {r: channel(t => [curve(thigh, t), 0, splay])},
+            left_leg: {r: channel(t => [curve(thigh, t + 0.5), 0, -splay])},
+            right_shin: {r: channel(t => [curve(shin, t), 0, 0])},
+            left_shin: {r: channel(t => [curve(shin, t + 0.5), 0, 0])},
+            right_arm: {r: channel(t => [armAngle(t), 0, c.armOut])},
+            left_arm: {r: channel(t => [armAngle(t + 0.5), 0, -c.armOut])},
+            // The elbow bends more when the arm swings forward.
+            right_forearm: {r: channel(t => [-(c.elbow[0] + c.elbow[1] * (0.5 - armAngle(t) / (2 * c.arm))), 0, 0])},
+            left_forearm: {r: channel(t => [-(c.elbow[0] + c.elbow[1] * (0.5 - armAngle(t + 0.5) / (2 * c.arm))), 0, 0])},
+            torso: {
+                // Lowest when both feet are on the ground, highest over the standing leg.
+                p: channel(t => [0, -c.bob * (0.5 + 0.5 * Math.cos(4 * Math.PI * t)), 0]),
+                r: channel(t => [c.lean, twist(t), roll(t)])
+            },
+            // The head keeps looking ahead.
+            head: {r: channel(t => [-c.lean * 0.8, -twist(t) * 0.7, -roll(t) * 0.6])}
+        }};
+    }
+
     function armorAnimations(c) {
         return {
             'animation.power_armor.idle': idle(c.idle),
-            'animation.power_armor.walk': walk(c.walk),
+            'animation.power_armor.walk': gait(c.walk),
             'animation.power_armor.attack': c.attack,
             'animation.power_armor.shutdown': c.shutdown,
             'animation.power_armor.wrecked': c.wrecked
@@ -613,6 +667,7 @@
         const metal = '#4c5359', olive = '#5f6b3e', dark = '#25282c', red = '#ff3b2f', steel = '#8b9299', amber = '#e0a020';
         SPECS.power_armor = {
             res: 128, seed: 606, wrecked: true,
+            joints: {knee: 8, elbow: 20},
             armTable: 'combat',
             bones: armorBones({
                 legPivot: [-4, 16, 0], headPivot: [0, 34, 0], armPivot: [-11, 31, 0], hand: [-11.5, 11, 0],
@@ -652,13 +707,17 @@
             }),
             animations: armorAnimations({
                 idle: {length: 4, bob: -0.5, arm: -3, armZ: 2},
-                walk: {length: 1.2, stride: 26, arm: 18, bob: -1, roll: 2.5, lean: 3},
-                attack: {length: 0.6, loop: 'once', ease: 'easeOutCubic', bones: {
-                    right_arm: {r: {'0.000': [0, 0, 0], '0.150': [-125, 0, -8], '0.300': [-35, 0, -4], '0.600': [0, 0, 0]}},
-                    left_arm: {r: {'0.000': [0, 0, 0], '0.150': [-125, 0, 8], '0.300': [-35, 0, 4], '0.600': [0, 0, 0]}},
-                    torso: {r: {'0.000': [0, 0, 0], '0.150': [-6, 0, 0], '0.300': [14, 0, 0], '0.600': [0, 0, 0]},
-                        p: {'0.000': [0, 0, 0], '0.300': [0, -1, 0], '0.600': [0, 0, 0]}},
-                    head: {r: {'0.000': [0, 0, 0], '0.300': [8, 0, 0], '0.600': [0, 0, 0]}}
+                // A heavy, even march: short knee lift, arms held low, a solid drop on every step.
+                walk: {length: 0.95, stride: 24, knee: [4, 14, 14, 58, 20], arm: 15, armLag: 0.04, armOut: 3, elbow: [12, 16], bob: 1.0, roll: 1.8, lean: 4, twist: 5},
+                // A right cross: the shoulder winds back, the whole body turns into the punch, the left arm covers.
+                attack: {length: 0.6, loop: 'once', ease: 'easeInOutSine', bones: {
+                    right_arm: {r: {'0.000': [0, 0, 0], '0.130': [25, 0, 12], '0.250': [-95, -8, -4], '0.340': [-88, -6, -4], '0.600': [0, 0, 0]}},
+                    right_forearm: {r: {'0.000': [0, 0, 0], '0.130': [-105, 0, 0], '0.250': [-4, 0, 0], '0.340': [-16, 0, 0], '0.600': [0, 0, 0]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '0.130': [-48, 0, 10], '0.250': [12, 0, -6], '0.600': [0, 0, 0]}},
+                    left_forearm: {r: {'0.000': [0, 0, 0], '0.130': [-95, 0, 0], '0.250': [-60, 0, 0], '0.600': [0, 0, 0]}},
+                    torso: {r: {'0.000': [0, 0, 0], '0.130': [-3, 20, 0], '0.250': [9, -22, 0], '0.340': [7, -18, 0], '0.600': [0, 0, 0]},
+                        p: {'0.000': [0, 0, 0], '0.250': [0, -0.8, -1], '0.600': [0, 0, 0]}},
+                    head: {r: {'0.000': [0, 0, 0], '0.130': [2, -14, 0], '0.250': [-4, 16, 0], '0.600': [0, 0, 0]}}
                 }},
                 shutdown: SLUMP(22, 2, 20),
                 wrecked: COLLAPSE(32, 8, -6, 3)
@@ -671,6 +730,7 @@
         const white = '#dde3ea', blue = '#1f7fe0', dark = '#1e2733', cyan = '#6df0ff', orange = '#ff8a24', grey = '#7d8996';
         SPECS.mobile_power_armor = {
             res: 128, seed: 707, wrecked: true,
+            joints: {knee: 9, elbow: 21},
             armTable: 'mobile',
             bones: armorBones({
                 legPivot: [-3.5, 17, 0], headPivot: [0, 33, 0], armPivot: [-9, 31, 0], hand: [-9.5, 13, 0],
@@ -709,11 +769,16 @@
             }),
             animations: armorAnimations({
                 idle: {length: 2.8, bob: -0.45, arm: -4, armZ: 3, sway: 0.6, ease: 'easeInOutSine'},
-                walk: {length: 0.75, stride: 38, arm: 32, bob: -0.8, roll: 1.8, lean: 7, ease: 'easeInOutSine'},
+                // A light run: leaning forward, heels kicking high, arms bent and pumping.
+                walk: {length: 0.5, stride: 44, knee: [8, 22, 30, 105, 45], arm: 38, armLag: 0.02, armOut: 5, elbow: [62, 34], bob: 0.8, roll: 1, lean: 13, twist: 9},
+                // Two fast jabs, right then left, with the body snapping from side to side.
                 attack: {length: 0.4, loop: 'once', ease: 'easeOutQuad', bones: {
-                    right_arm: {r: {'0.000': [0, 0, 0], '0.100': [-125, -12, -4], '0.220': [-30, 0, 0], '0.400': [0, 0, 0]}},
-                    left_arm: {r: {'0.000': [0, 0, 0], '0.180': [-125, 12, 4], '0.300': [-30, 0, 0], '0.400': [0, 0, 0]}},
-                    torso: {r: {'0.000': [0, 0, 0], '0.100': [4, -12, 0], '0.220': [4, 12, 0], '0.400': [0, 0, 0]}}
+                    right_arm: {r: {'0.000': [0, 0, 0], '0.060': [-92, -6, -2], '0.130': [-50, 0, 2], '0.400': [0, 0, 0]}},
+                    right_forearm: {r: {'0.000': [0, 0, 0], '0.030': [-90, 0, 0], '0.060': [-4, 0, 0], '0.130': [-85, 0, 0], '0.400': [0, 0, 0]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '0.060': [-50, 0, -2], '0.180': [-92, 6, 2], '0.260': [-45, 0, -2], '0.400': [0, 0, 0]}},
+                    left_forearm: {r: {'0.000': [0, 0, 0], '0.120': [-90, 0, 0], '0.180': [-4, 0, 0], '0.260': [-85, 0, 0], '0.400': [0, 0, 0]}},
+                    torso: {r: {'0.000': [0, 0, 0], '0.060': [5, -14, 0], '0.180': [5, 14, 0], '0.400': [0, 0, 0]}},
+                    head: {r: {'0.000': [0, 0, 0], '0.060': [0, 8, 0], '0.180': [0, -8, 0], '0.400': [0, 0, 0]}}
                 }},
                 shutdown: SLUMP(16, 1.2, 12, 'easeInOutSine'),
                 wrecked: COLLAPSE(26, -12, 8, 3.5)
@@ -727,6 +792,7 @@
         const bar = {c: dark, n: 0.05, edge: false};
         SPECS.worker_power_armor = {
             res: 128, seed: 808, wrecked: true,
+            joints: {knee: 8, elbow: 20},
             armTable: 'worker',
             bones: armorBones({
                 legPivot: [-4.5, 15, 0], headPivot: [0, 34, 0], armPivot: [-12, 31, 0], hand: [-12.5, 11, 0],
@@ -761,12 +827,17 @@
             }),
             animations: armorAnimations({
                 idle: {length: 5, bob: -0.3, arm: -2, armZ: 1.5},
-                walk: {length: 1.6, stride: 18, arm: 10, bob: -1.2, roll: 3.5, lean: 2},
-                attack: {length: 0.9, loop: 'once', ease: 'easeInOutQuad', bones: {
-                    right_arm: {r: {'0.000': [0, 0, 0], '0.350': [-150, 0, -6], '0.550': [-40, 0, -2], '0.900': [0, 0, 0]}},
-                    left_arm: {r: {'0.000': [0, 0, 0], '0.350': [-150, 0, 6], '0.550': [-40, 0, 2], '0.900': [0, 0, 0]}},
-                    torso: {r: {'0.000': [0, 0, 0], '0.350': [-10, 0, 0], '0.550': [18, 0, 0], '0.900': [0, 0, 0]},
-                        p: {'0.000': [0, 0, 0], '0.550': [0, -1.5, 0], '0.900': [0, 0, 0]}}
+                // A slow waddle from foot to foot: wide stance, short steps, the heavy hands hang and barely swing.
+                walk: {length: 1.35, stride: 15, knee: [3, 8, 6, 32, 10], arm: 7, armLag: 0.1, armOut: 4, elbow: [6, 6], bob: 1.1, roll: 4.5, lean: 1, twist: 2, splay: 3},
+                // A two-handed slam: a slow lift over the head, a fast drop, a pause in the low pose, a heavy recovery.
+                attack: {length: 1, loop: 'once', ease: 'easeInOutQuad', bones: {
+                    right_arm: {r: {'0.000': [0, 0, 0], '0.400': [-165, 0, -8], '0.540': [-58, 0, -4], '0.680': [-55, 0, -4], '1.000': [0, 0, 0]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '0.400': [-165, 0, 8], '0.540': [-58, 0, 4], '0.680': [-55, 0, 4], '1.000': [0, 0, 0]}},
+                    right_forearm: {r: {'0.000': [0, 0, 0], '0.400': [-45, 0, 0], '0.540': [-6, 0, 0], '1.000': [0, 0, 0]}},
+                    left_forearm: {r: {'0.000': [0, 0, 0], '0.400': [-45, 0, 0], '0.540': [-6, 0, 0], '1.000': [0, 0, 0]}},
+                    torso: {r: {'0.000': [0, 0, 0], '0.400': [-13, 0, 0], '0.540': [24, 0, 0], '0.680': [22, 0, 0], '1.000': [0, 0, 0]},
+                        p: {'0.000': [0, 0, 0], '0.400': [0, 0.8, 0], '0.540': [0, -2.2, -1], '0.680': [0, -2, -1], '1.000': [0, 0, 0]}},
+                    head: {r: {'0.000': [0, 0, 0], '0.400': [8, 0, 0], '0.540': [-14, 0, 0], '1.000': [0, 0, 0]}}
                 }},
                 shutdown: SLUMP(12, 2.5, 8),
                 wrecked: COLLAPSE(20, 4, 12, 4)
@@ -775,6 +846,57 @@
     })();
 
     // ------------------------------------------------------------------ Blockbench project
+
+    /** Cuts a part of a limb at a joint. On the lower piece the texture continues where the upper piece ends. */
+    function cutAt(cube, joint) {
+        const top = cube.o[1] + cube.s[1];
+        const upper = Object.assign({}, cube, {o: [cube.o[0], joint, cube.o[2]], s: [cube.s[0], top - joint, cube.s[2]]});
+        const lower = Object.assign({}, cube, {s: [cube.s[0], joint - cube.o[1], cube.s[2]], uv: [cube.uv[0], cube.uv[1] + top - joint]});
+        return [upper, lower];
+    }
+
+    /**
+     * Gives the armor's limbs a second joint: shins and forearms become bones of their own. Only the bones change, not
+     * the look or the texture; it runs after the texture is painted. The hands follow the forearms.
+     */
+    function jointedBones(spec) {
+        if (!spec.joints) {
+            return spec.bones;
+        }
+        const limbs = {
+            right_leg: ['right_shin', spec.joints.knee], left_leg: ['left_shin', spec.joints.knee],
+            right_arm: ['right_forearm', spec.joints.elbow], left_arm: ['left_forearm', spec.joints.elbow]
+        };
+        const out = [];
+        for (const bone of spec.bones) {
+            const limb = limbs[bone.name];
+            if (!limb) {
+                out.push(bone.name.endsWith('_hand')
+                    ? Object.assign({}, bone, {parent: bone.parent.replace('_arm', '_forearm')}) : bone);
+                continue;
+            }
+            const [name, joint] = limb;
+            const upper = [], lower = [];
+            for (const cube of bone.cubes) {
+                const top = cube.o[1] + cube.s[1];
+                if (cube.rot ? cube.o[1] + cube.s[1] / 2 < joint : top <= joint) {
+                    lower.push(cube);
+                } else if (cube.rot || cube.o[1] >= joint) {
+                    upper.push(cube);
+                } else {
+                    const [a, b] = cutAt(cube, joint);
+                    upper.push(a);
+                    lower.push(b);
+                }
+            }
+            out.push(Object.assign({}, bone, {cubes: upper}));
+            // The joint lies on the axis of the limb's main part.
+            const main = lower.reduce((best, c) => (c.s[1] * c.s[0] > best.s[1] * best.s[0] ? c : best), lower[0]);
+            const x = bone.name.endsWith('_leg') ? bone.pivot[0] : main.o[0] + main.s[0] / 2;
+            out.push({name, parent: bone.name, pivot: [x, joint, 0], cubes: lower});
+        }
+        return out;
+    }
 
     function allCubes(spec) {
         return spec.bones.flatMap(b => b.cubes);
@@ -839,7 +961,7 @@
         const texture = new Texture({name: id + '.png'}).fromDataURL(canvas.toDataURL('image/png')).add(false);
 
         const groups = {};
-        for (const b of spec.bones) {
+        for (const b of jointedBones(spec)) {
             const group = new Group({name: b.name, origin: [-b.pivot[0], b.pivot[1], b.pivot[2]]});
             group.addTo(b.parent ? groups[b.parent] : undefined).init();
             groups[b.name] = group;

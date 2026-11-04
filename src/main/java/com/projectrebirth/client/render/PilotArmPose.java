@@ -1,5 +1,7 @@
 package com.projectrebirth.client.render;
 
+import javax.annotation.Nullable;
+
 import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 
@@ -37,9 +39,19 @@ final class PilotArmPose {
     }
 
     /** Arms of a power armor: its punch is an animation of its own. */
-    static void apply(PowerArmorEntity armor, Player pilot, float partialTick, GeoBone rightArm, GeoBone leftArm) {
+    static void apply(PowerArmorEntity armor, Player pilot, float partialTick, GeoBone rightArm, GeoBone leftArm,
+                      @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm) {
         float bodyYaw = Mth.rotLerp(partialTick, armor.yBodyRotO, armor.yBodyRot);
         applyPoses(pilot, bodyYaw, partialTick, rightArm, leftArm, isPunching(armor));
+        // The vanilla poses are made for a straight arm, so the walk must not bend the elbow under them.
+        HumanoidModel.ArmPose rightPose = sidePose(pilot, HumanoidArm.RIGHT);
+        HumanoidModel.ArmPose leftPose = sidePose(pilot, HumanoidArm.LEFT);
+        if (rightForearm != null && isPosed(rightPose, leftPose)) {
+            rightForearm.setRotX(0.0f);
+        }
+        if (leftForearm != null && isPosed(leftPose, rightPose)) {
+            leftForearm.setRotX(0.0f);
+        }
     }
 
     /** Arms of an artificial body: item poses, plus the vanilla swing when the player hits or uses something. */

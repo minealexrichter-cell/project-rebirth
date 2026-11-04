@@ -9,6 +9,7 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec CLIENT_SPEC;
 
     public static final ModConfigSpec.BooleanValue HUD_ENABLED;
+    public static final ModConfigSpec.DoubleValue WEAPON_SCOPE_FOV;
     public static final ModConfigSpec.DoubleValue HUD_SCALE;
     public static final ModConfigSpec.IntValue HUD_PANEL_X;
     public static final ModConfigSpec.IntValue HUD_PANEL_Y;
@@ -33,6 +34,10 @@ public final class RebirthClientConfig {
                 .defineInRange("barOffsetX", 0, -4000, 4000);
         HUD_BAR_OFFSET_Y = builder.comment("Vertical shift of the body's integrity bar; positive is down.")
                 .defineInRange("barOffsetY", 0, -4000, 4000);
+        builder.pop();
+        builder.push("weapons");
+        WEAPON_SCOPE_FOV = builder.comment("The field of view is multiplied by this while aiming through a scope; less is closer.")
+                .defineInRange("scopeFovMultiplier", 0.45, 0.1, 1.0);
         builder.pop();
         builder.push("transfer_animation");
         TRANSFER_ANIMATION_ENABLED = builder.comment("Play the camera animation when consciousness moves to another body.")

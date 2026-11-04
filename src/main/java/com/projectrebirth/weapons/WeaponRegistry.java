@@ -1,5 +1,7 @@
 package com.projectrebirth.weapons;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import com.mojang.serialization.Codec;
@@ -10,6 +12,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -46,6 +49,33 @@ public final class WeaponRegistry {
     public static final DeferredItem<Item> BATTLE_RIFLE_AMMO = ITEMS.registerSimpleItem("battle_rifle_ammo");
     public static final DeferredItem<Item> SHOTGUN_SHELL = ITEMS.registerSimpleItem("shotgun_shell");
 
+    private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, ProjectRebirth.MOD_ID);
+    private static final Map<String, WeaponSounds> WEAPON_SOUNDS = new HashMap<>();
+
+    static {
+        // How far shots are heard, in blocks; what they play is in assets/projectrebirth/sounds.json.
+        weaponSounds("assault_rifle", 96.0f);
+        weaponSounds("battle_rifle", 128.0f);
+        weaponSounds("combat_shotgun", 72.0f);
+    }
+
+    /** The three sounds of a weapon. */
+    public record WeaponSounds(Supplier<SoundEvent> shot, Supplier<SoundEvent> reload, Supplier<SoundEvent> empty) {
+    }
+
+    private static void weaponSounds(String id, float shotRange) {
+        String prefix = "weapon." + id + ".";
+        WEAPON_SOUNDS.put(id, new WeaponSounds(
+                SOUNDS.register(prefix + "shot", name -> SoundEvent.createFixedRangeEvent(name, shotRange)),
+                SOUNDS.register(prefix + "reload", SoundEvent::createVariableRangeEvent),
+                SOUNDS.register(prefix + "empty", SoundEvent::createVariableRangeEvent)));
+    }
+
+    /** The sounds of a weapon, or null for one the mod has no sounds for (added by a data pack). */
+    public static WeaponSounds sounds(String id) {
+        return WEAPON_SOUNDS.get(id);
+    }
+
     private WeaponRegistry() {
     }
 
@@ -57,7 +87,9 @@ public final class WeaponRegistry {
         ITEMS.register(modEventBus);
         COMPONENTS.register(modEventBus);
         ATTACHMENTS.register(modEventBus);
+        SOUNDS.register(modEventBus);
         WeaponInputPayload.register(modEventBus);
+        WeaponShotPayload.register(modEventBus);
         modEventBus.addListener(WeaponRegistry::registerDataRegistry);
     }
 

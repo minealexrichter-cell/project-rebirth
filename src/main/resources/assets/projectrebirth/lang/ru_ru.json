@@ -391,5 +391,17 @@
   "tooltip.projectrebirth.weapon.magazine": "Магазин: %s / %s",
   "tooltip.projectrebirth.weapon.needs_armor": "Стреляет только из силовой брони",
   "death.attack.projectrebirth.bullet": "%1$s застрелен(а)",
-  "death.attack.projectrebirth.bullet.player": "%1$s застрелен(а): %2$s"
+  "death.attack.projectrebirth.bullet.player": "%1$s застрелен(а): %2$s",
+  "subtitles.projectrebirth.weapon.assault_rifle.shot": "Автоматическая винтовка: выстрел",
+  "subtitles.projectrebirth.weapon.assault_rifle.reload": "Автоматическая винтовка: перезарядка",
+  "subtitles.projectrebirth.weapon.assault_rifle.empty": "Автоматическая винтовка: щелчок пустого магазина",
+  "subtitles.projectrebirth.weapon.battle_rifle.shot": "Полуавтоматическая винтовка: выстрел",
+  "subtitles.projectrebirth.weapon.battle_rifle.reload": "Полуавтоматическая винтовка: перезарядка",
+  "subtitles.projectrebirth.weapon.battle_rifle.empty": "Полуавтоматическая винтовка: щелчок пустого магазина",
+  "subtitles.projectrebirth.weapon.combat_shotgun.shot": "Дробовик: выстрел",
+  "subtitles.projectrebirth.weapon.combat_shotgun.reload": "Дробовик: перезарядка",
+  "subtitles.projectrebirth.weapon.combat_shotgun.empty": "Дробовик: щелчок пустого магазина",
+  "hud.projectrebirth.weapon.magazine": "Патроны: %s / %s",
+  "hud.projectrebirth.weapon.reserve": "Запас: %s",
+  "hud.projectrebirth.weapon.reload_hint": "[%s] перезарядка"
 }

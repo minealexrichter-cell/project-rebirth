@@ -15,12 +15,14 @@ import net.minecraft.world.item.Item;
  * @param ammo     the only item this weapon loads
  * @param fireMode one shot per press, or shots for as long as the trigger is held
  * @param reload   the whole magazine at once, or round by round
+ * @param scope    aiming also zooms in
  */
-public record WeaponDefinition(Holder<Item> ammo, FireMode fireMode, ReloadMode reload) {
+public record WeaponDefinition(Holder<Item> ammo, FireMode fireMode, ReloadMode reload, boolean scope) {
     public static final Codec<WeaponDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("ammo").forGetter(WeaponDefinition::ammo),
             FireMode.CODEC.fieldOf("fire_mode").forGetter(WeaponDefinition::fireMode),
-            ReloadMode.CODEC.fieldOf("reload").forGetter(WeaponDefinition::reload)
+            ReloadMode.CODEC.fieldOf("reload").forGetter(WeaponDefinition::reload),
+            Codec.BOOL.optionalFieldOf("scope", false).forGetter(WeaponDefinition::scope)
     ).apply(instance, WeaponDefinition::new));
 
     public enum FireMode implements StringRepresentable {

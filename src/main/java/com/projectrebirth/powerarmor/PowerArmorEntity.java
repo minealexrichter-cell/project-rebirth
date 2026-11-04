@@ -14,6 +14,7 @@ import com.projectrebirth.upgrades.InstalledUpgrades;
 import com.projectrebirth.upgrades.UpgradeHost;
 import com.projectrebirth.upgrades.UpgradeLayout;
 import com.projectrebirth.upgrades.Upgrades;
+import com.projectrebirth.weapons.Weapons;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -92,6 +93,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private static final EntityDataAccessor<Boolean> WIDE_MINING = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<InstalledUpgrades> UPGRADES = SynchedEntityData.defineId(PowerArmorEntity.class, InstalledUpgrades.ENTITY_DATA);
     private static final EntityDataAccessor<Boolean> FLOODLIGHT_ON = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> AIMING_WEAPON = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Long> WEAPON_RELOAD_END = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.LONG);
 
     private static final ResourceLocation PILOT_ATTACK_MODIFIER = ProjectRebirth.id("power_armor_attack");
     private static final ResourceLocation PILOT_KNOCKBACK_MODIFIER = ProjectRebirth.id("power_armor_knockback");
@@ -154,6 +157,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         builder.define(WIDE_MINING, true);
         builder.define(UPGRADES, InstalledUpgrades.EMPTY);
         builder.define(FLOODLIGHT_ON, false);
+        builder.define(AIMING_WEAPON, false);
+        builder.define(WEAPON_RELOAD_END, 0L);
     }
 
     // ---------------------------------------------------------------- state
@@ -239,6 +244,21 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (!level().isClientSide && initialized) {
             applyConfig();
         }
+    }
+
+    /** The pilot is aiming a weapon. Decided by the server (see Weapons), seen by everyone. */
+    public boolean isAimingWeapon() {
+        return entityData.get(AIMING_WEAPON);
+    }
+
+    /** The game time at which the current reload step ends; 0 without a reload. */
+    public long weaponReloadEnd() {
+        return entityData.get(WEAPON_RELOAD_END);
+    }
+
+    public void setWeaponPose(boolean aiming, long reloadEnd) {
+        entityData.set(AIMING_WEAPON, aiming);
+        entityData.set(WEAPON_RELOAD_END, reloadEnd);
     }
 
     public boolean isFloodlightOn() {
@@ -432,6 +452,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             floodlightPos = Floodlight.update(this, floodlightPos);
         }
         Player pilot = getPilot();
+        if (pilot == null && (isAimingWeapon() || weaponReloadEnd() != 0L)) {
+            setWeaponPose(false, 0L);
+        }
         if (pilot != null && !isWrecked()) {
             // The cockpit is sealed.
             pilot.setAirSupply(pilot.getMaxAirSupply());
@@ -576,6 +599,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (ArmorAbility.selected(player) == ArmorVariant.MOBILE) {
             speed *= 1.0f + RebirthConfig.ARMOR_ABILITY_SPEED_BONUS.get().floatValue();
         }
+        speed *= Weapons.aimSpeedMultiplier(player);
         return speed;
     }
 

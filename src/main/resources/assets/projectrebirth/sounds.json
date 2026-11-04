@@ -198,5 +198,104 @@
         "pitch": 0.8
       }
     ]
+  },
+  "weapon.assault_rifle.shot": {
+    "subtitle": "subtitles.projectrebirth.weapon.assault_rifle.shot",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/assault_rifle_shot1",
+        "volume": 0.9,
+        "attenuation_distance": 96
+      },
+      {
+        "name": "projectrebirth:weapon/assault_rifle_shot2",
+        "volume": 0.9,
+        "attenuation_distance": 96
+      }
+    ]
+  },
+  "weapon.assault_rifle.reload": {
+    "subtitle": "subtitles.projectrebirth.weapon.assault_rifle.reload",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/assault_rifle_reload",
+        "attenuation_distance": 12
+      }
+    ]
+  },
+  "weapon.assault_rifle.empty": {
+    "subtitle": "subtitles.projectrebirth.weapon.assault_rifle.empty",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/assault_rifle_empty",
+        "attenuation_distance": 10
+      }
+    ]
+  },
+  "weapon.battle_rifle.shot": {
+    "subtitle": "subtitles.projectrebirth.weapon.battle_rifle.shot",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/battle_rifle_shot1",
+        "volume": 1,
+        "attenuation_distance": 128
+      },
+      {
+        "name": "projectrebirth:weapon/battle_rifle_shot2",
+        "volume": 1,
+        "attenuation_distance": 128
+      }
+    ]
+  },
+  "weapon.battle_rifle.reload": {
+    "subtitle": "subtitles.projectrebirth.weapon.battle_rifle.reload",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/battle_rifle_reload",
+        "attenuation_distance": 12
+      }
+    ]
+  },
+  "weapon.battle_rifle.empty": {
+    "subtitle": "subtitles.projectrebirth.weapon.battle_rifle.empty",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/battle_rifle_empty",
+        "attenuation_distance": 10
+      }
+    ]
+  },
+  "weapon.combat_shotgun.shot": {
+    "subtitle": "subtitles.projectrebirth.weapon.combat_shotgun.shot",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/combat_shotgun_shot1",
+        "volume": 1,
+        "attenuation_distance": 72
+      },
+      {
+        "name": "projectrebirth:weapon/combat_shotgun_shot2",
+        "volume": 1,
+        "attenuation_distance": 72
+      }
+    ]
+  },
+  "weapon.combat_shotgun.reload": {
+    "subtitle": "subtitles.projectrebirth.weapon.combat_shotgun.reload",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/combat_shotgun_reload",
+        "attenuation_distance": 12
+      }
+    ]
+  },
+  "weapon.combat_shotgun.empty": {
+    "subtitle": "subtitles.projectrebirth.weapon.combat_shotgun.empty",
+    "sounds": [
+      {
+        "name": "projectrebirth:weapon/combat_shotgun_empty",
+        "attenuation_distance": 10
+      }
+    ]
   }
 }

@@ -1,8 +1,11 @@
 package com.projectrebirth.weapons;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +18,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -35,6 +40,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * The rules of the guns, all on the server: a client only reports keys. Only the pilot of a working power armor can shoot,
@@ -44,6 +50,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class Weapons {
     /** How much wider than its box an entity is for a bullet; a little forgiveness for the delay of the network. */
     private static final float HIT_MARGIN = 0.1f;
+    /** Ticks before an empty weapon can click again, however fast the trigger is pulled. */
+    private static final int EMPTY_CLICK_INTERVAL = 5;
 
     /** What one fired shot did. */
     public record Shot(int pellets, int hits, float damage) {
@@ -58,6 +66,19 @@ public final class Weapons {
 
     public static Optional<WeaponDefinition> definition(RegistryAccess access, Item item) {
         return access.registryOrThrow(WeaponRegistry.WEAPONS).getOptional(ResourceKey.create(WeaponRegistry.WEAPONS, BuiltInRegistries.ITEM.getKey(item)));
+    }
+
+    /** The config section of a weapon, or null if the item has none. */
+    @Nullable
+    public static RebirthConfig.WeaponStats statsOf(Item item) {
+        return RebirthConfig.weapon(BuiltInRegistries.ITEM.getKey(item).getPath());
+    }
+
+    /** How fast a pilot's armor walks compared to normal; lower while aiming. Runs on both sides, since the client moves the armor. */
+    public static float aimSpeedMultiplier(Player pilot) {
+        RebirthConfig.WeaponStats stats = statsOf(pilot.getMainHandItem().getItem());
+        return stats != null && holdsWeapon(pilot) && pilot.getVehicle() instanceof PowerArmorEntity armor && armor.isAimingWeapon()
+                ? stats.aimSpeedMultiplier().get().floatValue() : 1.0f;
     }
 
     public static int ammoIn(ItemStack stack) {
@@ -84,7 +105,7 @@ public final class Weapons {
         if (!(stack.getItem() instanceof WeaponItem) || !isPilotOfWorkingArmor(player)) {
             return null;
         }
-        RebirthConfig.WeaponStats stats = RebirthConfig.weapon(BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath());
+        RebirthConfig.WeaponStats stats = statsOf(stack.getItem());
         Optional<WeaponDefinition> definition = definition(player.registryAccess(), stack.getItem());
         return stats == null || definition.isEmpty() ? null : new Held(stack, definition.get(), stats);
     }
@@ -100,23 +121,48 @@ public final class Weapons {
         if (held == null) {
             return null;
         }
-        state(player).triggerHeld = true;
+        WeaponState state = state(player);
+        state.triggerHeld = true;
+        state.clickedEmpty = false;
         return fire(player, held);
     }
 
     public static void releaseTrigger(ServerPlayer player) {
-        state(player).triggerHeld = false;
+        WeaponState state = state(player);
+        state.triggerHeld = false;
+        state.clickedEmpty = false;
     }
 
     /** @return whether the player is aiming now */
     public static boolean setAiming(ServerPlayer player, boolean aiming) {
         boolean allowed = aiming && usable(player) != null;
         state(player).aiming = allowed;
+        showPose(player);
         return allowed;
     }
 
     public static boolean isAiming(ServerPlayer player) {
         return state(player).aiming;
+    }
+
+    /** Tells everyone what the pilot does with the weapon, for the HUD, the slower walk and the poses. */
+    private static void showPose(ServerPlayer player) {
+        if (player.getVehicle() instanceof PowerArmorEntity armor) {
+            WeaponState state = state(player);
+            armor.setWeaponPose(state.aiming, state.isReloading() ? state.reloadEndTime : 0L);
+        }
+    }
+
+    private static void play(ServerPlayer player, String weapon, Function<WeaponRegistry.WeaponSounds, java.util.function.Supplier<SoundEvent>> which) {
+        WeaponRegistry.WeaponSounds sounds = WeaponRegistry.sounds(weapon);
+        if (sounds != null) {
+            player.level().playSound(null, player.getX(), player.getEyeY(), player.getZ(), which.apply(sounds).get(), SoundSource.PLAYERS,
+                    1.0f, 0.97f + player.getRandom().nextFloat() * 0.06f);
+        }
+    }
+
+    private static String idOf(ItemStack stack) {
+        return BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
     }
 
     public static boolean isReloading(ServerPlayer player) {
@@ -136,6 +182,8 @@ public final class Weapons {
         }
         state.reloadSlot = player.getInventory().selected;
         state.reloadEndTime = player.level().getGameTime() + held.stats().reloadTicks().get();
+        showPose(player);
+        play(player, idOf(held.stack()), WeaponRegistry.WeaponSounds::reload);
         return true;
     }
 
@@ -144,11 +192,20 @@ public final class Weapons {
         WeaponState state = state(player);
         long now = player.level().getGameTime();
         int rounds = ammoIn(held.stack());
-        if (state.isReloading() || now < state.nextShotTime || rounds <= 0) {
+        if (state.isReloading() || now < state.nextShotTime) {
+            return null;
+        }
+        if (rounds <= 0) {
+            if (!state.clickedEmpty) {
+                state.clickedEmpty = true;
+                state.nextShotTime = now + EMPTY_CLICK_INTERVAL;
+                play(player, idOf(held.stack()), WeaponRegistry.WeaponSounds::empty);
+            }
             return null;
         }
         setAmmo(held.stack(), rounds - 1);
         state.nextShotTime = now + held.stats().shotIntervalTicks().get();
+        play(player, idOf(held.stack()), WeaponRegistry.WeaponSounds::shot);
         Shot shot = shoot(player, held.stats(), state);
         state.extraSpread = Math.min(state.extraSpread + held.stats().spreadPerShot().get().floatValue(), held.stats().maxExtraSpread().get().floatValue());
         return shot;
@@ -159,12 +216,12 @@ public final class Weapons {
         double spread = (stats.spreadDegrees().get() + state.extraSpread) * (state.aiming ? stats.aimSpreadMultiplier().get() : 1.0);
         int pellets = stats.pellets().get();
         Map<Entity, Float> damageByTarget = new LinkedHashMap<>();
+        List<WeaponShotPayload.Pellet> effects = new ArrayList<>(pellets);
         Vec3 start = player.getEyePosition();
         for (int i = 0; i < pellets; i++) {
-            EntityHitResult hit = trace(player, start, scatter(player.getLookAngle(), spread, player.getRandom()), stats.range().get());
-            if (hit != null) {
-                damageByTarget.merge(hit.getEntity(), damageAt(stats, start.distanceTo(hit.getLocation())), Float::sum);
-            }
+            Vec3 direction = scatter(player.getLookAngle(), spread, player.getRandom());
+            WeaponShotPayload.Pellet pellet = trace(player, start, direction, stats.range().get(), damageByTarget, stats);
+            effects.add(pellet);
         }
         DamageSource source = player.damageSources().source(WeaponRegistry.BULLET, player);
         float total = 0.0f;
@@ -176,20 +233,32 @@ public final class Weapons {
             target.invulnerableTime = 0;
             total += entry.getValue();
         }
+        // Test players have no real client behind them.
+        if (player.connection.hasChannel(WeaponShotPayload.TYPE)) {
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new WeaponShotPayload(player.getId(), effects));
+        }
         return new Shot(pellets, damageByTarget.size(), total);
     }
 
-    /** The first target on the way, unless a block stands before it. */
-    @Nullable
-    private static EntityHitResult trace(ServerPlayer player, Vec3 start, Vec3 direction, double range) {
+    /** Follows one bullet to the first target or block on its way and notes the damage it does. */
+    private static WeaponShotPayload.Pellet trace(ServerPlayer player, Vec3 start, Vec3 direction, double range, Map<Entity, Float> damageByTarget,
+                                                  RebirthConfig.WeaponStats stats) {
         Level level = player.level();
         Vec3 end = start.add(direction.scale(range));
+        WeaponShotPayload.Ending ending = WeaponShotPayload.Ending.NOTHING;
         BlockHitResult block = level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
         if (block.getType() != HitResult.Type.MISS) {
             end = block.getLocation();
+            ending = WeaponShotPayload.Ending.BLOCK;
         }
-        return ProjectileUtil.getEntityHitResult(level, player, start, end, player.getBoundingBox().expandTowards(end.subtract(start)).inflate(1.0),
+        EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, player, start, end, player.getBoundingBox().expandTowards(end.subtract(start)).inflate(1.0),
                 target -> canBeHit(player, target), HIT_MARGIN);
+        if (hit != null) {
+            end = hit.getLocation();
+            ending = WeaponShotPayload.Ending.ENTITY;
+            damageByTarget.merge(hit.getEntity(), damageAt(stats, start.distanceTo(end)), Float::sum);
+        }
+        return new WeaponShotPayload.Pellet((float) end.x, (float) end.y, (float) end.z, ending);
     }
 
     /** Not the shooter's own armor. A pilot is hit through their armor, whose box surrounds them. */
@@ -233,6 +302,7 @@ public final class Weapons {
             state.aiming = false;
             state.stopReload();
             state.extraSpread = 0.0f;
+            showPose(player);
             return;
         }
         if (state.isReloading()) {
@@ -249,6 +319,7 @@ public final class Weapons {
         if (state.reloadSlot != player.getInventory().selected) {
             // Rounds move only when the time is up, so an interrupted reload loses nothing.
             state.stopReload();
+            showPose(player);
             return;
         }
         long now = player.level().getGameTime();
@@ -261,15 +332,18 @@ public final class Weapons {
         if (held.definition().reload() == WeaponDefinition.ReloadMode.MAGAZINE) {
             setAmmo(held.stack(), rounds + takeFromInventory(player, ammo, magazine - rounds));
             state.stopReload();
+            showPose(player);
             return;
         }
         rounds += takeFromInventory(player, ammo, Math.min(1, magazine - rounds));
         setAmmo(held.stack(), rounds);
         if (rounds < magazine && player.getInventory().countItem(ammo) > 0) {
             state.reloadEndTime = now + held.stats().reloadTicks().get();
+            play(player, idOf(held.stack()), WeaponRegistry.WeaponSounds::reload);
         } else {
             state.stopReload();
         }
+        showPose(player);
     }
 
     /** @return how many were really taken */

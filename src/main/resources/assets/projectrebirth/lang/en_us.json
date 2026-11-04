@@ -391,5 +391,17 @@
   "tooltip.projectrebirth.weapon.magazine": "Magazine: %s / %s",
   "tooltip.projectrebirth.weapon.needs_armor": "Fires only from power armor",
   "death.attack.projectrebirth.bullet": "%1$s was shot",
-  "death.attack.projectrebirth.bullet.player": "%1$s was shot by %2$s"
+  "death.attack.projectrebirth.bullet.player": "%1$s was shot by %2$s",
+  "subtitles.projectrebirth.weapon.assault_rifle.shot": "Assault rifle fires",
+  "subtitles.projectrebirth.weapon.assault_rifle.reload": "Assault rifle reloads",
+  "subtitles.projectrebirth.weapon.assault_rifle.empty": "Assault rifle clicks empty",
+  "subtitles.projectrebirth.weapon.battle_rifle.shot": "Battle rifle fires",
+  "subtitles.projectrebirth.weapon.battle_rifle.reload": "Battle rifle reloads",
+  "subtitles.projectrebirth.weapon.battle_rifle.empty": "Battle rifle clicks empty",
+  "subtitles.projectrebirth.weapon.combat_shotgun.shot": "Shotgun fires",
+  "subtitles.projectrebirth.weapon.combat_shotgun.reload": "Shotgun reloads",
+  "subtitles.projectrebirth.weapon.combat_shotgun.empty": "Shotgun clicks empty",
+  "hud.projectrebirth.weapon.magazine": "Rounds: %s / %s",
+  "hud.projectrebirth.weapon.reserve": "Spare: %s",
+  "hud.projectrebirth.weapon.reload_hint": "[%s] reload"
 }

@@ -11,6 +11,8 @@ public class WeaponState {
     /** Degrees added to the weapon's spread by the shots of a burst. */
     float extraSpread;
     long reloadEndTime;
+    /** The empty click of this press has been heard. */
+    boolean clickedEmpty;
     int reloadSlot = NO_RELOAD;
 
     boolean isReloading() {

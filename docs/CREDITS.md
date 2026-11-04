@@ -56,6 +56,22 @@ http://creativecommons.org/publicdomain/zero/1.0/
 Чтобы заменить звук, положите свой `.ogg` **в моно** с тем же именем или поправьте `sounds.json`; код менять
 не нужно.
 
+### Звуки оружия
+
+**По решению владельца у оружия настоящие звуки, не ванильные.** Файлы лежат в `assets/projectrebirth/sounds/weapon/`. Все источники под лицензией **CC0**, лицензия каждой страницы проверена 05.11.2026. Исходные файлы в проект не входят (194 МБ), подготовка записана в `assets_src/sounds/weapons/prepare_weapon_sounds.sh`: моно, 44,1 кГц, обрезка, выравнивание пика, короткое затухание, `.ogg`.
+
+| Файлы мода | Исходный файл | Автор | Источник |
+|---|---|---|---|
+| `assault_rifle_shot1–2` | `AR-15/D_32P.wav`, вблизи | Ben Jaszczak, Brian Nelson, Kevin Heras, Matthew Nanney | [The Free Firearm Sound Library](https://opengameart.org/content/the-free-firearm-sound-library), `Prepared SFX Library.7z`, 193 954 738 байт |
+| `battle_rifle_shot1–2` | `SKS/U_14P.wav`, вблизи | те же | тот же |
+| `combat_shotgun_shot1–2` | `Nova/O_21P.wav`, вблизи | те же | тот же |
+| `assault_rifle_reload` | `assaultriflereload1.wav` | SpringySpringo | [Gun reload sounds](https://opengameart.org/content/gun-reload-sounds) |
+| `battle_rifle_reload` | `gunreload1.wav` | SpringySpringo | тот же |
+| `combat_shotgun_reload` | `singlebullet1.wav` | BMacZero | [Gun reload sound effects](https://opengameart.org/content/gun-reload-sound-effects) |
+| `assault_rifle_empty`, `battle_rifle_empty`, `combat_shotgun_empty` | три щелчка из `equipment_clicks3.wav` | LFA | [Equipment clicks III](https://opengameart.org/content/equipment-clicks-iii) |
+
+Скачаны, но не используются: `shotguncock.wav`, `clipload1.wav`, `clipload2.wav`.
+
 ## Модели и текстуры
 
 Все модели и текстуры сделаны для мода программно: тела и броня — скриптом в Blockbench

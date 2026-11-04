@@ -262,9 +262,9 @@ public final class RebirthConfig {
         builder.pop();
 
         builder.comment("Guns of power armor; each has its own section. Damage is per bullet or pellet (20 ticks = 1 second)").push("weapons");
-        defineWeapon(builder, "assault_rifle", 30, 2.5, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50);
-        defineWeapon(builder, "battle_rifle", 10, 9.0, 128.0, 8, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50);
-        defineWeapon(builder, "combat_shotgun", 6, 2.0, 24.0, 16, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16);
+        defineWeapon(builder, "assault_rifle", 30, 2.5, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50, 0.6, 0.3, 0.05, 0.3);
+        defineWeapon(builder, "battle_rifle", 10, 9.0, 128.0, 8, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50, 0.5, 1.8, 0.0, 0.0);
+        defineWeapon(builder, "combat_shotgun", 6, 2.0, 24.0, 16, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16, 0.6, 3.5, 0.0, 0.0);
         builder.pop();
 
         builder.comment("What the upgrades of power armor do").push("armor_upgrades");
@@ -392,7 +392,8 @@ public final class RebirthConfig {
 
     private static void defineWeapon(ModConfigSpec.Builder builder, String id, int magazine, double damage, double range, int shotInterval, int pellets,
                                      double spread, double spreadPerShot, double maxExtraSpread, double spreadRecovery, double aimSpread,
-                                     double falloffStart, double damageAtRange, int reloadTicks) {
+                                     double falloffStart, double damageAtRange, int reloadTicks,
+                                     double aimSpeed, double recoil, double recoilBuildup, double maxRecoilBuildup) {
         builder.push(id);
         WEAPONS.put(id, new WeaponStats(
                 builder.comment("Rounds in the magazine").defineInRange("magazine", magazine, 1, 1000),
@@ -407,7 +408,11 @@ public final class RebirthConfig {
                 builder.comment("Spread is multiplied by this while aiming").defineInRange("aimSpreadMultiplier", aimSpread, 0.0, 1.0),
                 builder.comment("Distance in blocks up to which it does full damage").defineInRange("falloffStart", falloffStart, 0.0, 512.0),
                 builder.comment("Share of the damage left at full range").defineInRange("damageAtRange", damageAtRange, 0.0, 1.0),
-                builder.comment("Ticks to reload: the magazine, or one round if the weapon loads round by round").defineInRange("reloadTicks", reloadTicks, 1, 1200)));
+                builder.comment("Ticks to reload: the magazine, or one round if the weapon loads round by round").defineInRange("reloadTicks", reloadTicks, 1, 1200),
+                builder.comment("The armor's speed is multiplied by this while aiming").defineInRange("aimSpeedMultiplier", aimSpeed, 0.0, 1.0),
+                builder.comment("Degrees the view rises per shot; only on the pilot's screen").defineInRange("recoilDegrees", recoil, 0.0, 45.0),
+                builder.comment("Degrees of recoil added by each shot of a burst").defineInRange("recoilBuildup", recoilBuildup, 0.0, 45.0),
+                builder.comment("The most degrees a burst can add to the recoil of a shot").defineInRange("maxRecoilBuildup", maxRecoilBuildup, 0.0, 45.0)));
         builder.pop();
     }
 
@@ -420,7 +425,9 @@ public final class RebirthConfig {
                               ModConfigSpec.IntValue shotIntervalTicks, ModConfigSpec.IntValue pellets, ModConfigSpec.DoubleValue spreadDegrees,
                               ModConfigSpec.DoubleValue spreadPerShot, ModConfigSpec.DoubleValue maxExtraSpread,
                               ModConfigSpec.DoubleValue spreadRecoveryPerTick, ModConfigSpec.DoubleValue aimSpreadMultiplier,
-                              ModConfigSpec.DoubleValue falloffStart, ModConfigSpec.DoubleValue damageAtRange, ModConfigSpec.IntValue reloadTicks) {
+                              ModConfigSpec.DoubleValue falloffStart, ModConfigSpec.DoubleValue damageAtRange, ModConfigSpec.IntValue reloadTicks,
+                              ModConfigSpec.DoubleValue aimSpeedMultiplier, ModConfigSpec.DoubleValue recoilDegrees,
+                              ModConfigSpec.DoubleValue recoilBuildup, ModConfigSpec.DoubleValue maxRecoilBuildup) {
     }
 
     private static void defineArmorPlating(ModConfigSpec.Builder builder, String material, double structural, double critical) {

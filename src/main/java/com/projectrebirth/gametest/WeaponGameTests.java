@@ -312,6 +312,49 @@ public class WeaponGameTests {
     }
 
     @GameTest(template = TEMPLATE)
+    public static void aimingIsShownOnTheArmorAndSlowsItDown(GameTestHelper helper) {
+        ServerPlayer pilot = pilot(helper, WeaponRegistry.BATTLE_RIFLE.get(), 3);
+        PowerArmorEntity armor = (PowerArmorEntity) pilot.getVehicle();
+        float speed = armor.pilotSpeed(pilot);
+        helper.assertTrue(Weapons.setAiming(pilot, true), "A pilot can aim");
+        helper.assertTrue(armor.isAimingWeapon(), "Everyone sees it");
+        float expected = speed * stats("battle_rifle").aimSpeedMultiplier().get().floatValue();
+        helper.assertTrue(Math.abs(armor.pilotSpeed(pilot) - expected) < 0.0001f, "Aiming slows the armor, got " + armor.pilotSpeed(pilot));
+        pilot.getInventory().selected = 3;
+        Weapons.tick(pilot);
+        helper.assertFalse(armor.isAimingWeapon(), "Without a weapon in hand the aim ends");
+        helper.assertTrue(Math.abs(armor.pilotSpeed(pilot) - speed) < 0.0001f, "And the speed comes back");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void leavingTheArmorEndsTheReloadWithoutLoss(GameTestHelper helper) {
+        ServerPlayer pilot = pilot(helper, WeaponRegistry.ASSAULT_RIFLE.get(), 2);
+        PowerArmorEntity armor = (PowerArmorEntity) pilot.getVehicle();
+        Item ammo = WeaponRegistry.ASSAULT_RIFLE_AMMO.get();
+        pilot.getInventory().add(new ItemStack(ammo, 10));
+        helper.assertTrue(Weapons.startReload(pilot), "The reload must start");
+        helper.assertTrue(armor.weaponReloadEnd() > 0L, "Everyone sees it");
+        pilot.stopRiding();
+        Weapons.tick(pilot);
+        helper.assertFalse(Weapons.isReloading(pilot), "Getting out stops it");
+        helper.assertTrue(Weapons.ammoIn(pilot.getMainHandItem()) == 2 && pilot.getInventory().countItem(ammo) == 10, "No rounds are lost or made");
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(armor.weaponReloadEnd() == 0L, "The empty armor shows no reload");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void everyWeaponHasItsThreeSounds(GameTestHelper helper) {
+        for (String id : List.of("assault_rifle", "battle_rifle", "combat_shotgun")) {
+            WeaponRegistry.WeaponSounds sounds = WeaponRegistry.sounds(id);
+            helper.assertTrue(sounds != null && sounds.shot().get() != null && sounds.reload().get() != null && sounds.empty().get() != null, "Sounds of " + id);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
     public static void roundsStayInTheMagazineWhenDroppedAndSaved(GameTestHelper helper) {
         ItemStack stack = new ItemStack(WeaponRegistry.ASSAULT_RIFLE.get());
         Weapons.setAmmo(stack, 17);

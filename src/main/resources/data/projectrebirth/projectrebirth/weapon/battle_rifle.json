@@ -1,5 +1,6 @@
 {
   "ammo": "projectrebirth:battle_rifle_ammo",
   "fire_mode": "semi_automatic",
-  "reload": "magazine"
+  "reload": "magazine",
+  "scope": true
 }

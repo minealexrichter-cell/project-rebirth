@@ -9,6 +9,7 @@ import com.projectrebirth.bodies.BodyComponents;
 import com.projectrebirth.bodies.BodyEntities;
 import com.projectrebirth.bodies.BodyItems;
 import com.projectrebirth.bodies.CapsuleNetwork;
+import com.projectrebirth.bodies.Jetpack;
 import com.projectrebirth.bodies.ReturnToHumanPayload;
 import com.projectrebirth.bodies.TransferAnimationPayload;
 import com.projectrebirth.config.RebirthConfig;
@@ -64,6 +65,7 @@ public class ProjectRebirth {
         FactionBlocks.register(modEventBus);
         FactionSync.register(modEventBus);
         UpgradeRegistry.register(modEventBus);
+        Jetpack.register(modEventBus);
         ModSounds.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 

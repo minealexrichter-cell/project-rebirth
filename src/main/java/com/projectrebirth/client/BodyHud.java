@@ -1,6 +1,7 @@
 package com.projectrebirth.client;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.bodies.Jetpack;
 import com.projectrebirth.bodies.TransferService;
 
 import net.minecraft.client.DeltaTracker;
@@ -23,6 +24,8 @@ import net.neoforged.neoforge.common.NeoForge;
 public final class BodyHud {
     private static final int WIDTH = HudLayout.BAR_WIDTH;
     private static final int HEIGHT = HudLayout.BAR_HEIGHT;
+    private static final int THRUST_HEIGHT = 5;
+    private static final int THRUST_COLOR = 0xFF7FE8FF;
 
     private BodyHud() {
     }
@@ -58,7 +61,8 @@ public final class BodyHud {
         float scale = HudLayout.scale();
         int height = Math.round(HEIGHT * scale);
         int bottom = graphics.guiHeight() - minecraft.gui.leftHeight + HEIGHT;
-        minecraft.gui.leftHeight += height + 1;
+        boolean jetpack = Jetpack.equipped(player);
+        minecraft.gui.leftHeight += height + 1 + (jetpack ? Math.round((THRUST_HEIGHT + 1) * scale) : 0);
         graphics.pose().pushPose();
         graphics.pose().translate(HudLayout.barX(graphics.guiWidth() / 2 - 91, graphics.guiWidth()),
                 HudLayout.barBottom(bottom, graphics.guiHeight()), 0.0f);
@@ -70,6 +74,10 @@ public final class BodyHud {
         float fraction = max > 0 ? Mth.clamp(player.getHealth() / max, 0.0f, 1.0f) : 0.0f;
         int color = fraction > 0.5f ? 0xFF4FC3F7 : fraction > 0.25f ? 0xFFFFC107 : 0xFFE53935;
         GuiAtlas.bar(graphics, x, y, WIDTH, HEIGHT, fraction, color);
+
+        if (jetpack) {
+            GuiAtlas.bar(graphics, x, y - THRUST_HEIGHT - 1, WIDTH, THRUST_HEIGHT, Jetpack.reserve(player), THRUST_COLOR);
+        }
 
         Font font = minecraft.font;
         String text = Mth.ceil(player.getHealth()) + " / " + Mth.ceil(max);

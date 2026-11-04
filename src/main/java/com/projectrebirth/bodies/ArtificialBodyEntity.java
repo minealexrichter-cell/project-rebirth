@@ -114,6 +114,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
     @Override
     public void setUpgrades(InstalledUpgrades upgrades) {
         this.upgrades = upgrades;
+        if (!level().isClientSide && statsInitialized) {
+            applyArmor();
+        }
     }
 
     @Override
@@ -134,11 +137,17 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
     private void applyClassStats() {
         RebirthConfig.BodyStats stats = RebirthConfig.bodyStats(bodyClass);
         getAttribute(Attributes.MAX_HEALTH).setBaseValue(stats.maxHealth().get());
-        getAttribute(Attributes.ARMOR).setBaseValue(stats.armor().get());
+        applyArmor();
         if (!statsInitialized || getHealth() > getMaxHealth()) {
             setHealth(getMaxHealth());
         }
         statsInitialized = true;
+    }
+
+    private void applyArmor() {
+        double armor = RebirthConfig.bodyStats(bodyClass).armor().get();
+        getAttribute(Attributes.ARMOR).setBaseValue(armor + BodyGadgets.armorBonus(registryAccess(), upgrades));
+        getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(BodyGadgets.toughnessBonus(registryAccess(), upgrades));
     }
 
     @Override

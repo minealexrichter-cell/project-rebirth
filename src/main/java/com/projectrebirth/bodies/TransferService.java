@@ -53,6 +53,8 @@ public final class TransferService {
     private static final ResourceLocation ARMOR_MODIFIER = ProjectRebirth.id("body_armor");
     private static final ResourceLocation SPEED_MODIFIER = ProjectRebirth.id("body_speed");
     private static final ResourceLocation ATTACK_MODIFIER = ProjectRebirth.id("body_attack");
+    private static final ResourceLocation PLATING_ARMOR_MODIFIER = ProjectRebirth.id("body_plating_armor");
+    private static final ResourceLocation PLATING_TOUGHNESS_MODIFIER = ProjectRebirth.id("body_plating_toughness");
 
     /** Game time of the last transfer per player. Not saved: a restart simply clears the cooldown. */
     private static final Map<UUID, Long> LAST_TRANSFER = new HashMap<>();
@@ -233,6 +235,7 @@ public final class TransferService {
         // A body from 1.0.0 may still be wearing armor.
         BodyInventory.clearArmor(player);
         player.setData(UpgradeRegistry.CONTROLLED_BODY, upgrades);
+        player.setData(UpgradeRegistry.JETPACK_USED, 0.0f);
         applyBodyModifiers(player, bodyClass);
         player.teleportTo(level, pos.x, pos.y, pos.z, yaw, player.getXRot());
         level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -418,6 +421,11 @@ public final class TransferService {
         addModifier(player, Attributes.MOVEMENT_SPEED, SPEED_MODIFIER, stats.speedMultiplier().get() - 1.0,
                 AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
         addModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER, stats.attackDamageBonus().get(), AttributeModifier.Operation.ADD_VALUE);
+        InstalledUpgrades upgrades = player.getData(UpgradeRegistry.CONTROLLED_BODY);
+        addModifier(player, Attributes.ARMOR, PLATING_ARMOR_MODIFIER, BodyGadgets.armorBonus(player.registryAccess(), upgrades),
+                AttributeModifier.Operation.ADD_VALUE);
+        addModifier(player, Attributes.ARMOR_TOUGHNESS, PLATING_TOUGHNESS_MODIFIER, BodyGadgets.toughnessBonus(player.registryAccess(), upgrades),
+                AttributeModifier.Operation.ADD_VALUE);
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());
         }
@@ -428,6 +436,8 @@ public final class TransferService {
         removeModifier(player, Attributes.ARMOR, ARMOR_MODIFIER);
         removeModifier(player, Attributes.MOVEMENT_SPEED, SPEED_MODIFIER);
         removeModifier(player, Attributes.ATTACK_DAMAGE, ATTACK_MODIFIER);
+        removeModifier(player, Attributes.ARMOR, PLATING_ARMOR_MODIFIER);
+        removeModifier(player, Attributes.ARMOR_TOUGHNESS, PLATING_TOUGHNESS_MODIFIER);
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());
         }

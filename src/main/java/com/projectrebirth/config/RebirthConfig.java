@@ -1,6 +1,7 @@
 package com.projectrebirth.config;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.projectrebirth.bodies.BodyClass;
@@ -46,6 +47,11 @@ public final class RebirthConfig {
     public static ModConfigSpec.DoubleValue ARMOR_ABILITY_SPEED_BONUS;
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
+    private static final Map<String, PlatingStats> PLATING = new HashMap<>();
+    public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
+    public static final ModConfigSpec.DoubleValue JETPACK_RECHARGE_SECONDS;
+    public static final ModConfigSpec.DoubleValue JETPACK_RISE_SPEED;
+    public static final ModConfigSpec.IntValue JETPACK_MAX_HEIGHT;
     public static final ModConfigSpec.IntValue BODY_MODIFICATION_INSTALL_TICKS;
     public static final ModConfigSpec.IntValue BODY_MODIFICATION_ENERGY_PER_TICK;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
@@ -248,6 +254,28 @@ public final class RebirthConfig {
                 .defineInRange("energyPerTick", 20, 0, 1_000_000);
         builder.pop();
 
+        builder.comment("What the gadgets of artificial bodies do").push("gadgets");
+        builder.comment("Armor plates, per piece, added to the armor of the body class").push("plating");
+        definePlating(builder, "copper", 1.0, 0.0);
+        definePlating(builder, "iron", 2.0, 0.0);
+        definePlating(builder, "titanium", 3.0, 1.0);
+        builder.pop();
+        builder.comment("Jetpack: hold jump in the air").push("jetpack");
+        JETPACK_THRUST_SECONDS = builder
+                .comment("Seconds of flight on a full reserve")
+                .defineInRange("thrustSeconds", 6.0, 0.5, 600.0);
+        JETPACK_RECHARGE_SECONDS = builder
+                .comment("Seconds on the ground to fill an empty reserve; it recharges only on the ground")
+                .defineInRange("rechargeSeconds", 12.0, 0.5, 3600.0);
+        JETPACK_RISE_SPEED = builder
+                .comment("Speed of rising, blocks per tick")
+                .defineInRange("riseSpeed", 0.3, 0.05, 2.0);
+        JETPACK_MAX_HEIGHT = builder
+                .comment("Highest flight, in blocks above the surface under the body")
+                .defineInRange("maxHeight", 8, 1, 256);
+        builder.pop();
+        builder.pop();
+
         builder.comment("Energy (NeoForge Energy, FE): generators, battery, cable and what the stations use").push("energy");
         STATIONS_NEED_ENERGY = builder
                 .comment("Whether production and maintenance stations need energy. false = they work without it, as in 0.1.0")
@@ -323,6 +351,22 @@ public final class RebirthConfig {
     public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
                              ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
                              ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
+    }
+
+    private static void definePlating(ModConfigSpec.Builder builder, String material, double armor, double toughness) {
+        builder.push(material);
+        PLATING.put(material, new PlatingStats(
+                builder.comment("Armor points per piece").defineInRange("armor", armor, 0.0, 30.0),
+                builder.comment("Armor toughness per piece").defineInRange("toughness", toughness, 0.0, 20.0)));
+        builder.pop();
+    }
+
+    /** The numbers of a plate material, or null if the config does not know it (a plate added by a data pack). */
+    public static PlatingStats plating(String material) {
+        return PLATING.get(material);
+    }
+
+    public record PlatingStats(ModConfigSpec.DoubleValue armor, ModConfigSpec.DoubleValue toughness) {
     }
 
     public static BodyStats bodyStats(BodyClass bodyClass) {

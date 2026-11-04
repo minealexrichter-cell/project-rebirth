@@ -4,9 +4,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -42,6 +45,13 @@ public final class UpgradeRegistry {
             () -> AttachmentType.builder(() -> InstalledUpgrades.EMPTY)
                     .serialize(InstalledUpgrades.CODEC, upgrades -> !upgrades.isEmpty())
                     .sync((holder, to) -> to.connection.hasChannel(SyncAttachmentsPayload.TYPE), InstalledUpgrades.STREAM_CODEC)
+                    .build());
+
+    /** Ticks of thrust used of the jetpack's reserve; 0 = full. Synced only to the player, for the HUD and the client's lift. */
+    public static final Supplier<AttachmentType<Float>> JETPACK_USED = ATTACHMENTS.register("jetpack_used",
+            () -> AttachmentType.builder(() -> 0.0f)
+                    .serialize(Codec.FLOAT, used -> used != 0.0f)
+                    .sync((holder, to) -> holder == to && to.connection.hasChannel(SyncAttachmentsPayload.TYPE), ByteBufCodecs.FLOAT)
                     .build());
 
     private static final Map<String, DeferredItem<Item>> UPGRADE_ITEMS = new LinkedHashMap<>();

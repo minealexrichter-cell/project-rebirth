@@ -19,6 +19,9 @@
 | конец операции | `block.note_block.chime` |
 | работа генератора (цикл) | `block.furnace.fire_crackle` |
 | перенос / возвращение | `block.beacon.activate` / `block.beacon.deactivate` |
+| установка / снятие улучшения | `block.smithing_table.use` / `block.iron_trapdoor.open` |
+| джетпак (короткий звук, сервер повторяет его в полёте) | `entity.blaze.burn` (ниже тоном) |
+| прожектор включён / выключен | `block.lever.click` (выше / ниже тоном) |
 
 ### Звуки Kenney (сейчас не используются)
 

@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import com.mojang.serialization.MapCodec;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.ModSounds;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
@@ -16,7 +17,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -142,7 +142,7 @@ public final class Floodlight {
             pilot.displayClientMessage(Component.translatable("message.projectrebirth.armor.no_floodlight"), true);
         } else {
             armor.setFloodlightOn(!armor.isFloodlightOn());
-            armor.level().playSound(null, armor.blockPosition(), SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.NEUTRAL, 0.6f, armor.isFloodlightOn() ? 1.2f : 0.8f);
+            armor.level().playSound(null, armor.blockPosition(), armor.isFloodlightOn() ? ModSounds.FLOODLIGHT_ON.get() : ModSounds.FLOODLIGHT_OFF.get(), SoundSource.NEUTRAL, 1.0f, 1.0f);
             pilot.displayClientMessage(Component.translatable(armor.isFloodlightOn()
                     ? "message.projectrebirth.armor.floodlight_on" : "message.projectrebirth.armor.floodlight_off"), true);
         }

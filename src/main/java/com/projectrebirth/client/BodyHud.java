@@ -1,6 +1,7 @@
 package com.projectrebirth.client;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.bodies.BodyGadgets;
 import com.projectrebirth.bodies.Jetpack;
 import com.projectrebirth.bodies.TransferService;
 
@@ -77,6 +78,9 @@ public final class BodyHud {
 
         if (jetpack) {
             GuiAtlas.bar(graphics, x, y - THRUST_HEIGHT - 1, WIDTH, THRUST_HEIGHT, Jetpack.reserve(player), THRUST_COLOR);
+        }
+        if (BodyGadgets.has(player.level().registryAccess(), BodyGadgets.of(player), BodyGadgets.SEALING)) {
+            GuiAtlas.sealIcon(graphics, x + WIDTH + 1, y);
         }
 
         Font font = minecraft.font;

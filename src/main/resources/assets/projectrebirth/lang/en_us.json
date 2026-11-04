@@ -382,5 +382,12 @@
   "message.projectrebirth.armor.floodlight_on": "Floodlight on",
   "message.projectrebirth.armor.floodlight_off": "Floodlight off",
   "message.projectrebirth.armor.no_floodlight": "This armor has no floodlight",
-  "message.projectrebirth.armor.floodlight_disabled": "Floodlights are disabled on this server"
+  "message.projectrebirth.armor.floodlight_disabled": "Floodlights are disabled on this server",
+  "subtitles.projectrebirth.upgrade.install": "Upgrade installed",
+  "subtitles.projectrebirth.upgrade.remove": "Upgrade removed",
+  "subtitles.projectrebirth.jetpack.thrust": "Jetpack thrusts",
+  "subtitles.projectrebirth.floodlight.on": "Floodlight on",
+  "subtitles.projectrebirth.floodlight.off": "Floodlight off",
+  "hud.projectrebirth.armor.floodlight_on": "Floodlight on [%s]",
+  "hud.projectrebirth.armor.floodlight_off": "Floodlight off [%s]"
 }

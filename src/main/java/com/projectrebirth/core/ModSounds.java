@@ -30,6 +30,12 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> TRANSFER_ENTER = register("transfer.enter");
     public static final DeferredHolder<SoundEvent, SoundEvent> TRANSFER_RETURN = register("transfer.return");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE_INSTALL = register("upgrade.install");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UPGRADE_REMOVE = register("upgrade.remove");
+    public static final DeferredHolder<SoundEvent, SoundEvent> JETPACK_THRUST = register("jetpack.thrust");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FLOODLIGHT_ON = register("floodlight.on");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FLOODLIGHT_OFF = register("floodlight.off");
+
     private ModSounds() {
     }
 

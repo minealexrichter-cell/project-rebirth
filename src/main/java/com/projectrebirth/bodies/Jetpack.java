@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.upgrades.UpgradeRegistry;
 
 import io.netty.buffer.ByteBuf;
@@ -19,7 +20,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -44,6 +44,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public final class Jetpack {
     /** How far above the limit a flight still counts as legal: position updates arrive late. */
     private static final double HEIGHT_TOLERANCE = 2.0;
+    /** The thrust sound is one short sound repeated by the server, so that everybody nearby hears it and it ends with the flight. */
+    private static final int THRUST_SOUND_TICKS = 6;
     private static final Set<UUID> WANTS_THRUST = new HashSet<>();
     /**
      * Where a body was when its thrust stopped. A client with the jump key held can land and rise again between two
@@ -145,8 +147,8 @@ public final class Jetpack {
         double z = player.getZ() - Math.cos(angle) * 0.35;
         level.sendParticles(ParticleTypes.FLAME, x, player.getY() + 0.7, z, 1, 0.05, 0.0, 0.05, 0.01);
         level.sendParticles(ParticleTypes.SMOKE, x, player.getY() + 0.6, z, 1, 0.05, 0.0, 0.05, 0.01);
-        if (player.tickCount % 6 == 0) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLAZE_BURN, SoundSource.PLAYERS, 0.5f, 0.7f);
+        if (player.tickCount % THRUST_SOUND_TICKS == 0) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.JETPACK_THRUST.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
         }
     }
 

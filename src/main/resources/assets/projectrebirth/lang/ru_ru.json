@@ -382,5 +382,12 @@
   "message.projectrebirth.armor.floodlight_on": "Прожектор включён",
   "message.projectrebirth.armor.floodlight_off": "Прожектор выключен",
   "message.projectrebirth.armor.no_floodlight": "На этой броне нет прожектора",
-  "message.projectrebirth.armor.floodlight_disabled": "Прожекторы отключены на этом сервере"
+  "message.projectrebirth.armor.floodlight_disabled": "Прожекторы отключены на этом сервере",
+  "subtitles.projectrebirth.upgrade.install": "Улучшение установлено",
+  "subtitles.projectrebirth.upgrade.remove": "Улучшение снято",
+  "subtitles.projectrebirth.jetpack.thrust": "Работает джетпак",
+  "subtitles.projectrebirth.floodlight.on": "Прожектор включён",
+  "subtitles.projectrebirth.floodlight.off": "Прожектор выключен",
+  "hud.projectrebirth.armor.floodlight_on": "Прожектор включён [%s]",
+  "hud.projectrebirth.armor.floodlight_off": "Прожектор выключен [%s]"
 }

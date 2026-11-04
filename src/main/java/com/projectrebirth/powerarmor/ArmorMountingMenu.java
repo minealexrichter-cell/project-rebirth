@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.technology.TechMenus;
 import com.projectrebirth.upgrades.ArmorSlot;
 import com.projectrebirth.upgrades.InstalledUpgrades;
@@ -12,6 +13,7 @@ import com.projectrebirth.upgrades.UpgradeLayout;
 import com.projectrebirth.upgrades.Upgrades;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -201,7 +203,11 @@ public class ArmorMountingMenu extends AbstractContainerMenu {
 
         @Override
         public ItemStack removeItemNoUpdate(int index) {
-            return Upgrades.remove(armor, armor.upgrades().indexOf(part(index)));
+            ItemStack removed = Upgrades.remove(armor, armor.upgrades().indexOf(part(index)));
+            if (!removed.isEmpty()) {
+                armor.level().playSound(null, armor.blockPosition(), ModSounds.UPGRADE_REMOVE.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
+            }
+            return removed;
         }
 
         @Override
@@ -209,6 +215,7 @@ public class ArmorMountingMenu extends AbstractContainerMenu {
             removeItemNoUpdate(index);
             if (!stack.isEmpty()) {
                 armor.setUpgrades(armor.upgrades().with(new InstalledUpgrades.Installed(Optional.of(part(index)), stack)));
+                armor.level().playSound(null, armor.blockPosition(), ModSounds.UPGRADE_INSTALL.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
             }
         }
 

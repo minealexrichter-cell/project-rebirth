@@ -1,58 +1,202 @@
 {
   "body.robot_step": {
     "subtitle": "subtitles.projectrebirth.body.robot_step",
-    "sounds": [ { "name": "minecraft:block.metal.step", "type": "event", "volume": 0.6, "pitch": 1.3 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.metal.step",
+        "type": "event",
+        "volume": 0.6,
+        "pitch": 1.3
+      }
+    ]
   },
   "body.robot_hurt": {
     "subtitle": "subtitles.projectrebirth.body.robot_hurt",
-    "sounds": [ { "name": "minecraft:entity.iron_golem.hurt", "type": "event", "volume": 0.8, "pitch": 1.4 } ]
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.hurt",
+        "type": "event",
+        "volume": 0.8,
+        "pitch": 1.4
+      }
+    ]
   },
   "body.robot_destroyed": {
     "subtitle": "subtitles.projectrebirth.body.robot_destroyed",
-    "sounds": [ { "name": "minecraft:entity.iron_golem.death", "type": "event", "pitch": 1.3 } ]
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.death",
+        "type": "event",
+        "pitch": 1.3
+      }
+    ]
   },
   "armor.step": {
     "subtitle": "subtitles.projectrebirth.armor.step",
-    "sounds": [ { "name": "minecraft:entity.iron_golem.step", "type": "event", "volume": 0.8, "pitch": 0.8 } ]
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.step",
+        "type": "event",
+        "volume": 0.8,
+        "pitch": 0.8
+      }
+    ]
   },
   "armor.hurt": {
     "subtitle": "subtitles.projectrebirth.armor.hurt",
-    "sounds": [ { "name": "minecraft:entity.iron_golem.hurt", "type": "event", "pitch": 0.8 } ]
+    "sounds": [
+      {
+        "name": "minecraft:entity.iron_golem.hurt",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
   },
   "armor.shutdown": {
     "subtitle": "subtitles.projectrebirth.armor.shutdown",
-    "sounds": [ { "name": "minecraft:block.beacon.deactivate", "type": "event", "pitch": 0.7 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.deactivate",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
   },
   "armor.wrecked": {
     "subtitle": "subtitles.projectrebirth.armor.wrecked",
-    "sounds": [ { "name": "minecraft:entity.generic.explode", "type": "event", "pitch": 0.9 } ]
+    "sounds": [
+      {
+        "name": "minecraft:entity.generic.explode",
+        "type": "event",
+        "pitch": 0.9
+      }
+    ]
   },
   "armor.enter": {
     "subtitle": "subtitles.projectrebirth.armor.enter",
-    "sounds": [ { "name": "minecraft:block.iron_door.close", "type": "event", "pitch": 0.8 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_door.close",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
   },
   "armor.exit": {
     "subtitle": "subtitles.projectrebirth.armor.exit",
-    "sounds": [ { "name": "minecraft:block.iron_door.open", "type": "event", "pitch": 0.8 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_door.open",
+        "type": "event",
+        "pitch": 0.8
+      }
+    ]
   },
   "station.working": {
     "subtitle": "subtitles.projectrebirth.station.working",
-    "sounds": [ { "name": "minecraft:block.beacon.ambient", "type": "event", "volume": 0.5, "pitch": 1.6 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "volume": 0.5,
+        "pitch": 1.6
+      }
+    ]
   },
   "station.done": {
     "subtitle": "subtitles.projectrebirth.station.done",
-    "sounds": [ { "name": "minecraft:block.note_block.chime", "type": "event", "volume": 0.5, "pitch": 1.2 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.note_block.chime",
+        "type": "event",
+        "volume": 0.5,
+        "pitch": 1.2
+      }
+    ]
   },
   "generator.running": {
     "subtitle": "subtitles.projectrebirth.generator.running",
-    "sounds": [ { "name": "minecraft:block.furnace.fire_crackle", "type": "event", "volume": 0.7 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.furnace.fire_crackle",
+        "type": "event",
+        "volume": 0.7
+      }
+    ]
   },
   "transfer.enter": {
     "subtitle": "subtitles.projectrebirth.transfer.enter",
-    "sounds": [ { "name": "minecraft:block.beacon.activate", "type": "event", "pitch": 1.4 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 1.4
+      }
+    ]
   },
   "transfer.return": {
     "subtitle": "subtitles.projectrebirth.transfer.return",
-    "sounds": [ { "name": "minecraft:block.beacon.deactivate", "type": "event", "pitch": 1.2 } ]
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.deactivate",
+        "type": "event",
+        "pitch": 1.2
+      }
+    ]
+  },
+  "upgrade.install": {
+    "subtitle": "subtitles.projectrebirth.upgrade.install",
+    "sounds": [
+      {
+        "name": "minecraft:block.smithing_table.use",
+        "type": "event",
+        "volume": 0.8,
+        "pitch": 1.2
+      }
+    ]
+  },
+  "upgrade.remove": {
+    "subtitle": "subtitles.projectrebirth.upgrade.remove",
+    "sounds": [
+      {
+        "name": "minecraft:block.iron_trapdoor.open",
+        "type": "event",
+        "volume": 0.8,
+        "pitch": 1.1
+      }
+    ]
+  },
+  "jetpack.thrust": {
+    "subtitle": "subtitles.projectrebirth.jetpack.thrust",
+    "sounds": [
+      {
+        "name": "minecraft:entity.blaze.burn",
+        "type": "event",
+        "volume": 0.5,
+        "pitch": 0.7
+      }
+    ]
+  },
+  "floodlight.on": {
+    "subtitle": "subtitles.projectrebirth.floodlight.on",
+    "sounds": [
+      {
+        "name": "minecraft:block.lever.click",
+        "type": "event",
+        "volume": 0.7,
+        "pitch": 1.2
+      }
+    ]
+  },
+  "floodlight.off": {
+    "subtitle": "subtitles.projectrebirth.floodlight.off",
+    "sounds": [
+      {
+        "name": "minecraft:block.lever.click",
+        "type": "event",
+        "volume": 0.7,
+        "pitch": 0.8
+      }
+    ]
   }
 }

@@ -153,6 +153,9 @@ public class BodyModificationBlockEntity extends BlockEntity implements MenuProv
         }
         items.setStackInSlot(BODY_SLOT, body);
         player.getInventory().placeItemBackInInventory(gadget);
+        if (level != null) {
+            level.playSound(null, worldPosition, ModSounds.UPGRADE_REMOVE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
+        }
         return true;
     }
 
@@ -194,7 +197,7 @@ public class BodyModificationBlockEntity extends BlockEntity implements MenuProv
         items.setStackInSlot(slot, gadget);
         pendingSlot = NONE;
         progress = 0;
-        level.playSound(null, worldPosition, ModSounds.STATION_DONE.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
+        level.playSound(null, worldPosition, ModSounds.UPGRADE_INSTALL.get(), SoundSource.BLOCKS, 1.0f, 1.0f);
     }
 
     void dropContents() {

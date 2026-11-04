@@ -55,6 +55,11 @@ public final class GuiAtlas {
         blit(graphics, x, y, 60, 34, 16, 11);
     }
 
+    /** The 9 x 9 mark of a sealed body. */
+    public static void sealIcon(GuiGraphics graphics, int x, int y) {
+        blit(graphics, x, y, 80, 34, 9, 9);
+    }
+
     /** An energy gauge filling up from the bottom. */
     public static void energyVertical(GuiGraphics graphics, int x, int y, int width, int height, int energy, int capacity) {
         recess(graphics, x, y, width, height);

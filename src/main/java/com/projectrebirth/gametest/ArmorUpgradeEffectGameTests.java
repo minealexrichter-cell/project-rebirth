@@ -128,6 +128,7 @@ public class ArmorUpgradeEffectGameTests {
         return pilot;
     }
 
+    /** Looks far around, so each test that uses it runs in a batch of its own: a neighbour's light must not count. */
     private static boolean anyLight(GameTestHelper helper) {
         for (BlockPos pos : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(-20, 1, -20)), helper.absolutePos(new BlockPos(24, 12, 24)))) {
             if (helper.getLevel().getBlockState(pos).is(PowerArmorRegistry.FLOODLIGHT_LIGHT.get())) {
@@ -137,7 +138,7 @@ public class ArmorUpgradeEffectGameTests {
         return false;
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 200)
+    @GameTest(template = TEMPLATE, timeoutTicks = 200, batch = "floodlight_switch")
     public static void lightFollowsTheSwitchAndGoesAwayWithTheArmor(GameTestHelper helper) {
         PowerArmorEntity armor = armor(helper, ArmorVariant.COMBAT);
         ServerPlayer pilot = pilotIn(helper, armor);
@@ -172,7 +173,7 @@ public class ArmorUpgradeEffectGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 200)
+    @GameTest(template = TEMPLATE, timeoutTicks = 200, batch = "floodlight_shutdown")
     public static void aShutDownArmorHasNoLight(GameTestHelper helper) {
         PowerArmorEntity armor = armor(helper, ArmorVariant.COMBAT);
         ServerPlayer pilot = pilotIn(helper, armor);
@@ -199,7 +200,7 @@ public class ArmorUpgradeEffectGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = "floodlight_air")
     public static void theLightDoesNotReplaceBlocks(GameTestHelper helper) {
         PowerArmorEntity armor = armor(helper, ArmorVariant.COMBAT);
         ServerPlayer pilot = pilotIn(helper, armor);

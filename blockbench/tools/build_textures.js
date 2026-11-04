@@ -1436,6 +1436,12 @@
             rect(70 + i, 34 + i, 1, 11 - 2 * i, '#8f969c');
         }
 
+        // The mark of a sealed body, 9x9: a drop in a dark frame.
+        rect(80, 34, 9, 9, '#14242c');
+        frame(80, 34, 9, 9, '#0f1215', '#0f1215');
+        [[84, 36, 1], [84, 37, 1], [83, 38, 3], [82, 39, 5], [82, 40, 5], [83, 41, 3]].forEach(([x, y, w]) => rect(x, y, w, 1, '#55c8ff'));
+        rect(83, 39, 1, 1, '#c9f0ff');
+
         // Energy, a piece of the gauge: upright 8x4 and lying 4x8.
         rect(30, 34, 8, 3, '#ff8a3c'); rect(30, 34, 8, 1, '#ffc27a'); rect(30, 37, 8, 1, '#a8461c');
         rect(40, 34, 3, 8, '#ff8a3c'); rect(40, 34, 3, 1, '#ffc27a'); rect(43, 34, 1, 8, '#a8461c');

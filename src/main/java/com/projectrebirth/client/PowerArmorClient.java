@@ -8,6 +8,7 @@ import com.projectrebirth.client.render.ArmorArmRenderer;
 import com.projectrebirth.client.render.PowerArmorRenderer;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
 import com.projectrebirth.powerarmor.ArmorAbility;
+import com.projectrebirth.powerarmor.ArmorUpgradeEffects;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.Floodlight;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
@@ -213,6 +214,12 @@ public final class PowerArmorClient {
                 graphics.drawString(font, Component.translatable(armor.isWideMining() ? "hud.projectrebirth.armor.mining_wide"
                         : "hud.projectrebirth.armor.mining_single", MINING_KEY.getTranslatedKeyMessage()), x, y + 38, 0xFFD54F);
             }
+        }
+        if (ArmorUpgradeEffects.hasFloodlight(armor)) {
+            int lineY = armor.isDisabled() ? y + 44 : armor.getVariant() == ArmorVariant.WORKER ? y + 50 : y + 38;
+            boolean on = armor.isFloodlightOn() && armor.isActive();
+            graphics.drawString(font, Component.translatable(on ? "hud.projectrebirth.armor.floodlight_on" : "hud.projectrebirth.armor.floodlight_off",
+                    FLOODLIGHT_KEY.getTranslatedKeyMessage()), x, lineY, on ? 0xFFF2B0 : 0xAAAAAA);
         }
         graphics.pose().popPose();
     }

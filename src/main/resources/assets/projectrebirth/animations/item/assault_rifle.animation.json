@@ -1,0 +1,177 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.weapon.idle": {
+			"loop": true,
+			"animation_length": 4,
+			"bones": {
+				"gun": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.0": {
+							"vector": [0.5, 0, 0.3]
+						},
+						"4.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.weapon.aim": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 0.2,
+			"bones": {
+				"gun": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.2": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.weapon.shot": {
+			"animation_length": 0.15,
+			"bones": {
+				"gun": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.05": {
+							"vector": [1.5, 0, 0]
+						},
+						"0.15": {
+							"vector": [0, 0, 0]
+						}
+					},
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.05": {
+							"vector": [0, 0.1, 0.8]
+						},
+						"0.15": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"bolt": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.05": {
+							"vector": [0, 0, 2.5]
+						},
+						"0.15": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"trigger": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.05": {
+							"vector": [-15, 0, 0]
+						},
+						"0.15": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.weapon.reload": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 2.5,
+			"bones": {
+				"gun": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.3": {
+							"vector": [6, 0, 18]
+						},
+						"2.1": {
+							"vector": [6, 0, 18]
+						},
+						"2.5": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"magazine": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.3": {
+							"vector": [0, -1, 0]
+						},
+						"0.55": {
+							"vector": [0, -10, 0]
+						},
+						"1.4": {
+							"vector": [0, -10, 0]
+						},
+						"1.7": {
+							"vector": [0, 0, 0]
+						},
+						"2.5": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"bolt": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.9": {
+							"vector": [0, 0, 0]
+						},
+						"2.1": {
+							"vector": [0, 0, 2.5]
+						},
+						"2.25": {
+							"vector": [0, 0, 0]
+						},
+						"2.5": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.weapon.empty": {
+			"animation_length": 0.2,
+			"bones": {
+				"trigger": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.05": {
+							"vector": [-20, 0, 0]
+						},
+						"0.2": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

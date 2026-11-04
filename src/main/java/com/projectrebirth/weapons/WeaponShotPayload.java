@@ -18,7 +18,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  * changes nothing in the game; the server has already decided what was hit.
  *
  * @param shooter the entity id of the pilot
- * @param pellets where each bullet or pellet ended
+ * @param pellets where each bullet or pellet ended; none for the click of an empty magazine
  */
 public record WeaponShotPayload(int shooter, List<Pellet> pellets) implements CustomPacketPayload {
     public static final Type<WeaponShotPayload> TYPE = new Type<>(ProjectRebirth.id("weapon_shot"));

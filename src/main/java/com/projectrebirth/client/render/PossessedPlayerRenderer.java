@@ -215,9 +215,11 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
             poseStack.translate((left ? -1.0f : 1.0f) / 16.0f, 0.125f, upperArm - 0.625f);
+            WeaponItemRenderer.setHolder(player);
             Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(player, stack,
                     left ? ItemDisplayContext.THIRD_PERSON_LEFT_HAND : ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
                     left, poseStack, bufferSource, packedLight);
+            WeaponItemRenderer.setHolder(null);
         }
     }
 }

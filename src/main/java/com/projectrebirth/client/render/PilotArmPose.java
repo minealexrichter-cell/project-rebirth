@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
+import com.projectrebirth.weapons.Weapons;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
@@ -41,6 +42,10 @@ final class PilotArmPose {
     /** Arms of a power armor: its punch is an animation of its own. */
     static void apply(PowerArmorEntity armor, Player pilot, float partialTick, GeoBone rightArm, GeoBone leftArm,
                       @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm) {
+        if (Weapons.holdsWeapon(pilot)) {
+            ArmorWeaponPose.apply(armor, pilot, partialTick, rightArm, leftArm, rightForearm, leftForearm);
+            return;
+        }
         float bodyYaw = Mth.rotLerp(partialTick, armor.yBodyRotO, armor.yBodyRot);
         applyPoses(pilot, bodyYaw, partialTick, rightArm, leftArm, isPunching(armor));
         // The vanilla poses are made for a straight arm, so the walk must not bend the elbow under them.

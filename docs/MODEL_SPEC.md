@@ -136,7 +136,26 @@ root
 Улучшения: `copper_plating`, `iron_plating`, `titanium_plating`, `armor_copper_plating`, `armor_iron_plating`, `armor_titanium_plating`,
 `sealing_module`, `jetpack`, `compressed_air_module`, `floodlight`, `upgrade_mounting_tool`.
 
-Оружие: `assault_rifle`, `battle_rifle`, `combat_shotgun`; патроны: `assault_rifle_ammo`, `battle_rifle_ammo`, `shotgun_shell`. Пока значки-заглушки, модели в блоке D плана 1.2.
+Оружие: `assault_rifle`, `battle_rifle`, `combat_shotgun`; патроны: `assault_rifle_ammo`, `battle_rifle_ammo`, `shotgun_shell`. Значки пока заглушки, они будут в блоке E плана 1.2.
+
+## Оружие
+
+Модели GeckoLib: `geo/item/<id>.geo.json`, текстура `textures/item/weapon/<id>.png` (64×64), анимации `animations/item/<id>.animation.json`, исходник `blockbench/<id>.bbmodel`, сборка `build_models.js`. Рукоять в начале координат, ствол смотрит на -Z, размер рассчитан на кулаки брони. При замене модели имена костей нужно сохранить:
+
+| Кость | Что это |
+|---|---|
+| `gun` | всё оружие, родитель остальных |
+| `magazine` | магазин; у дробовика патрон, который вставляют |
+| `bolt` | затвор; у дробовика цевьё |
+| `trigger` | спуск |
+| `sight` | прицел |
+| `muzzle` | точка дула: отсюда след трассера |
+| `muzzle_flash` | вспышка внутри `muzzle`; код показывает её на 2 тика и рисует с полной яркостью |
+| `ejection_port` | точка, откуда вылетают гильзы |
+
+Анимации: `animation.weapon.idle` (цикл), `aim` (держится), `shot`, `empty`, `reload`. Длина `reload`: 2,5 с у винтовок, 0,8 с на патрон у дробовика (цикл). Код подстраивает её скорость под `reloadTicks` из конфига, поэтому длительность совпадает с серверной. Если меняете длину, поправьте числа в `client/render/WeaponView`.
+
+Руки брони от первого лица строятся кодом: кулаки ставятся на рукоять и цевьё. Точки в `WeaponClient` (`GRIP`, `SUPPORT`, `MAGAZINE_WELL`): при сильном изменении формы оружия их нужно поправить.
 
 ## 5. Интерфейс
 

@@ -1,6 +1,10 @@
 package com.projectrebirth.client.render;
 
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.projectrebirth.powerarmor.ArmorVariant;
 
@@ -27,6 +31,8 @@ import java.util.Map;
 public class ArmorArmRenderer {
     /** The armor arm is almost twice as long as a player arm. */
     private static final float SCALE = 0.62f;
+    private static final float REACHING_SCALE = 0.45f;
+    private static final float FIST_MIDDLE = 21.0f;
 
     /** Atlas positions of the arm boxes, the same in every variant's texture and geo model. */
     private static final int RIGHT_V = 100;
@@ -112,6 +118,33 @@ public class ArmorArmRenderer {
                     box.width(), box.height(), box.depth());
         }
         return cubes;
+    }
+
+    /**
+     * An arm whose fist is at a given point of the view, reaching there from the shoulder at the side of the screen: it holds
+     * a weapon. The point comes from the weapon's own pose, so the hands go wherever the weapon goes.
+     */
+    public void renderReaching(PoseStack poseStack, MultiBufferSource buffers, int packedLight, HumanoidArm side, ArmorVariant variant, int plateColor,
+                               Vector3f fist, Vector3f shoulder) {
+        boolean right = side != HumanoidArm.LEFT;
+        Vector3f direction = new Vector3f(fist).sub(shoulder).normalize();
+        poseStack.pushPose();
+        poseStack.translate(fist.x, fist.y, fist.z);
+        // The arm's boxes run along +Y, from the shoulder down to the fist.
+        poseStack.mulPose(new Quaternionf().rotationTo(0.0f, 1.0f, 0.0f, direction.x, direction.y, direction.z));
+        poseStack.scale(REACHING_SCALE, REACHING_SCALE, REACHING_SCALE);
+        // From the part's own origin to the middle of its fist.
+        poseStack.translate((right ? 6.0f : -6.0f) / 16.0f, -(2.0f + FIST_MIDDLE) / 16.0f, 0.0f);
+        ModelPart arm = (right ? rightArms : leftArms).get(variant);
+        arm.xRot = 0.0f;
+        VertexConsumer buffer = buffers.getBuffer(RenderType.entitySolid(PowerArmorRenderer.texture(variant)));
+        arm.render(poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY);
+        if (plateColor != 0) {
+            ModelPart plate = (right ? rightPlates : leftPlates).get(variant);
+            plate.xRot = 0.0f;
+            plate.render(poseStack, buffer, packedLight, OverlayTexture.NO_OVERLAY, plateColor);
+        }
+        poseStack.popPose();
     }
 
     /**

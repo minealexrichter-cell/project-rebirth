@@ -1,5 +1,7 @@
 package com.projectrebirth.client.render;
 
+import com.projectrebirth.weapons.WeaponItem;
+import com.projectrebirth.weapons.Weapons;
 import java.util.Map;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -171,6 +173,9 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
     }
 
     private static class HeldItemLayer extends BlockAndItemGeoLayer<PowerArmorEntity> {
+        /** How far the grip of a weapon lies above the middle of the fist, in blocks. */
+        private static final float WEAPON_IN_FIST = 0.1f;
+
         HeldItemLayer(PowerArmorRenderer renderer) {
             super(renderer);
         }
@@ -187,6 +192,10 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
                 return null;
             }
             boolean mainHandIsRight = pilot.getMainArm() == HumanoidArm.RIGHT;
+            // A weapon takes both hands, and whatever the other hand holds stays out of sight.
+            if (Weapons.holdsWeapon(pilot) && rightFist != mainHandIsRight) {
+                return null;
+            }
             ItemStack stack = rightFist == mainHandIsRight ? pilot.getMainHandItem() : pilot.getOffhandItem();
             return ArmorAbility.isBareHand(stack) ? null : stack;
         }
@@ -204,6 +213,16 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
                 return;
             }
             boolean left = bone.getName().equals(LEFT_HAND);
+            if (stack.getItem() instanceof WeaponItem) {
+                poseStack.pushPose();
+                poseStack.mulPose(Axis.XP.rotation(-ArmorWeaponPose.weaponCorrection()));
+                poseStack.translate(0.0f, WEAPON_IN_FIST, 0.0f);
+                WeaponView view = WeaponView.of(pilot, stack.getItem());
+                WeaponRenderer.INSTANCE.draw(poseStack, view, bufferSource, packedLight, partialTick,
+                        WindowPose.isDrawing() ? WeaponRenderer.Space.NONE : WeaponRenderer.Space.WORLD);
+                poseStack.popPose();
+                return;
+            }
             // GeckoLib space -> vanilla model space (which is upside down).
             poseStack.mulPose(Axis.ZP.rotationDegrees(180.0f));
             poseStack.mulPose(Axis.XP.rotationDegrees(-90.0f));

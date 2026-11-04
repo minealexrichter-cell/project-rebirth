@@ -168,6 +168,10 @@ public final class PowerArmorClient {
 
     /** Tells the server when the hatch key starts or stops being held; the server counts the time. */
     /** The colour of the plate on the pilot's arm, 0 for none. */
+    static int plateColor(PowerArmorEntity armor, boolean rightArm) {
+        return armorPlateColor(armor, rightArm);
+    }
+
     private static int armorPlateColor(PowerArmorEntity armor, boolean rightArm) {
         InstalledUpgrades upgrades = armor.upgrades();
         int index = upgrades.indexOf(rightArm ? ArmorSlot.RIGHT_ARM : ArmorSlot.LEFT_ARM);

@@ -251,6 +251,7 @@ public final class Weapons {
                 state.clickedEmpty = true;
                 state.nextShotTime = now + EMPTY_CLICK_INTERVAL;
                 play(player, idOf(held.stack()), WeaponRegistry.WeaponSounds::empty);
+                showEffects(player, List.of());
             }
             return null;
         }
@@ -284,11 +285,15 @@ public final class Weapons {
             target.invulnerableTime = 0;
             total += entry.getValue();
         }
+        showEffects(player, effects);
+        return new Shot(pellets, damageByTarget.size(), total);
+    }
+
+    private static void showEffects(ServerPlayer player, List<WeaponShotPayload.Pellet> pellets) {
         // Test players have no real client behind them.
         if (player.connection.hasChannel(WeaponShotPayload.TYPE)) {
-            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new WeaponShotPayload(player.getId(), effects));
+            PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, new WeaponShotPayload(player.getId(), pellets));
         }
-        return new Shot(pellets, damageByTarget.size(), total);
     }
 
     /** Follows one bullet to the first target or block on its way and notes the damage it does. */

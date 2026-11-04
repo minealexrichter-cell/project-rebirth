@@ -1168,7 +1168,7 @@
         Project.name = id;
         Project.model_identifier = id;
         Project.geckolib_modid = 'projectrebirth';
-        Project.geckolib_model_type = 'Entity';
+        Project.geckolib_model_type = spec.weapon ? 'Item' : 'Entity';
         Project.texture_width = spec.res;
         Project.texture_height = spec.res;
         Project.box_uv = true;
@@ -1221,7 +1221,7 @@
         const source = document.createElement('canvas');
         source.width = source.height = spec.res;
         source.getContext('2d').drawImage(data, 0, 0, spec.res, spec.res);
-        write(ASSETS + 'textures/entity/' + id + '.png', source);
+        write(ASSETS + (spec.weapon ? 'textures/item/weapon/' : 'textures/entity/') + id + '.png', source);
         if (spec.wrecked) {
             write(ASSETS + 'textures/entity/' + id + '_wrecked.png', wreckedFrom(source, spec.seed + 1));
         }
@@ -1302,6 +1302,116 @@
     for (const spec of Object.values(SPECS)) {
         (spec.armTable ? armorUpgradeBones : bodyUpgradeBones)(spec);
     }
+
+    // ------------------------------------------------------------------ weapons
+
+    // Sized for the fists of power armor. The barrel points at -Z, the grip is at the origin. See docs/MODEL_SPEC.md for the bones.
+    const GUN = '#4c5359', GUN_DARK = '#25282c', GUN_STEEL = '#8b9299', GUN_OLIVE = '#5f6b3e', GUN_AMBER = '#e0a020', RUBBER = '#1b1d20';
+    const FLASH = {c: '#ffe9a0', n: 0.02, edge: false, f: [[1, 1, 1, 1, '#ffffff']], k: [[1, 1, 1, 1, '#ffffff']], sd: [[1, 1, 2, 1, '#ffffff']]};
+
+    function weaponSpec(seed, parts, animations) {
+        const bones = [{name: 'gun', parent: undefined, pivot: [0, 0, 0], cubes: parts.body}];
+        const child = (name, pivot, cubes) => bones.push({name, parent: 'gun', pivot, cubes: cubes || []});
+        child('magazine', parts.magazine.pivot, parts.magazine.cubes);
+        child('bolt', parts.bolt.pivot, parts.bolt.cubes);
+        child('trigger', [0, -1, 1], [C([-0.5, -1.5, 0.5], [1, 1.5, 1], {c: GUN_STEEL, n: 0.03, edge: false})]);
+        child('sight', parts.sight.pivot, parts.sight.cubes);
+        child('muzzle', parts.muzzle);
+        bones.push({name: 'muzzle_flash', parent: 'muzzle', pivot: parts.muzzle, cubes: [
+            C([parts.muzzle[0] - 1.5, parts.muzzle[1] - 1.5, parts.muzzle[2] - 5], [3, 3, 5], FLASH),
+            C([parts.muzzle[0] - 2.5, parts.muzzle[1] - 0.5, parts.muzzle[2] - 3], [5, 1, 1], FLASH),
+            C([parts.muzzle[0] - 0.5, parts.muzzle[1] - 2.5, parts.muzzle[2] - 3], [1, 5, 1], FLASH)]});
+        child('ejection_port', parts.ejection);
+        return {res: 64, seed, weapon: true, bones, animations};
+    }
+
+    const still = (x, y, z) => [x, y, z];
+
+    /** Reloads with a magazine: out with it, in with a new one, then the bolt. Length matches the default server time. */
+    function magazineAnimations(reload, boltTravel, kick) {
+        const out = -10;
+        return {
+            'animation.weapon.idle': {length: 4, loop: 'loop', bones: {gun: {r: steps(4, [still(0, 0, 0), still(0.5, 0, 0.3), still(0, 0, 0)])}}},
+            'animation.weapon.aim': {length: 0.2, loop: 'hold', bones: {gun: {r: {'0.000': still(0, 0, 0), '0.200': still(0, 0, 0)}}}},
+            'animation.weapon.shot': {length: 0.15, loop: 'once', bones: {
+                gun: {p: {'0.000': still(0, 0, 0), '0.050': still(0, 0.1, kick), '0.150': still(0, 0, 0)}, r: {'0.000': still(0, 0, 0), '0.050': still(1.5, 0, 0), '0.150': still(0, 0, 0)}},
+                bolt: {p: {'0.000': still(0, 0, 0), '0.050': still(0, 0, boltTravel), '0.150': still(0, 0, 0)}},
+                trigger: {r: {'0.000': still(0, 0, 0), '0.050': still(-15, 0, 0), '0.150': still(0, 0, 0)}}}},
+            'animation.weapon.reload': {length: reload, loop: 'hold', bones: {
+                gun: {r: {'0.000': still(0, 0, 0), '0.300': still(6, 0, 18), [(reload - 0.4).toFixed(3)]: still(6, 0, 18), [reload.toFixed(3)]: still(0, 0, 0)}},
+                magazine: {p: {'0.000': still(0, 0, 0), '0.300': still(0, -1, 0), '0.550': still(0, out, 0), [(reload - 1.1).toFixed(3)]: still(0, out, 0), [(reload - 0.8).toFixed(3)]: still(0, 0, 0), [reload.toFixed(3)]: still(0, 0, 0)}},
+                bolt: {p: {'0.000': still(0, 0, 0), [(reload - 0.6).toFixed(3)]: still(0, 0, 0), [(reload - 0.4).toFixed(3)]: still(0, 0, boltTravel), [(reload - 0.25).toFixed(3)]: still(0, 0, 0), [reload.toFixed(3)]: still(0, 0, 0)}}}},
+            'animation.weapon.empty': {length: 0.2, loop: 'once', bones: {trigger: {r: {'0.000': still(0, 0, 0), '0.060': still(-20, 0, 0), '0.200': still(0, 0, 0)}}}}
+        };
+    }
+
+    SPECS.assault_rifle = weaponSpec(901, {
+        body: [
+            C([-1.5, 0, -6], [3, 4, 14], {c: GUN, f: [[0, 0, 3, 1, GUN_STEEL]], sd: [[1, 1, 3, 2, GUN_DARK], [7, 1, 5, 1, GUN_DARK]], tp: [[1, 1, 1, 12, GUN_DARK]]}),
+            C([-1.5, 0.5, -14], [3, 3, 8], {c: GUN_OLIVE, sd: [[1, 1, 6, 1, GUN_DARK]], bt: [[1, 1, 1, 6, GUN_DARK]]}),
+            C([-0.5, 1.5, -19], [1, 1, 5], {c: GUN_DARK, n: 0.04, edge: false}),
+            C([-1, -4, 3], [2, 4, 2], {c: RUBBER, n: 0.06, sd: [[0, 1, 2, 1, GUN]]}),
+            C([-1, 0.5, 8], [2, 3, 4], {c: GUN_DARK, n: 0.05}),
+            C([-1.5, -0.5, 12], [3, 5, 1], {c: GUN_OLIVE})
+        ],
+        magazine: {pivot: [0, 0, -2], cubes: [C([-1, -6, -4], [2, 6, 3], {c: GUN_DARK, n: 0.05, sd: [[1, 1, 1, 4, GUN_AMBER]]})]},
+        bolt: {pivot: [-2.5, 2.5, 0], cubes: [C([-2.5, 2, -1], [1, 1, 3], {c: GUN_STEEL, n: 0.03, edge: false})]},
+        sight: {pivot: [0, 4, -2], cubes: [
+            C([-1, 4, -4], [2, 1, 7], {c: GUN_DARK, n: 0.04, tp: [[0, 1, 2, 1, GUN_STEEL], [0, 3, 2, 1, GUN_STEEL], [0, 5, 2, 1, GUN_STEEL]]}),
+            C([-0.5, 5, -3], [1, 1.5, 1], {c: GUN_AMBER, n: 0.02, edge: false})]},
+        muzzle: [0, 2, -19],
+        ejection: [-2, 3, 1]
+    }, magazineAnimations(2.5, 2.5, 0.8));
+
+    SPECS.battle_rifle = weaponSpec(902, {
+        body: [
+            C([-1.5, 0, -7], [3, 4, 16], {c: GUN_OLIVE, sd: [[1, 1, 5, 2, GUN_DARK], [9, 1, 6, 1, GUN_DARK]], tp: [[1, 1, 1, 14, GUN_DARK]]}),
+            C([-1, 0.5, -16], [2, 3, 9], {c: GUN, sd: [[1, 1, 7, 1, GUN_DARK]]}),
+            C([-0.5, 1.5, -26], [1, 1, 10], {c: GUN_DARK, n: 0.04, edge: false}),
+            C([-1, 0.5, -27], [2, 3, 2], {c: GUN, n: 0.04, f: [[0, 1, 2, 1, RUBBER]]}),
+            C([-1, -4, 3], [2, 4, 2], {c: RUBBER, n: 0.06, sd: [[0, 1, 2, 1, GUN_OLIVE]]}),
+            C([-1, 0, 9], [2, 4, 5], {c: GUN_OLIVE, sd: [[1, 1, 3, 2, GUN_DARK]]}),
+            C([-1.5, -1, 14], [3, 6, 1], {c: GUN_DARK, n: 0.05})
+        ],
+        magazine: {pivot: [0, 0, -2], cubes: [C([-1, -4, -4], [2, 4, 4], {c: GUN_DARK, n: 0.05, sd: [[1, 1, 2, 1, GUN_AMBER]]})]},
+        bolt: {pivot: [-2.5, 2.5, 2], cubes: [C([-2.5, 2, 1], [1, 1, 3], {c: GUN_STEEL, n: 0.03, edge: false})]},
+        sight: {pivot: [0, 4, -2], cubes: [
+            C([-0.5, 4, -3], [1, 1, 1], {c: GUN_DARK, n: 0.04, edge: false}),
+            C([-0.5, 4, 2], [1, 1, 1], {c: GUN_DARK, n: 0.04, edge: false}),
+            C([-1, 5, -6], [2, 2, 11], {c: GUN_DARK, n: 0.04, f: [[0, 0, 2, 2, '#7fe8ff']], k: [[0, 0, 2, 2, '#3a7a8a']], sd: [[1, 0, 2, 1, GUN_AMBER]]})]},
+        muzzle: [0, 2, -27],
+        ejection: [-2, 3, 2]
+    }, magazineAnimations(2.5, 3, 1.4));
+
+    /** A shotgun loads shell by shell, and pumps after a shot. The reload plays once per shell. */
+    SPECS.combat_shotgun = weaponSpec(903, {
+        body: [
+            C([-2, 0, -5], [4, 4, 12], {c: GUN_DARK, n: 0.05, sd: [[1, 1, 4, 2, GUN], [6, 1, 5, 1, GUN_AMBER]], tp: [[1, 1, 2, 10, GUN]]}),
+            C([-1, 2, -20], [2, 2, 15], {c: GUN, n: 0.04, f: [[0, 0, 2, 2, RUBBER]], sd: [[1, 0, 13, 1, GUN_STEEL]]}),
+            C([-1, 0, -17], [2, 2, 12], {c: GUN_DARK, n: 0.05, edge: false}),
+            C([-1, -4, 3], [2, 4, 2], {c: RUBBER, n: 0.06}),
+            C([-1, 0.5, 7], [2, 3, 3], {c: GUN, n: 0.05}),
+            C([-1.5, -0.5, 10], [3, 5, 1], {c: RUBBER, n: 0.06})
+        ],
+        magazine: {pivot: [0, -0.5, -8], cubes: [C([-0.5, -1, -9], [1, 1, 2.5], {c: '#c9352b', n: 0.03, k: [[0, 0, 1, 1, GUN_AMBER]], edge: false})]},
+        bolt: {pivot: [0, 0, -10], cubes: [C([-1.5, -0.5, -14], [3, 2, 6], {c: GUN_OLIVE, sd: [[1, 0, 1, 2, GUN_DARK], [3, 0, 1, 2, GUN_DARK]], bt: [[1, 1, 1, 4, GUN_DARK]]})]},
+        sight: {pivot: [0, 4, -18], cubes: [C([-0.5, 4, -19], [1, 1, 1], {c: GUN_AMBER, n: 0.02, edge: false}), C([-1, 4, 3], [2, 1, 2], {c: GUN_DARK, n: 0.04, edge: false})]},
+        muzzle: [0, 3, -20],
+        ejection: [-2.5, 3, 1]
+    }, {
+        'animation.weapon.idle': {length: 4, loop: 'loop', bones: {gun: {r: steps(4, [still(0, 0, 0), still(0.5, 0, 0.3), still(0, 0, 0)])}, magazine: {s: {'0.000': still(0.01, 0.01, 0.01)}}}},
+        'animation.weapon.aim': {length: 0.2, loop: 'hold', bones: {magazine: {s: {'0.000': still(0.01, 0.01, 0.01)}}}},
+        'animation.weapon.shot': {length: 0.6, loop: 'once', bones: {
+            gun: {p: {'0.000': still(0, 0, 0), '0.050': still(0, 0.3, 2), '0.200': still(0, 0, 0)}, r: {'0.000': still(0, 0, 0), '0.050': still(5, 0, 0), '0.250': still(0, 0, 0)}},
+            bolt: {p: {'0.000': still(0, 0, 0), '0.250': still(0, 0, 0), '0.400': still(0, 0, 4), '0.550': still(0, 0, 0)}},
+            trigger: {r: {'0.000': still(0, 0, 0), '0.050': still(-15, 0, 0), '0.150': still(0, 0, 0)}}}},
+        'animation.weapon.reload': {length: 0.8, loop: 'loop', bones: {
+            gun: {r: {'0.000': still(4, 0, -14), '0.800': still(4, 0, -14)}},
+            magazine: {
+                s: {'0.000': still(1, 1, 1), '0.700': still(1, 1, 1), '0.750': still(0.01, 0.01, 0.01), '0.800': still(0.01, 0.01, 0.01)},
+                p: {'0.000': still(0, -7, 3), '0.450': still(0, -1, 1), '0.700': still(0, 0, -3), '0.800': still(0, 0, -3)}}}},
+        'animation.weapon.empty': {length: 0.2, loop: 'once', bones: {trigger: {r: {'0.000': still(0, 0, 0), '0.060': still(-20, 0, 0), '0.200': still(0, 0, 0)}}}}
+    });
 
     window.RebirthModels = {build, save, SPECS};
 })();

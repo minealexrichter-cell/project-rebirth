@@ -1,0 +1,82 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.combat_shotgun",
+				"texture_width": 64,
+				"texture_height": 64,
+				"visible_bounds_width": 3,
+				"visible_bounds_height": 3,
+				"visible_bounds_offset": [0, 1.5, 0]
+			},
+			"bones": [
+				{
+					"name": "gun",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-2, 0, -5], "size": [4, 4, 12], "uv": [0, 17]},
+						{"origin": [-1, 2, -20], "size": [2, 2, 15], "uv": [0, 0]},
+						{"origin": [-1, 0, -17], "size": [2, 2, 12], "uv": [34, 0]},
+						{"origin": [-1, -4, 3], "size": [2, 4, 2], "uv": [52, 20]},
+						{"origin": [-1, 0.5, 7], "size": [2, 3, 3], "uv": [52, 14]},
+						{"origin": [-1.5, -0.5, 10], "size": [3, 5, 1], "uv": [48, 26]}
+					]
+				},
+				{
+					"name": "magazine",
+					"parent": "gun",
+					"pivot": [0, -0.5, -8],
+					"cubes": [
+						{"origin": [-0.5, -1, -9], "size": [1, 1, 2.5], "uv": [56, 26]}
+					]
+				},
+				{
+					"name": "bolt",
+					"parent": "gun",
+					"pivot": [0, 0, -10],
+					"cubes": [
+						{"origin": [-1.5, -0.5, -14], "size": [3, 2, 6], "uv": [34, 14]}
+					]
+				},
+				{
+					"name": "trigger",
+					"parent": "gun",
+					"pivot": [0, -1, 1],
+					"cubes": [
+						{"origin": [-0.5, -1.5, 0.5], "size": [1, 1.5, 1], "uv": [48, 22]}
+					]
+				},
+				{
+					"name": "sight",
+					"parent": "gun",
+					"pivot": [0, 4, -18],
+					"cubes": [
+						{"origin": [-0.5, 4, -19], "size": [1, 1, 1], "uv": [40, 30]},
+						{"origin": [-1, 4, 3], "size": [2, 1, 2], "uv": [32, 30]}
+					]
+				},
+				{
+					"name": "muzzle",
+					"parent": "gun",
+					"pivot": [0, 3, -20]
+				},
+				{
+					"name": "muzzle_flash",
+					"parent": "muzzle",
+					"pivot": [0, 3, -20],
+					"cubes": [
+						{"origin": [-1.5, 1.5, -25], "size": [3, 3, 5], "uv": [32, 22]},
+						{"origin": [-2.5, 2.5, -23], "size": [5, 1, 1], "uv": [40, 32]},
+						{"origin": [-0.5, 0.5, -23], "size": [1, 5, 1], "uv": [60, 20]}
+					]
+				},
+				{
+					"name": "ejection_port",
+					"parent": "gun",
+					"pivot": [-2.5, 3, 1]
+				}
+			]
+		}
+	]
+}

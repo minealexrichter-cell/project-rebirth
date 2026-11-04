@@ -2,12 +2,21 @@ package com.projectrebirth.client;
 
 import org.lwjgl.glfw.GLFW;
 
+import java.util.Map;
+
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.client.render.ArmorArmRenderer;
 import com.projectrebirth.client.render.HeavyWeaponPose;
 import com.projectrebirth.client.render.TracerParticle;
+import com.projectrebirth.client.render.WeaponItemRenderer;
+import com.projectrebirth.client.render.WeaponRenderer;
+import com.projectrebirth.client.render.WeaponView;
 import com.projectrebirth.config.RebirthClientConfig;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
@@ -25,6 +34,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -36,7 +46,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.HitResult;
@@ -75,11 +84,27 @@ public final class WeaponClient {
     private static final int RETICLE_LENGTH = 4;
     private static final int RETICLE_COLOR = 0xE0FFFFFF;
     private static final int MARGIN = 6;
-    private static final float HEAVY_HAND_X = 0.5f;
-    private static final float HEAVY_HAND_Y = -0.68f;
+    private static final float HEAVY_HAND_X = 0.62f;
+    private static final float HEAVY_HAND_Y = -0.62f;
     private static final float HEAVY_HAND_Z = -0.72f;
-    private static final float HEAVY_HAND_YAW = -30.0f;
-    private static final float HEAVY_HAND_PITCH = 25.0f;
+    private static final float HEAVY_HAND_YAW = 50.0f;
+    private static final float HEAVY_HAND_PITCH = -14.0f;
+    private static final float HEAVY_HAND_SCALE = 0.6f;
+    // First person in an armor, in the units of the view; the weapon's own lengths are in its model.
+    private static final float GUN_SCALE = 0.42f;
+    private static final Vector3f GUN_AT_HIP = new Vector3f(0.42f, -0.42f, -0.85f);
+    private static final Vector3f GUN_AT_EYE = new Vector3f(0.0f, -0.29f, -0.72f);
+    private static final float HIP_YAW = 6.0f;
+    private static final float HIP_PITCH = 2.0f;
+    private static final Vector3f RIGHT_SHOULDER = new Vector3f(0.95f, -1.15f, 0.1f);
+    private static final Vector3f LEFT_SHOULDER = new Vector3f(-0.75f, -1.25f, 0.0f);
+    /** Grip of the weapon hand, in the weapon's own blocks. */
+    private static final Vector3f GRIP = new Vector3f(0.0f, -0.15f, 0.25f);
+    private static final Vector3f MAGAZINE_WELL = new Vector3f(0.0f, -0.55f, -0.15f);
+    private static final Map<String, Vector3f> SUPPORT = Map.of(
+            "assault_rifle", new Vector3f(0.0f, -0.05f, -0.65f),
+            "battle_rifle", new Vector3f(0.0f, -0.05f, -0.75f),
+            "combat_shotgun", new Vector3f(0.0f, -0.05f, -0.68f));
 
     private static boolean triggerDown;
     private static boolean aimDown;
@@ -91,6 +116,7 @@ public final class WeaponClient {
     private static float burstRecoil;
     /** The spread a burst has added, as the server counts it; only for the reticle. */
     private static float extraSpread;
+    private static ArmorArmRenderer armArms;
 
     private WeaponClient() {
     }
@@ -106,6 +132,8 @@ public final class WeaponClient {
         NeoForge.EVENT_BUS.addListener(WeaponClient::hideVanillaCrosshair);
         modEventBus.addListener(WeaponClient::registerItemExtensions);
         NeoForge.EVENT_BUS.addListener(WeaponClient::renderHeavyWeaponInHand);
+        // Before PowerArmorClient draws its empty hands.
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, WeaponClient::renderWeaponInArmor);
         // Last: a pilot or a body is drawn by other renderers, and they cancel this event.
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, RenderPlayerEvent.Pre.class, WeaponClient::leanCarrier);
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, RenderPlayerEvent.Post.class, WeaponClient::endLean);
@@ -132,6 +160,16 @@ public final class WeaponClient {
 
     private static void registerItemExtensions(RegisterClientExtensionsEvent event) {
         event.registerItem(new IClientItemExtensions() {
+            private WeaponItemRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) {
+                    renderer = new WeaponItemRenderer();
+                }
+                return renderer;
+            }
+
             @Override
             public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
                 return hand == InteractionHand.MAIN_HAND && carries(entity) ? HeavyWeaponPose.POSE.getValue() : null;
@@ -141,6 +179,7 @@ public final class WeaponClient {
 
     private static void leanCarrier(RenderPlayerEvent.Pre event) {
         if (carries(event.getEntity())) {
+            WeaponItemRenderer.setHolder(event.getEntity());
             event.getPoseStack().pushPose();
             HeavyWeaponPose.leanWholeFigure(event.getPoseStack(), event.getEntity(), event.getPartialTick());
         }
@@ -149,6 +188,7 @@ public final class WeaponClient {
     private static void endLean(RenderPlayerEvent.Post event) {
         if (carries(event.getEntity())) {
             event.getPoseStack().popPose();
+            WeaponItemRenderer.setHolder(null);
         }
     }
 
@@ -169,10 +209,69 @@ public final class WeaponClient {
         pose.translate(side * (HEAVY_HAND_X + sway * 0.02f), HEAVY_HAND_Y + sway * 0.015f - event.getEquipProgress() * 0.6f + jolt * 0.08f, HEAVY_HAND_Z - jolt * 0.1f);
         pose.mulPose(Axis.YP.rotationDegrees(side * HEAVY_HAND_YAW));
         pose.mulPose(Axis.XP.rotationDegrees(HEAVY_HAND_PITCH + jolt * 12.0f));
-        minecraft.getEntityRenderDispatcher().getItemInHandRenderer().renderItem(player, event.getItemStack(),
-                left ? ItemDisplayContext.FIRST_PERSON_LEFT_HAND : ItemDisplayContext.FIRST_PERSON_RIGHT_HAND, left, pose,
-                event.getMultiBufferSource(), event.getPackedLight());
+        pose.scale(HEAVY_HAND_SCALE, HEAVY_HAND_SCALE, HEAVY_HAND_SCALE);
+        WeaponView view = WeaponView.of(player, player.getMainHandItem().getItem());
+        view.update(player, event.getPartialTick());
+        WeaponRenderer.INSTANCE.draw(pose, view, event.getMultiBufferSource(), event.getPackedLight(), event.getPartialTick(), WeaponRenderer.Space.VIEW);
         pose.popPose();
+    }
+
+    /** A pilot's view of their weapon: both armor arms hold it, wherever it goes. */
+    private static void renderWeaponInArmor(RenderHandEvent event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null || !Weapons.holdsWeapon(player) || !(player.getVehicle() instanceof PowerArmorEntity armor) || armor.isWrecked()) {
+            return;
+        }
+        event.setCanceled(true);
+        if (event.getHand() != InteractionHand.MAIN_HAND) {
+            return;
+        }
+        ItemStack stack = player.getMainHandItem();
+        float partialTick = event.getPartialTick();
+        WeaponView view = WeaponView.of(player, stack.getItem());
+        view.update(player, partialTick);
+        float aim = view.aimAmount();
+        float kick = view.kick();
+        float side = player.getMainArm() == HumanoidArm.LEFT ? -1.0f : 1.0f;
+        Vector3f place = new Vector3f(GUN_AT_HIP).lerp(GUN_AT_EYE, aim);
+        place.x *= side;
+        place.z += kick * 0.05f + event.getEquipProgress() * 0.2f;
+        place.y -= event.getEquipProgress() * 0.5f;
+        Matrix4f gun = new Matrix4f().translate(place)
+                .rotateY(side * HIP_YAW * (1.0f - aim) * Mth.DEG_TO_RAD)
+                .rotateX((HIP_PITCH * (1.0f - aim) + kick * 2.5f) * Mth.DEG_TO_RAD)
+                .scale(GUN_SCALE);
+
+        PoseStack pose = event.getPoseStack();
+        pose.pushPose();
+        pose.mulPose(gun);
+        WeaponRenderer.INSTANCE.draw(pose, view, event.getMultiBufferSource(), event.getPackedLight(), partialTick, WeaponRenderer.Space.VIEW);
+        pose.popPose();
+
+        Vector3f mainFist = gun.transformPosition(new Vector3f(GRIP));
+        Vector3f support = SUPPORT.getOrDefault(view.id(), SUPPORT.get("assault_rifle"));
+        Vector3f otherFist = gun.transformPosition(new Vector3f(support));
+        if (view.isReloading()) {
+            long end = armor.weaponReloadEnd();
+            RebirthConfig.WeaponStats stats = Weapons.statsOf(stack.getItem());
+            float done = stats == null ? 0.0f : Mth.clamp(1.0f - (end - player.level().getGameTime() - partialTick) / stats.reloadTicks().get(), 0.0f, 1.0f);
+            Vector3f well = gun.transformPosition(new Vector3f(MAGAZINE_WELL));
+            otherFist.lerp(well, Mth.sin(done * Mth.PI));
+        }
+        HumanoidArm mainSide = player.getMainArm();
+        HumanoidArm otherSide = mainSide.getOpposite();
+        if (armArms == null) {
+            armArms = new ArmorArmRenderer();
+        }
+        Vector3f mainShoulder = new Vector3f(RIGHT_SHOULDER);
+        Vector3f otherShoulder = new Vector3f(LEFT_SHOULDER);
+        mainShoulder.x *= side;
+        otherShoulder.x *= side;
+        armArms.renderReaching(pose, event.getMultiBufferSource(), event.getPackedLight(), mainSide, armor.getVariant(),
+                PowerArmorClient.plateColor(armor, mainSide == HumanoidArm.RIGHT), mainFist, mainShoulder);
+        armArms.renderReaching(pose, event.getMultiBufferSource(), event.getPackedLight(), otherSide, armor.getVariant(),
+                PowerArmorClient.plateColor(armor, otherSide == HumanoidArm.RIGHT), otherFist, otherShoulder);
     }
 
     private static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
@@ -234,7 +333,8 @@ public final class WeaponClient {
     }
 
     private static boolean scoped(Player player) {
-        if (player == null || !readyToShoot(player) || !(player.getVehicle() instanceof PowerArmorEntity armor) || !armor.isAimingWeapon()) {
+        if (player == null || !readyToShoot(player) || !Minecraft.getInstance().options.getCameraType().isFirstPerson()
+                || !(player.getVehicle() instanceof PowerArmorEntity armor) || !armor.isAimingWeapon()) {
             return false;
         }
         return Weapons.definition(player.registryAccess(), player.getMainHandItem().getItem()).map(WeaponDefinition::scope).orElse(false);
@@ -266,17 +366,23 @@ public final class WeaponClient {
         }
         boolean own = shooter == minecraft.player;
         boolean firstPerson = own && minecraft.options.getCameraType().isFirstPerson();
-        Vec3 muzzle = muzzle(shooter, firstPerson);
+        WeaponView view = WeaponView.of(shooter, shooter.getMainHandItem().getItem());
+        if (payload.pellets().isEmpty()) {
+            view.onEmptyClick();
+            return;
+        }
+        view.onShot(level.getGameTime());
+        Vec3 muzzle = view.muzzle() != null ? view.muzzle() : muzzle(shooter, firstPerson);
+        Vec3 port = view.ejection() != null ? view.ejection() : muzzle;
         Vec3 look = shooter.getLookAngle();
         // The flash: a short wide streak; flame and smoke only for those who do not have them right before their eyes.
         if (!firstPerson) {
             level.addParticle(ParticleTypes.SMOKE, muzzle.x, muzzle.y, muzzle.z, look.x * 0.05, look.y * 0.05 + 0.02, look.z * 0.05);
             level.addParticle(ParticleTypes.SMALL_FLAME, muzzle.x, muzzle.y, muzzle.z, look.x * 0.08, look.y * 0.08, look.z * 0.08);
         }
-        minecraft.particleEngine.add(new TracerParticle(level, muzzle, muzzle.add(look.scale(0.45)), 0.25f, 2, FLASH_COLOR));
         // The case flies out to the right of the gun.
         Vec3 side = look.cross(new Vec3(0.0, 1.0, 0.0)).normalize();
-        level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.GOLD_NUGGET)), muzzle.x, muzzle.y, muzzle.z,
+        level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.GOLD_NUGGET)), port.x, port.y, port.z,
                 side.x * 0.12, 0.12, side.z * 0.12);
         for (WeaponShotPayload.Pellet pellet : payload.pellets()) {
             Vec3 end = pellet.end();
@@ -303,7 +409,7 @@ public final class WeaponClient {
         }
     }
 
-    /** Where the barrel ends, near enough until the models of block D give the real place. */
+    /** Where the barrel ends, near enough before the model has been drawn. */
     private static Vec3 muzzle(Entity shooter, boolean firstPerson) {
         Vec3 look = shooter.getLookAngle();
         Vec3 side = look.cross(new Vec3(0.0, 1.0, 0.0)).normalize();

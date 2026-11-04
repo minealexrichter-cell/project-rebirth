@@ -19,6 +19,10 @@ public final class WindowPose {
     private WindowPose() {
     }
 
+    public static boolean isDrawing() {
+        return drawing;
+    }
+
     /** Everything drawn between these events is drawn by a screen; the world is drawn before them. A cancelled screen draws nothing. */
     public static void register() {
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, ScreenEvent.Render.Pre.class, event -> drawing = true);

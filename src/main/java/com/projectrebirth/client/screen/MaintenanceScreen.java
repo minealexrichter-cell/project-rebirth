@@ -9,6 +9,7 @@ import com.projectrebirth.technology.MaintenanceMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -32,6 +33,7 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
     private static final int ENERGY_W = 6;
     private static final int ENERGY_H = 66;
     private static final int BAR_WIDTH = 40;
+    private static final int EMPTY_HINT_WIDTH = 150;
 
     public MaintenanceScreen(MaintenanceMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -69,9 +71,18 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         super.renderLabels(graphics, mouseX, mouseY);
         Component status = status();
-        graphics.drawString(font, status, (imageWidth - font.width(status)) / 2, STATUS_Y, 0x404040, false);
-
         ItemStack stack = menu.serviced();
+        if (Maintenance.kind(stack) == Maintenance.Kind.NONE) {
+            // No bars below in an empty station, so the hint may take two lines to stay inside the window.
+            int lineY = STATUS_Y;
+            for (FormattedCharSequence line : font.split(status, EMPTY_HINT_WIDTH)) {
+                graphics.drawString(font, line, (imageWidth - font.width(line)) / 2, lineY, 0x404040, false);
+                lineY += font.lineHeight + 1;
+            }
+        } else {
+            graphics.drawString(font, status, (imageWidth - font.width(status)) / 2, STATUS_Y, 0x404040, false);
+        }
+
         switch (Maintenance.kind(stack)) {
             case ARMOR -> {
                 bar(graphics, BAR_Y, Component.translatable("hud.projectrebirth.armor.structural"),

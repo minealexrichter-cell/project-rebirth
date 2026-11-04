@@ -45,11 +45,13 @@ public final class Maintenance {
 
     /** Maximum structural integrity of a packed armor, by its variant. */
     public static float maxStructural(ItemStack stack) {
-        return RebirthConfig.armorStats(variant(stack)).maxStructural().get().floatValue();
+        return RebirthConfig.armorStats(variant(stack)).maxStructural().get().floatValue()
+                + stack.getOrDefault(PowerArmorRegistry.PLATING_STRUCTURAL.get(), 0.0f);
     }
 
     public static float maxCritical(ItemStack stack) {
-        return RebirthConfig.armorStats(variant(stack)).maxCritical().get().floatValue();
+        return RebirthConfig.armorStats(variant(stack)).maxCritical().get().floatValue()
+                + stack.getOrDefault(PowerArmorRegistry.PLATING_CRITICAL.get(), 0.0f);
     }
 
     private static ArmorVariant variant(ItemStack stack) {

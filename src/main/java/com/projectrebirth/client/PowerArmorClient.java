@@ -9,6 +9,7 @@ import com.projectrebirth.client.render.PowerArmorRenderer;
 import com.projectrebirth.powerarmor.ArmorSwingPayload;
 import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.ArmorVariant;
+import com.projectrebirth.powerarmor.Floodlight;
 import com.projectrebirth.powerarmor.HatchReleasePayload;
 import com.projectrebirth.powerarmor.MiningModePayload;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
@@ -48,6 +49,8 @@ public final class PowerArmorClient {
     /** Worker armor: switch between 3x3 and single-block mining. */
     private static final KeyMapping MINING_KEY = new KeyMapping("key.projectrebirth.mining_mode",
             InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.projectrebirth");
+    private static final KeyMapping FLOODLIGHT_KEY = new KeyMapping("key.projectrebirth.floodlight",
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, "key.categories.projectrebirth");
     private static final int BAR_WIDTH = 100;
 
     private static boolean hatchKeyWasDown;
@@ -116,6 +119,7 @@ public final class PowerArmorClient {
     private static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(HATCH_KEY);
         event.register(MINING_KEY);
+        event.register(FLOODLIGHT_KEY);
     }
 
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
@@ -159,6 +163,11 @@ public final class PowerArmorClient {
     /** Tells the server when the hatch key starts or stops being held; the server counts the time. */
     private static void onClientTick(ClientTickEvent.Post event) {
         Player player = Minecraft.getInstance().player;
+        while (FLOODLIGHT_KEY.consumeClick()) {
+            if (player != null && player.getVehicle() instanceof PowerArmorEntity) {
+                PacketDistributor.sendToServer(Floodlight.TogglePayload.INSTANCE);
+            }
+        }
         while (MINING_KEY.consumeClick()) {
             if (player != null && player.getVehicle() instanceof PowerArmorEntity armor && armor.getVariant() == ArmorVariant.WORKER) {
                 PacketDistributor.sendToServer(MiningModePayload.INSTANCE);

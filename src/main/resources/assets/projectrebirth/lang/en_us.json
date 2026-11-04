@@ -376,5 +376,11 @@
   "screen.projectrebirth.armor_mounting.right_arm": "Right arm",
   "screen.projectrebirth.armor_mounting.left_arm": "Left arm",
   "screen.projectrebirth.armor_mounting.right_leg": "Right leg",
-  "screen.projectrebirth.armor_mounting.left_leg": "Left leg"
+  "screen.projectrebirth.armor_mounting.left_leg": "Left leg",
+  "key.projectrebirth.floodlight": "Armor floodlight",
+  "block.projectrebirth.floodlight_light": "Floodlight Light",
+  "message.projectrebirth.armor.floodlight_on": "Floodlight on",
+  "message.projectrebirth.armor.floodlight_off": "Floodlight off",
+  "message.projectrebirth.armor.no_floodlight": "This armor has no floodlight",
+  "message.projectrebirth.armor.floodlight_disabled": "Floodlights are disabled on this server"
 }

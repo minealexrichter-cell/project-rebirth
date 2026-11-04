@@ -8,6 +8,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
@@ -22,6 +23,9 @@ public final class InstalledUpgrades {
     public static final Codec<InstalledUpgrades> CODEC = Installed.CODEC.listOf().xmap(InstalledUpgrades::new, InstalledUpgrades::entries);
     public static final StreamCodec<RegistryFriendlyByteBuf, InstalledUpgrades> STREAM_CODEC =
             Installed.STREAM_CODEC.apply(ByteBufCodecs.list()).map(InstalledUpgrades::new, InstalledUpgrades::entries);
+
+    /** Lets an entity send its upgrades to the clients that see it. Registered in {@link UpgradeRegistry}. */
+    public static final EntityDataSerializer<InstalledUpgrades> ENTITY_DATA = EntityDataSerializer.forValueType(STREAM_CODEC);
 
     private final List<Installed> entries;
 

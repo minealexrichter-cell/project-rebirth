@@ -10,6 +10,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
@@ -32,6 +33,12 @@ public final class UpgradeRegistry {
     private static final DeferredRegister<AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, ProjectRebirth.MOD_ID);
     private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ProjectRebirth.MOD_ID);
+    private static final DeferredRegister<EntityDataSerializer<?>> SERIALIZERS =
+            DeferredRegister.create(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS, ProjectRebirth.MOD_ID);
+
+    static {
+        SERIALIZERS.register("installed_upgrades", () -> InstalledUpgrades.ENTITY_DATA);
+    }
 
     /** The upgrades of a packed body or armor. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<InstalledUpgrades>> INSTALLED = COMPONENTS.registerComponentType(
@@ -79,6 +86,7 @@ public final class UpgradeRegistry {
     public static void register(IEventBus modEventBus) {
         COMPONENTS.register(modEventBus);
         ATTACHMENTS.register(modEventBus);
+        SERIALIZERS.register(modEventBus);
         ITEMS.register(modEventBus);
         modEventBus.addListener(UpgradeRegistry::registerDataRegistry);
     }

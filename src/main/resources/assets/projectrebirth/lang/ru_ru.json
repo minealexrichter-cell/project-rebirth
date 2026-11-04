@@ -376,5 +376,11 @@
   "screen.projectrebirth.armor_mounting.right_arm": "Правая рука",
   "screen.projectrebirth.armor_mounting.left_arm": "Левая рука",
   "screen.projectrebirth.armor_mounting.right_leg": "Правая нога",
-  "screen.projectrebirth.armor_mounting.left_leg": "Левая нога"
+  "screen.projectrebirth.armor_mounting.left_leg": "Левая нога",
+  "key.projectrebirth.floodlight": "Прожектор брони",
+  "block.projectrebirth.floodlight_light": "Свет прожектора",
+  "message.projectrebirth.armor.floodlight_on": "Прожектор включён",
+  "message.projectrebirth.armor.floodlight_off": "Прожектор выключен",
+  "message.projectrebirth.armor.no_floodlight": "На этой броне нет прожектора",
+  "message.projectrebirth.armor.floodlight_disabled": "Прожекторы отключены на этом сервере"
 }

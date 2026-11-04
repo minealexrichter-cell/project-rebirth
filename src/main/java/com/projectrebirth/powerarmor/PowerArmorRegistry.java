@@ -14,9 +14,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -40,6 +43,19 @@ public final class PowerArmorRegistry {
             "stored_structural", builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> STORED_CRITICAL = COMPONENTS.registerComponentType(
             "stored_critical", builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
+
+    /** How much the plates of a packed armor add to its maximum integrity; absent without plates. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> PLATING_STRUCTURAL = COMPONENTS.registerComponentType(
+            "plating_structural", builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> PLATING_CRITICAL = COMPONENTS.registerComponentType(
+            "plating_critical", builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
+
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ProjectRebirth.MOD_ID);
+
+    /** The invisible light of a floodlight; it has no item and drops nothing. */
+    public static final DeferredBlock<Floodlight.LightBlock> FLOODLIGHT_LIGHT = BLOCKS.registerBlock("floodlight_light", Floodlight.LightBlock::new,
+            BlockBehaviour.Properties.of().noCollission().noLootTable().replaceable().instabreak().noOcclusion()
+                    .lightLevel(state -> 15).pushReaction(PushReaction.DESTROY).air());
 
     /** One item per armor variant; the combat armor keeps the 0.1.0 id "power_armor". */
     private static final Map<ArmorVariant, DeferredItem<PowerArmorItem>> ARMOR_ITEMS = new EnumMap<>(ArmorVariant.class);
@@ -95,6 +111,8 @@ public final class PowerArmorRegistry {
     public static void register(IEventBus modEventBus) {
         ENTITY_TYPES.register(modEventBus);
         ITEMS.register(modEventBus);
+        BLOCKS.register(modEventBus);
+        Floodlight.register(modEventBus);
         COMPONENTS.register(modEventBus);
         ATTACHMENTS.register(modEventBus);
         modEventBus.addListener(PowerArmorRegistry::registerAttributes);

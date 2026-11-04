@@ -90,6 +90,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private static final EntityDataAccessor<Byte> VARIANT = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BYTE);
     /** Worker armor: true = 3x3 mining, false = one block. */
     private static final EntityDataAccessor<Boolean> WIDE_MINING = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<InstalledUpgrades> UPGRADES = SynchedEntityData.defineId(PowerArmorEntity.class, InstalledUpgrades.ENTITY_DATA);
+    private static final EntityDataAccessor<Boolean> FLOODLIGHT_ON = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final ResourceLocation PILOT_ATTACK_MODIFIER = ProjectRebirth.id("power_armor_attack");
     private static final ResourceLocation PILOT_KNOCKBACK_MODIFIER = ProjectRebirth.id("power_armor_knockback");
@@ -112,7 +114,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     @Nullable
     private UUID owner;
-    private InstalledUpgrades upgrades = InstalledUpgrades.EMPTY;
+    /** Where this armor's floodlight stands now; only on the server. */
+    @Nullable
+    private BlockPos floodlightPos;
     /** False only for an armor that has never been in a level; then it starts at full integrity. */
     private boolean initialized;
     private int ticksSinceDamage;
@@ -148,6 +152,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         builder.define(HATCH_PROGRESS, 0.0f);
         builder.define(VARIANT, (byte) ArmorVariant.COMBAT.ordinal());
         builder.define(WIDE_MINING, true);
+        builder.define(UPGRADES, InstalledUpgrades.EMPTY);
+        builder.define(FLOODLIGHT_ON, false);
     }
 
     // ---------------------------------------------------------------- state
@@ -224,12 +230,23 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     @Override
     public InstalledUpgrades upgrades() {
-        return upgrades;
+        return entityData.get(UPGRADES);
     }
 
     @Override
     public void setUpgrades(InstalledUpgrades upgrades) {
-        this.upgrades = upgrades;
+        entityData.set(UPGRADES, upgrades);
+        if (!level().isClientSide && initialized) {
+            applyConfig();
+        }
+    }
+
+    public boolean isFloodlightOn() {
+        return entityData.get(FLOODLIGHT_ON);
+    }
+
+    public void setFloodlightOn(boolean on) {
+        entityData.set(FLOODLIGHT_ON, on);
     }
 
     @Override
@@ -266,10 +283,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     /** Re-applied on every load so that config changes reach existing armors. */
     private void applyConfig() {
-        entityData.set(MAX_STRUCTURAL, stats().maxStructural().get().floatValue());
-        entityData.set(MAX_CRITICAL, stats().maxCritical().get().floatValue());
+        entityData.set(MAX_STRUCTURAL, stats().maxStructural().get().floatValue() + ArmorUpgradeEffects.structuralBonus(registryAccess(), upgrades()));
+        entityData.set(MAX_CRITICAL, stats().maxCritical().get().floatValue() + ArmorUpgradeEffects.criticalBonus(registryAccess(), upgrades()));
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(stats().movementSpeed().get());
-        getAttribute(Attributes.SAFE_FALL_DISTANCE).setBaseValue(stats().safeFallDistance().get());
+        getAttribute(Attributes.SAFE_FALL_DISTANCE).setBaseValue(ArmorUpgradeEffects.safeFallDistance(this));
         if (!initialized) {
             entityData.set(STRUCTURAL, getMaxStructural());
             entityData.set(CRITICAL, getMaxCritical());
@@ -392,6 +409,16 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     // ---------------------------------------------------------------- tick
 
+    /** Unloaded with its chunk, packed, destroyed: the light goes with the armor. */
+    @Override
+    public void onRemovedFromLevel() {
+        super.onRemovedFromLevel();
+        if (!level().isClientSide) {
+            Floodlight.clear(level(), floodlightPos);
+            floodlightPos = null;
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -400,6 +427,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         }
         if (level().isClientSide) {
             return;
+        }
+        if (Floodlight.timeToUpdate(this)) {
+            floodlightPos = Floodlight.update(this, floodlightPos);
         }
         Player pilot = getPilot();
         if (pilot != null && !isWrecked()) {
@@ -474,7 +504,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         yHeadRot = getYRot();
         if (pendingJump > 0.0f && onGround()) {
             Vec3 motion = getDeltaMovement();
-            setDeltaMovement(motion.x, stats().jumpStrength().get() * pendingJump, motion.z);
+            setDeltaMovement(motion.x, ArmorUpgradeEffects.jumpStrength(this) * pendingJump, motion.z);
             hasImpulse = true;
         }
         pendingJump = 0.0f;
@@ -751,8 +781,17 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (getCritical() < getMaxCritical()) {
             stack.set(PowerArmorRegistry.STORED_CRITICAL.get(), getCritical());
         }
-        Upgrades.putOnStack(stack, upgrades);
-        upgrades = InstalledUpgrades.EMPTY;
+        // The maintenance station repairs up to the maximum with plates. Kept as a bonus, so that config changes count.
+        float structuralBonus = ArmorUpgradeEffects.structuralBonus(registryAccess(), upgrades());
+        float criticalBonus = ArmorUpgradeEffects.criticalBonus(registryAccess(), upgrades());
+        if (structuralBonus > 0.0f) {
+            stack.set(PowerArmorRegistry.PLATING_STRUCTURAL.get(), structuralBonus);
+        }
+        if (criticalBonus > 0.0f) {
+            stack.set(PowerArmorRegistry.PLATING_CRITICAL.get(), criticalBonus);
+        }
+        Upgrades.putOnStack(stack, upgrades());
+        entityData.set(UPGRADES, InstalledUpgrades.EMPTY);
         discard();
         if (!player.getInventory().add(stack)) {
             player.drop(stack, false);
@@ -858,7 +897,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         tag.putBoolean("Initialized", initialized);
         tag.putString("Variant", getVariant().id());
         tag.putBoolean("WideMining", isWideMining());
-        Upgrades.save(tag, registryAccess(), upgrades);
+        Upgrades.save(tag, registryAccess(), upgrades());
+        tag.putBoolean("FloodlightOn", isFloodlightOn());
         if (owner != null) {
             tag.putUUID("Owner", owner);
         }
@@ -874,7 +914,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         // Armors from 0.1.0 have no variant: they are combat armors.
         setVariant(ArmorVariant.byId(tag.getString("Variant")));
         setWideMining(!tag.contains("WideMining") || tag.getBoolean("WideMining"));
-        upgrades = Upgrades.load(tag, registryAccess());
+        entityData.set(UPGRADES, Upgrades.load(tag, registryAccess()));
+        setFloodlightOn(tag.getBoolean("FloodlightOn"));
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
     }
 

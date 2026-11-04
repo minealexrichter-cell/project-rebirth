@@ -1,25 +1,38 @@
 package com.projectrebirth.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
+import com.projectrebirth.upgrades.ArmorSlot;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.BlockAndItemGeoLayer;
+import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
+import software.bernie.geckolib.util.RenderUtil;
 
 /**
  * Power armor. Each variant has its own model, animations and textures, named after its item id; a wreck uses the
@@ -43,6 +56,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
         super(context, new ArmorModel());
         this.shadowRadius = 0.8f;
         addRenderLayer(new HeldItemLayer(this));
+        addRenderLayer(new BannerLayer(this, context.bakeLayer(ModelLayers.BANNER).getChild("flag")));
     }
 
     @Override
@@ -90,6 +104,55 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
                 PilotArmPose.apply(armor, pilot, state.getPartialTick(), rightArm, leftArm,
                         getAnimationProcessor().getBone("right_forearm"), getAnimationProcessor().getBone("left_forearm"));
             }
+        }
+    }
+
+    /** A vanilla banner with its pattern on the armor's back; it waves, and more so while the armor walks. */
+    private static class BannerLayer extends GeoRenderLayer<PowerArmorEntity> {
+        private static final String TORSO = "torso";
+        private static final float SCALE = 2.0f / 3.0f;
+        /** Height of the flag's top above the banner model's origin, in model pixels (see BannerRenderer). */
+        private static final float FLAG_TOP = 32.0f * SCALE;
+        private static final float TOP_ABOVE_PIVOT = 18.0f;
+        private final ModelPart flag;
+
+        BannerLayer(PowerArmorRenderer renderer, ModelPart flag) {
+            super(renderer);
+            this.flag = flag;
+        }
+
+        /** How far behind the armor's middle its back ends, per model. */
+        private static float back(ArmorVariant variant) {
+            return switch (variant) {
+                case COMBAT -> 8.5f;
+                case MOBILE -> 7.5f;
+                case WORKER -> 9.5f;
+            };
+        }
+
+        @Override
+        public void renderForBone(PoseStack poseStack, PowerArmorEntity armor, GeoBone bone, RenderType renderType,
+                                  MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
+            if (!bone.getName().equals(TORSO) || armor.isWrecked()) {
+                return;
+            }
+            int index = armor.upgrades().indexOf(ArmorSlot.CHEST_BACK);
+            if (index < 0 || !(armor.upgrades().entries().get(index).stack().getItem() instanceof BannerItem banner)) {
+                return;
+            }
+            ItemStack stack = armor.upgrades().entries().get(index).stack();
+            poseStack.pushPose();
+            RenderUtil.translateToPivotPoint(poseStack, bone);
+            poseStack.translate(0.0f, (TOP_ABOVE_PIVOT - FLAG_TOP) / 16.0f, back(armor.getVariant()) / 16.0f);
+            poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
+            poseStack.scale(SCALE, -SCALE, -SCALE);
+            float time = armor.tickCount + partialTick;
+            float walking = armor.walkAnimation.speed(partialTick);
+            flag.xRot = (-0.0125f + 0.01f * Mth.cos(Mth.TWO_PI * time / 100.0f) - walking * 0.03f * (1.0f + Mth.sin(time * 0.4f))) * Mth.PI;
+            flag.y = -32.0f;
+            BannerRenderer.renderPatterns(poseStack, bufferSource, packedLight, packedOverlay, flag, ModelBakery.BANNER_BASE, true,
+                    banner.getColor(), stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY));
+            poseStack.popPose();
         }
     }
 

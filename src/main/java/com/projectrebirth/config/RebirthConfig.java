@@ -48,6 +48,12 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PRODUCTION_TIME_MULTIPLIER;
     public static final ModConfigSpec.IntValue MAINTENANCE_STEP_TICKS;
     private static final Map<String, PlatingStats> PLATING = new HashMap<>();
+    private static final Map<String, ArmorPlatingStats> ARMOR_PLATING = new HashMap<>();
+    public static final ModConfigSpec.DoubleValue ARMOR_JUMP_PER_AIR_MODULE;
+    public static final ModConfigSpec.DoubleValue ARMOR_MAX_JUMP_STRENGTH;
+    public static final ModConfigSpec.DoubleValue ARMOR_SAFE_FALL_PER_AIR_MODULE;
+    public static final ModConfigSpec.BooleanValue FLOODLIGHT_ENABLED;
+    public static final ModConfigSpec.IntValue FLOODLIGHT_RANGE;
     public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
     public static final ModConfigSpec.DoubleValue JETPACK_RECHARGE_SECONDS;
     public static final ModConfigSpec.DoubleValue JETPACK_RISE_SPEED;
@@ -254,6 +260,30 @@ public final class RebirthConfig {
                 .defineInRange("energyPerTick", 20, 0, 1_000_000);
         builder.pop();
 
+        builder.comment("What the upgrades of power armor do").push("armor_upgrades");
+        builder.comment("Plating, per hull part, added to the armor's maximum integrity").push("plating");
+        defineArmorPlating(builder, "copper", 10.0, 0.0);
+        defineArmorPlating(builder, "iron", 20.0, 0.0);
+        defineArmorPlating(builder, "titanium", 30.0, 5.0);
+        builder.pop();
+        ARMOR_JUMP_PER_AIR_MODULE = builder
+                .comment("Jump strength added by each compressed air module")
+                .defineInRange("jumpPerAirModule", 0.15, 0.0, 3.0);
+        ARMOR_MAX_JUMP_STRENGTH = builder
+                .comment("Highest jump strength modules can reach, so that a mobile armor does not become a flying one.",
+                        "A variant whose own jump is higher keeps it")
+                .defineInRange("maxJumpStrength", 1.2, 0.0, 3.0);
+        ARMOR_SAFE_FALL_PER_AIR_MODULE = builder
+                .comment("Blocks of safe fall added by each module: a higher jump must be able to land")
+                .defineInRange("safeFallPerAirModule", 3.0, 0.0, 256.0);
+        FLOODLIGHT_ENABLED = builder
+                .comment("Whether floodlights work. They place an invisible light block where the pilot looks and move it along")
+                .define("floodlightEnabled", true);
+        FLOODLIGHT_RANGE = builder
+                .comment("How far a floodlight reaches, in blocks")
+                .defineInRange("floodlightRange", 16, 1, 64);
+        builder.pop();
+
         builder.comment("What the gadgets of artificial bodies do").push("gadgets");
         builder.comment("Armor plates, per piece, added to the armor of the body class").push("plating");
         definePlating(builder, "copper", 1.0, 0.0);
@@ -351,6 +381,22 @@ public final class RebirthConfig {
     public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
                              ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
                              ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
+    }
+
+    private static void defineArmorPlating(ModConfigSpec.Builder builder, String material, double structural, double critical) {
+        builder.push(material);
+        ARMOR_PLATING.put(material, new ArmorPlatingStats(
+                builder.comment("Added maximum structural integrity per part").defineInRange("structural", structural, 0.0, 10000.0),
+                builder.comment("Added maximum critical integrity per part").defineInRange("critical", critical, 0.0, 10000.0)));
+        builder.pop();
+    }
+
+    /** The numbers of an armor plating material, or null if the config does not know it. */
+    public static ArmorPlatingStats armorPlating(String material) {
+        return ARMOR_PLATING.get(material);
+    }
+
+    public record ArmorPlatingStats(ModConfigSpec.DoubleValue structural, ModConfigSpec.DoubleValue critical) {
     }
 
     private static void definePlating(ModConfigSpec.Builder builder, String material, double armor, double toughness) {

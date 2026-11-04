@@ -1087,6 +1087,7 @@ Gradle сам не находит Microsoft JDK 21, поэтому её путь
 | `animations/entity/<класс>.animation.json`, 5 штук | ПРИНЯТЫ владельцем (0.2.2); мной `idle`, `walk` видены на снимках, `interact` не проверена |
 | `models/block/transfer_capsule_{lower,upper}.json`, `textures/block/transfer_capsule_*.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
 | `textures/block/assembly_station_*.png`, `textures/item/*.png` | НОВЫЕ (0.3.0): `build_textures.js` в Blockbench; проверены в игре, владелец ещё не оценивал |
+| модели блоков (капсула, панель, кабель, полные кубы) | ЗАГЛУШКИ: формы прежние, в 0.3.0 менялись только текстуры |
 | человеческое тело | ванильная модель игрока со скином владельца (не заглушка) |
 | `geo/entity/{power_armor,mobile_power_armor,worker_power_armor}.geo.json` | ПРИНЯТЫ владельцем (0.2.2), сделаны в Blockbench |
 | `textures/entity/<вариант>.png`, `<вариант>_wrecked.png` (128×128) | ПРИНЯТЫ владельцем (0.2.2): обычная и обгоревшая у каждого вида |

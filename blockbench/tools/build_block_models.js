@@ -4,7 +4,7 @@
 //   RebirthBlockModels.saveAll();                         // writes models and block states into the mod's resources
 //   RebirthBlockModels.open('assembly_station_on');       // opens a written model in Blockbench to look at it
 //   RebirthBlockModels.saveProjects();                    // saves every model as blockbench/blocks/<id>.bbmodel
-// Models look north. Parts stay inside the block except small ones on the top. Textures come from build_textures.js.
+// Models look north. Parts stay inside the block (saveAll checks it, and that no faces overlap). Textures come from build_textures.js.
 (function () {
     const fs = require('fs');
     const ROOT = 'E:/Projects/Project-Rebirth-mod/';
@@ -39,33 +39,38 @@
 
     const GLOW = {neoforge_data: {block_light: 15}};
 
+    /** Removes faces that nothing can see, so that they cannot flicker against each other. */
+    function without(element, ...dirs) {
+        dirs.forEach(dir => delete element.faces[dir]);
+        return element;
+    }
+
     /** Body shared by the stations and the generator: plinth, frame, side and back panels, top plate. */
     function machine(accent) {
         return [
             box([0, 0, 0], [16, 2, 16], 'mid', {up: 'gun'}),
-            box([1, 2, 1], [15, 13, 15], 'dark'),
-            box([0, 13, 0], [16, 15, 16], 'mid', {up: tex('top')}),
+            without(box([1, 2, 1], [15, 13, 15], 'dark'), 'up', 'down'),
+            box([0, 13, 0], [16, 14, 16], 'mid', {up: tex('top')}),
             // Frame posts.
-            box([0, 2, 0], [2, 13, 2], 'steel'),
-            box([14, 2, 0], [16, 13, 2], 'steel'),
-            box([0, 2, 14], [2, 13, 16], 'steel'),
-            box([14, 2, 14], [16, 13, 16], 'steel'),
+            without(box([0, 2, 0], [2, 13, 2], 'steel'), 'up', 'down'),
+            without(box([14, 2, 0], [16, 13, 2], 'steel'), 'up', 'down'),
+            without(box([0, 2, 14], [2, 13, 16], 'steel'), 'up', 'down'),
+            without(box([14, 2, 14], [16, 13, 16], 'steel'), 'up', 'down'),
             // Side panels and the back with the machine's colour.
-            box([0.5, 3, 3], [1.5, 13, 13], 'gun', {west: tex('side', [3, 3, 13, 13])}),
-            box([14.5, 3, 3], [15.5, 13, 13], 'gun', {east: tex('side', [3, 3, 13, 13])}),
-            box([3, 3, 14.5], [13, 13, 15.5], 'gun', {south: tex('side', [3, 3, 13, 13])}),
-            box([2, 12, 15], [14, 13, 16], accent),
+            without(box([0.5, 3, 3], [1.5, 13, 13], 'gun', {west: tex('side', [3, 3, 13, 13])}), 'up'),
+            without(box([14.5, 3, 3], [15.5, 13, 13], 'gun', {east: tex('side', [3, 3, 13, 13])}), 'up'),
+            without(box([3, 3, 14.5], [13, 13, 15.5], 'gun', {south: tex('side', [3, 3, 13, 13])}), 'up'),
             box([2, 2, 15], [14, 3, 16], accent),
             // Copper pipe along the back.
-            box([12, 3, 15.5], [13, 13, 16], 'copper')
+            without(box([12, 3, 15.5], [13, 13, 16], 'copper'), 'up')
         ];
     }
 
-    /** The recessed screen with a frame around it. */
-    function screen(on) {
+    /** The recessed screen with a frame around it; the ledge is the frame's lower bar. */
+    function screen(on, ledge, uv) {
         return [
-            box([3, 3, 0.5], [13, 13, 1.5], 'dark', {north: tex('front', [3, 3, 13, 13])}, on ? GLOW : undefined),
-            box([2, 2, 0], [14, 3, 1], 'steel'),
+            box([3, 3, 0.5], [13, 13, 1.5], 'dark', {north: tex('front', uv || [3, 3, 13, 13])}, on ? GLOW : undefined),
+            box([2, 2, 0], [14, 3, 1], ledge || 'steel', ledge === 'dark' ? {up: 'gun'} : undefined),
             box([2, 3, 0], [3, 13, 1], 'steel'),
             box([13, 3, 0], [14, 13, 1], 'steel')
         ];
@@ -84,55 +89,51 @@
         return map;
     }
 
-    function station(id, accent, extras) {
+    function station(id, accent, ledge, extras) {
         [false, true].forEach(on => {
             MODELS[id + (on ? '_on' : '')] = {
                 parent: 'minecraft:block/block',
                 textures: textures(id, on, ['front', 'side', 'top']),
-                elements: [...machine(accent), ...screen(on), ...extras(on)]
+                elements: [...machine(accent), ...screen(on, ledge), ...extras(on)]
             };
         });
     }
 
-    station('electronics_fabricator', 'green', on => [
-        // Keyboard, capacitors, antenna.
-        box([3, 2, 0], [13, 3, 1], 'dark', {up: 'gun'}),
-        box([2, 15, 2], [5, 18, 5], 'gun', {up: 'brass'}),
-        box([2, 15, 6], [4, 17, 8], 'dark', {up: 'copper'}),
-        box([12, 15, 2], [13, 20, 3], 'steel'),
-        box([11.5, 19, 1.5], [13.5, 20, 3.5], on ? 'green' : 'mid', undefined, on ? GLOW : undefined),
-        box([3, 15, 11], [13, 16, 14], 'dark', {up: 'rubber'})
+    // Everything on the top plate stays below y = 16.
+    station('electronics_fabricator', 'green', 'dark', on => [
+        // Capacitors, antenna, memory bar.
+        box([2, 14, 2], [5, 16, 5], 'gun', {up: 'brass'}),
+        box([2, 14, 6], [4, 15.5, 8], 'dark', {up: 'copper'}),
+        box([12, 14, 2], [13, 15.5, 3], 'steel'),
+        box([11.5, 15.5, 1.5], [13.5, 16, 3.5], on ? 'green' : 'mid', undefined, on ? GLOW : undefined),
+        box([3, 14, 11], [13, 15, 14], 'dark', {up: 'rubber'})
     ]);
 
-    station('assembly_station', 'orange', on => [
-        box([3, 2, 0], [13, 3, 1], 'hazard'),
-        // Robot arm on the top plate.
-        box([6, 15, 6], [10, 16, 10], 'gun', {up: 'steel'}),
-        box([7, 16, 7], [9, 20, 9], 'orange', undefined, {rotation: {origin: [8, 16, 8], axis: 'x', angle: 22.5}}),
-        box([7, 18.5, 8.5], [9, 21, 10.5], 'steel', undefined, {rotation: {origin: [8, 19, 9], axis: 'x', angle: -22.5}}),
-        box([6, 20.5, 7], [10, 21.5, 9], on ? 'yellow' : 'dark', undefined, on ? GLOW : undefined),
-        box([2, 15, 11], [5, 16, 14], 'hazard')
+    station('assembly_station', 'orange', 'hazard', on => [
+        // A small robot arm lying on the top plate.
+        box([6, 14, 6], [10, 15, 10], 'gun', {up: 'steel'}),
+        box([7, 15, 7], [9, 16, 12], 'orange'),
+        box([6.5, 15, 3.5], [9.5, 16, 7], 'steel', {up: on ? 'yellow' : 'dark'}, on ? GLOW : undefined),
+        box([2, 14, 11], [5, 15, 14], 'hazard')
     ]);
 
-    station('armor_workstation', 'olive', on => [
-        // Armor plates on the sides and a helmet on a stand.
+    station('armor_workstation', 'olive', 'steel', on => [
+        // Armor plates on the sides and a low helmet on the top plate.
         box([0, 5, 4], [0.5, 11, 12], 'olive'),
         box([15.5, 5, 4], [16, 11, 12], 'olive'),
-        box([7, 15, 7], [9, 16, 9], 'steel'),
-        box([5.5, 16, 5.5], [10.5, 20, 10.5], 'olive', {north: 'olive', up: 'olive'}),
-        box([6, 17.5, 5], [10, 18.5, 5.5], on ? 'red' : 'dark', undefined, on ? GLOW : undefined),
-        box([2, 15, 2], [4, 16, 4], 'steel'),
-        box([12, 15, 12], [14, 16, 14], 'steel')
+        box([5, 14, 5], [11, 16, 11], 'olive'),
+        box([6, 14.5, 4.5], [10, 15.5, 5], on ? 'red' : 'dark', undefined, on ? GLOW : undefined),
+        box([2, 14, 2], [4, 15, 4], 'steel'),
+        box([12, 14, 12], [14, 15, 14], 'steel')
     ]);
 
-    station('maintenance_station', 'yellow', on => [
-        // Warning beacon, tool box, gauge.
-        box([12, 15, 2], [14, 16, 4], 'gun'),
-        box([12.25, 16, 2.25], [13.75, 18, 3.75], on ? 'yellow' : 'rust', undefined, on ? GLOW : undefined),
-        box([2, 15, 3], [8, 18, 7], 'red', {up: 'rust'}),
-        box([4, 18, 4.5], [6, 18.5, 5.5], 'steel'),
-        box([3, 2, 0], [13, 3, 1], 'hazard'),
-        box([0, 8, 1], [0.5, 11, 3], 'white')
+    station('maintenance_station', 'yellow', 'hazard', on => [
+        // Warning lamp, tool box, gauge.
+        box([12, 14, 2], [14, 14.5, 4], 'gun'),
+        box([12.25, 14.5, 2.25], [13.75, 16, 3.75], on ? 'yellow' : 'rust', undefined, on ? GLOW : undefined),
+        box([2, 14, 3], [8, 15.5, 7], 'red', {up: 'rust'}),
+        box([4, 15.5, 4.5], [6, 16, 5.5], 'steel'),
+        box([0, 8, 2], [0.5, 11, 3], 'white')
     ]);
 
     [false, true].forEach(on => {
@@ -141,15 +142,12 @@
             textures: textures('combustion_generator', on, ['front', 'side', 'top']),
             elements: [
                 ...machine('rust'),
-                box([2, 3, 0.5], [14, 13, 1.5], 'dark', {north: tex('front', [2, 4, 14, 14])}, on ? GLOW : undefined),
-                box([1, 2, 0], [15, 3, 1], 'steel'),
-                box([1, 3, 0], [2, 13, 1], 'steel'),
-                box([14, 3, 0], [15, 13, 1], 'steel'),
-                // Chimney with a rim, fuel hatch, cooling fins.
-                box([9, 15, 9], [13, 20, 13], 'gun', {up: 'dark'}),
-                box([8.5, 20, 8.5], [13.5, 21, 13.5], 'rust', {up: on ? 'orange' : 'dark'}, on ? GLOW : undefined),
-                box([3, 15, 3], [8, 16, 8], 'steel', {up: 'rust'}),
-                box([5, 16, 5], [6, 16.5, 6], 'brass'),
+                ...screen(on, 'steel', [3, 4, 13, 14]),
+                // Chimney, fuel hatch, cooling fins.
+                box([9, 14, 9], [13, 15, 13], 'gun', {up: 'dark'}),
+                box([9.5, 15, 9.5], [12.5, 16, 12.5], 'rust', {up: on ? 'orange' : 'dark'}, on ? GLOW : undefined),
+                box([3, 14, 3], [8, 15, 8], 'steel', {up: 'rust'}),
+                box([5, 15, 5], [6, 15.5, 6], 'brass'),
                 box([0, 4, 5], [0.5, 12, 6], 'copper'),
                 box([0, 4, 8], [0.5, 12, 9], 'copper'),
                 box([0, 4, 11], [0.5, 12, 12], 'copper'),
@@ -320,7 +318,40 @@
         return JSON.stringify(value, null, 2) + '\n';
     }
 
+    /**
+     * Problems of a model: parts outside the block, and faces of two parts that look the same way in the same plane
+     * and overlap: the game cannot decide which to draw, and such a face flickers. The capsule is taller on purpose.
+     */
+    function problems(id, model) {
+        const out = [];
+        const axes = {west: [0, 1, 2, 0], east: [0, 1, 2, 1], down: [1, 0, 2, 0], up: [1, 0, 2, 1], north: [2, 0, 1, 0], south: [2, 0, 1, 1]};
+        const capsule = id.startsWith('transfer_capsule');
+        model.elements.forEach((e, i) => {
+            if (!capsule && [...e.from, ...e.to].some(v => v < 0 || v > 16)) {
+                out.push(id + ': part ' + i + ' is outside the block');
+            }
+            model.elements.forEach((o, j) => {
+                if (j <= i || e.rotation || o.rotation) {
+                    return;
+                }
+                for (const [dir, [n, u, v, far]] of Object.entries(axes)) {
+                    const plane = x => (far ? x.to : x.from)[n];
+                    if (plane(e) === plane(o) && e.faces[dir] && o.faces[dir]
+                        && Math.min(e.to[u], o.to[u]) > Math.max(e.from[u], o.from[u])
+                        && Math.min(e.to[v], o.to[v]) > Math.max(e.from[v], o.from[v])) {
+                        out.push(id + ': parts ' + i + ' and ' + j + ' overlap on ' + dir);
+                    }
+                }
+            });
+        });
+        return out;
+    }
+
     function saveAll() {
+        const found = Object.entries(MODELS).flatMap(([id, model]) => problems(id, model));
+        if (found.some(text => !text.startsWith('transfer_capsule'))) {
+            throw new Error(found.join('; '));
+        }
         Object.entries(MODELS).forEach(([id, model]) => fs.writeFileSync(ASSETS + 'models/block/' + id + '.json', json(model)));
         Object.entries(STATES).forEach(([id, state]) => fs.writeFileSync(ASSETS + 'blockstates/' + id + '.json', json(state)));
         return {models: Object.keys(MODELS).length, states: Object.keys(STATES).length};

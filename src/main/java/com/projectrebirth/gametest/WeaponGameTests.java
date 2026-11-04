@@ -13,7 +13,9 @@ import com.projectrebirth.powerarmor.ArmorAbility;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
+import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.Station;
+import com.projectrebirth.technology.TechItems;
 import com.projectrebirth.technology.TechRecipes;
 import com.projectrebirth.weapons.WeaponDefinition;
 import com.projectrebirth.weapons.WeaponItem;
@@ -29,12 +31,14 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -48,6 +52,8 @@ public class WeaponGameTests {
     private static final String TEMPLATE = "floor_5x5";
     private static final BlockPos SEAT = new BlockPos(1, 2, 1);
     private static final BlockPos TARGET = new BlockPos(3, 2, 3);
+    /** A full set of iron armor. */
+    private static final float IRON_ARMOR_POINTS = 15.0f;
 
     private static ServerPlayer player(GameTestHelper helper) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
@@ -389,6 +395,48 @@ public class WeaponGameTests {
         player.getInventory().selected = 3;
         Weapons.updateHeavyWalk(player, 0.5);
         helper.assertTrue(player.getAttributeValue(Attributes.MOVEMENT_SPEED) == speed, "Without the weapon in hand the speed comes back");
+        helper.succeed();
+    }
+
+    /** Default numbers, so that the balance in docs/STATUS.md cannot drift from the config unnoticed. */
+    private static double secondsToKill(GameTestHelper helper, RebirthConfig.WeaponStats stats, float armor) {
+        var source = helper.getLevel().damageSources().source(WeaponRegistry.BULLET);
+        float hit = stats.damage().getDefault().floatValue() * stats.pellets().getDefault();
+        float dealt = CombatRules.getDamageAfterAbsorb(helper.makeMockPlayer(GameType.SURVIVAL), hit, source, armor, 0.0f);
+        int shots = (int) Math.ceil(20.0f / dealt);
+        return (shots - 1) * stats.shotIntervalTicks().getDefault() / 20.0;
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void noWeaponKillsAPlayerInIronArmorInAFractionOfASecond(GameTestHelper helper) {
+        for (String id : List.of("assault_rifle", "battle_rifle", "combat_shotgun")) {
+            double seconds = secondsToKill(helper, stats(id), IRON_ARMOR_POINTS);
+            helper.assertTrue(seconds >= 1.5, id + " kills in " + seconds + " s, all shots hitting");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void theShotgunComesFirstAndRiflesNeedTitaniumAndProcessors(GameTestHelper helper) {
+        var recipes = TechRecipes.recipesFor(helper.getLevel(), Station.WEAPON_WORKSHOP);
+        ItemStack processor = new ItemStack(TechItems.PROCESSOR.get());
+        ItemStack actuator = new ItemStack(TechItems.ACTUATOR.get());
+        ItemStack titanium = new ItemStack(TechItems.INGOTS.get(Metal.TITANIUM).get());
+        ItemStack gunpowder = new ItemStack(Items.GUNPOWDER);
+        for (var holder : recipes) {
+            ItemStack result = holder.value().result();
+            var ingredients = holder.value().ingredients();
+            boolean uses = ingredients.stream().anyMatch(ingredient -> ingredient.ingredient().test(processor));
+            boolean usesTitanium = ingredients.stream().anyMatch(ingredient -> ingredient.ingredient().test(titanium));
+            boolean usesActuator = ingredients.stream().anyMatch(ingredient -> ingredient.ingredient().test(actuator));
+            if (result.is(WeaponRegistry.COMBAT_SHOTGUN.get())) {
+                helper.assertFalse(uses || usesTitanium, "The shotgun is the early weapon");
+            } else if (result.getItem() instanceof WeaponItem) {
+                helper.assertTrue(uses && usesTitanium && usesActuator, "A rifle needs titanium, processors and actuators: " + result);
+            } else {
+                helper.assertTrue(ingredients.stream().anyMatch(ingredient -> ingredient.ingredient().test(gunpowder)), "Rounds need gunpowder: " + result);
+            }
+        }
         helper.succeed();
     }
 

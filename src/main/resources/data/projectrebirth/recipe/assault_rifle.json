@@ -2,11 +2,11 @@
   "type": "projectrebirth:fabrication",
   "station": "weapon_workshop",
   "sort": 20,
-  "time": 300,
+  "time": 400,
   "ingredients": [
     {
       "tag": "c:ingots/titanium",
-      "count": 4
+      "count": 6
     },
     {
       "item": "projectrebirth:processor",
@@ -14,7 +14,7 @@
     },
     {
       "item": "projectrebirth:actuator",
-      "count": 2
+      "count": 3
     }
   ],
   "result": {

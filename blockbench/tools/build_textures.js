@@ -436,6 +436,29 @@
     });
 
     // Body modification station: the outline of a body with a marked place on it.
+    // Weapon workshop: a rifle on a bench.
+    const WORKSHOP = '#6b7a44';
+    block('weapon_workshop_side', side(WORKSHOP, 92));
+    block('weapon_workshop_top', top(WORKSHOP, 93, p => {
+        p.inset(3, 5, 10, 6, GUN).rect(4, 7, 8, 2, DARK).rect(4, 7, 3, 1, LIGHT).rect(11, 6, 1, 4, shade(WORKSHOP, 1.2));
+    }));
+    block('weapon_workshop_front', () => {
+        const p = casing(new Painter(94), WORKSHOP);
+        p.inset(3, 3, 10, 10, '#14161a', 0.02);
+        p.grid([
+            '..........',
+            '.....dd...',
+            '.LLLrrrrr.',
+            '....rrrrr.',
+            '....d.dd..',
+            '......d...',
+            '..........',
+            '.aaa.aaa.a',
+            '.aaa.aaa.a',
+            '..........'], {L: '#c8d0d8', r: '#8c9c5a', d: '#7a8590', a: '#e0a020'}, 3, 3);
+        return p;
+    });
+
     const VIOLET = '#9a6ae0';
     block('body_modification_station_side', side(VIOLET, 57));
     block('body_modification_station_top', top(VIOLET, 58, p => {
@@ -808,6 +831,22 @@
     animated('armor_upgrade_fabricator_top_on', 4, 3, i => {
         const p = baseOf('armor_upgrade_fabricator_top');
         p.rect(7, 7, 2, 2, i % 2 ? '#ffd9a0' : RUST_RED);
+        return p;
+    });
+
+    // Weapon workshop: a tracer runs along the barrel, and rounds fill up one by one.
+    fanSide('weapon_workshop', WORKSHOP);
+    animated('weapon_workshop_front_on', 6, 2, i => {
+        const p = baseOf('weapon_workshop_front');
+        p.rect(4 + i, 5, 1, 1, '#ffe9a0');
+        for (let n = 0; n <= i && n < 5; n++) {
+            p.rect(4 + n * 2, 10, 1, 2, '#ffd070');
+        }
+        return p;
+    });
+    animated('weapon_workshop_top_on', 4, 3, i => {
+        const p = baseOf('weapon_workshop_top');
+        p.rect(5 + i, 7, 1, 1, i % 2 ? '#ffe9a0' : '#ffd070');
         return p;
     });
 
@@ -1462,6 +1501,116 @@
         '...kkkkkkk......',
         '...kddddddk.....'.slice(0, 16),
         '................'], {k: '#14181d', H: '#b9c2cc', s: '#6d7680', d: '#3a4149', L: '#ffe9a0', W: '#fffbe0', y: '#fff2b0'}));
+    const WEAPON_PALETTE = {k: '#14181d', g: '#4c5359', d: '#25282c', s: '#8b9299', o: '#6b7a44', O: '#8c9c5a', a: '#e0a020', c: '#7fe8ff', r: '#c9352b', R: '#e8604f', b: '#d6a83c', B: '#f2cf6d', n: '#9a6b2f', u: '#b8693a'};
+
+    item('assault_rifle', () => icon([
+        '................',
+        '................',
+        '................',
+        '................',
+        '.........a......',
+        '.......kkkkkk...',
+        '.....kkggggggkkk',
+        'ssskOoogsggggkgk',
+        '....koogggggkkgk',
+        '.....kkkkkdkkkkk',
+        '......kddkkdk...',
+        '......kddk.kdk..',
+        '.......kdk..kk..',
+        '.......kk.......',
+        '................',
+        '................'], WEAPON_PALETTE));
+
+    item('battle_rifle', () => icon([
+        '................',
+        '................',
+        '................',
+        '.......kkkkkkk..',
+        '.......cddddddk.',
+        '.......kkkkkkk..',
+        '.........k..k...',
+        'sssssskOOooooggk',
+        '.....kkoooooogkk',
+        '......kkkkdkkkgk',
+        '.........kddk.kk',
+        '.........kddk...',
+        '..........kk....',
+        '................',
+        '................',
+        '................'], WEAPON_PALETTE));
+
+    item('combat_shotgun', () => icon([
+        '................',
+        '................',
+        '................',
+        '................',
+        '..a.........k...',
+        'kkkkkkkkkkkkkk..',
+        'kggggggggggggkk.',
+        'kkkkkkkkkgdddkgk',
+        '.kdddddddkdddkgk',
+        '.kkOOOOokkkakkgk',
+        '...kooookkddkkkk',
+        '....kkkk.kddk...',
+        '.........kddk...',
+        '..........kk....',
+        '................',
+        '................'], WEAPON_PALETTE));
+
+    item('assault_rifle_ammo', () => icon([
+        '................',
+        '................',
+        '................',
+        '....u...u...u...',
+        '...kuk.kuk.kuk..',
+        '...kBk.kBk.kBk..',
+        '...kbk.kbk.kbk..',
+        '...kbk.kbk.kbk..',
+        '...kbk.kbk.kbk..',
+        '...kbk.kbk.kbk..',
+        '...knk.knk.knk..',
+        '...kkk.kkk.kkk..',
+        '................',
+        '................',
+        '................',
+        '................'], WEAPON_PALETTE));
+
+    item('battle_rifle_ammo', () => icon([
+        '................',
+        '.......ss.......',
+        '......kssk......',
+        '......kssk......',
+        '......kuuk......',
+        '......kBbk......',
+        '.....kkBbkk.....',
+        '.....kBBbnk.....',
+        '.....kBBbnk.....',
+        '.....kBBbnk.....',
+        '.....kBBbnk.....',
+        '.....kBBbnk.....',
+        '.....kBBbnk.....',
+        '.....kkkkkk.....',
+        '.....knnnnk.....',
+        '.....kkkkkk.....'], WEAPON_PALETTE));
+
+    item('shotgun_shell', () => icon([
+        '................',
+        '................',
+        '.....kkkkkk.....',
+        '....kRrrrrrk....',
+        '....kRrrrrrk....',
+        '....kRrrkrrk....',
+        '....kRrrrrrk....',
+        '....kRrrrrrk....',
+        '....kRrrrrrk....',
+        '....kRrrrrrk....',
+        '....kkkkkkkk....',
+        '....kBbbbbbk....',
+        '...kBBbbbbnnk...',
+        '...kkkkkkkkkk...',
+        '................',
+        '................'], WEAPON_PALETTE));
+
     item('upgrade_mounting_tool', () => icon([
         '................',
         '...........kkk..',

@@ -136,7 +136,7 @@ root
 Улучшения: `copper_plating`, `iron_plating`, `titanium_plating`, `armor_copper_plating`, `armor_iron_plating`, `armor_titanium_plating`,
 `sealing_module`, `jetpack`, `compressed_air_module`, `floodlight`, `upgrade_mounting_tool`.
 
-Оружие: `assault_rifle`, `battle_rifle`, `combat_shotgun`; патроны: `assault_rifle_ammo`, `battle_rifle_ammo`, `shotgun_shell`. Значки пока заглушки, они будут в блоке E плана 1.2.
+Оружие: `assault_rifle`, `battle_rifle`, `combat_shotgun`; патроны: `assault_rifle_ammo`, `battle_rifle_ammo`, `shotgun_shell`. Значки: `textures/item/<id>.png`, 16×16 (`build_textures.js`).
 
 ## Оружие
 

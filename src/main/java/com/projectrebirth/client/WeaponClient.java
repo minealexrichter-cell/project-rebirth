@@ -34,6 +34,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -84,6 +85,7 @@ public final class WeaponClient {
     private static final int RETICLE_LENGTH = 4;
     private static final int RETICLE_COLOR = 0xE0FFFFFF;
     private static final int MARGIN = 6;
+    private static final float CASE_SCALE = 0.35f;
     private static final float HEAVY_HAND_X = 0.62f;
     private static final float HEAVY_HAND_Y = -0.62f;
     private static final float HEAVY_HAND_Z = -0.72f;
@@ -205,6 +207,7 @@ public final class WeaponClient {
         float sway = Mth.sin((player.tickCount + event.getPartialTick()) * 0.12f) * Math.min(1.0f, player.walkAnimation.speed());
         float jolt = Mth.sin(event.getSwingProgress() * Mth.PI);
         PoseStack pose = event.getPoseStack();
+        WeaponRenderer.INSTANCE.beginHand(pose);
         pose.pushPose();
         pose.translate(side * (HEAVY_HAND_X + sway * 0.02f), HEAVY_HAND_Y + sway * 0.015f - event.getEquipProgress() * 0.6f + jolt * 0.08f, HEAVY_HAND_Z - jolt * 0.1f);
         pose.mulPose(Axis.YP.rotationDegrees(side * HEAVY_HAND_YAW));
@@ -244,6 +247,7 @@ public final class WeaponClient {
                 .scale(GUN_SCALE);
 
         PoseStack pose = event.getPoseStack();
+        WeaponRenderer.INSTANCE.beginHand(pose);
         pose.pushPose();
         pose.mulPose(gun);
         WeaponRenderer.INSTANCE.draw(pose, view, event.getMultiBufferSource(), event.getPackedLight(), partialTick, WeaponRenderer.Space.VIEW);
@@ -382,8 +386,11 @@ public final class WeaponClient {
         }
         // The case flies out to the right of the gun.
         Vec3 side = look.cross(new Vec3(0.0, 1.0, 0.0)).normalize();
-        level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.GOLD_NUGGET)), port.x, port.y, port.z,
-                side.x * 0.12, 0.12, side.z * 0.12);
+        Particle shellCase = minecraft.particleEngine.createParticle(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.GOLD_NUGGET)),
+                port.x, port.y, port.z, side.x * 0.12, 0.12, side.z * 0.12);
+        if (shellCase != null) {
+            shellCase.scale(CASE_SCALE);
+        }
         for (WeaponShotPayload.Pellet pellet : payload.pellets()) {
             Vec3 end = pellet.end();
             minecraft.particleEngine.add(new TracerParticle(level, muzzle, end, TRACER_WIDTH, 3, TRACER_COLOR));

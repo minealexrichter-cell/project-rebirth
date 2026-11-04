@@ -1,33 +1,33 @@
 {
   "variants": {
     "facing=north,working=false": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator"
+      "model": "projectrebirth:block/weapon_workshop"
     },
     "facing=north,working=true": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator_on"
+      "model": "projectrebirth:block/weapon_workshop_on"
     },
     "facing=east,working=false": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator",
+      "model": "projectrebirth:block/weapon_workshop",
       "y": 90
     },
     "facing=east,working=true": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator_on",
+      "model": "projectrebirth:block/weapon_workshop_on",
       "y": 90
     },
     "facing=south,working=false": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator",
+      "model": "projectrebirth:block/weapon_workshop",
       "y": 180
     },
     "facing=south,working=true": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator_on",
+      "model": "projectrebirth:block/weapon_workshop_on",
       "y": 180
     },
     "facing=west,working=false": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator",
+      "model": "projectrebirth:block/weapon_workshop",
       "y": 270
     },
     "facing=west,working=true": {
-      "model": "projectrebirth:block/armor_upgrade_fabricator_on",
+      "model": "projectrebirth:block/weapon_workshop_on",
       "y": 270
     }
   }

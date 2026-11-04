@@ -153,6 +153,15 @@
         box([10, 15, 6], [12, 16, 10], on ? 'orange' : 'steel', undefined, on ? GLOW : undefined)
     ]);
 
+    station('weapon_workshop', 'olive', 'hazard', on => [
+        // A rifle in a vice, and a tray of rounds.
+        box([2, 14, 4], [4, 15, 12], 'gun', {up: 'dark'}),
+        box([12, 14, 4], [14, 15, 12], 'gun', {up: 'dark'}),
+        box([3, 15, 7], [13, 15.5, 9], 'steel', {up: 'dark'}),
+        box([5, 14, 12.5], [11, 15, 14.5], 'brass', {up: 'copper'}),
+        box([9, 15.5, 7.5], [10, 16, 8.5], on ? 'orange' : 'olive', undefined, on ? GLOW : undefined)
+    ]);
+
     station('body_modification_station', 'white', 'dark', on => [
         // A padded table with an arm above it.
         box([3, 14, 3], [13, 15, 13], 'white', {up: 'rubber'}),
@@ -340,7 +349,7 @@
     }
 
     const STATES = {};
-    ['electronics_fabricator', 'assembly_station', 'armor_workstation', 'maintenance_station', 'implant_fabricator', 'body_modification_station', 'armor_upgrade_fabricator'].forEach(id => {
+    ['electronics_fabricator', 'assembly_station', 'armor_workstation', 'maintenance_station', 'implant_fabricator', 'body_modification_station', 'armor_upgrade_fabricator', 'weapon_workshop'].forEach(id => {
         const variants = {};
         Object.entries(ROTATIONS).forEach(([facing, y]) => {
             variants['facing=' + facing + ',working=false'] = variant(id, rotation(y));

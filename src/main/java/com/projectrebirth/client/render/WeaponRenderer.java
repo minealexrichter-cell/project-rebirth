@@ -1,6 +1,6 @@
 package com.projectrebirth.client.render;
 
-import org.joml.Quaternionf;
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -38,6 +38,7 @@ public final class WeaponRenderer extends GeoObjectRenderer<WeaponView> {
     }
 
     private Space space = Space.NONE;
+    private final Matrix4f viewBase = new Matrix4f();
 
     private WeaponRenderer() {
         super(new GeoModel<>() {
@@ -56,6 +57,11 @@ public final class WeaponRenderer extends GeoObjectRenderer<WeaponView> {
                 return ProjectRebirth.id("animations/item/" + view.id() + ".animation.json");
             }
         });
+    }
+
+    /** Call with the pose of the hand event, before anything is added to it. */
+    public void beginHand(PoseStack poseStack) {
+        viewBase.set(poseStack.last().pose());
     }
 
     public void draw(PoseStack poseStack, WeaponView view, MultiBufferSource buffers, int light, float partialTick, Space space) {
@@ -92,10 +98,19 @@ public final class WeaponRenderer extends GeoObjectRenderer<WeaponView> {
         Vector3f point = poseStack.last().pose().transformPosition(new Vector3f());
         poseStack.popPose();
         Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
+        Vec3 world = camera.getPosition();
         if (space == Space.VIEW) {
-            point = new Quaternionf(camera.rotation()).transform(point);
+            // The game's own transform of a hand drawing is taken out, leaving the camera's own directions: right, up, and backwards along Z.
+            point = new Matrix4f(viewBase).invert().transformPosition(point);
+            Vector3f look = camera.getLookVector();
+            Vector3f up = camera.getUpVector();
+            Vector3f right = new Vector3f(look).cross(up);
+            world = world.add(right.x * point.x + up.x * point.y - look.x * point.z,
+                    right.y * point.x + up.y * point.y - look.y * point.z,
+                    right.z * point.x + up.z * point.y - look.z * point.z);
+        } else {
+            world = world.add(point.x, point.y, point.z);
         }
-        Vec3 world = camera.getPosition().add(point.x, point.y, point.z);
         view.setTrackedPoints(muzzle ? world : null, muzzle ? null : world, view.now());
     }
 }

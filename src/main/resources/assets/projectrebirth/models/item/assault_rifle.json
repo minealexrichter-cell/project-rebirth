@@ -12,13 +12,13 @@
         ],
         "translation": [
           0,
-          2,
-          1
+          3,
+          0
         ],
         "scale": [
-          0.6,
-          0.6,
-          0.6
+          1,
+          1,
+          1
         ]
       },
       "thirdperson_lefthand": {
@@ -29,13 +29,13 @@
         ],
         "translation": [
           0,
-          2,
-          1
+          3,
+          0
         ],
         "scale": [
-          0.6,
-          0.6,
-          0.6
+          1,
+          1,
+          1
         ]
       }
     }
@@ -44,19 +44,19 @@
     "gui": {
       "parent": "minecraft:item/generated",
       "textures": {
-        "layer0": "minecraft:item/crossbow_standby"
+        "layer0": "projectrebirth:item/assault_rifle"
       }
     },
     "fixed": {
       "parent": "minecraft:item/generated",
       "textures": {
-        "layer0": "minecraft:item/crossbow_standby"
+        "layer0": "projectrebirth:item/assault_rifle"
       }
     },
     "ground": {
       "parent": "minecraft:item/generated",
       "textures": {
-        "layer0": "minecraft:item/crossbow_standby"
+        "layer0": "projectrebirth:item/assault_rifle"
       }
     }
   }

@@ -1,15 +1,197 @@
 {
   "textures": {
-    "particle": "projectrebirth:block/cable",
-    "cable": "projectrebirth:block/cable"
+    "cable": "projectrebirth:block/cable",
+    "node": "projectrebirth:block/cable_node",
+    "parts": "projectrebirth:block/machine_parts",
+    "particle": "projectrebirth:block/cable"
   },
   "elements": [
-    { "from": [6, 6, 0], "to": [10, 10, 6], "faces": {
-      "north": { "uv": [4, 4, 12, 12], "texture": "#cable", "cullface": "north" },
-      "east": { "uv": [4, 4, 12, 12], "texture": "#cable" },
-      "west": { "uv": [4, 4, 12, 12], "texture": "#cable" },
-      "up": { "uv": [4, 4, 12, 12], "texture": "#cable" },
-      "down": { "uv": [4, 4, 12, 12], "texture": "#cable" }
-    } }
+    {
+      "from": [
+        6,
+        6,
+        1
+      ],
+      "to": [
+        10,
+        10,
+        5
+      ],
+      "faces": {
+        "west": {
+          "texture": "#cable",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        },
+        "east": {
+          "texture": "#cable",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        },
+        "up": {
+          "texture": "#cable",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        },
+        "down": {
+          "texture": "#cable",
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5.5,
+        5.5,
+        2.5
+      ],
+      "to": [
+        10.5,
+        10.5,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            5,
+            3,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        5,
+        0
+      ],
+      "to": [
+        11,
+        11,
+        1
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ],
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            1,
+            1,
+            3,
+            3
+          ]
+        }
+      }
+    }
   ]
 }

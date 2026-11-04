@@ -199,6 +199,37 @@
         };
     });
 
+    // The cable: a junction box, and for each connection an insulated tube with a copper band and a coupling at the block's edge.
+    const CABLE_TEXTURES = {
+        cable: 'projectrebirth:block/cable',
+        node: 'projectrebirth:block/cable_node',
+        parts: 'projectrebirth:block/machine_parts',
+        particle: 'projectrebirth:block/cable'
+    };
+    const NODE = tex('node', [5, 5, 11, 11]);
+    const cableCore = () => box([5, 5, 5], [11, 11, 11], 'gun', {north: NODE, south: NODE, west: NODE, east: NODE, up: NODE, down: NODE});
+    const TUBE = tex('cable', [4, 4, 12, 12]);
+    const cableArm = () => [
+        without(box([6, 6, 1], [10, 10, 5], 'rubber', {west: TUBE, east: TUBE, up: TUBE, down: TUBE}), 'north', 'south'),
+        box([5.5, 5.5, 2.5], [10.5, 10.5, 3.5], 'copper'),
+        Object.assign(box([5, 5, 0], [11, 11, 1], 'steel', {north: 'dark'}))
+    ];
+    const opposite = element => {
+        const out = JSON.parse(JSON.stringify(element));
+        out.from[2] = 16 - element.to[2];
+        out.to[2] = 16 - element.from[2];
+        out.faces.north = element.faces.south;
+        out.faces.south = element.faces.north;
+        Object.keys(out.faces).forEach(dir => { if (!out.faces[dir]) { delete out.faces[dir]; } });
+        return out;
+    };
+    MODELS.cable_core = {textures: CABLE_TEXTURES, elements: [cableCore()]};
+    MODELS.cable_arm = {textures: CABLE_TEXTURES, elements: cableArm()};
+    MODELS.cable_arm.elements[2].faces.north.cullface = 'north';
+    // In the inventory: a straight piece.
+    MODELS.cable_item = {parent: 'minecraft:block/block', textures: CABLE_TEXTURES,
+        elements: [cableCore(), ...cableArm(), ...cableArm().map(opposite)]};
+
     MODELS.faction_core = {
         parent: 'minecraft:block/block',
         textures: {
@@ -307,10 +338,12 @@
         STATES.battery.variants['facing=up,working=' + working] = variant(id, {x: 270});
         STATES.battery.variants['facing=down,working=' + working] = variant(id, {x: 90});
     });
-    STATES.solar_panel = {variants: {
-        'working=false': variant('solar_panel'),
-        'working=true': variant('solar_panel_on')
-    }};
+    STATES.solar_panel = {variants: {}};
+    [false, true].forEach(working => {
+        Object.entries(ROTATIONS).forEach(([facing, y]) => {
+            STATES.solar_panel.variants['facing=' + facing + ',working=' + working] = variant(working ? 'solar_panel_on' : 'solar_panel', rotation(y));
+        });
+    });
 
     // ---------------------------------------------------------------- output
 

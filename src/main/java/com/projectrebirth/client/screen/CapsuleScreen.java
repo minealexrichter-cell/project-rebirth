@@ -110,6 +110,10 @@ public class CapsuleScreen extends Screen {
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
         GuiShapes.panel(graphics, left, top, WIDTH, panelHeight());
+        // The rows go under the buttons, so they are drawn before them.
+        for (int i = 0; i < Math.min(VISIBLE_ROWS, bodies.size() - scroll); i++) {
+            GuiShapes.sunken(graphics, left + 6, top + LIST_TOP + i * ROW_HEIGHT, WIDTH - 12, ROW_HEIGHT - 1);
+        }
     }
 
     @Override
@@ -126,7 +130,6 @@ public class CapsuleScreen extends Screen {
         for (int i = 0; i < Math.min(VISIBLE_ROWS, bodies.size() - scroll); i++) {
             Entry entry = bodies.get(scroll + i);
             int y = top + LIST_TOP + i * ROW_HEIGHT;
-            GuiShapes.sunken(graphics, left + 6, y, WIDTH - 12, ROW_HEIGHT - 1);
             int textX = left + 10;
             String name = Component.translatable(entry.bodyClass().translationKey()).getString();
             int nameWidth = WIDTH - BUTTON_WIDTH - 26;

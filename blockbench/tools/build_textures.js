@@ -470,6 +470,17 @@
         return p;
     });
 
+    // The cable's junction box: only the middle 6x6 is shown.
+    block('cable_node', () => {
+        const p = new Painter(92);
+        p.noise(0, 0, 16, 16, '#3c4249', 0.04);
+        p.rect(5, 5, 6, 1, '#6d747b').rect(5, 5, 1, 6, '#6d747b');
+        p.rect(5, 10, 6, 1, '#23272c').rect(10, 5, 1, 6, '#23272c');
+        p.rect(7, 7, 2, 2, '#c77b3b').px('#eaa766', [7, 7]);
+        p.px('#9aa1a8', [6, 6], [9, 6], [6, 9], [9, 9]);
+        return p;
+    });
+
     // Faction core: a crystal in a dark frame.
     const CRYSTAL = {c: '#37d6ff', h: '#c9f6ff', d: '#1579a8', k: '#0a2c44'};
     block('faction_core_side', () => {
@@ -1232,6 +1243,92 @@
         '.ss.............',
         '................'], OUTLINE));
 
+    // ---------------------------------------------------------------- window and HUD parts
+
+    // One 256x256 texture; client/GuiAtlas.java knows where each part is. The panel stays light: window text is dark.
+    TEXTURES['gui/widgets'] = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        const rand = random(777);
+        const rect = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+        const noise = (x, y, w, h, c, amount) => {
+            for (let i = 0; i < w; i++) {
+                for (let j = 0; j < h; j++) {
+                    rect(x + i, y + j, 1, 1, shade(c, 1 + (rand() - 0.5) * 2 * amount));
+                }
+            }
+        };
+        const frame = (x, y, w, h, topLeft, bottomRight) => {
+            rect(x, y, w, 1, topLeft);
+            rect(x, y, 1, h, topLeft);
+            rect(x, y + h - 1, w, 1, bottomRight);
+            rect(x + w - 1, y, 1, h, bottomRight);
+        };
+
+        // Panel, 32x32 with corners of 8: brushed steel, a dark edge, a coloured line along the edge, riveted corners.
+        noise(0, 0, 32, 32, '#c4c9cd', 0.012);
+        rect(0, 0, 32, 1, '#2e343a'); rect(0, 31, 32, 1, '#2e343a'); rect(0, 0, 1, 32, '#2e343a'); rect(31, 0, 1, 32, '#2e343a');
+        frame(1, 1, 30, 30, '#eef1f3', '#858c93');
+        rect(2, 2, 28, 1, '#7fb4c6');
+        for (const [cx, cy] of [[0, 0], [24, 0], [0, 24], [24, 24]]) {
+            rect(cx + 1, cy + 1, 6, 6, '#7d858c');
+            frame(cx + 1, cy + 1, 6, 6, '#aab1b7', '#4a5158');
+            rect(cx + 3, cy + 3, 2, 2, '#39c2e0');
+            rect(cx + 3, cy + 3, 1, 1, '#b8f2ff');
+        }
+
+        // Slot, 18x18.
+        rect(32, 0, 18, 18, '#6f767d');
+        frame(32, 0, 18, 18, '#1d2126', '#b4bac0');
+        rect(33, 1, 16, 1, '#555b62');
+        rect(33, 1, 1, 16, '#555b62');
+
+        // Output slot, 26x26: the same with coloured corners.
+        rect(52, 0, 26, 26, '#6f767d');
+        frame(52, 0, 26, 26, '#1d2126', '#b4bac0');
+        rect(53, 1, 24, 1, '#555b62');
+        rect(53, 1, 1, 24, '#555b62');
+        for (const [cx, cy, dx, dy] of [[54, 2, 1, 1], [75, 2, -1, 1], [54, 23, 1, -1], [75, 23, -1, -1]]) {
+            for (let i = 0; i < 3; i++) {
+                rect(cx + dx * i, cy, 1, 1, '#39c2e0');
+                rect(cx, cy + dy * i, 1, 1, '#39c2e0');
+            }
+        }
+
+        // Recess of any size, 12x12 with corners of 3.
+        rect(80, 0, 12, 12, '#6f767d');
+        frame(80, 0, 12, 12, '#1d2126', '#b4bac0');
+        rect(81, 1, 10, 1, '#555b62');
+        rect(81, 1, 1, 10, '#555b62');
+
+        // Bar frame, 9x9 with corners of 2.
+        rect(96, 0, 9, 9, '#2b3036');
+        frame(96, 0, 9, 9, '#0f1215', '#0f1215');
+
+        // Arrows, 24x16: empty and full.
+        const arrow = (y, shaft, head, edge) => {
+            rect(0, y + 6, 15, 4, shaft);
+            rect(0, y + 6, 15, 1, edge);
+            for (let i = 0; i < 8; i++) {
+                rect(15 + i, y + i, 1, 16 - 2 * i, head);
+                rect(15 + i, y + i, 1, 1, edge);
+            }
+        };
+        arrow(34, '#8f969c', '#8f969c', '#6d747b');
+        arrow(52, '#3fc8e6', '#3fc8e6', '#b8f2ff');
+
+        // Energy, a piece of the gauge: upright 8x4 and lying 4x8.
+        rect(30, 34, 8, 3, '#ff8a3c'); rect(30, 34, 8, 1, '#ffc27a'); rect(30, 37, 8, 1, '#a8461c');
+        rect(40, 34, 3, 8, '#ff8a3c'); rect(40, 34, 3, 1, '#ffc27a'); rect(43, 34, 1, 8, '#a8461c');
+
+        // Status bar, a piece 8x7: light grey, tinted in the code; the last column is a notch.
+        const greys = ['#ffffff', '#f2f2f2', '#e4e4e4', '#d8d8d8', '#cccccc', '#bfbfbf', '#a8a8a8'];
+        greys.forEach((c, i) => rect(50, 34 + i, 8, 1, c));
+        rect(57, 34, 1, 7, '#6f6f6f');
+        return {canvas};
+    };
+
     // ---------------------------------------------------------------- output
 
     function savePng(canvas, path) {
@@ -1241,6 +1338,7 @@
 
     function saveAll() {
         const ids = Object.keys(TEXTURES);
+        fs.mkdirSync(ASSETS + 'gui', {recursive: true});
         ids.forEach(id => {
             const result = TEXTURES[id]();
             savePng(result.canvas, ASSETS + id + '.png');
@@ -1256,7 +1354,7 @@
 
     /** All textures, magnified, on a checkered background; optionally only the ids that start with a prefix. */
     function sheet(path, scale, prefix) {
-        const ids = Object.keys(TEXTURES).filter(id => !prefix || id.startsWith(prefix));
+        const ids = Object.keys(TEXTURES).filter(id => !id.startsWith('gui/') && (!prefix || id.startsWith(prefix)));
         const s = scale || 8, cols = 10, cell = 16 * s + 6;
         const canvas = document.createElement('canvas');
         canvas.width = cols * cell;

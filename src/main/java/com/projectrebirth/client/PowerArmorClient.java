@@ -195,8 +195,7 @@ public final class PowerArmorClient {
                     x, y + 26, 0xFF5555);
             float progress = armor.getHatchProgress();
             if (progress > 0) {
-                graphics.fill(x, y + 37, x + BAR_WIDTH, y + 41, 0xAA000000);
-                graphics.fill(x, y + 37, x + (int) (BAR_WIDTH * progress), y + 41, 0xFFFF5555);
+                GuiAtlas.bar(graphics, x, y + 37, BAR_WIDTH, 4, progress, 0xFFFF5555);
             }
         } else {
             graphics.drawString(font, Component.translatable("hud.projectrebirth.armor.exit_hint",
@@ -214,8 +213,7 @@ public final class PowerArmorClient {
         graphics.drawString(font, label, x, y, 0xFFFFFF);
         int barX = x + labelWidth;
         float fraction = max > 0 ? Mth.clamp(value / max, 0.0f, 1.0f) : 0.0f;
-        graphics.fill(barX, y + 1, barX + BAR_WIDTH, y + 8, 0xAA000000);
-        graphics.fill(barX, y + 1, barX + (int) (BAR_WIDTH * fraction), y + 8, color);
+        GuiAtlas.bar(graphics, barX, y, BAR_WIDTH, 9, fraction, color);
         graphics.drawString(font, Mth.ceil(value) + " / " + Mth.ceil(max), barX + BAR_WIDTH + 4, y, 0xFFFFFF);
     }
 }

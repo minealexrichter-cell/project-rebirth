@@ -24,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.PipeBlock;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -166,6 +167,27 @@ public class EnergyGameTests {
                 helper.succeed();
             });
         });
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void solarPanelHasItsEnergySideOnlyAtTheBottom(GameTestHelper helper) {
+        BlockPos panelPos = new BlockPos(2, 3, 2);
+        BlockPos below = panelPos.below();
+        BlockPos beside = panelPos.east();
+        // The cables come first: a block set by a test only connects when a neighbour changes.
+        helper.setBlock(below, TechBlocks.CABLE.get());
+        helper.setBlock(beside, TechBlocks.CABLE.get());
+        helper.setBlock(panelPos, TechBlocks.SOLAR_PANEL.get());
+        BlockPos absolute = helper.absolutePos(panelPos);
+        helper.assertTrue(helper.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, absolute, Direction.DOWN) != null,
+                "The bottom of the panel must be an energy side");
+        for (Direction side : List.of(Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST)) {
+            helper.assertTrue(helper.getLevel().getCapability(Capabilities.EnergyStorage.BLOCK, absolute, side) == null,
+                    "The panel must have no energy on side " + side);
+        }
+        helper.assertBlockProperty(below, PipeBlock.UP, true);
+        helper.assertBlockProperty(beside, PipeBlock.WEST, false);
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)

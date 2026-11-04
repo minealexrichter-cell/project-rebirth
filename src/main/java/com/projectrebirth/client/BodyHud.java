@@ -69,9 +69,7 @@ public final class BodyHud {
         float max = player.getMaxHealth();
         float fraction = max > 0 ? Mth.clamp(player.getHealth() / max, 0.0f, 1.0f) : 0.0f;
         int color = fraction > 0.5f ? 0xFF4FC3F7 : fraction > 0.25f ? 0xFFFFC107 : 0xFFE53935;
-        graphics.fill(x, y, x + WIDTH, y + HEIGHT, 0xFF1B1F24);
-        graphics.fill(x + 1, y + 1, x + WIDTH - 1, y + HEIGHT - 1, 0xFF3A414A);
-        graphics.fill(x + 1, y + 1, x + 1 + Math.round((WIDTH - 2) * fraction), y + HEIGHT - 1, color);
+        GuiAtlas.bar(graphics, x, y, WIDTH, HEIGHT, fraction, color);
 
         Font font = minecraft.font;
         String text = Mth.ceil(player.getHealth()) + " / " + Mth.ceil(max);

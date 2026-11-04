@@ -63,7 +63,7 @@ public final class TechBlockEntities {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, STATION.get(), (station, side) -> station.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, MAINTENANCE.get(), (station, side) -> station.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, COMBUSTION_GENERATOR.get(), (generator, side) -> generator.energy());
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, SOLAR_PANEL.get(), (panel, side) -> panel.energy());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, SOLAR_PANEL.get(), SolarPanelBlockEntity::forSide);
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, BATTERY.get(), BatteryBlockEntity::forSide);
         event.registerBlock(Capabilities.EnergyStorage.BLOCK, (level, pos, state, blockEntity, side) -> new CableInput(level, pos, side),
                 TechBlocks.CABLE.get());

@@ -1,5 +1,6 @@
 package com.projectrebirth.client.screen;
 
+import com.projectrebirth.client.GuiAtlas;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.technology.energy.EnergyUtil;
 import com.projectrebirth.technology.energy.GeneratorMenu;
@@ -50,12 +51,7 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
             graphics.blitSprite(FLAME_SPRITE, 14, 14, 0, 14 - height, x + FLAME_X, y + FLAME_Y + 14 - height, 14, height);
         }
         // Horizontal gauge, filled from the left.
-        GuiShapes.sunken(graphics, x + ENERGY_X, y + ENERGY_Y, ENERGY_W, ENERGY_H);
-        int capacity = menu.energyCapacity();
-        int filled = capacity <= 0 ? 0 : (int) Math.round((double) (ENERGY_W - 2) * Math.min(menu.energy(), capacity) / capacity);
-        if (filled > 0) {
-            graphics.fill(x + ENERGY_X + 1, y + ENERGY_Y + 1, x + ENERGY_X + 1 + filled, y + ENERGY_Y + ENERGY_H - 1, GuiShapes.ENERGY);
-        }
+        GuiAtlas.energyHorizontal(graphics, x + ENERGY_X, y + ENERGY_Y, ENERGY_W, ENERGY_H, menu.energy(), menu.energyCapacity());
     }
 
     @Override

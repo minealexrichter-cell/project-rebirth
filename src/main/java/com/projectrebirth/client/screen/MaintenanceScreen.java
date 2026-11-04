@@ -1,5 +1,6 @@
 package com.projectrebirth.client.screen;
 
+import com.projectrebirth.client.GuiAtlas;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.Maintenance;
 import com.projectrebirth.technology.MaintenanceBlockEntity;
@@ -8,24 +9,20 @@ import com.projectrebirth.technology.MaintenanceMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import static com.projectrebirth.client.screen.GuiShapes.SLOT;
 import static com.projectrebirth.client.screen.GuiShapes.panel;
 import static com.projectrebirth.client.screen.GuiShapes.playerInventory;
 import static com.projectrebirth.client.screen.GuiShapes.slot;
-import static com.projectrebirth.client.screen.GuiShapes.sunken;
 
 /**
  * Maintenance window: materials on the left, an arrow showing the current repair step, the serviced item on the
  * right, then a status line and the integrity bars of the serviced item.
  */
 public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> {
-    private static final ResourceLocation PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("container/furnace/burn_progress");
     private static final int ARROW_X = 66;
     private static final int STATUS_Y = 46;
     private static final int BAR_Y = 58;
@@ -61,20 +58,11 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
         for (int i = 0; i < MaintenanceBlockEntity.MATERIAL_SLOTS; i++) {
             slot(graphics, x + MaintenanceMenu.MATERIAL_X + i * 18, y + MaintenanceMenu.SLOT_Y);
         }
-        sunken(graphics, x + MaintenanceMenu.SERVICE_X - 5, y + MaintenanceMenu.SLOT_Y - 5, 26, 26);
+        GuiAtlas.outputSlot(graphics, x + MaintenanceMenu.SERVICE_X - 5, y + MaintenanceMenu.SLOT_Y - 5);
         playerInventory(graphics, x + 8, y + MaintenanceMenu.INVENTORY_Y);
         GuiShapes.energyBar(graphics, x + ENERGY_X, y + ENERGY_Y, ENERGY_W, ENERGY_H, menu.energy(), menu.energyCapacity());
 
-        int ax = x + ARROW_X;
-        int ay = y + MaintenanceMenu.SLOT_Y;
-        graphics.fill(ax, ay + 6, ax + 15, ay + 10, SLOT);
-        for (int i = 0; i < 8; i++) {
-            graphics.fill(ax + 15 + i, ay + i, ax + 16 + i, ay + 16 - i, SLOT);
-        }
-        int width = Mth.ceil(menu.progress() * 24);
-        if (width > 0) {
-            graphics.blitSprite(PROGRESS_SPRITE, 24, 16, 0, 0, ax, ay, width, 16);
-        }
+        GuiAtlas.arrow(graphics, x + ARROW_X, y + MaintenanceMenu.SLOT_Y, menu.progress());
     }
 
     @Override
@@ -131,8 +119,7 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
     private void bar(GuiGraphics graphics, int y, Component label, float value, float max, int color) {
         graphics.drawString(font, label, 8, y, 0x404040, false);
         float fraction = max > 0 ? Mth.clamp(value / max, 0.0f, 1.0f) : 0.0f;
-        graphics.fill(BAR_X, y + 1, BAR_X + BAR_WIDTH, y + 7, 0xFF373737);
-        graphics.fill(BAR_X, y + 1, BAR_X + (int) (BAR_WIDTH * fraction), y + 7, color);
+        GuiAtlas.bar(graphics, BAR_X, y + 1, BAR_WIDTH, 6, fraction, color);
         graphics.drawString(font, Mth.ceil(value) + " / " + Mth.ceil(max), BAR_X + BAR_WIDTH + 4, y, 0x404040, false);
     }
 

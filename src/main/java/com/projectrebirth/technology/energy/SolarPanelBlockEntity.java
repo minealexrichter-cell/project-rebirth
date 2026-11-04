@@ -1,5 +1,7 @@
 package com.projectrebirth.technology.energy;
 
+import javax.annotation.Nullable;
+
 import com.projectrebirth.technology.TechSounds;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.technology.TechBlockEntities;
@@ -10,10 +12,11 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
-/** Makes energy in daylight under the open sky, not in rain, and gives it to the blocks below and around it. */
+/** Makes energy in daylight under the open sky, not in rain, and gives it to the block below: that is its only energy side. */
 public class SolarPanelBlockEntity extends BlockEntity {
-    private static final Direction[] OUTPUT_SIDES = {Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
+    private static final Direction[] OUTPUT_SIDES = {Direction.DOWN};
 
     private final ModEnergyStorage energy = new ModEnergyStorage(() -> RebirthConfig.SOLAR_CAPACITY.get(),
             () -> 0, () -> RebirthConfig.GENERATOR_OUTPUT.get(), this::setChanged);
@@ -26,6 +29,12 @@ public class SolarPanelBlockEntity extends BlockEntity {
 
     public ModEnergyStorage energy() {
         return energy;
+    }
+
+    /** What cables and machines see on a side: nothing except at the bottom (no side at all means an inspection). */
+    @Nullable
+    public IEnergyStorage forSide(@Nullable Direction side) {
+        return side == null || side == Direction.DOWN ? energy : null;
     }
 
     public boolean producing() {

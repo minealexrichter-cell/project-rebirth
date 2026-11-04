@@ -3,6 +3,7 @@ package com.projectrebirth.client.screen;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.projectrebirth.client.GuiAtlas;
 import com.projectrebirth.technology.FabricationRecipe;
 import com.projectrebirth.technology.StationBlockEntity;
 import com.projectrebirth.technology.StationMenu;
@@ -22,14 +23,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
-import static com.projectrebirth.client.screen.GuiShapes.SLOT;
 import static com.projectrebirth.client.screen.GuiShapes.panel;
 import static com.projectrebirth.client.screen.GuiShapes.playerInventory;
 import static com.projectrebirth.client.screen.GuiShapes.slot;
 import static com.projectrebirth.client.screen.GuiShapes.sunken;
 
 /**
- * Station window, drawn from plain rectangles (no texture of its own) plus vanilla button sprites.
+ * Station window: the mod's own window parts (see GuiAtlas) plus vanilla recipe button sprites.
  * Top: recipe list. Middle: status line, input slots with "ghost" images of the missing ingredients, progress
  * arrow and output. Bottom: player inventory.
  */
@@ -39,7 +39,6 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     private static final ResourceLocation RECIPE_HIGHLIGHTED_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/recipe_highlighted");
     private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/scroller");
     private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/scroller_disabled");
-    private static final ResourceLocation PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("container/furnace/burn_progress");
 
     private static final int GRID_X = 8;
     private static final int GRID_Y = 17;
@@ -84,9 +83,9 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         for (int i = 0; i < StationBlockEntity.INPUT_SLOTS; i++) {
             slot(graphics, x + StationMenu.INPUT_X + (i % 3) * 18, y + StationMenu.INPUT_Y + (i / 3) * 18);
         }
-        sunken(graphics, x + StationMenu.OUTPUT_X - 5, y + StationMenu.OUTPUT_Y - 5, 26, 26);
+        GuiAtlas.outputSlot(graphics, x + StationMenu.OUTPUT_X - 5, y + StationMenu.OUTPUT_Y - 5);
         playerInventory(graphics, x + 8, y + StationMenu.INVENTORY_Y);
-        renderArrow(graphics, x + ARROW_X, y + ARROW_Y);
+        GuiAtlas.arrow(graphics, x + ARROW_X, y + ARROW_Y, menu.progress());
         GuiShapes.energyBar(graphics, x + ENERGY_X, y + ENERGY_Y, ENERGY_W, ENERGY_H, menu.energy(), menu.energyCapacity());
         renderRecipes(graphics, mouseX, mouseY);
         renderScrollbar(graphics);
@@ -223,18 +222,6 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     }
 
     // ---------- progress ----------
-
-    private void renderArrow(GuiGraphics graphics, int x, int y) {
-        // empty arrow: shaft and head drawn in the slot shade
-        graphics.fill(x, y + 6, x + 15, y + 10, SLOT);
-        for (int i = 0; i < 8; i++) {
-            graphics.fill(x + 15 + i, y + i, x + 16 + i, y + 16 - i, SLOT);
-        }
-        int width = Mth.ceil(menu.progress() * 24);
-        if (width > 0) {
-            graphics.blitSprite(PROGRESS_SPRITE, 24, 16, 0, 0, x, y, width, 16);
-        }
-    }
 
     private void renderArrowTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
         int x = leftPos + ARROW_X;

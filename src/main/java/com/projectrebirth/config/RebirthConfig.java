@@ -268,9 +268,9 @@ public final class RebirthConfig {
                 .defineInRange("heavyHintIntervalTicks", 60, 1, 72000);
         WEAPON_HEAVY_WALK_MULTIPLIER = builder.comment("Outside power armor: walking speed is multiplied by this while a weapon is in hand; 1.0 = no slower")
                 .defineInRange("heavyWalkSpeedMultiplier", 1.0, 0.1, 1.0);
-        defineWeapon(builder, "assault_rifle", 30, 2.5, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50, 0.6, 0.3, 0.05, 0.3);
-        defineWeapon(builder, "battle_rifle", 10, 8.0, 128.0, 10, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50, 0.5, 1.8, 0.0, 0.0);
-        defineWeapon(builder, "combat_shotgun", 6, 1.75, 24.0, 20, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16, 0.6, 3.5, 0.0, 0.0);
+        defineWeapon(builder, "assault_rifle", 30, 4.0, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50, 0.6, 0.3, 0.05, 0.3);
+        defineWeapon(builder, "battle_rifle", 10, 13.0, 128.0, 10, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50, 0.5, 1.8, 0.0, 0.0);
+        defineWeapon(builder, "combat_shotgun", 6, 2.8, 24.0, 20, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16, 0.6, 3.5, 0.0, 0.0);
         builder.pop();
 
         builder.comment("What the upgrades of power armor do").push("armor_upgrades");

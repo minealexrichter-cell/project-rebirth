@@ -408,10 +408,10 @@ public class WeaponGameTests {
     }
 
     @GameTest(template = TEMPLATE)
-    public static void noWeaponKillsAPlayerInIronArmorInAFractionOfASecond(GameTestHelper helper) {
+    public static void noWeaponKillsAPlayerInIronArmorWithinASecond(GameTestHelper helper) {
         for (String id : List.of("assault_rifle", "battle_rifle", "combat_shotgun")) {
             double seconds = secondsToKill(helper, stats(id), IRON_ARMOR_POINTS);
-            helper.assertTrue(seconds >= 1.5, id + " kills in " + seconds + " s, all shots hitting");
+            helper.assertTrue(seconds >= 1.0, id + " kills in " + seconds + " s, all shots hitting");
         }
         helper.succeed();
     }

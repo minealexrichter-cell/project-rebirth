@@ -204,12 +204,10 @@
     "sounds": [
       {
         "name": "projectrebirth:weapon/assault_rifle_shot1",
-        "volume": 0.9,
         "attenuation_distance": 96
       },
       {
         "name": "projectrebirth:weapon/assault_rifle_shot2",
-        "volume": 0.9,
         "attenuation_distance": 96
       }
     ]
@@ -237,12 +235,10 @@
     "sounds": [
       {
         "name": "projectrebirth:weapon/battle_rifle_shot1",
-        "volume": 1,
         "attenuation_distance": 128
       },
       {
         "name": "projectrebirth:weapon/battle_rifle_shot2",
-        "volume": 1,
         "attenuation_distance": 128
       }
     ]
@@ -270,12 +266,10 @@
     "sounds": [
       {
         "name": "projectrebirth:weapon/combat_shotgun_shot1",
-        "volume": 1,
         "attenuation_distance": 72
       },
       {
         "name": "projectrebirth:weapon/combat_shotgun_shot2",
-        "volume": 1,
         "attenuation_distance": 72
       }
     ]

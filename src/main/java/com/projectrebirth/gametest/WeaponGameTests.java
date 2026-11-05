@@ -281,6 +281,9 @@ public class WeaponGameTests {
     public static void shotgunFiresItsPelletsAndHurtsLessFarAway(GameTestHelper helper) {
         ServerPlayer pilot = pilot(helper, WeaponRegistry.COMBAT_SHOTGUN.get(), 6);
         Mob target = target(helper);
+        // Tough enough to survive a full shot, so that all of its damage can be counted.
+        target.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000.0);
+        target.setHealth(1000.0f);
         float health = target.getHealth();
         aimAt(pilot, target);
         RebirthConfig.WeaponStats stats = stats("combat_shotgun");

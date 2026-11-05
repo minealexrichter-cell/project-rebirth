@@ -1,0 +1,13 @@
+{
+  "biomes": "#minecraft:is_end",
+  "priority": 10,
+  "background": {
+    "pollution": 0.5,
+    "radiation": 2
+  },
+  "event_multipliers": {
+    "acid_rain": 0,
+    "toxic_storm": 0,
+    "radiation_burst": 0
+  }
+}

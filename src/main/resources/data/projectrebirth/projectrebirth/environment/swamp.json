@@ -1,0 +1,11 @@
+{
+  "biomes": "#c:is_swamp",
+  "priority": 10,
+  "background": {
+    "pollution": 2.5,
+    "radiation": 1
+  },
+  "event_multipliers": {
+    "toxic_storm": 1.3
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "biomes": "#c:is_badlands",
+  "priority": 10,
+  "background": {
+    "pollution": 1,
+    "radiation": 1.5
+  },
+  "event_multipliers": {
+    "acid_rain": 0,
+    "radiation_burst": 1.5
+  }
+}

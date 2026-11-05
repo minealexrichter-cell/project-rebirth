@@ -1,0 +1,13 @@
+{
+  "biomes": "#minecraft:is_nether",
+  "priority": 10,
+  "background": {
+    "pollution": 2,
+    "radiation": 1.5
+  },
+  "event_multipliers": {
+    "acid_rain": 0,
+    "toxic_storm": 0,
+    "radiation_burst": 0
+  }
+}

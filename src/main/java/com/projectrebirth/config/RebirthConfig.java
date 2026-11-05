@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.projectrebirth.bodies.BodyClass;
+import com.projectrebirth.environment.Hazard;
 import com.projectrebirth.powerarmor.ArmorVariant;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -51,6 +52,14 @@ public final class RebirthConfig {
     private static final Map<String, ArmorPlatingStats> ARMOR_PLATING = new HashMap<>();
     private static final Map<String, WeaponStats> WEAPONS = new HashMap<>();
     public static final ModConfigSpec.IntValue WEAPON_HEAVY_HINT_INTERVAL;
+    private static final Map<String, EnvironmentEventStats> ENVIRONMENT_EVENTS = new HashMap<>();
+    public static final ModConfigSpec.BooleanValue ENVIRONMENT_ENABLED;
+    public static final ModConfigSpec.DoubleValue ENVIRONMENT_ROOF_POLLUTION;
+    public static final ModConfigSpec.DoubleValue ENVIRONMENT_ROOF_RADIATION;
+    public static final ModConfigSpec.DoubleValue ENVIRONMENT_ROOF_ACID;
+    public static final ModConfigSpec.IntValue ENVIRONMENT_UNDERGROUND_DEPTH;
+    public static final ModConfigSpec.DoubleValue ENVIRONMENT_UNDERGROUND_POLLUTION;
+    public static final ModConfigSpec.IntValue ENVIRONMENT_AFTERMATH_SECONDS;
     public static final ModConfigSpec.DoubleValue WEAPON_HEAVY_WALK_MULTIPLIER;
     public static final ModConfigSpec.DoubleValue ARMOR_JUMP_PER_AIR_MODULE;
     public static final ModConfigSpec.DoubleValue ARMOR_MAX_JUMP_STRENGTH;
@@ -263,6 +272,27 @@ public final class RebirthConfig {
                 .defineInRange("energyPerTick", 20, 0, 1_000_000);
         builder.pop();
 
+        builder.comment("The hostile environment. Off: the mod works as if it were not there").push("environment");
+        ENVIRONMENT_ENABLED = builder.comment("The whole system").define("enabled", true);
+        ENVIRONMENT_ROOF_POLLUTION = builder.comment("Pollution is multiplied by this under a roof")
+                .defineInRange("roofPollutionMultiplier", 0.5, 0.0, 1.0);
+        ENVIRONMENT_ROOF_RADIATION = builder.comment("Radiation is multiplied by this under a roof")
+                .defineInRange("roofRadiationMultiplier", 1.0, 0.0, 1.0);
+        ENVIRONMENT_ROOF_ACID = builder.comment("Acid is multiplied by this under a roof")
+                .defineInRange("roofAcidMultiplier", 0.0, 0.0, 1.0);
+        ENVIRONMENT_UNDERGROUND_DEPTH = builder.comment("Blocks below the surface where a place counts as underground")
+                .defineInRange("undergroundDepth", 16, 1, 512);
+        ENVIRONMENT_UNDERGROUND_POLLUTION = builder.comment("Pollution is also multiplied by this underground")
+                .defineInRange("undergroundPollutionMultiplier", 0.5, 0.0, 1.0);
+        ENVIRONMENT_AFTERMATH_SECONDS = builder.comment("Seconds a catastrophe takes to fade out after its active phase")
+                .defineInRange("aftermathSeconds", 60, 1, 86400);
+        builder.comment("The catastrophes: strength per hazard at intensity 1, on top of the background").push("events");
+        defineEnvironmentEvent(builder, "acid_rain", Map.of(Hazard.POLLUTION, 2.0, Hazard.ACID, 1.0), 0.5, 1.5, 240, 480);
+        defineEnvironmentEvent(builder, "toxic_storm", Map.of(Hazard.POLLUTION, 10.0), 0.5, 1.5, 180, 360);
+        defineEnvironmentEvent(builder, "radiation_burst", Map.of(Hazard.RADIATION, 12.0), 0.5, 1.5, 120, 240);
+        builder.pop();
+        builder.pop();
+
         builder.comment("Guns of power armor; each has its own section. Damage is per bullet or pellet (20 ticks = 1 second)").push("weapons");
         WEAPON_HEAVY_HINT_INTERVAL = builder.comment("Outside power armor: ticks between the hints that a weapon is too heavy")
                 .defineInRange("heavyHintIntervalTicks", 60, 1, 72000);
@@ -394,6 +424,35 @@ public final class RebirthConfig {
     public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
                              ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
                              ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
+    }
+
+    private static void defineEnvironmentEvent(ModConfigSpec.Builder builder, String id, Map<Hazard, Double> strengths, double minIntensity, double maxIntensity,
+                                               int minSeconds, int maxSeconds) {
+        builder.push(id);
+        ModConfigSpec.BooleanValue enabled = builder.comment("Whether this catastrophe can happen").define("enabled", true);
+        Map<Hazard, ModConfigSpec.DoubleValue> hazards = new EnumMap<>(Hazard.class);
+        for (Hazard hazard : Hazard.values()) {
+            hazards.put(hazard, builder.defineInRange(hazard.id(), strengths.getOrDefault(hazard, 0.0), 0.0, 10000.0));
+        }
+        ENVIRONMENT_EVENTS.put(id, new EnvironmentEventStats(enabled, hazards,
+                builder.comment("Lowest intensity").defineInRange("minIntensity", minIntensity, 0.01, 10.0),
+                builder.comment("Highest intensity").defineInRange("maxIntensity", maxIntensity, 0.01, 10.0),
+                builder.comment("Shortest active phase, in seconds").defineInRange("minActiveSeconds", minSeconds, 1, 86400),
+                builder.comment("Longest active phase, in seconds").defineInRange("maxActiveSeconds", maxSeconds, 1, 86400)));
+        builder.pop();
+    }
+
+    /** The numbers of a catastrophe, or null if the config does not know it. */
+    public static EnvironmentEventStats environmentEvent(String id) {
+        return ENVIRONMENT_EVENTS.get(id);
+    }
+
+    public record EnvironmentEventStats(ModConfigSpec.BooleanValue enabled, Map<Hazard, ModConfigSpec.DoubleValue> hazards,
+                                        ModConfigSpec.DoubleValue minIntensity, ModConfigSpec.DoubleValue maxIntensity,
+                                        ModConfigSpec.IntValue minActiveSeconds, ModConfigSpec.IntValue maxActiveSeconds) {
+        public float hazard(Hazard hazard) {
+            return hazards.get(hazard).get().floatValue();
+        }
     }
 
     private static void defineWeapon(ModConfigSpec.Builder builder, String id, int magazine, double damage, double range, int shotInterval, int pellets,

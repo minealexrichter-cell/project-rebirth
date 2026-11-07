@@ -13,6 +13,9 @@ public final class PlanTests {
     /** The tests of version 1.4.0 "Shelter" (docs/PLAN_1.4.md). */
     public static final String SHELTER = ProjectRebirth.MOD_ID + "_shelter";
 
+    /** The tests of version 1.4.1 "Codex" (docs/PLAN_1.4.1.md). */
+    public static final String CODEX = ProjectRebirth.MOD_ID + "_codex";
+
     private PlanTests() {
     }
 }

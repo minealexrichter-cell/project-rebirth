@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:book" },
+    { "item": "minecraft:iron_ingot" }
+  ],
+  "result": { "id": "projectrebirth:rebirth_codex", "count": 1 }
+}

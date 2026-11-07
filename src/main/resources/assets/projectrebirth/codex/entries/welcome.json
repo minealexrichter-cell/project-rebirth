@@ -1,0 +1,11 @@
+{
+  "icon": "projectrebirth:rebirth_codex",
+  "x": 0,
+  "y": 0,
+  "pages": [
+    { "type": "text", "text": "codex.projectrebirth.welcome.intro" },
+    { "type": "item", "value": "projectrebirth:rebirth_codex", "text": "codex.projectrebirth.welcome.book" },
+    { "type": "note", "text": "codex.projectrebirth.welcome.navigation" },
+    { "type": "recipe", "value": "projectrebirth:rebirth_codex", "text": "codex.projectrebirth.welcome.recipe" }
+  ]
+}

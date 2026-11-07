@@ -73,7 +73,7 @@ neoForge {
         client {
             client()
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex"
             // Optional: .\gradlew runClient -PquickPlayServer=localhost joins the dev server right after startup
             if (project.hasProperty('quickPlayServer')) {
                 programArguments.addAll '--quickPlayMultiplayer', project.property('quickPlayServer').toString()
@@ -93,7 +93,7 @@ neoForge {
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex"
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.
@@ -101,7 +101,7 @@ neoForge {
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex"
         }
 
         data {

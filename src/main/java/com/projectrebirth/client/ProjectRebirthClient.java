@@ -95,6 +95,7 @@ public class ProjectRebirthClient {
         TransferAnimation.register();
         BodySounds.register();
         TechSoundsClient.register();
+        com.projectrebirth.codex.CodexItem.opener = () -> net.minecraft.client.Minecraft.getInstance().setScreen(new com.projectrebirth.client.codex.CodexScreen());
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {

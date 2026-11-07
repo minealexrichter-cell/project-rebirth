@@ -44,6 +44,7 @@ public final class ModCreativeTabs {
                 output.accept(TechItems.COMBUSTION_GENERATOR.get());
                 output.accept(TechItems.SOLAR_PANEL.get());
                 output.accept(TechItems.BATTERY.get());
+                output.accept(com.projectrebirth.codex.CodexRegistry.REBIRTH_CODEX.get());
                 output.accept(TechItems.CABLE.get());
                 output.accept(FactionBlocks.FACTION_CORE_ITEM.get());
                 output.accept(TechItems.CIRCUIT_BOARD.get());

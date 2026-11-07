@@ -1,0 +1,9 @@
+{
+  "categories": [
+    {
+      "id": "basics",
+      "icon": "projectrebirth:rebirth_codex",
+      "entries": ["welcome", "progression"]
+    }
+  ]
+}

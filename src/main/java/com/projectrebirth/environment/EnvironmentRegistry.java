@@ -11,14 +11,11 @@ import com.projectrebirth.config.RebirthConfig;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -72,14 +69,16 @@ public final class EnvironmentRegistry {
             builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
 
     private static final DeferredRegister<ArmorMaterial> MATERIALS = DeferredRegister.create(Registries.ARMOR_MATERIAL, ProjectRebirth.MOD_ID);
-    /** Placeholders until block G: the look of leather armor in the colour of the item. */
-    private static final List<ArmorMaterial.Layer> TINTED = List.of(new ArmorMaterial.Layer(ResourceLocation.withDefaultNamespace("leather"), "", true));
+    /** The worn look: textures/models/armor/&lt;id&gt;_layer_1.png and _layer_2.png (blockbench/tools/build_textures.js). */
+    private static List<ArmorMaterial.Layer> look(String id) {
+        return List.of(new ArmorMaterial.Layer(ProjectRebirth.id(id), "", false));
+    }
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> RESPIRATOR_MATERIAL = MATERIALS.register("respirator", () -> new ArmorMaterial(
-            defense(1, 0, 0, 0), 5, SoundEvents.ARMOR_EQUIP_LEATHER, () -> Ingredient.of(Items.STRING), TINTED, 0.0f, 0.0f));
+            defense(1, 0, 0, 0), 5, SoundEvents.ARMOR_EQUIP_LEATHER, () -> Ingredient.of(Items.STRING), look("respirator"), 0.0f, 0.0f));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> HAZMAT_MATERIAL = MATERIALS.register("hazmat", () -> new ArmorMaterial(
-            defense(1, 2, 2, 1), 8, SoundEvents.ARMOR_EQUIP_LEATHER, () -> Ingredient.of(Items.SLIME_BALL), TINTED, 0.0f, 0.0f));
+            defense(1, 2, 2, 1), 8, SoundEvents.ARMOR_EQUIP_LEATHER, () -> Ingredient.of(Items.SLIME_BALL), look("hazmat"), 0.0f, 0.0f));
     public static final DeferredHolder<ArmorMaterial, ArmorMaterial> HEAVY_SUIT_MATERIAL = MATERIALS.register("heavy_suit", () -> new ArmorMaterial(
-            defense(2, 5, 4, 2), 6, SoundEvents.ARMOR_EQUIP_IRON, () -> Ingredient.of(Items.IRON_INGOT), TINTED, 1.0f, 0.05f));
+            defense(2, 5, 4, 2), 6, SoundEvents.ARMOR_EQUIP_IRON, () -> Ingredient.of(Items.IRON_INGOT), look("heavy_suit"), 1.0f, 0.05f));
 
     private static java.util.Map<ArmorItem.Type, Integer> defense(int head, int chest, int legs, int feet) {
         java.util.Map<ArmorItem.Type, Integer> map = new java.util.EnumMap<>(ArmorItem.Type.class);
@@ -91,24 +90,19 @@ public final class EnvironmentRegistry {
         return map;
     }
 
-    public static final List<DeferredItem<? extends Item>> TINTED_GEAR = new java.util.ArrayList<>();
-
-    private static DeferredItem<ProtectiveArmorItem> gear(String id, Holder<ArmorMaterial> material, ArmorItem.Type type, int durability, int color) {
-        DeferredItem<ProtectiveArmorItem> item = ITEMS.register(id, () -> new ProtectiveArmorItem(material, type, new Item.Properties()
-                .durability(type.getDurability(durability)).component(DataComponents.DYED_COLOR, new DyedItemColor(color, false))));
-        TINTED_GEAR.add(item);
-        return item;
+    private static DeferredItem<ProtectiveArmorItem> gear(String id, Holder<ArmorMaterial> material, ArmorItem.Type type, int durability) {
+        return ITEMS.register(id, () -> new ProtectiveArmorItem(material, type, new Item.Properties().durability(type.getDurability(durability))));
     }
 
-    public static final DeferredItem<ProtectiveArmorItem> RESPIRATOR = gear("respirator", RESPIRATOR_MATERIAL, ArmorItem.Type.HELMET, 10, 0x3A3F46);
-    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_HELMET = gear("hazmat_helmet", HAZMAT_MATERIAL, ArmorItem.Type.HELMET, 10, 0xE0B33A);
-    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_SUIT = gear("hazmat_suit", HAZMAT_MATERIAL, ArmorItem.Type.CHESTPLATE, 10, 0xE0B33A);
-    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_TROUSERS = gear("hazmat_trousers", HAZMAT_MATERIAL, ArmorItem.Type.LEGGINGS, 10, 0xE0B33A);
-    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_BOOTS = gear("hazmat_boots", HAZMAT_MATERIAL, ArmorItem.Type.BOOTS, 10, 0xE0B33A);
-    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_HELMET = gear("heavy_suit_helmet", HEAVY_SUIT_MATERIAL, ArmorItem.Type.HELMET, 25, 0x5F6B3E);
-    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT = gear("heavy_suit", HEAVY_SUIT_MATERIAL, ArmorItem.Type.CHESTPLATE, 25, 0x5F6B3E);
-    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_TROUSERS = gear("heavy_suit_trousers", HEAVY_SUIT_MATERIAL, ArmorItem.Type.LEGGINGS, 25, 0x5F6B3E);
-    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_BOOTS = gear("heavy_suit_boots", HEAVY_SUIT_MATERIAL, ArmorItem.Type.BOOTS, 25, 0x5F6B3E);
+    public static final DeferredItem<ProtectiveArmorItem> RESPIRATOR = gear("respirator", RESPIRATOR_MATERIAL, ArmorItem.Type.HELMET, 10);
+    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_HELMET = gear("hazmat_helmet", HAZMAT_MATERIAL, ArmorItem.Type.HELMET, 10);
+    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_SUIT = gear("hazmat_suit", HAZMAT_MATERIAL, ArmorItem.Type.CHESTPLATE, 10);
+    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_TROUSERS = gear("hazmat_trousers", HAZMAT_MATERIAL, ArmorItem.Type.LEGGINGS, 10);
+    public static final DeferredItem<ProtectiveArmorItem> HAZMAT_BOOTS = gear("hazmat_boots", HAZMAT_MATERIAL, ArmorItem.Type.BOOTS, 10);
+    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_HELMET = gear("heavy_suit_helmet", HEAVY_SUIT_MATERIAL, ArmorItem.Type.HELMET, 25);
+    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT = gear("heavy_suit", HEAVY_SUIT_MATERIAL, ArmorItem.Type.CHESTPLATE, 25);
+    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_TROUSERS = gear("heavy_suit_trousers", HEAVY_SUIT_MATERIAL, ArmorItem.Type.LEGGINGS, 25);
+    public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_BOOTS = gear("heavy_suit_boots", HEAVY_SUIT_MATERIAL, ArmorItem.Type.BOOTS, 25);
     public static final DeferredItem<FilterItem> FILTER = ITEMS.register("filter", () -> new FilterItem(new Item.Properties().stacksTo(16)));
     public static final DeferredItem<Item> DOSIMETER = ITEMS.registerSimpleItem("dosimeter", new Item.Properties().stacksTo(1));
 

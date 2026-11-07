@@ -476,9 +476,9 @@
   "hud.projectrebirth.human.stage": "стадия %s",
   "hud.projectrebirth.human.air": "Воздух:",
   "hud.projectrebirth.human.safe": "опасности нет",
-  "hud.projectrebirth.hazard.pollution": "☣ токсины",
+  "hud.projectrebirth.hazard.pollution": "токсины",
   "hud.projectrebirth.hazard.radiation": "☢ радиация",
-  "hud.projectrebirth.hazard.radiation_value": "☢ %s",
-  "hud.projectrebirth.hazard.acid": "☔ кислота",
+  "hud.projectrebirth.hazard.radiation_value": "%s",
+  "hud.projectrebirth.hazard.acid": "кислота",
   "hud.projectrebirth.catastrophe.active_for": "⚠ %s, ещё ~%s мин"
 }

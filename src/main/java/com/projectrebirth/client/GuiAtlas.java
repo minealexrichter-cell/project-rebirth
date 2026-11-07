@@ -59,6 +59,16 @@ public final class GuiAtlas {
         blit(graphics, x, y, 80, 34, 9, 9);
     }
 
+    /** The 9 x 9 mark of a hazard: polluted air, radiation, acid. */
+    public static void hazardMark(GuiGraphics graphics, int x, int y, com.projectrebirth.environment.Hazard hazard) {
+        int u = switch (hazard) {
+            case POLLUTION -> 92;
+            case RADIATION -> 102;
+            case ACID -> 112;
+        };
+        blit(graphics, x, y, u, 34, 9, 9);
+    }
+
     /** An energy gauge filling up from the bottom. */
     public static void energyVertical(GuiGraphics graphics, int x, int y, int width, int height, int energy, int capacity) {
         recess(graphics, x, y, width, height);

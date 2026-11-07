@@ -19,14 +19,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
@@ -47,15 +44,8 @@ public final class EnvironmentClient {
     }
 
     static void register(IEventBus modEventBus) {
-        modEventBus.addListener(EnvironmentClient::registerColors);
         modEventBus.addListener(EnvironmentClient::registerGuiLayers);
         EnvironmentStatusPayload.clientHandler = payload -> Minecraft.getInstance().execute(() -> last = payload);
-    }
-
-    /** The suits are tinted like leather armor: their colour is part of the item. */
-    private static void registerColors(RegisterColorHandlersEvent.Item event) {
-        event.register((stack, layer) -> layer == 0 ? FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(stack, -1)) : -1,
-                EnvironmentRegistry.TINTED_GEAR.stream().map(item -> item.get()).toArray(net.minecraft.world.level.ItemLike[]::new));
     }
 
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
@@ -117,18 +107,22 @@ public final class EnvironmentClient {
     /** What is dangerous here now, after protection. */
     private static void renderHazards(GuiGraphics graphics, Font font, int y, boolean dosimeter) {
         graphics.drawString(font, Component.translatable("hud.projectrebirth.human.air"), 0, y, 0xFFFFFFFF);
+        List<Hazard> hazards = new ArrayList<>();
         List<Component> parts = new ArrayList<>();
         List<Integer> colors = new ArrayList<>();
         if (last.dangerous(Hazard.POLLUTION)) {
+            hazards.add(Hazard.POLLUTION);
             parts.add(Component.translatable("hud.projectrebirth.hazard.pollution"));
             colors.add(0xFFD4E157);
         }
         if (last.dangerous(Hazard.ACID)) {
+            hazards.add(Hazard.ACID);
             parts.add(Component.translatable("hud.projectrebirth.hazard.acid"));
             colors.add(0xFF9CCC65);
         }
         // Radiation is felt by no one: without a dosimeter it is not shown.
         if (dosimeter && last.dangerous(Hazard.RADIATION)) {
+            hazards.add(Hazard.RADIATION);
             parts.add(Component.translatable("hud.projectrebirth.hazard.radiation_value", number(last.radiation())));
             colors.add(0xFFFF5555);
         }
@@ -138,6 +132,8 @@ public final class EnvironmentClient {
             return;
         }
         for (int i = 0; i < parts.size(); i++) {
+            GuiAtlas.hazardMark(graphics, x, y - 1, hazards.get(i));
+            x += 11;
             graphics.drawString(font, parts.get(i), x, y, colors.get(i));
             x += font.width(parts.get(i)) + 6;
         }

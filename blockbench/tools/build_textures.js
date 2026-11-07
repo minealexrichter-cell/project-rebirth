@@ -1669,6 +1669,261 @@
     // ---------------------------------------------------------------- window and HUD parts
 
     // One 256x256 texture; client/GuiAtlas.java knows where each part is. The panel stays light: window text is dark.
+    // ---------------------------------------------------------------- protective gear (1.3.0)
+
+    const HAZMAT = {k: '#14181d', H: '#ffe58a', m: '#e0b33a', d: '#9a7420', v: '#7fd6e8', w: '#e6fbff', a: '#2b3038', g: '#0b0e12', z: '#6b5a1a', b: '#23272d'};
+    const HEAVY = {k: '#14181d', H: '#8a9a5a', m: '#5f6b3e', d: '#3a4226', v: '#1d2a2e', w: '#e0a030', a: '#454b52', g: '#22262b', z: '#3a4226', b: '#2c3020'};
+    const GEAR_ICONS = {
+        helmet: [
+            '................',
+            '....kkkkkkkk....',
+            '...kHmmmmmmdk...',
+            '..kHmmmmmmmmdk..',
+            '..kmmvvvvvvmdk..',
+            '..kmvwvvvvvvdk..',
+            '..kmvvvvvvvvdk..',
+            '..kmmvvvvvvmdk..',
+            '..kmmmaaaammdk..',
+            '..kmmaaggaamdk..',
+            '..kdmmaaaammdk..',
+            '...kddmmmmddk...',
+            '....kkkkkkkk....',
+            '................',
+            '................',
+            '................'],
+        chest: [
+            '................',
+            '..kkk......kkk..',
+            '.kHmmk....kmmdk.',
+            'kHmmmmkkkkmmmmdk',
+            'kmmmmmmzmmmmmmdk',
+            'kmmkmmmzmmmmkmdk',
+            'kmmkmmmzmaamkmdk',
+            'kddkmmmzmaamkddk',
+            'kggkmmmzmmmmkggk',
+            '.kkkmmmzmmmmkkk.',
+            '...kbbbbbbbbk...',
+            '...kmmmzmmmdk...',
+            '...kmmmzmmmdk...',
+            '...kddddddddk...',
+            '...kkkkkkkkkk...',
+            '................'],
+        legs: [
+            '................',
+            '................',
+            '...kkkkkkkkkk...',
+            '...kbbbbbbbbk...',
+            '...kHmmmmmmdk...',
+            '...kmmmmmmmdk...',
+            '...kmmmkkmmdk...',
+            '...kmmmkkmmdk...',
+            '...kmmk..kmdk...',
+            '...kaak..kaak...',
+            '...kmmk..kmdk...',
+            '...kmmk..kmdk...',
+            '...kmmk..kmdk...',
+            '...kddk..kddk...',
+            '...kkkk..kkkk...',
+            '................'],
+        boots: [
+            '................',
+            '................',
+            '................',
+            '................',
+            '................',
+            '................',
+            '...kkkk..kkkk...',
+            '...kHmk..kHmk...',
+            '...kmmk..kmmk...',
+            '...kmmk..kmmk...',
+            '...kmmk..kmmk...',
+            '..kmmmk.kmmmk...',
+            '.kHmmmk.kHmmmk..',
+            '.kddddk.kddddk..',
+            '.kkkkkk.kkkkkk..',
+            '................']
+    };
+    const RUBBER = {H: '#555c66', m: '#30353c', d: '#1c2026'};
+    item('hazmat_helmet', () => icon(GEAR_ICONS.helmet, HAZMAT));
+    item('hazmat_suit', () => icon(GEAR_ICONS.chest, HAZMAT));
+    item('hazmat_trousers', () => icon(GEAR_ICONS.legs, Object.assign({}, HAZMAT, {a: '#c9962a'})));
+    item('hazmat_boots', () => icon(GEAR_ICONS.boots, Object.assign({}, HAZMAT, RUBBER)));
+    item('heavy_suit_helmet', () => icon(GEAR_ICONS.helmet, Object.assign({}, HEAVY, {a: '#2b3038', g: '#e0a030'})));
+    item('heavy_suit', () => icon(GEAR_ICONS.chest, Object.assign({}, HEAVY, {a: '#e0c040'})));
+    item('heavy_suit_trousers', () => icon(GEAR_ICONS.legs, Object.assign({}, HEAVY, {a: '#8a9a5a'})));
+    item('heavy_suit_boots', () => icon(GEAR_ICONS.boots, Object.assign({}, HEAVY, {H: '#4a4f3a', m: '#2c3020', d: '#16180f'})));
+    item('respirator', () => icon([
+        '................',
+        '................',
+        '................',
+        '.ss..........ss.',
+        '..ss........ss..',
+        '...sskkkkkkss...',
+        '....kHmmmmdk....',
+        '...kHmmmmmmdk...',
+        '..kyykmggmkyyk..',
+        '..kyYkmggmkYyk..',
+        '..kyykmmmmkyyk..',
+        '...kkkdmmdkkk...',
+        '......kkkk......',
+        '................',
+        '................',
+        '................'], {k: '#14181d', s: '#3a3f46', H: '#6d7680', m: '#3a4149', d: '#20262e', g: '#0b0e12', y: '#e0b33a', Y: '#8a6a1a'}));
+    item('filter', () => icon([
+        '................',
+        '................',
+        '.....kkkkkk.....',
+        '....kHHHHHdk....',
+        '....kgggggdk....',
+        '...kkkkkkkkkk...',
+        '...kYyyyyyydk...',
+        '...kyhyhyhydk...',
+        '...kyyyyyyydk...',
+        '...kyhyhyhydk...',
+        '...kyyyyyyydk...',
+        '...kyhyhyhydk...',
+        '...kddddddddk...',
+        '...kkkkkkkkkk...',
+        '................',
+        '................'], {k: '#14181d', H: '#d8dde3', g: '#6d7680', Y: '#ffe58a', y: '#e0b33a', h: '#3a3020', d: '#8a6a1a'}));
+    item('dosimeter', () => icon([
+        '................',
+        '................',
+        '....kkkkkkkk....',
+        '...kHHHHHHHHk...',
+        '...kHkkkkkkdk...',
+        '...kHkggggkdk...',
+        '...kHkgGggkdk...',
+        '...kHkkkkkkdk...',
+        '...kmmmmmmmdk...',
+        '...kmrmmmymdk...',
+        '...kmmmmmmmdk...',
+        '...kmssssssdk...',
+        '...kmmmmmmmdk...',
+        '...kddddddddk...',
+        '....kkkkkkkk....',
+        '................'], {k: '#14181d', H: '#e8d76a', m: '#d4b82e', d: '#8a7418', g: '#3fbf5a', G: '#b8ffbf', r: '#d84a3a', y: '#ffe58a', s: '#5a4a10'}));
+    const bottle = (symbol, palette) => icon([
+        '................',
+        '......kkkk......',
+        '......kCCk......',
+        '......kkkk......',
+        '......kwwk......',
+        '.....kwwwwk.....',
+        '....kwllllwk....',
+        '....kllllllk....',
+        symbol[0], symbol[1], symbol[2],
+        '....kWWWWWWk....',
+        '....kllllllk....',
+        '.....kkkkkk.....',
+        '................',
+        '................'], Object.assign({k: '#14181d', w: '#cfe9ee', W: '#f2f4f5'}, palette));
+    // Antiradin: orange liquid, a black radiation mark on the label.
+    item('antiradin', () => bottle(['....kWyWWyWk....', '....kWWyyWWk....', '....kWWWyWWk....'], {C: '#d84a3a', l: '#f0a830', y: '#14181d'}));
+    // Sorbent: black charcoal liquid, a green cross on the label.
+    item('sorbent', () => bottle(['....kWWyyWWk....', '....kWyyyyWk....', '....kWWyyWWk....'], {C: '#4caf50', l: '#3a3f46', y: '#3d9a42'}));
+
+    // Worn gear: the vanilla armor layout, 64x32. layer_1 holds the helmet, the chest piece and the boots, layer_2 the
+    // trousers. Transparent where the piece covers nothing.
+    const FACES = {
+        head: {top: [8, 0, 8, 8], bottom: [16, 0, 8, 8], right: [0, 8, 8, 8], front: [8, 8, 8, 8], left: [16, 8, 8, 8], back: [24, 8, 8, 8]},
+        body: {top: [20, 16, 8, 4], bottom: [28, 16, 8, 4], right: [16, 20, 4, 12], front: [20, 20, 8, 12], left: [28, 20, 4, 12], back: [32, 20, 8, 12]},
+        arm: {top: [44, 16, 4, 4], bottom: [48, 16, 4, 4], right: [40, 20, 4, 12], front: [44, 20, 4, 12], left: [48, 20, 4, 12], back: [52, 20, 4, 12]},
+        leg: {top: [4, 16, 4, 4], bottom: [8, 16, 4, 4], right: [0, 20, 4, 12], front: [4, 20, 4, 12], left: [8, 20, 4, 12], back: [12, 20, 4, 12]}
+    };
+    const SIDES = ['right', 'front', 'left', 'back'];
+
+    function armorPainter(seed) {
+        const p = new Painter(seed);
+        p.canvas.width = 64;
+        p.canvas.height = 32;
+        return p;
+    }
+
+    /** Paints all faces of a part; {@code rows} limits the side faces to rows from the top (for boots and the waist). */
+    function part(p, faces, c, amount, fromRow) {
+        const start = fromRow || 0;
+        for (const [name, [x, y, w, h]] of Object.entries(faces)) {
+            if (SIDES.includes(name)) {
+                p.noise(x, y + start, w, h - start, c, amount);
+            } else if (start === 0 || name === 'bottom') {
+                p.noise(x, y, w, h, c, amount);
+            }
+        }
+    }
+
+    /** One row across the side faces of a part, like a seam or a belt. */
+    function band(p, faces, row, c) {
+        SIDES.forEach(name => {
+            const [x, y, w] = faces[name];
+            p.rect(x, y + row, w, 1, c);
+        });
+    }
+
+    TEXTURES['models/armor/respirator_layer_1'] = () => {
+        const p = armorPainter(301);
+        const strap = '#3a3f46';
+        band(p, FACES.head, 4, strap);
+        // The mask over mouth and nose, a valve, and a filter on each side.
+        p.noise(10, 12, 4, 3, '#2b3038', 0.04).rect(10, 12, 4, 1, '#454b52').px('#0b0e12', [11, 14], [12, 14]);
+        p.px('#e0b33a', [9, 13], [9, 14], [14, 13], [14, 14]).px('#8a6a1a', [9, 15], [14, 15]);
+        return p;
+    };
+
+    function hazmatLike(seed, c, details) {
+        return () => {
+            const p = armorPainter(seed);
+            details(p, c);
+            return p;
+        };
+    }
+
+    // Hazmat: yellow rubber, a wide visor, a filter under it, black gloves and boots.
+    TEXTURES['models/armor/hazmat_layer_1'] = hazmatLike(311, HAZMAT, (p, c) => {
+        part(p, FACES.head, c.m, 0.05);
+        band(p, FACES.head, 7, c.d);
+        p.rect(9, 9, 6, 3, c.v).px(c.w, [9, 9], [10, 9]).rect(9, 12, 6, 1, c.d);
+        p.noise(10, 13, 4, 2, c.a, 0.03).px(c.g, [11, 14], [12, 14]);
+        part(p, FACES.body, c.m, 0.05);
+        p.rect(23, 21, 1, 11, c.z).noise(25, 22, 2, 2, c.b, 0.02);
+        band(p, FACES.body, 9, c.d);
+        part(p, FACES.arm, c.m, 0.05);
+        part(p, FACES.arm, '#23272d', 0.03, 9);
+        part(p, FACES.leg, '#30353c', 0.04, 8);
+        band(p, FACES.leg, 8, '#555c66');
+    });
+    TEXTURES['models/armor/hazmat_layer_2'] = hazmatLike(312, HAZMAT, (p, c) => {
+        part(p, FACES.leg, c.m, 0.05);
+        band(p, FACES.leg, 6, c.d);
+        part(p, FACES.body, c.m, 0.05, 8);
+        band(p, FACES.body, 8, c.b);
+    });
+
+    // Heavy suit: olive cloth under lighter plates, a dark visor band, a snout with amber filters, heavy boots.
+    TEXTURES['models/armor/heavy_suit_layer_1'] = hazmatLike(321, HEAVY, (p, c) => {
+        part(p, FACES.head, c.m, 0.06);
+        p.noise(8, 0, 8, 8, c.H, 0.05);
+        p.rect(8, 9, 8, 3, c.v).px('#3d5a62', [9, 9], [10, 9], [11, 9]);
+        p.noise(10, 12, 4, 3, c.a, 0.03).px('#0b0e12', [11, 14], [12, 14]).px(c.w, [9, 13], [14, 13]);
+        band(p, FACES.head, 7, c.d);
+        part(p, FACES.body, c.m, 0.06);
+        p.bevel(20, 21, 8, 6, c.H, 0.04).px('#e0c040', [23, 23], [24, 23], [23, 24], [24, 24]).px('#14181d', [23, 23]);
+        p.bevel(33, 21, 6, 8, '#6d7680', 0.04);
+        band(p, FACES.body, 9, c.b);
+        part(p, FACES.arm, c.m, 0.06);
+        part(p, FACES.arm, c.H, 0.04, 0);
+        part(p, FACES.arm, c.m, 0.06, 3);
+        part(p, FACES.arm, c.g, 0.03, 10);
+        part(p, FACES.leg, c.b, 0.05, 7);
+        band(p, FACES.leg, 11, '#16180f');
+    });
+    TEXTURES['models/armor/heavy_suit_layer_2'] = hazmatLike(322, HEAVY, (p, c) => {
+        part(p, FACES.leg, c.m, 0.06);
+        [0, 4, 8, 12].forEach(x => p.bevel(x, 25, 4, 3, c.H, 0.03));
+        part(p, FACES.body, c.m, 0.06, 8);
+        band(p, FACES.body, 8, c.b);
+    });
+
     TEXTURES['gui/widgets'] = () => {
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = 256;
@@ -1753,6 +2008,17 @@
         [[84, 36, 1], [84, 37, 1], [83, 38, 3], [82, 39, 5], [82, 40, 5], [83, 41, 3]].forEach(([x, y, w]) => rect(x, y, w, 1, '#55c8ff'));
         rect(83, 39, 1, 1, '#c9f0ff');
 
+        // The marks of the hazards, 9x9 each (1.3.0): polluted air, radiation, acid.
+        const mark = (ox, rows, palette) => rows.forEach((row, y) => [...row].forEach((ch, x) => {
+            if (ch !== '.') {
+                rect(ox + x, 34 + y, 1, 1, palette[ch]);
+            }
+        }));
+        rect(92, 34, 9, 9, '#1a1d12'); rect(102, 34, 9, 9, '#1a1d12'); rect(112, 34, 9, 9, '#122016');
+        mark(92, ['.........', '...gg....', '..gggg.g.', '.ggGgggg.', 'ggggggggg', '.ggggggg.', '.........', '.d..d..d.', '.........'], {g: '#d4e157', G: '#f0ff9a', d: '#9aa83a'});
+        mark(102, ['.........', '.yy...yy.', '.yyy.yyy.', '..yy.yy..', '....y....', '...yyy...', '..yyyyy..', '...yyy...', '.........'], {y: '#f0d030'});
+        mark(112, ['....a....', '....a....', '...aaa...', '..aaaaa..', '..aaHaa..', '..aaaaa..', '...aaa...', '.........', '.........'], {a: '#9ccc65', H: '#e6ffcc'});
+
         // Energy, a piece of the gauge: upright 8x4 and lying 4x8.
         rect(30, 34, 8, 3, '#ff8a3c'); rect(30, 34, 8, 1, '#ffc27a'); rect(30, 37, 8, 1, '#a8461c');
         rect(40, 34, 3, 8, '#ff8a3c'); rect(40, 34, 3, 1, '#ffc27a'); rect(43, 34, 1, 8, '#a8461c');
@@ -1774,6 +2040,7 @@
     function saveAll() {
         const ids = Object.keys(TEXTURES);
         fs.mkdirSync(ASSETS + 'gui', {recursive: true});
+        fs.mkdirSync(ASSETS + 'models/armor', {recursive: true});
         ids.forEach(id => {
             const result = TEXTURES[id]();
             savePng(result.canvas, ASSETS + id + '.png');
@@ -1789,7 +2056,7 @@
 
     /** All textures, magnified, on a checkered background; optionally only the ids that start with a prefix. */
     function sheet(path, scale, prefix) {
-        const ids = Object.keys(TEXTURES).filter(id => !id.startsWith('gui/') && (!prefix || id.startsWith(prefix)));
+        const ids = Object.keys(TEXTURES).filter(id => !id.startsWith('gui/') && !id.startsWith('models/') && (!prefix || id.startsWith(prefix)));
         const s = scale || 8, cols = 10, cell = 16 * s + 6;
         const canvas = document.createElement('canvas');
         canvas.width = cols * cell;

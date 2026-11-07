@@ -44,6 +44,12 @@ public final class CatastropheClient {
     private static float flash;
     private static int flashTicks;
     private static final RandomSource RANDOM = RandomSource.create();
+    private static final net.minecraft.core.particles.ParticleOptions ACID_PUFF =
+            net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.ENTITY_EFFECT, 0xFF9CCC65);
+    private static final net.minecraft.core.particles.ParticleOptions STORM_HAZE =
+            new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.78f, 0.8f, 0.36f), 1.6f);
+    private static final net.minecraft.core.particles.ParticleOptions RADIATION_SPARK =
+            new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.55f, 1.0f, 0.45f), 0.8f);
 
     private CatastropheClient() {
     }
@@ -102,6 +108,36 @@ public final class CatastropheClient {
         tickFlash();
         tickHiss(level, player);
         tickClicks(level, player);
+        tickParticles(level, player, minecraft);
+    }
+
+    /**
+     * The air of a catastrophe: green puffs where acid rain hits the ground, a drifting yellow-green haze in a toxic storm,
+     * green sparks in a radiation burst. Fewer with the "decreased" or "minimal" particle setting.
+     */
+    private static void tickParticles(ClientLevel level, LocalPlayer player, Minecraft minecraft) {
+        if (shown < 0.1f || minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.MINIMAL) {
+            return;
+        }
+        float many = minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.DECREASED ? 0.4f : 1.0f;
+        if (is(Environment.ACID_RAIN)) {
+            for (int i = 0; i < Math.round(4 * shown * many); i++) {
+                double x = player.getX() + (RANDOM.nextDouble() - 0.5) * 16.0;
+                double z = player.getZ() + (RANDOM.nextDouble() - 0.5) * 16.0;
+                BlockPos top = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(x, player.getY(), z));
+                if (Math.abs(top.getY() - player.getY()) < 10.0 && level.isRainingAt(top)) {
+                    level.addParticle(ACID_PUFF, x, top.getY() + 0.05, z, 0.0, 0.03, 0.0);
+                }
+            }
+        } else if (is(Environment.TOXIC_STORM)) {
+            for (int i = 0; i < Math.round(6 * shown * many); i++) {
+                level.addParticle(STORM_HAZE, player.getX() + (RANDOM.nextDouble() - 0.5) * 20.0, player.getEyeY() + (RANDOM.nextDouble() - 0.4) * 8.0,
+                        player.getZ() + (RANDOM.nextDouble() - 0.5) * 20.0, 0.0, 0.0, 0.0);
+            }
+        } else if (is(Environment.RADIATION_BURST) && open > 0.5f && RANDOM.nextFloat() < 0.5f * shown * many) {
+            level.addParticle(RADIATION_SPARK, player.getX() + (RANDOM.nextDouble() - 0.5) * 12.0, player.getEyeY() + RANDOM.nextDouble() * 4.0,
+                    player.getZ() + (RANDOM.nextDouble() - 0.5) * 12.0, 0.0, 0.0, 0.0);
+        }
     }
 
     /** The sky of a radiation burst flickers: short flashes at random. */

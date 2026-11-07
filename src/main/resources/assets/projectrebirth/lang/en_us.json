@@ -476,9 +476,9 @@
   "hud.projectrebirth.human.stage": "stage %s",
   "hud.projectrebirth.human.air": "Air:",
   "hud.projectrebirth.human.safe": "no danger",
-  "hud.projectrebirth.hazard.pollution": "☣ toxic air",
+  "hud.projectrebirth.hazard.pollution": "toxic air",
   "hud.projectrebirth.hazard.radiation": "☢ radiation",
-  "hud.projectrebirth.hazard.radiation_value": "☢ %s",
-  "hud.projectrebirth.hazard.acid": "☔ acid",
+  "hud.projectrebirth.hazard.radiation_value": "%s",
+  "hud.projectrebirth.hazard.acid": "acid",
   "hud.projectrebirth.catastrophe.active_for": "⚠ %s, ~%s min more"
 }

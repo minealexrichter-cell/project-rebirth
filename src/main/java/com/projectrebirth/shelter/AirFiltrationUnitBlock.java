@@ -28,7 +28,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * The air filtration unit: the start of a sealed room. Placed inside, it finds the room by the air around it and cleans that
- * air. Right-click tells the state of the room. (Energy, cartridges and the window come with block B of plan 1.4.)
+ * air while it has energy and a filter cartridge. Right-click opens its window.
  */
 public class AirFiltrationUnitBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -76,10 +76,25 @@ public class AirFiltrationUnitBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (level instanceof ServerLevel server) {
-            player.sendSystemMessage(status(server, pos));
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof AirFiltrationUnitBlockEntity unit) {
+            serverPlayer.openMenu(unit, buf -> buf.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof AirFiltrationUnitBlockEntity unit) {
+            unit.dropContents();
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+
+    @Override
+    public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level, BlockState state,
+            net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return level.isClientSide ? null : createTickerHelper(type, ShelterRegistry.AIR_FILTRATION_UNIT_ENTITY.get(),
+                (tickLevel, pos, tickState, unit) -> unit.serverTick());
     }
 
     private static String number(float value) {

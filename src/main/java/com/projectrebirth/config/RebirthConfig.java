@@ -70,6 +70,13 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue SHELTER_PARTIAL_DOOR_LEAK;
     public static final ModConfigSpec.DoubleValue SHELTER_LEAK_DRIFT;
     public static final ModConfigSpec.DoubleValue SHELTER_CLEAN_AIR_PER_SECOND;
+    public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_LIFE;
+    public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_BASE_USE;
+    public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_WORK_USE;
+    public static final ModConfigSpec.IntValue SHELTER_ENERGY_BASE;
+    public static final ModConfigSpec.IntValue SHELTER_ENERGY_PER_THOUSAND;
+    public static final ModConfigSpec.IntValue SHELTER_ENERGY_CAPACITY;
+    public static final ModConfigSpec.IntValue SHELTER_ENERGY_RECEIVE;
     public static final ModConfigSpec.IntValue ENVIRONMENT_AFTERMATH_SECONDS;
     public static final ModConfigSpec.IntValue ENVIRONMENT_MIN_CALM_SECONDS;
     public static final ModConfigSpec.IntValue ENVIRONMENT_MAX_CALM_SECONDS;
@@ -434,8 +441,19 @@ public final class RebirthConfig {
                 .defineInRange("partialDoorLeakPerSecond", 0.002, 0.0, 1.0);
         SHELTER_LEAK_DRIFT = builder.comment("Share of that difference that comes in per second while the room leaks")
                 .defineInRange("leakDriftPerSecond", 0.1, 0.0, 1.0);
-        SHELTER_CLEAN_AIR_PER_SECOND = builder.comment("Blocks of air one air filtration unit cleans per second")
+        SHELTER_CLEAN_AIR_PER_SECOND = builder.comment("Blocks of air one working air filtration unit cleans per second")
                 .defineInRange("cleanAirPerSecond", 40.0, 0.0, 1_000_000.0);
+        SHELTER_CARTRIDGE_LIFE = builder.comment("Life of one filter cartridge, in units of use").defineInRange("cartridgeLife", 3600.0, 1.0, 1.0E9);
+        SHELTER_CARTRIDGE_BASE_USE = builder.comment("Cartridge use per second of work, per 1000 blocks of air of the room (shared by its units)")
+                .defineInRange("cartridgeUsePerThousandBlocks", 0.5, 0.0, 1.0E6);
+        SHELTER_CARTRIDGE_WORK_USE = builder.comment("Cartridge use per unit of pollution taken out of one block of air: the more comes in (a storm, iron doors), the more is used")
+                .defineInRange("cartridgeUsePerPollution", 0.5, 0.0, 1.0E6);
+        SHELTER_ENERGY_BASE = builder.comment("Energy an air filtration unit uses per tick while it works; none if energy.stationsNeedEnergy is false")
+                .defineInRange("energyPerTick", 4, 0, 1_000_000);
+        SHELTER_ENERGY_PER_THOUSAND = builder.comment("Added to that per 1000 blocks of air of its share of the room")
+                .defineInRange("energyPerTickPerThousandBlocks", 10, 0, 1_000_000);
+        SHELTER_ENERGY_CAPACITY = builder.comment("Energy an air filtration unit holds").defineInRange("energyCapacity", 20000, 1, 1_000_000_000);
+        SHELTER_ENERGY_RECEIVE = builder.comment("Energy an air filtration unit takes in per tick").defineInRange("energyReceivePerTick", 200, 1, 1_000_000_000);
         builder.pop();
 
         builder.comment("The catastrophes: strength per hazard at intensity 1, on top of the background").push("events");

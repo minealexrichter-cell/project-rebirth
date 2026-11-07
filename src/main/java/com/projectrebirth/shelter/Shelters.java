@@ -298,8 +298,39 @@ public final class Shelters {
                 waiting.add(first);
             }
             float outside = Environment.isEnabled() ? Environment.ordinaryExposureAt(level, BlockPos.of(first)).get(Hazard.POLLUTION) : 0.0f;
-            room.airSecond(outside, room.units().size());
+            work(room, outside);
             tellUnits(room);
+        }
+    }
+
+    /**
+     * One second of a room: its units worked by their share of the second, clean the air by that, and pay with their
+     * cartridges: a base use by the room's volume, and the pollution they took out, shared by how much each worked.
+     */
+    private void work(Room room, float outside) {
+        List<AirFiltrationUnitBlockEntity> working = new ArrayList<>();
+        List<Float> shares = new ArrayList<>();
+        float power = 0.0f;
+        for (LongIterator it = room.units().iterator(); it.hasNext(); ) {
+            BlockPos pos = BlockPos.of(it.nextLong());
+            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof AirFiltrationUnitBlockEntity unit) {
+                float share = unit.takeWorkShare();
+                if (share > 0.0f) {
+                    working.add(unit);
+                    shares.add(share);
+                    power += share;
+                }
+            }
+        }
+        float removed = room.airSecond(outside, power);
+        if (power <= 0.0f) {
+            return;
+        }
+        double baseEach = RebirthConfig.SHELTER_CARTRIDGE_BASE_USE.get() * room.volume() / 1000.0 / room.units().size();
+        double work = RebirthConfig.SHELTER_CARTRIDGE_WORK_USE.get() * removed * room.volume();
+        for (int i = 0; i < working.size(); i++) {
+            float share = shares.get(i);
+            working.get(i).useCartridge((float) (baseEach * share + work * share / power));
         }
     }
 

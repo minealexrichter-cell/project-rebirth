@@ -24,7 +24,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * All lists are block tags, so a data pack can add the blocks of other mods.
  */
 public final class Sealing {
-    /** Closed: airtight. The airlock door and the sealed hatch of the mod. */
+    /**
+     * Closed: airtight. The airlock door and the sealed hatch of the mod. A block here that is not a door seals on all
+     * sides whatever its shape: a sealed pass-through, such as the mod's cable through a wall.
+     */
     public static final TagKey<Block> FULL = TagKey.create(Registries.BLOCK, ProjectRebirth.id("sealing_full"));
     /** Closed: the room counts as sealed, but each one on its border lets a little air in. Iron and copper doors. */
     public static final TagKey<Block> PARTIAL = TagKey.create(Registries.BLOCK, ProjectRebirth.id("sealing_partial"));
@@ -63,6 +66,9 @@ public final class Sealing {
         }
         if (isDoorLike(state)) {
             return isClosedSealingDoor(state);
+        }
+        if (state.is(FULL)) {
+            return true;
         }
         return (fullFaces(state) & (1 << side.get3DDataValue())) != 0;
     }

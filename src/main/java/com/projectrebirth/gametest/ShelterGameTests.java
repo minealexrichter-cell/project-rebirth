@@ -44,15 +44,15 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public class ShelterGameTests {
     private static final String TEMPLATE = "floor_9x9";
-    private static final BlockPos UNIT = new BlockPos(4, 2, 4);
+    static final BlockPos UNIT = new BlockPos(4, 2, 4);
     /** The middle of the west wall, at head height. */
-    private static final BlockPos WALL = new BlockPos(2, 3, 4);
+    static final BlockPos WALL = new BlockPos(2, 3, 4);
     private static final BlockPos DOOR_LOW = new BlockPos(2, 2, 4);
     private static final int INSIDE = 3 * 3 * 3 - 1;
     private static final float EPSILON = 1.0e-4f;
 
     /** The box of stone, the unit inside; then the wall changes. */
-    private static void box(GameTestHelper helper, Block wall) {
+    static void box(GameTestHelper helper, Block wall) {
         for (int x = 0; x <= 4; x++) {
             for (int y = 1; y <= 5; y++) {
                 for (int z = 0; z <= 4; z++) {
@@ -137,6 +137,13 @@ public class ShelterGameTests {
         helper.setBlock(WALL, Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
         helper.setBlock(new BlockPos(6, 3, 4), Blocks.STONE_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.WEST));
         scanThen(helper, Room::isSealed, "Stairs in a wall seal by their whole back, either way round");
+    }
+
+    @GameTest(template = TEMPLATE, skyAccess = true)
+    public static void aCableThroughTheWallSeals(GameTestHelper helper) {
+        box(helper, Blocks.STONE);
+        helper.setBlock(WALL, com.projectrebirth.technology.TechBlocks.CABLE.get());
+        scanThen(helper, Room::isSealed, "The mod's cable is a sealed pass-through");
     }
 
     @GameTest(template = TEMPLATE, skyAccess = true)

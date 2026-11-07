@@ -89,18 +89,23 @@ public final class Room {
      * partial door, fast through a leak), and the units clean it. Public for tests.
      *
      * @param outside pollution of the air around, as it would be here without the room
-     * @param cleaningUnits units that clean now
+     * @param cleaningUnits units that clean now; a unit that worked part of the second counts by that part
+     * @return pollution the cleaning took out of each block of air
      */
-    public void airSecond(float outside, int cleaningUnits) {
+    public float airSecond(float outside, float cleaningUnits) {
         double drift = isSealed()
                 ? RebirthConfig.SHELTER_SEALED_DRIFT.get() + partialLeaks * RebirthConfig.SHELTER_PARTIAL_DOOR_LEAK.get()
                 : RebirthConfig.SHELTER_LEAK_DRIFT.get();
         float next = pollution + (outside - pollution) * (float) Math.min(1.0, drift);
-        if (isSealed() && volume() > 0) {
+        float removed = 0.0f;
+        if (isSealed() && volume() > 0 && cleaningUnits > 0.0f) {
             double cleaned = cleaningUnits * RebirthConfig.SHELTER_CLEAN_AIR_PER_SECOND.get() / volume();
-            next *= (float) (1.0 - Math.min(1.0, cleaned));
+            float after = next * (float) (1.0 - Math.min(1.0, cleaned));
+            removed = Math.max(0.0f, next) - Math.max(0.0f, after);
+            next = after;
         }
         setPollution(next);
+        return removed;
     }
 
     /** What a sealed room makes of the environment inside it: its own air, weaker radiation, no acid. */

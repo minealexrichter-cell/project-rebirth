@@ -1,6 +1,7 @@
 {
   "values": [
     "projectrebirth:airlock_door",
-    "projectrebirth:sealed_hatch"
+    "projectrebirth:sealed_hatch",
+    "projectrebirth:cable"
   ]
 }

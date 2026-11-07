@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 50,
+  "time": 60,
+  "ingredients": [
+    {
+      "item": "projectrebirth:spent_filter_cartridge",
+      "count": 1
+    },
+    {
+      "tag": "minecraft:coals",
+      "count": 2
+    },
+    {
+      "item": "minecraft:paper",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:filter_cartridge",
+    "count": 1
+  }
+}

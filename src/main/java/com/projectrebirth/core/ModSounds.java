@@ -35,6 +35,9 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> JETPACK_THRUST = register("jetpack.thrust");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLOODLIGHT_ON = register("floodlight.on");
     public static final DeferredHolder<SoundEvent, SoundEvent> FLOODLIGHT_OFF = register("floodlight.off");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ENVIRONMENT_SIREN = register("environment.siren");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ENVIRONMENT_ACID_HISS = register("environment.acid_hiss");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DOSIMETER_CLICK = register("environment.dosimeter_click");
 
     private ModSounds() {
     }

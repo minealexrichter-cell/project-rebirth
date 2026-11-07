@@ -82,6 +82,8 @@ public final class HumanBody {
         // The game mode as the server keeps it: creative and spectator players are left alone.
         if (!Environment.isEnabled() || !player.gameMode.isSurvival() || !player.isAlive()) {
             clearSymptoms(player);
+            // The dosimeter still measures, it only does not gain anything.
+            tellClient(player, Environment.isEnabled() ? reaching(player, exposure, Hazard.RADIATION) : 0.0f);
             return;
         }
         if (TransferService.isInArtificialBody(player)) {
@@ -89,6 +91,7 @@ public final class HumanBody {
             setBiology(player, afterSecond(biology(player), 0.0f, 0.0f, 0.0f));
             clearSymptoms(player);
             MachineBody.onSecond(player, exposure);
+            tellClient(player, reaching(player, exposure, Hazard.RADIATION));
             return;
         }
         float radiation = reaching(player, exposure, Hazard.RADIATION);

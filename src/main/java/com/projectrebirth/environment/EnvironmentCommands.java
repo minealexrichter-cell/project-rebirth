@@ -22,7 +22,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-/** Operator commands: /rebirth environment status [player], event &lt;type&gt; [intensity], clear, body &lt;player&gt; &lt;dose&gt; &lt;toxin&gt;. They act on the dimension of whoever calls them. */
+/** Operator commands: /rebirth environment status [player], event &lt;type&gt; [intensity], warn &lt;type&gt; [intensity], clear, body &lt;player&gt; &lt;dose&gt; &lt;toxin&gt;. They act on the dimension of whoever calls them. */
 @EventBusSubscriber(modid = ProjectRebirth.MOD_ID)
 public final class EnvironmentCommands {
     private static final float MIN_INTENSITY = 0.1f;
@@ -50,6 +50,13 @@ public final class EnvironmentCommands {
                                         .executes(ctx -> startEvent(ctx, StringArgumentType.getString(ctx, "type"), -1.0f))
                                         .then(Commands.argument("intensity", FloatArgumentType.floatArg(MIN_INTENSITY, MAX_INTENSITY))
                                                 .executes(ctx -> startEvent(ctx, StringArgumentType.getString(ctx, "type"),
+                                                        FloatArgumentType.getFloat(ctx, "intensity"))))))
+                        .then(Commands.literal("warn")
+                                .then(Commands.argument("type", StringArgumentType.word())
+                                        .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(Environment.EVENTS, builder))
+                                        .executes(ctx -> warnEvent(ctx, StringArgumentType.getString(ctx, "type"), -1.0f))
+                                        .then(Commands.argument("intensity", FloatArgumentType.floatArg(MIN_INTENSITY, MAX_INTENSITY))
+                                                .executes(ctx -> warnEvent(ctx, StringArgumentType.getString(ctx, "type"),
                                                         FloatArgumentType.getFloat(ctx, "intensity"))))))
                         .then(Commands.literal("clear").executes(EnvironmentCommands::clear))
                         .then(Commands.literal("body")
@@ -105,7 +112,15 @@ public final class EnvironmentCommands {
         return 1;
     }
 
+    private static int warnEvent(CommandContext<CommandSourceStack> ctx, String event, float givenIntensity) {
+        return begin(ctx, event, givenIntensity, true);
+    }
+
     private static int startEvent(CommandContext<CommandSourceStack> ctx, String event, float givenIntensity) {
+        return begin(ctx, event, givenIntensity, false);
+    }
+
+    private static int begin(CommandContext<CommandSourceStack> ctx, String event, float givenIntensity, boolean warn) {
         CommandSourceStack source = ctx.getSource();
         ServerLevel level = source.getLevel();
         RebirthConfig.EnvironmentEventStats stats = RebirthConfig.environmentEvent(event);
@@ -121,13 +136,28 @@ public final class EnvironmentCommands {
         float max = stats.maxIntensity().get().floatValue();
         float intensity = givenIntensity > 0.0f ? givenIntensity : (min + max) / 2.0f;
         int seconds = stats.minActiveSeconds().get() + random.nextInt(Math.max(1, stats.maxActiveSeconds().get() - stats.minActiveSeconds().get() + 1));
-        EnvironmentState.get(level).startActive(event, intensity, seconds);
-        source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.started", eventName(event), number(intensity), seconds), true);
+        EnvironmentState state = EnvironmentState.get(level);
+        String was = state.event();
+        if (was != null && !was.equals(event) && state.phase() != EventPhase.WARNING) {
+            // The one going on gives way: its rain stops.
+            Catastrophes.ended(level, was);
+        }
+        if (warn) {
+            state.startWarning(event, intensity, seconds, RebirthConfig.ENVIRONMENT_WARNING_SECONDS.get());
+        } else {
+            state.startActive(event, intensity, seconds);
+        }
+        Catastrophes.onSecond(level, state, warn ? EnvironmentState.Change.WARNING : EnvironmentState.Change.ACTIVE, event);
+        source.sendSuccess(() -> Component.translatable(warn ? "message.projectrebirth.environment.warned" : "message.projectrebirth.environment.started", eventName(event), number(intensity), seconds), true);
         return 1;
     }
 
     private static int clear(CommandContext<CommandSourceStack> ctx) {
-        EnvironmentState.get(ctx.getSource().getLevel()).clear();
+        ServerLevel level = ctx.getSource().getLevel();
+        EnvironmentState state = EnvironmentState.get(level);
+        String was = state.event();
+        state.clear();
+        Catastrophes.cleared(level, was);
         ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.environment.cleared"), true);
         return 1;
     }

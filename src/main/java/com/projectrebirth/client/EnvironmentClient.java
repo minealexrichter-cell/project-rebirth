@@ -46,7 +46,12 @@ public final class EnvironmentClient {
         event.registerAbove(VanillaGuiLayers.HOTBAR, ProjectRebirth.id("dosimeter"), EnvironmentClient::renderDosimeter);
     }
 
-    private static boolean carriesDosimeter(Player player) {
+    /** The radiation reaching the player now, as the server last said; 0 before it said anything. */
+    static float radiation() {
+        return last == null ? 0.0f : last.radiation();
+    }
+
+    static boolean carriesDosimeter(Player player) {
         return player.getInventory().contains(stack -> stack.is(EnvironmentRegistry.DOSIMETER.get()));
     }
 

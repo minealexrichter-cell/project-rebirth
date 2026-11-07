@@ -89,6 +89,7 @@ public class ProjectRebirthClient {
         PowerArmorClient.register(modEventBus);
         WeaponClient.register(modEventBus);
         EnvironmentClient.register(modEventBus);
+        CatastropheClient.register(modEventBus);
         BodyHud.register(modEventBus);
         JetpackClient.register();
         TransferAnimation.register();

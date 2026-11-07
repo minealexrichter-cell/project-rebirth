@@ -455,5 +455,18 @@
   "message.projectrebirth.environment.filter_spent": "Фильтр исчерпан",
   "message.projectrebirth.environment.no_respirator": "Наденьте респиратор или капюшон, чтобы вставить фильтр",
   "hud.projectrebirth.dosimeter.radiation": "Радиация %s",
-  "hud.projectrebirth.dosimeter.dose": "Доза %s"
+  "hud.projectrebirth.dosimeter.dose": "Доза %s",
+  "subtitles.projectrebirth.environment.siren": "Сирена предупреждения",
+  "subtitles.projectrebirth.environment.acid_hiss": "Шипит кислота",
+  "subtitles.projectrebirth.environment.dosimeter_click": "Щёлкает дозиметр",
+  "message.projectrebirth.environment.warning": "⚠ Приближается: %s, примерно через %s мин. Укройтесь или наденьте защиту",
+  "message.projectrebirth.environment.warning_soon": "⚠ Приближается: %s, меньше чем через минуту. Укройтесь или наденьте защиту",
+  "message.projectrebirth.environment.began": "⚠ Началось: %s",
+  "message.projectrebirth.environment.fading": "Стихает: %s",
+  "message.projectrebirth.environment.ended": "Закончилось: %s",
+  "message.projectrebirth.environment.warned": "Объявлено: %s, интенсивность %s, затем на %s с",
+  "hud.projectrebirth.catastrophe.warning": "⚠ %s через ~%s мин",
+  "hud.projectrebirth.catastrophe.warning_soon": "⚠ %s меньше чем через минуту",
+  "hud.projectrebirth.catastrophe.active": "⚠ %s",
+  "hud.projectrebirth.catastrophe.aftermath": "Стихает: %s"
 }

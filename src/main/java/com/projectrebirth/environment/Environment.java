@@ -126,7 +126,10 @@ public final class Environment {
     @SubscribeEvent
     static void onLevelTick(LevelTickEvent.Post event) {
         if (event.getLevel() instanceof ServerLevel level && isEnabled() && level.getGameTime() % TICKS_PER_SECOND == 0) {
-            EnvironmentState.get(level).tickSecond();
+            EnvironmentState state = EnvironmentState.get(level);
+            String before = state.event();
+            EnvironmentState.Change change = state.tickSecond(level.getRandom(), hasCatastrophes(level.registryAccess(), level.dimension()));
+            Catastrophes.onSecond(level, state, change, before);
         }
     }
 }

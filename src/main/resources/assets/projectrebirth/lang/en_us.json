@@ -455,5 +455,18 @@
   "message.projectrebirth.environment.filter_spent": "The filter is spent",
   "message.projectrebirth.environment.no_respirator": "Wear a respirator or a hood to put a filter in",
   "hud.projectrebirth.dosimeter.radiation": "Radiation %s",
-  "hud.projectrebirth.dosimeter.dose": "Dose %s"
+  "hud.projectrebirth.dosimeter.dose": "Dose %s",
+  "subtitles.projectrebirth.environment.siren": "Warning siren",
+  "subtitles.projectrebirth.environment.acid_hiss": "Acid hisses",
+  "subtitles.projectrebirth.environment.dosimeter_click": "Dosimeter clicks",
+  "message.projectrebirth.environment.warning": "⚠ Coming: %s, in about %s min. Find shelter or put on protection",
+  "message.projectrebirth.environment.warning_soon": "⚠ Coming: %s, in less than a minute. Find shelter or put on protection",
+  "message.projectrebirth.environment.began": "⚠ %s has begun",
+  "message.projectrebirth.environment.fading": "%s is fading out",
+  "message.projectrebirth.environment.ended": "%s is over",
+  "message.projectrebirth.environment.warned": "Warned: %s, intensity %s, then for %s s",
+  "hud.projectrebirth.catastrophe.warning": "⚠ %s in ~%s min",
+  "hud.projectrebirth.catastrophe.warning_soon": "⚠ %s in <1 min",
+  "hud.projectrebirth.catastrophe.active": "⚠ %s",
+  "hud.projectrebirth.catastrophe.aftermath": "%s is fading"
 }

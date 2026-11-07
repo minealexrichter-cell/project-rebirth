@@ -135,6 +135,7 @@ public final class EnvironmentRegistry {
         COMPONENTS.register(modEventBus);
         MATERIALS.register(modEventBus);
         EnvironmentStatusPayload.register(modEventBus);
+        CatastrophePayload.register(modEventBus);
         ITEMS.register(modEventBus);
         modEventBus.addListener(EnvironmentRegistry::registerDataRegistries);
     }

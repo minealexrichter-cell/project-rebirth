@@ -72,6 +72,18 @@ http://creativecommons.org/publicdomain/zero/1.0/
 
 Скачаны, но не используются: `shotguncock.wav`, `clipload1.wav`, `clipload2.wav`.
 
+### Звуки среды (1.3.0)
+
+**С разрешения владельца** (07.11.2026). Файлы лежат в `assets/projectrebirth/sounds/environment/`. Лицензия каждой страницы проверена 07.11.2026: **CC0**. Исходные файлы в проект не входят, подготовка записана в `assets_src/sounds/environment/prepare_environment_sounds.sh`: моно, 44,1 кГц, обрезка, выравнивание пика, плавное начало и конец, `.ogg`.
+
+| Файлы мода | Исходный файл | Автор | Источник |
+|---|---|---|---|
+| `siren` (первые 8 с) | `siren_0.mp3`, 661 211 байт | aquinn | [Sirens and Alarm Noise](https://opengameart.org/content/sirens-and-alarm-noise) |
+| `acid_hiss1–5` | `steam hisses - Marker #1–5.wav` из `steam_hisses.zip`, 622 313 байт | bart | [Steam release sounds](https://opengameart.org/content/steam-release-sounds) |
+| `geiger_click1–3` | сделаны тем же скриптом из белого шума (ffmpeg), ничего не скачано | — | — |
+
+Подходящих щелчков счётчика Гейгера под CC0 на OpenGameArt не нашлось, поэтому щелчки сделаны программно.
+
 ## Модели и текстуры
 
 Все модели и текстуры сделаны для мода программно: тела и броня — скриптом в Blockbench

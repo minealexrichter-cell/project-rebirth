@@ -144,15 +144,15 @@ public class EnvironmentGameTests {
         EnvironmentState state = new EnvironmentState();
         state.startActive(Environment.TOXIC_STORM, 1.0f, 2);
         helper.assertTrue(state.phase() == EventPhase.ACTIVE && state.strengthNow() == 1.0f, "Active at full strength");
-        state.tickSecond();
+        state.tickSecond(helper.getLevel().getRandom(), true);
         helper.assertTrue(state.phase() == EventPhase.ACTIVE, "Still active");
-        state.tickSecond();
+        state.tickSecond(helper.getLevel().getRandom(), true);
         helper.assertTrue(state.phase() == EventPhase.AFTERMATH, "Then the aftermath, got " + state.phase());
         float fadingFrom = state.strengthNow();
-        state.tickSecond();
+        state.tickSecond(helper.getLevel().getRandom(), true);
         helper.assertTrue(state.strengthNow() < fadingFrom, "It fades out");
         for (int i = 0; i < RebirthConfig.ENVIRONMENT_AFTERMATH_SECONDS.get() + 1; i++) {
-            state.tickSecond();
+            state.tickSecond(helper.getLevel().getRandom(), true);
         }
         helper.assertTrue(state.phase() == EventPhase.CALM && state.event() == null && state.strengthNow() == 0.0f, "Then calm");
         helper.succeed();

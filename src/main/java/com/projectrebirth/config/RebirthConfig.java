@@ -62,6 +62,10 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue ENVIRONMENT_UNDERGROUND_DEPTH;
     public static final ModConfigSpec.DoubleValue ENVIRONMENT_UNDERGROUND_POLLUTION;
     public static final ModConfigSpec.IntValue ENVIRONMENT_AFTERMATH_SECONDS;
+    public static final ModConfigSpec.IntValue ENVIRONMENT_MIN_CALM_SECONDS;
+    public static final ModConfigSpec.IntValue ENVIRONMENT_MAX_CALM_SECONDS;
+    public static final ModConfigSpec.IntValue ENVIRONMENT_WARNING_SECONDS;
+    public static final ModConfigSpec.BooleanValue ENVIRONMENT_ACID_RAIN_WEATHER;
     private static final Map<String, ProtectionStats> PROTECTION_KITS = new HashMap<>();
     public static final ModConfigSpec.DoubleValue PROTECTION_HEAD_SHARE;
     public static final ModConfigSpec.DoubleValue PROTECTION_CHEST_SHARE;
@@ -333,6 +337,14 @@ public final class RebirthConfig {
                 .defineInRange("undergroundPollutionMultiplier", 0.5, 0.0, 1.0);
         ENVIRONMENT_AFTERMATH_SECONDS = builder.comment("Seconds a catastrophe takes to fade out after its active phase")
                 .defineInRange("aftermathSeconds", 60, 1, 86400);
+        ENVIRONMENT_MIN_CALM_SECONDS = builder.comment("Shortest calm between two catastrophes, in seconds. A new world also waits this long at least")
+                .defineInRange("minCalmSeconds", 2400, 1, 10_000_000);
+        ENVIRONMENT_MAX_CALM_SECONDS = builder.comment("Longest calm between two catastrophes, in seconds")
+                .defineInRange("maxCalmSeconds", 4800, 1, 10_000_000);
+        ENVIRONMENT_WARNING_SECONDS = builder.comment("Seconds between the warning and the start of a catastrophe")
+                .defineInRange("warningSeconds", 120, 0, 86400);
+        ENVIRONMENT_ACID_RAIN_WEATHER = builder.comment("Whether acid rain makes it rain in the dimension (where the biome has rain)")
+                .define("acidRainWeather", true);
         builder.comment("What the environment does to a human body. Amounts are per second, for hazard strength 1").push("human");
         HUMAN_DOSE_PER_RADIATION = builder.comment("Dose gained from radiation").defineInRange("dosePerRadiation", 0.004, 0.0, 100.0);
         HUMAN_DOSE_CLEARANCE = builder.comment("Dose the body clears by itself").defineInRange("doseClearance", 0.002, 0.0, 100.0);
@@ -555,11 +567,12 @@ public final class RebirthConfig {
                                                int minSeconds, int maxSeconds) {
         builder.push(id);
         ModConfigSpec.BooleanValue enabled = builder.comment("Whether this catastrophe can happen").define("enabled", true);
+        ModConfigSpec.IntValue weight = builder.comment("How often it comes compared with the others; 0 = never by itself (the command still starts it)").defineInRange("weight", 1, 0, 1000);
         Map<Hazard, ModConfigSpec.DoubleValue> hazards = new EnumMap<>(Hazard.class);
         for (Hazard hazard : Hazard.values()) {
             hazards.put(hazard, builder.defineInRange(hazard.id(), strengths.getOrDefault(hazard, 0.0), 0.0, 10000.0));
         }
-        ENVIRONMENT_EVENTS.put(id, new EnvironmentEventStats(enabled, hazards,
+        ENVIRONMENT_EVENTS.put(id, new EnvironmentEventStats(enabled, weight, hazards,
                 builder.comment("Lowest intensity").defineInRange("minIntensity", minIntensity, 0.01, 10.0),
                 builder.comment("Highest intensity").defineInRange("maxIntensity", maxIntensity, 0.01, 10.0),
                 builder.comment("Shortest active phase, in seconds").defineInRange("minActiveSeconds", minSeconds, 1, 86400),
@@ -572,7 +585,7 @@ public final class RebirthConfig {
         return ENVIRONMENT_EVENTS.get(id);
     }
 
-    public record EnvironmentEventStats(ModConfigSpec.BooleanValue enabled, Map<Hazard, ModConfigSpec.DoubleValue> hazards,
+    public record EnvironmentEventStats(ModConfigSpec.BooleanValue enabled, ModConfigSpec.IntValue weight, Map<Hazard, ModConfigSpec.DoubleValue> hazards,
                                         ModConfigSpec.DoubleValue minIntensity, ModConfigSpec.DoubleValue maxIntensity,
                                         ModConfigSpec.IntValue minActiveSeconds, ModConfigSpec.IntValue maxActiveSeconds) {
         public float hazard(Hazard hazard) {

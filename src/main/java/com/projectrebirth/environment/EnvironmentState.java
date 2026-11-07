@@ -2,6 +2,7 @@ package com.projectrebirth.environment;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -11,6 +12,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.saveddata.SavedData;
 
 /** The environment of one dimension as a whole; saved with the world. Each dimension has its own. */
@@ -25,6 +27,15 @@ public class EnvironmentState extends SavedData {
     private float intensity;
     private int secondsLeft;
     private int phaseSeconds;
+    /** The active phase that follows a warning, decided when the warning starts. */
+    private int pendingActiveSeconds;
+    /** Whether the calm has its length. A new world, and a world from before 1.3.0, first waits a whole pause. */
+    private boolean scheduled;
+
+    /** What one second changed, so that players can be told. */
+    public enum Change {
+        NONE, WARNING, ACTIVE, AFTERMATH, ENDED
+    }
 
     public static EnvironmentState get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(new SavedData.Factory<>(EnvironmentState::new, EnvironmentState::load, null), NAME);
@@ -56,17 +67,48 @@ public class EnvironmentState extends SavedData {
         return secondsLeft;
     }
 
+    public int phaseSeconds() {
+        return phaseSeconds;
+    }
+
+    public int pendingActiveSeconds() {
+        return pendingActiveSeconds;
+    }
+
+    public boolean scheduled() {
+        return scheduled;
+    }
+
+    /** Announces a catastrophe: it comes after the warning. */
+    public void startWarning(String newEvent, float newIntensity, int activeSeconds, int warningSeconds) {
+        event = newEvent;
+        intensity = newIntensity;
+        pendingActiveSeconds = activeSeconds;
+        scheduled = true;
+        enter(EventPhase.WARNING, warningSeconds);
+    }
+
+    /** A calm of this length, then the next catastrophe. */
+    public void startCalm(int seconds) {
+        event = null;
+        intensity = 0.0f;
+        scheduled = true;
+        enter(EventPhase.CALM, seconds);
+    }
+
     /** Starts a catastrophe right away. */
     public void startActive(String newEvent, float newIntensity, int seconds) {
         event = newEvent;
         intensity = newIntensity;
+        scheduled = true;
         enter(EventPhase.ACTIVE, seconds);
     }
 
-    /** Ends whatever is going on, at once. */
+    /** Ends whatever is going on, at once; a new pause is counted on the next second. */
     public void clear() {
         event = null;
         intensity = 0.0f;
+        scheduled = false;
         enter(EventPhase.CALM, 0);
     }
 
@@ -86,22 +128,96 @@ public class EnvironmentState extends SavedData {
         };
     }
 
-    /** One second has passed. Starting catastrophes by themselves comes with the weather forecast of block E. */
-    public void tickSecond() {
+    /**
+     * One second has passed.
+     *
+     * @param random       for the length of a pause and the choice of the next catastrophe
+     * @param catastrophes whether catastrophes happen in this dimension at all
+     * @return what changed
+     */
+    public Change tickSecond(RandomSource random, boolean catastrophes) {
         if (phase == EventPhase.CALM) {
-            return;
+            if (!scheduled) {
+                startCalm(calmSeconds(random));
+                return Change.NONE;
+            }
+            if (secondsLeft > 0) {
+                secondsLeft--;
+                setDirty();
+            }
+            if (secondsLeft > 0) {
+                return Change.NONE;
+            }
+            String next = catastrophes ? chooseEvent(random, id -> true) : null;
+            if (next == null) {
+                startCalm(calmSeconds(random));
+                return Change.NONE;
+            }
+            RebirthConfig.EnvironmentEventStats stats = RebirthConfig.environmentEvent(next);
+            startWarning(next, between(random, stats.minIntensity().get().floatValue(), stats.maxIntensity().get().floatValue()),
+                    between(random, stats.minActiveSeconds().get(), stats.maxActiveSeconds().get()), RebirthConfig.ENVIRONMENT_WARNING_SECONDS.get());
+            return Change.WARNING;
         }
         secondsLeft--;
         setDirty();
         if (secondsLeft > 0) {
-            return;
+            return Change.NONE;
         }
-        if (phase == EventPhase.ACTIVE) {
-            enter(EventPhase.AFTERMATH, RebirthConfig.ENVIRONMENT_AFTERMATH_SECONDS.get());
+        switch (phase) {
+            case WARNING -> {
+                enter(EventPhase.ACTIVE, Math.max(1, pendingActiveSeconds));
+                return Change.ACTIVE;
+            }
+            case ACTIVE -> {
+                enter(EventPhase.AFTERMATH, RebirthConfig.ENVIRONMENT_AFTERMATH_SECONDS.get());
+                return Change.AFTERMATH;
+            }
+            default -> {
+                startCalm(calmSeconds(random));
+                return Change.ENDED;
+            }
         }
-        if (phase == EventPhase.AFTERMATH && secondsLeft <= 0) {
-            clear();
+    }
+
+    private static int calmSeconds(RandomSource random) {
+        return between(random, RebirthConfig.ENVIRONMENT_MIN_CALM_SECONDS.get(), RebirthConfig.ENVIRONMENT_MAX_CALM_SECONDS.get());
+    }
+
+    private static int between(RandomSource random, int min, int max) {
+        return max <= min ? min : min + random.nextInt(max - min + 1);
+    }
+
+    private static float between(RandomSource random, float min, float max) {
+        return max <= min ? min : min + random.nextFloat() * (max - min);
+    }
+
+    /**
+     * The next catastrophe, by the weights in the config; switched off ones and those the filter refuses never come.
+     *
+     * @return null if none can come
+     */
+    @Nullable
+    public static String chooseEvent(RandomSource random, Predicate<String> allowed) {
+        int total = 0;
+        for (String id : Environment.EVENTS) {
+            total += weight(id, allowed);
         }
+        if (total <= 0) {
+            return null;
+        }
+        int roll = random.nextInt(total);
+        for (String id : Environment.EVENTS) {
+            roll -= weight(id, allowed);
+            if (roll < 0) {
+                return id;
+            }
+        }
+        return null;
+    }
+
+    private static int weight(String id, Predicate<String> allowed) {
+        RebirthConfig.EnvironmentEventStats stats = RebirthConfig.environmentEvent(id);
+        return stats == null || !stats.enabled().get() || !allowed.test(id) ? 0 : stats.weight().get();
     }
 
     @Override
@@ -116,6 +232,8 @@ public class EnvironmentState extends SavedData {
         tag.putFloat("Intensity", intensity);
         tag.putInt("SecondsLeft", secondsLeft);
         tag.putInt("PhaseSeconds", phaseSeconds);
+        tag.putInt("PendingActiveSeconds", pendingActiveSeconds);
+        tag.putBoolean("Scheduled", scheduled);
         return tag;
     }
 
@@ -132,6 +250,9 @@ public class EnvironmentState extends SavedData {
         state.intensity = tag.getFloat("Intensity");
         state.secondsLeft = tag.getInt("SecondsLeft");
         state.phaseSeconds = tag.getInt("PhaseSeconds");
+        state.pendingActiveSeconds = tag.getInt("PendingActiveSeconds");
+        // A world from before 1.3.0 has no such key: it first waits a whole pause.
+        state.scheduled = tag.getBoolean("Scheduled");
         return state;
     }
 }

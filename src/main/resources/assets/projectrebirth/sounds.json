@@ -291,5 +291,53 @@
         "attenuation_distance": 10
       }
     ]
+  },
+  "environment.siren": {
+    "subtitle": "subtitles.projectrebirth.environment.siren",
+    "sounds": [
+      {
+        "name": "projectrebirth:environment/siren",
+        "stream": true
+      }
+    ]
+  },
+  "environment.acid_hiss": {
+    "subtitle": "subtitles.projectrebirth.environment.acid_hiss",
+    "sounds": [
+      {
+        "name": "projectrebirth:environment/acid_hiss1",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "projectrebirth:environment/acid_hiss2",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "projectrebirth:environment/acid_hiss3",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "projectrebirth:environment/acid_hiss4",
+        "attenuation_distance": 12
+      },
+      {
+        "name": "projectrebirth:environment/acid_hiss5",
+        "attenuation_distance": 12
+      }
+    ]
+  },
+  "environment.dosimeter_click": {
+    "subtitle": "subtitles.projectrebirth.environment.dosimeter_click",
+    "sounds": [
+      {
+        "name": "projectrebirth:environment/geiger_click1"
+      },
+      {
+        "name": "projectrebirth:environment/geiger_click2"
+      },
+      {
+        "name": "projectrebirth:environment/geiger_click3"
+      }
+    ]
   }
 }

@@ -27,6 +27,11 @@ public final class ArmorUpgradeEffects {
     }
 
     /** Added structural integrity: the plates of each part count on their own, whatever their materials. */
+    /** How many platings the armor carries: each also keeps some radiation off the pilot. */
+    public static int platingCount(PowerArmorEntity armor) {
+        return count(armor.registryAccess(), armor.upgrades(), PLATING);
+    }
+
     public static float structuralBonus(RegistryAccess access, InstalledUpgrades upgrades) {
         return platingBonus(access, upgrades, false);
     }

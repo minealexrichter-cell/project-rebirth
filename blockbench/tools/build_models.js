@@ -1252,13 +1252,19 @@
         const back = maxOf(torso.cubes, 2);
         const jets = {c: '#3a3f46', n: 0.03, bt: [[0, 0, 2, 2, '#ff8a24']], edge: false};
         const nozzle = C([-2.5, 12.5, back + 0.25], [2, 2, 1.5], jets);
+        // The sealing module (1.3.0): a full face mask with two lenses, a valve and a yellow filter on each side.
+        const face = minOf(faceHigh, 2);
+        const lens = '#55c8ff';
+        const mask = C([-3, 24.5, face - 1], [6, 5, 1], {c: '#2b3038', n: 0.03, edge: false,
+            f: [[0, 0, 6, 1, '#4a525c'], [1, 1, 1, 1, lens], [4, 1, 1, 1, lens], [2, 3, 2, 2, '#0b0e12']]});
+        const filter = C([-5, 24.5, face - 1.5], [2, 2.5, 2], {c: '#e0b33a', n: 0.04, edge: false, f: [[0, 1, 2, 1, '#6b5a1a']]});
         spec.bones.push(
             {name: 'upgrade_plating_torso', parent: 'torso', pivot: torso.pivot, cubes: [C([-3.5, 15, minOf(torso.cubes, 2) - 1], [7, 6, 1], PLATE)]},
             {name: 'upgrade_plating_right_arm', parent: 'right_arm', pivot: arm.pivot, cubes: [armPlate]},
             {name: 'upgrade_plating_left_arm', parent: 'left_arm', pivot: bone('left_arm').pivot, cubes: [mirror(armPlate)]},
             {name: 'upgrade_plating_right_leg', parent: 'right_leg', pivot: leg.pivot, cubes: [legPlate]},
             {name: 'upgrade_plating_left_leg', parent: 'left_leg', pivot: bone('left_leg').pivot, cubes: [mirror(legPlate)]},
-            {name: 'upgrade_seal', parent: 'head', pivot: head.pivot, cubes: [C([-3, 25, minOf(faceHigh, 2) - 1], [6, 2.5, 1], {c: '#20262e', n: 0.03, f: [[1, 1, 4, 1, '#55c8ff']], edge: false})]},
+            {name: 'upgrade_seal', parent: 'head', pivot: head.pivot, cubes: [mask, filter, mirror(filter)]},
             {name: 'upgrade_jetpack', parent: 'torso', pivot: torso.pivot, cubes: [
                 C([-3, 14.5, back], [6, 7.5, 2], {c: '#59616b', n: 0.04, k: [[1, 1, 4, 1, '#ff8a24'], [1, 3, 4, 3, '#20262e']]}),
                 nozzle, mirror(nozzle)]},

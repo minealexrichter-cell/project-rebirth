@@ -1433,23 +1433,24 @@
         item(id + '_plating', () => icon(PLATE_ROWS, {k: '#14181d', H, m, d}));
         item('armor_' + id + '_plating', () => icon(ARMOR_PLATE_ROWS, {k: '#14181d', H, m, d}));
     });
+    // A full face mask with lenses, a valve and two filters (1.3.0).
     item('sealing_module', () => icon([
         '................',
-        '................',
-        '....kkkkkkkk....',
-        '...kHHHHHHHdk...',
+        '.....kkkkkk.....',
+        '....kHHHHHHk....',
+        '...kHsssssssk...',
+        '...kHsccsccsk...',
+        '...kHsccsccsk...',
         '...kHssssssdk...',
-        '..kkkkkkkkkkkk..',
-        '..kbbbbbbbbbbk..',
-        '..kbcccbbcccbk..',
-        '..kbbbbbbbbbbk..',
-        '..kkkkkkkkkkkk..',
-        '...kHssssssdk...',
-        '...kHsskkssdk...',
-        '...kHsskkssdk...',
-        '....kkkkkkkk....',
+        '.kkkkHsbbsdkkkk.',
+        'kyyykHbggbdkyyyk',
+        'kyYykHbggbdkyYyk',
+        'kyYykkbggbkkyYyk',
+        'kyyyk.kbbk.kyyyk',
+        '.kkk...kk...kkk.',
         '................',
-        '................'], {k: '#14181d', H: '#b9c2cc', s: '#6d7680', d: '#3a4149', b: '#20262e', c: '#55c8ff'}));
+        '................',
+        '................'], {k: '#14181d', H: '#b9c2cc', s: '#6d7680', d: '#3a4149', b: '#20262e', c: '#55c8ff', g: '#0b0e12', y: '#e0b33a', Y: '#8a6a1a'}));
     item('jetpack', () => icon([
         '................',
         '...kkkk..kkkk...',

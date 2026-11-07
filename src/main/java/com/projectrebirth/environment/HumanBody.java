@@ -5,6 +5,7 @@ import com.projectrebirth.bodies.HumanShellEntity;
 import com.projectrebirth.bodies.BodyBlocks;
 import com.projectrebirth.bodies.TransferService;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.powerarmor.ArmorUpgradeEffects;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 
 import net.minecraft.core.Holder;
@@ -66,7 +67,8 @@ public final class HumanBody {
     public static float protection(Player player, Hazard hazard) {
         if (player.getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()) {
             // The cockpit is sealed; radiation is only weakened.
-            return hazard == Hazard.RADIATION ? RebirthConfig.HUMAN_PILOT_RADIATION_PROTECTION.get().floatValue() : 1.0f;
+            return hazard == Hazard.RADIATION ? Math.min(1.0f, RebirthConfig.HUMAN_PILOT_RADIATION_PROTECTION.get().floatValue()
+                    + ArmorUpgradeEffects.platingCount(armor) * RebirthConfig.MACHINE_PILOT_RADIATION_PER_PLATE.get().floatValue()) : 1.0f;
         }
         return Protection.ofGear(player, hazard);
     }
@@ -86,6 +88,7 @@ public final class HumanBody {
             // The own body stands in its capsule, which looks after it: it only recovers.
             setBiology(player, afterSecond(biology(player), 0.0f, 0.0f, 0.0f));
             clearSymptoms(player);
+            MachineBody.onSecond(player, exposure);
             return;
         }
         float radiation = reaching(player, exposure, Hazard.RADIATION);

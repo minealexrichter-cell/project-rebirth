@@ -187,9 +187,9 @@ public class UpgradeGameTests {
     @GameTest(template = TEMPLATE)
     public static void incompatibleKindsAreRefusedBothWays(GameTestHelper helper) {
         UpgradeDefinition jetpack = new UpgradeDefinition(HolderSet.direct(UpgradeRegistry.JETPACK.getDelegate()), "jetpack", Optional.empty(),
-                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of());
+                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of(), List.of());
         UpgradeDefinition sealing = new UpgradeDefinition(HolderSet.direct(UpgradeRegistry.SEALING_MODULE.getDelegate()), "sealing", Optional.empty(),
-                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of("jetpack"));
+                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of("jetpack"), List.of());
         UpgradeLayout layout = new UpgradeLayout.Counted(5);
         InstalledUpgrades withJetpack = InstalledUpgrades.EMPTY.with(new InstalledUpgrades.Installed(Optional.empty(), stack(UpgradeRegistry.JETPACK.get())));
         InstalledUpgrades withSealing = InstalledUpgrades.EMPTY.with(new InstalledUpgrades.Installed(Optional.empty(), stack(UpgradeRegistry.SEALING_MODULE.get())));

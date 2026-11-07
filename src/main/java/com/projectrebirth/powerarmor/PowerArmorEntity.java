@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.environment.MachineBody;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.core.Parked;
@@ -468,6 +469,21 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             }
         }
         tickHatch(pilot);
+        if (tickCount % 20 == 0) {
+            MachineBody.tickArmor(this);
+        }
+    }
+
+    /** Acid eats the outer shell: structural integrity only, no sound and no wreck. */
+    public void corrode(float amount) {
+        if (isWrecked() || amount <= 0.0f) {
+            return;
+        }
+        entityData.set(STRUCTURAL, Math.max(0.0f, getStructural() - amount));
+        ticksSinceDamage = 0;
+        if (getStructural() <= 0.0f && isActive()) {
+            shutDown();
+        }
     }
 
     private void tickHatch(@Nullable Player pilot) {

@@ -37,7 +37,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /** The dose, the toxic load and the symptoms of a human body. Run with {@code .\gradlew runGameTestServer}. */
-@GameTestHolder(ProjectRebirth.MOD_ID)
+@GameTestHolder(PlanTests.ATMOSPHERE)
 @PrefixGameTestTemplate(false)
 public class HumanBodyGameTests {
     private static final String TEMPLATE = "floor_5x5";

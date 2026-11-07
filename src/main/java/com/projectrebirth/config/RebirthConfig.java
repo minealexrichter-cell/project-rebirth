@@ -16,6 +16,8 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 public final class RebirthConfig {
     public static final ModConfigSpec SERVER_SPEC;
     private static final Map<BodyClass, BodyStats> BODY_STATS = new EnumMap<>(BodyClass.class);
+    /** From the worst body to the best. */
+    private static final double[] DEFAULT_ACID_WEAR = {0.05, 0.04, 0.03, 0.02, 0.01};
     private static final Map<ArmorVariant, ArmorStats> ARMOR_STATS = new EnumMap<>(ArmorVariant.class);
 
     public static final ModConfigSpec.IntValue TRANSFER_RADIUS;
@@ -70,6 +72,10 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PROTECTION_FILTER_SAFE_POLLUTION;
     public static final ModConfigSpec.IntValue PROTECTION_ACID_WEAR;
     public static final ModConfigSpec.IntValue PROTECTION_ACID_WEAR_INTERVAL;
+    public static final ModConfigSpec.IntValue MACHINE_ACID_WEAR_INTERVAL;
+    public static final ModConfigSpec.DoubleValue MACHINE_PILOT_RADIATION_PER_PLATE;
+    public static final ModConfigSpec.BooleanValue MACHINE_ARMOR_ACID_WEAR;
+    public static final ModConfigSpec.DoubleValue MACHINE_ARMOR_ACID_WEAR_PER_SECOND;
     public static final ModConfigSpec.DoubleValue HUMAN_DOSE_PER_RADIATION;
     public static final ModConfigSpec.DoubleValue HUMAN_DOSE_CLEARANCE;
     public static final ModConfigSpec.DoubleValue HUMAN_TOXIN_PER_POLLUTION;
@@ -267,11 +273,14 @@ public final class RebirthConfig {
             ModConfigSpec.BooleanValue immuneToEffects = builder
                     .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs)")
                     .define("immuneToEffects", !bodyClass.defaultLivingBody());
+            ModConfigSpec.DoubleValue acidWear = builder
+                    .comment("Integrity acid rain takes per second per unit of acid from a body without a sealing module; better bodies wear more slowly")
+                    .defineInRange("acidWearPerSecond", DEFAULT_ACID_WEAR[bodyClass.ordinal()], 0.0, 100.0);
             ModConfigSpec.IntValue upgradeSlots = builder
                     .comment("Upgrade slots of the body. If lowered, what is already installed stays, but nothing more fits")
                     .defineInRange("upgradeSlots", bodyClass.defaultUpgradeSlots(), 0, 16);
             builder.pop();
-            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects, upgradeSlots));
+            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects, upgradeSlots, acidWear));
         }
         builder.pop();
 
@@ -369,6 +378,13 @@ public final class RebirthConfig {
         defineProtectionKit(builder, "respirator", 0.9, 0.0, 0.0);
         defineProtectionKit(builder, "hazmat", 0.95, 1.0, 0.3);
         defineProtectionKit(builder, "heavy_suit", 1.0, 1.0, 0.85);
+        builder.pop();
+
+        builder.comment("Artificial bodies and power armor. Bodies have no biology; acid wears them by [bodies.<class>] acidWearPerSecond").push("machines");
+        MACHINE_ACID_WEAR_INTERVAL = builder.comment("Seconds between the acid wear of a body (the wear of these seconds comes at once)").defineInRange("bodyAcidWearInterval", 5, 1, 3600);
+        MACHINE_PILOT_RADIATION_PER_PLATE = builder.comment("Share of radiation each armor plating keeps off the pilot, on top of pilotRadiationProtection").defineInRange("pilotRadiationPerPlate", 0.03, 0.0, 1.0);
+        MACHINE_ARMOR_ACID_WEAR = builder.comment("Whether acid rain wears power armor").define("armorAcidWear", false);
+        MACHINE_ARMOR_ACID_WEAR_PER_SECOND = builder.comment("Structural integrity acid takes from power armor per second per unit of acid, if armorAcidWear is on").defineInRange("armorAcidWearPerSecond", 0.1, 0.0, 1000.0);
         builder.pop();
 
         builder.comment("The catastrophes: strength per hazard at intensity 1, on top of the background").push("events");
@@ -644,6 +660,6 @@ public final class RebirthConfig {
                             ModConfigSpec.DoubleValue speedMultiplier, ModConfigSpec.DoubleValue attackDamageBonus,
                             ModConfigSpec.DoubleValue selfRepairPerSecond, ModConfigSpec.IntValue selfRepairDelaySeconds,
                             ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects,
-                            ModConfigSpec.IntValue upgradeSlots) {
+                            ModConfigSpec.IntValue upgradeSlots, ModConfigSpec.DoubleValue acidWearPerSecond) {
     }
 }

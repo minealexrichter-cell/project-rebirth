@@ -23,16 +23,18 @@ import net.minecraft.world.item.ItemStack;
  * @param body             how it goes on an artificial body; absent = not on bodies
  * @param armorSlots       the armor parts it goes on; empty = not on power armor
  * @param incompatibleWith kinds that cannot be on the same body or armor; it is enough if one of the two names the other
+ * @param protectsFrom     what the upgrade keeps out of a body: drowning, acid, dust (the dust storm comes in 1.5.0)
  */
 public record UpgradeDefinition(HolderSet<Item> items, String kind, Optional<String> material, Optional<BodyFit> body,
-                                List<ArmorSlot> armorSlots, List<String> incompatibleWith) {
+                                List<ArmorSlot> armorSlots, List<String> incompatibleWith, List<String> protectsFrom) {
     public static final Codec<UpgradeDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("items").forGetter(UpgradeDefinition::items),
             Codec.STRING.fieldOf("kind").forGetter(UpgradeDefinition::kind),
             Codec.STRING.optionalFieldOf("material").forGetter(UpgradeDefinition::material),
             BodyFit.CODEC.optionalFieldOf("body").forGetter(UpgradeDefinition::body),
             ArmorSlot.CODEC.listOf().optionalFieldOf("armor_slots", List.of()).forGetter(UpgradeDefinition::armorSlots),
-            Codec.STRING.listOf().optionalFieldOf("incompatible_with", List.of()).forGetter(UpgradeDefinition::incompatibleWith)
+            Codec.STRING.listOf().optionalFieldOf("incompatible_with", List.of()).forGetter(UpgradeDefinition::incompatibleWith),
+            Codec.STRING.listOf().optionalFieldOf("protects_from", List.of()).forGetter(UpgradeDefinition::protectsFrom)
     ).apply(instance, UpgradeDefinition::new));
 
     public boolean matches(ItemStack stack) {

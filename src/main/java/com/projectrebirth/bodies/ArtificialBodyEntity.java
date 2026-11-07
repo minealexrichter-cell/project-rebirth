@@ -302,6 +302,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         Parked.holdRotation(this);
         if (!level().isClientSide && tickCount % 20 == 0) {
             BodyRules.tickSelfRepair(this, bodyClass);
+            com.projectrebirth.environment.MachineBody.tickStanding(this);
             BodyRegistry.get(getServer()).updateStanding(this);
         }
     }

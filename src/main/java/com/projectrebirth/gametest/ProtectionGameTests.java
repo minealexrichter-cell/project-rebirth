@@ -23,7 +23,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /** Respirator, filters, suits. Run with {@code .\gradlew runGameTestServer}. */
-@GameTestHolder(ProjectRebirth.MOD_ID)
+@GameTestHolder(PlanTests.ATMOSPHERE)
 @PrefixGameTestTemplate(false)
 public class ProtectionGameTests {
     private static final String TEMPLATE = "floor_5x5";

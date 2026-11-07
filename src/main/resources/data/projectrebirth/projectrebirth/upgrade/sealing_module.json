@@ -1,5 +1,10 @@
 {
   "items": "projectrebirth:sealing_module",
   "kind": "sealing",
-  "body": {}
+  "body": {},
+  "protects_from": [
+    "drowning",
+    "acid",
+    "dust"
+  ]
 }

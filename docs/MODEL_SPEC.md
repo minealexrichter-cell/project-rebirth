@@ -90,7 +90,7 @@ root
 | Кость | Что это |
 |---|---|
 | `upgrade_plating_torso`, `upgrade_plating_right_arm`, `upgrade_plating_left_arm`, `upgrade_plating_right_leg`, `upgrade_plating_left_leg` | бронепластины; любая кость с началом имени `upgrade_plating` окрашивается в цвет материала |
-| `upgrade_seal` | маска герметизации на голове |
+| `upgrade_seal` | маска герметизации на голове: маска на всё лицо и два фильтра по бокам (с 1.3.0) |
 | `upgrade_jetpack` | ранец на спине |
 | `jetpack_nozzle_right`, `jetpack_nozzle_left` | точки сопел внутри ранца |
 

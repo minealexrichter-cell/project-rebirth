@@ -34,7 +34,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
  * The base of the environment. The state of a real dimension is shared by the whole test server, so tests that change it or the
  * config have a batch of their own. Run with {@code .\gradlew runGameTestServer}.
  */
-@GameTestHolder(ProjectRebirth.MOD_ID)
+@GameTestHolder(PlanTests.ATMOSPHERE)
 @PrefixGameTestTemplate(false)
 public class EnvironmentGameTests {
     private static final String TEMPLATE = "floor_5x5";

@@ -20,6 +20,10 @@ public final class BodyGadgets {
     public static final String PLATING = "plating";
     public static final String SEALING = "sealing";
     public static final String JETPACK = "jetpack";
+    /** What an upgrade may keep out of a body (protects_from in the upgrade data). */
+    public static final String DROWNING = "drowning";
+    public static final String ACID = "acid";
+    public static final String DUST = "dust";
 
     private BodyGadgets() {
     }
@@ -27,6 +31,16 @@ public final class BodyGadgets {
     public static boolean has(RegistryAccess access, InstalledUpgrades upgrades, String kind) {
         for (InstalledUpgrades.Installed entry : upgrades.entries()) {
             if (Upgrades.definition(access, entry.stack()).filter(definition -> definition.kind().equals(kind)).isPresent()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether one of the upgrades keeps this out of the body. */
+    public static boolean protects(RegistryAccess access, InstalledUpgrades upgrades, String hazard) {
+        for (InstalledUpgrades.Installed entry : upgrades.entries()) {
+            if (Upgrades.definition(access, entry.stack()).filter(definition -> definition.protectsFrom().contains(hazard)).isPresent()) {
                 return true;
             }
         }
@@ -62,7 +76,7 @@ public final class BodyGadgets {
         return bonus;
     }
 
-    /** The sealed body does not use up air under water. A rule of the body, not an effect: most bodies ignore effects. */
+    /** A body sealed against drowning does not use up air under water. A rule of the body, not an effect: most bodies ignore effects. */
     @SubscribeEvent
     static void onBreathe(LivingBreatheEvent event) {
         LivingEntity entity = event.getEntity();
@@ -74,7 +88,7 @@ public final class BodyGadgets {
         } else {
             return;
         }
-        if (!upgrades.isEmpty() && entity.isEyeInFluid(FluidTags.WATER) && has(entity.level().registryAccess(), upgrades, SEALING)) {
+        if (!upgrades.isEmpty() && entity.isEyeInFluid(FluidTags.WATER) && protects(entity.level().registryAccess(), upgrades, DROWNING)) {
             event.setCanBreathe(true);
         }
     }

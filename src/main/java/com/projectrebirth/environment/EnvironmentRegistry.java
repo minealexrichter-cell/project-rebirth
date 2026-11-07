@@ -46,6 +46,10 @@ public final class EnvironmentRegistry {
     public static final Supplier<AttachmentType<Boolean>> NOTICE_SEEN = ATTACHMENTS.register("environment_notice_seen",
             () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL, seen -> seen).copyOnDeath().build());
 
+    /** Whether this player was told once (1.4.0) that a roof protects less now and a sealed room is needed; kept on death. */
+    public static final Supplier<AttachmentType<Boolean>> SHELTER_NOTICE_SEEN = ATTACHMENTS.register("shelter_notice_seen",
+            () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL, seen -> seen).copyOnDeath().build());
+
     /** The dose and the toxic load of a person; saved with the player. */
     public static final Supplier<AttachmentType<Biology>> BIOLOGY = ATTACHMENTS.register("biology",
             () -> AttachmentType.builder(() -> Biology.CLEAN).serialize(Biology.CODEC, biology -> !biology.equals(Biology.CLEAN)).build());

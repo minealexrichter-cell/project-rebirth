@@ -10,6 +10,9 @@ public final class PlanTests {
     /** The tests of version 1.3.0 "Atmosphere" (docs/PLAN_1.3.md). */
     public static final String ATMOSPHERE = ProjectRebirth.MOD_ID + "_atmosphere";
 
+    /** The tests of version 1.4.0 "Shelter" (docs/PLAN_1.4.md). */
+    public static final String SHELTER = ProjectRebirth.MOD_ID + "_shelter";
+
     private PlanTests() {
     }
 }

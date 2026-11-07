@@ -23,6 +23,9 @@
     "projectrebirth:deepslate_lithium_ore",
     "projectrebirth:titanium_ore",
     "projectrebirth:deepslate_titanium_ore",
-    "projectrebirth:weapon_workshop"
+    "projectrebirth:weapon_workshop",
+    "projectrebirth:air_filtration_unit",
+    "projectrebirth:airlock_door",
+    "projectrebirth:sealed_hatch"
   ]
 }

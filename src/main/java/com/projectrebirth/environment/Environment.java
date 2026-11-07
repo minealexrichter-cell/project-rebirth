@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.shelter.Room;
+import com.projectrebirth.shelter.Shelters;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -91,8 +93,15 @@ public final class Environment {
         return result.build();
     }
 
-    /** What the environment is at a place of the world now. */
+    /** What the environment is at a place of the world now, inside a sealed room as that room makes it. */
     public static Exposure exposureAt(ServerLevel level, BlockPos pos) {
+        Exposure ordinary = ordinaryExposureAt(level, pos);
+        Room room = Shelters.sealedRoomAt(level, pos);
+        return room == null || !isEnabled() ? ordinary : room.inside(ordinary);
+    }
+
+    /** What the environment is at a place as if there were no sealed room: the air a room leaks in from around it. */
+    public static Exposure ordinaryExposureAt(ServerLevel level, BlockPos pos) {
         if (!isEnabled()) {
             return Exposure.NONE;
         }

@@ -59,6 +59,9 @@ public final class EnvironmentCommands {
                                                 .executes(ctx -> warnEvent(ctx, StringArgumentType.getString(ctx, "type"),
                                                         FloatArgumentType.getFloat(ctx, "intensity"))))))
                         .then(Commands.literal("clear").executes(EnvironmentCommands::clear))
+                        .then(Commands.literal("room")
+                                .then(Commands.argument("unit", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                        .executes(EnvironmentCommands::room)))
                         .then(Commands.literal("body")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("dose", FloatArgumentType.floatArg(0.0f))
@@ -88,19 +91,37 @@ public final class EnvironmentCommands {
                 .flatMap(found -> level.registryAccess().registryOrThrow(EnvironmentRegistry.PROFILES).getResourceKey(found))
                 .map(key -> key.location().getPath()).orElse("-");
         Environment.Shelter shelter = Environment.shelterAt(level, pos);
+        com.projectrebirth.shelter.Room room = com.projectrebirth.shelter.Shelters.sealedRoomAt(level, pos);
         Exposure exposure = Environment.exposureAt(level, pos);
         Component phase = Component.translatable("environment.projectrebirth.phase." + state.phase().id());
         Component event = state.event() == null ? Component.literal("-") : eventName(state.event());
         source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_world", level.dimension().location().toString(),
                 phase, event, number(state.intensity()), state.secondsLeft()), false);
         source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_place", player.getDisplayName(), biome, profile,
-                Component.translatable(shelter.underground() ? "environment.projectrebirth.shelter.underground"
+                Component.translatable(room != null ? "environment.projectrebirth.shelter.sealed"
+                        : shelter.underground() ? "environment.projectrebirth.shelter.underground"
                         : shelter.underRoof() ? "environment.projectrebirth.shelter.roof" : "environment.projectrebirth.shelter.open")), false);
         source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_exposure", number(exposure.get(Hazard.POLLUTION)),
                 number(exposure.get(Hazard.RADIATION)), number(exposure.get(Hazard.ACID))), false);
         Biology biology = HumanBody.biology(player);
         source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_body", number(biology.dose()), HumanBody.doseStage(biology.dose()),
                 number(biology.toxin()), HumanBody.toxinStage(biology.toxin())), false);
+        return 1;
+    }
+
+    /** Scans the room of an air filtration unit now and tells it, with the time the scan took. */
+    private static int room(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerLevel level = ctx.getSource().getLevel();
+        BlockPos unit = net.minecraft.commands.arguments.coordinates.BlockPosArgument.getLoadedBlockPos(ctx, "unit");
+        if (!(level.getBlockState(unit).getBlock() instanceof com.projectrebirth.shelter.AirFiltrationUnitBlock)) {
+            ctx.getSource().sendFailure(Component.translatable("message.projectrebirth.shelter.no_unit"));
+            return 0;
+        }
+        com.projectrebirth.shelter.Shelters shelters = com.projectrebirth.shelter.Shelters.of(level);
+        shelters.scanNow(unit);
+        ctx.getSource().sendSuccess(() -> com.projectrebirth.shelter.AirFiltrationUnitBlock.status(level, unit), false);
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.shelter.scan_time", shelters.lastScanBlocks(),
+                String.format(Locale.ROOT, "%.2f", shelters.lastScanNanos() / 1_000_000.0)), false);
         return 1;
     }
 

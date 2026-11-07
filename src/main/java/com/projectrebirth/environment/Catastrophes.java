@@ -135,10 +135,20 @@ public final class Catastrophes {
      * @return whether the message was sent now
      */
     public static boolean tellOnce(Player player) {
-        if (!Environment.isEnabled() || player.getData(EnvironmentRegistry.NOTICE_SEEN)) {
+        if (!Environment.isEnabled()) {
             return false;
         }
+        if (player.getData(EnvironmentRegistry.NOTICE_SEEN)) {
+            // a player from 1.3.0: the roof is weaker since 1.4.0 (the notice of a new player already says it)
+            if (player.getData(EnvironmentRegistry.SHELTER_NOTICE_SEEN)) {
+                return false;
+            }
+            player.setData(EnvironmentRegistry.SHELTER_NOTICE_SEEN, true);
+            player.sendSystemMessage(Component.translatable("message.projectrebirth.environment.shelter_notice"));
+            return true;
+        }
         player.setData(EnvironmentRegistry.NOTICE_SEEN, true);
+        player.setData(EnvironmentRegistry.SHELTER_NOTICE_SEEN, true);
         player.sendSystemMessage(Component.translatable("message.projectrebirth.environment.notice"));
         return true;
     }

@@ -69,6 +69,7 @@ public class ProjectRebirth {
         UpgradeRegistry.register(modEventBus);
         WeaponRegistry.register(modEventBus);
         EnvironmentRegistry.register(modEventBus);
+        com.projectrebirth.shelter.ShelterRegistry.register(modEventBus);
         Jetpack.register(modEventBus);
         ModSounds.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

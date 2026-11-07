@@ -100,7 +100,7 @@ public class EnvironmentGameTests {
     }
 
     @GameTest(template = TEMPLATE)
-    public static void aRoofStopsAcidHalvesPollutionAndLeavesRadiation(GameTestHelper helper) {
+    public static void aRoofStopsAcidLowersPollutionAndLeavesRadiation(GameTestHelper helper) {
         EnvironmentProfile profile = plainProfile(Map.of());
         EnvironmentState state = new EnvironmentState();
         state.startActive(Environment.ACID_RAIN, 1.0f, 100);
@@ -108,7 +108,7 @@ public class EnvironmentGameTests {
         Exposure roofed = Environment.compute(profile, state, new Environment.Shelter(true, false));
         helper.assertTrue(open.get(Hazard.ACID) > 0.0f, "Acid falls in the open");
         helper.assertTrue(roofed.get(Hazard.ACID) == 0.0f, "A roof stops the acid");
-        helper.assertTrue(Math.abs(roofed.get(Hazard.POLLUTION) - open.get(Hazard.POLLUTION) * 0.5f) < EPSILON, "A roof halves the pollution");
+        helper.assertTrue(Math.abs(roofed.get(Hazard.POLLUTION) - open.get(Hazard.POLLUTION) * 0.75f) < EPSILON, "A roof without a sealed room lowers the pollution by a quarter (1.4.0)");
         helper.assertTrue(Math.abs(roofed.get(Hazard.RADIATION) - open.get(Hazard.RADIATION)) < EPSILON, "Radiation passes through a roof");
         helper.succeed();
     }

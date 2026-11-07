@@ -58,6 +58,9 @@ public final class ModCreativeTabs {
                 output.accept(EnvironmentRegistry.RESPIRATOR.get());
                 output.accept(EnvironmentRegistry.FILTER.get());
                 output.accept(EnvironmentRegistry.DOSIMETER.get());
+                output.accept(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_UNIT_ITEM.get());
+                output.accept(com.projectrebirth.shelter.ShelterRegistry.AIRLOCK_DOOR_ITEM.get());
+                output.accept(com.projectrebirth.shelter.ShelterRegistry.SEALED_HATCH_ITEM.get());
                 output.accept(EnvironmentRegistry.HAZMAT_HELMET.get());
                 output.accept(EnvironmentRegistry.HAZMAT_SUIT.get());
                 output.accept(EnvironmentRegistry.HAZMAT_TROUSERS.get());

@@ -481,5 +481,18 @@
   "hud.projectrebirth.hazard.radiation_value": "%s",
   "hud.projectrebirth.hazard.acid": "кислота",
   "hud.projectrebirth.catastrophe.active_for": "⚠ %s, ещё ~%s мин",
-  "message.projectrebirth.environment.notice": "⚠ Project: Rebirth 1.3: воздух этого мира теперь враждебен. Грязный воздух понемногу отравляет, катастрофы приходят с предупреждением. Сделайте респиратор на верстаке (шерсть и нитки или кожа) и фильтры (бумага, уголь, шерсть), укрывайтесь под крышей. Администратор сервера может выключить систему: [environment] enabled = false в projectrebirth-server.toml"
+  "message.projectrebirth.environment.notice": "⚠ Project: Rebirth: воздух этого мира враждебен. Грязный воздух понемногу отравляет, катастрофы приходят с предупреждением. Сделайте респиратор на верстаке (шерсть и нитки или кожа) и фильтры (бумага, уголь, шерсть). Крыша помогает немного, полная защита без снаряжения — только герметичное помещение с установкой фильтрации воздуха. Администратор сервера может выключить систему: [environment] enabled = false в projectrebirth-server.toml",
+  "block.projectrebirth.air_filtration_unit": "Установка фильтрации воздуха",
+  "block.projectrebirth.airlock_door": "Шлюзовая дверь",
+  "block.projectrebirth.sealed_hatch": "Герметичный люк",
+  "environment.projectrebirth.shelter.sealed": "герметичное помещение",
+  "shelter.projectrebirth.leak.sky": "воздух выходит к открытому небу",
+  "shelter.projectrebirth.leak.unloaded": "воздух уходит в незагруженную область",
+  "shelter.projectrebirth.leak.too_large": "помещение больше, чем могут держать установки",
+  "message.projectrebirth.shelter.scanning": "Установка фильтрации: проверка помещения…",
+  "message.projectrebirth.shelter.leak": "Установка фильтрации: УТЕЧКА, %s (у %s %s %s)",
+  "message.projectrebirth.shelter.sealed": "Установка фильтрации: помещение герметично, воздуха %s блоков, установок: %s. Загрязнение внутри %s (вокруг %s), железных дверей и люков на границе: %s",
+  "message.projectrebirth.environment.shelter_notice": "⚠ Project: Rebirth 1.4: крыша теперь слабее защищает от грязного воздуха. Полная защита без снаряжения — герметичное помещение с установкой фильтрации воздуха: стены целыми гранями, шлюзовые двери и герметичные люки; железные двери немного пропускают воздух, деревянные не держат его совсем.",
+  "message.projectrebirth.shelter.no_unit": "Там нет установки фильтрации воздуха",
+  "message.projectrebirth.shelter.scan_time": "Проверка: %s блоков за %s мс"
 }

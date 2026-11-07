@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/door_bottom_left",
+  "textures": {
+    "bottom": "projectrebirth:block/airlock_door_bottom",
+    "top": "projectrebirth:block/airlock_door_top"
+  }
+}

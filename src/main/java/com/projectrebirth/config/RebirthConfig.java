@@ -61,6 +61,15 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ENVIRONMENT_ROOF_ACID;
     public static final ModConfigSpec.IntValue ENVIRONMENT_UNDERGROUND_DEPTH;
     public static final ModConfigSpec.DoubleValue ENVIRONMENT_UNDERGROUND_POLLUTION;
+    public static final ModConfigSpec.IntValue SHELTER_MAX_VOLUME_PER_UNIT;
+    public static final ModConfigSpec.IntValue SHELTER_MAX_UNITS_PER_ROOM;
+    public static final ModConfigSpec.IntValue SHELTER_SCAN_BLOCKS_PER_TICK;
+    public static final ModConfigSpec.IntValue SHELTER_RECHECK_SECONDS;
+    public static final ModConfigSpec.DoubleValue SHELTER_SEALED_RADIATION;
+    public static final ModConfigSpec.DoubleValue SHELTER_SEALED_DRIFT;
+    public static final ModConfigSpec.DoubleValue SHELTER_PARTIAL_DOOR_LEAK;
+    public static final ModConfigSpec.DoubleValue SHELTER_LEAK_DRIFT;
+    public static final ModConfigSpec.DoubleValue SHELTER_CLEAN_AIR_PER_SECOND;
     public static final ModConfigSpec.IntValue ENVIRONMENT_AFTERMATH_SECONDS;
     public static final ModConfigSpec.IntValue ENVIRONMENT_MIN_CALM_SECONDS;
     public static final ModConfigSpec.IntValue ENVIRONMENT_MAX_CALM_SECONDS;
@@ -328,8 +337,9 @@ public final class RebirthConfig {
 
         builder.comment("The hostile environment. Off: the mod works as if it were not there").push("environment");
         ENVIRONMENT_ENABLED = builder.comment("The whole system").define("enabled", true);
-        ENVIRONMENT_ROOF_POLLUTION = builder.comment("Pollution is multiplied by this under a roof")
-                .defineInRange("roofPollutionMultiplier", 0.5, 0.0, 1.0);
+        // 1.4.0: a new name, so that worlds from 1.3.0 get the weaker roof too; only a sealed room protects fully
+        ENVIRONMENT_ROOF_POLLUTION = builder.comment("Pollution is multiplied by this under a roof that is not a sealed room")
+                .defineInRange("unsealedRoofPollutionMultiplier", 0.75, 0.0, 1.0);
         ENVIRONMENT_ROOF_RADIATION = builder.comment("Radiation is multiplied by this under a roof")
                 .defineInRange("roofRadiationMultiplier", 1.0, 0.0, 1.0);
         ENVIRONMENT_ROOF_ACID = builder.comment("Acid is multiplied by this under a roof")
@@ -406,6 +416,26 @@ public final class RebirthConfig {
         MACHINE_PILOT_RADIATION_PER_PLATE = builder.comment("Share of radiation each armor plating keeps off the pilot, on top of pilotRadiationProtection").defineInRange("pilotRadiationPerPlate", 0.03, 0.0, 1.0);
         MACHINE_ARMOR_ACID_WEAR = builder.comment("Whether acid rain wears power armor").define("armorAcidWear", false);
         MACHINE_ARMOR_ACID_WEAR_PER_SECOND = builder.comment("Structural integrity acid takes from power armor per second per unit of acid, if armorAcidWear is on").defineInRange("armorAcidWearPerSecond", 0.1, 0.0, 1000.0);
+        builder.pop();
+
+        builder.comment("Sealed rooms: the air around air filtration units. A room leaks at the open sky, at an unloaded chunk or past its largest volume").push("shelter");
+        SHELTER_MAX_VOLUME_PER_UNIT = builder.comment("Largest room, in blocks of air, per air filtration unit in it").defineInRange("maxVolumePerUnit", 4096, 1, 1_000_000);
+        SHELTER_MAX_UNITS_PER_ROOM = builder.comment("Most units one room counts; a scan goes through at most maxVolumePerUnit times this many blocks")
+                .defineInRange("maxUnitsPerRoom", 8, 1, 256);
+        SHELTER_SCAN_BLOCKS_PER_TICK = builder.comment("Blocks of air all scans of a dimension may go through in one tick; a larger room is scanned over several ticks")
+                .defineInRange("scanBlocksPerTick", 2048, 64, 10_000_000);
+        SHELTER_RECHECK_SECONDS = builder.comment("Seconds between full scans of a room; a changed border block (a broken wall, an opened door) is found within a second")
+                .defineInRange("recheckSeconds", 5, 1, 3600);
+        SHELTER_SEALED_RADIATION = builder.comment("Radiation is multiplied by this inside a sealed room, whatever the walls are made of")
+                .defineInRange("sealedRadiationMultiplier", 0.5, 0.0, 1.0);
+        SHELTER_SEALED_DRIFT = builder.comment("Share of the difference to the air around that comes into a sealed room per second")
+                .defineInRange("sealedDriftPerSecond", 0.0005, 0.0, 1.0);
+        SHELTER_PARTIAL_DOOR_LEAK = builder.comment("Added to that share for each closed iron or copper door or hatch on the border (tag projectrebirth:sealing_partial)")
+                .defineInRange("partialDoorLeakPerSecond", 0.002, 0.0, 1.0);
+        SHELTER_LEAK_DRIFT = builder.comment("Share of that difference that comes in per second while the room leaks")
+                .defineInRange("leakDriftPerSecond", 0.1, 0.0, 1.0);
+        SHELTER_CLEAN_AIR_PER_SECOND = builder.comment("Blocks of air one air filtration unit cleans per second")
+                .defineInRange("cleanAirPerSecond", 40.0, 0.0, 1_000_000.0);
         builder.pop();
 
         builder.comment("The catastrophes: strength per hazard at intensity 1, on top of the background").push("events");

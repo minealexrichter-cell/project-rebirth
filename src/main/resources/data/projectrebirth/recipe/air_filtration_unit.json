@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "ICI",
+    "FAF",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "projectrebirth:circuit_board"
+    },
+    "F": {
+      "item": "projectrebirth:filter"
+    },
+    "A": {
+      "item": "projectrebirth:actuator"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:air_filtration_unit",
+    "count": 1
+  }
+}

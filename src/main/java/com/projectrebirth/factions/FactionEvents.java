@@ -123,7 +123,7 @@ public final class FactionEvents {
         }
     }
 
-    static FactionService.Use useOf(Level level, BlockPos pos) {
+    public static FactionService.Use useOf(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         Block block = state.getBlock();
         if (block instanceof DoorBlock || block instanceof TrapDoorBlock || block instanceof FenceGateBlock

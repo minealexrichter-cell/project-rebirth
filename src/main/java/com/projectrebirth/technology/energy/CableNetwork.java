@@ -79,9 +79,22 @@ final class CableNetwork {
         return new CableNetwork(endpoints);
     }
 
+    /** The life support blocks of this network, for a backup battery on it. */
+    List<IEnergyStorage> lifeSupport(Level level) {
+        List<IEnergyStorage> found = new ArrayList<>();
+        for (Endpoint endpoint : endpoints) {
+            if (level.getBlockEntity(endpoint.pos()) instanceof LifeSupport support) {
+                found.add(support.lifeSupportEnergy());
+            }
+        }
+        return found;
+    }
+
     /**
-     * Shares the energy between the machines of the network that take energy, except the block it came from: an
-     * equal part each first, then what is left in turn. Returns what was taken.
+     * Shares the energy between the machines of the network that take energy, except the block it came from. Life
+     * support blocks come first; the others get energy only once every life support block is charged
+     * ([energy] lifeSupportChargedShare). Within each group: an equal part each first, then what is left in turn.
+     * Returns what was taken.
      */
     int deliver(Level level, @Nullable BlockPos source, int amount, boolean simulate) {
         if (delivering) {
@@ -89,38 +102,60 @@ final class CableNetwork {
         }
         delivering = true;
         try {
-            List<IEnergyStorage> targets = new ArrayList<>();
+            List<IEnergyStorage> support = new ArrayList<>();
+            List<IEnergyStorage> others = new ArrayList<>();
             for (Endpoint endpoint : endpoints) {
                 if (endpoint.pos().equals(source)) {
                     continue;
                 }
                 IEnergyStorage target = level.getCapability(Capabilities.EnergyStorage.BLOCK, endpoint.pos(), endpoint.side());
                 if (target != null && target.canReceive()) {
-                    targets.add(target);
+                    (level.getBlockEntity(endpoint.pos()) instanceof LifeSupport ? support : others).add(target);
                 }
             }
             int left = Math.min(amount, RebirthConfig.CABLE_TRANSFER.get());
-            int delivered = 0;
-            if (simulate) {
-                for (IEnergyStorage target : targets) {
-                    delivered += target.receiveEnergy(left - delivered, true);
-                }
-                return Math.min(delivered, left);
+            int delivered = share(support, left, simulate);
+            left -= delivered;
+            double charged = RebirthConfig.LIFE_SUPPORT_CHARGED_SHARE.get();
+            boolean othersMayHave = support.stream().allMatch(target -> LifeSupport.charged(target, charged));
+            if (simulate && !support.isEmpty() && !othersMayHave) {
+                // a simulation does not fill the life support, so it may only count on what they take
+                return delivered;
             }
-            for (int round = 0; round < 2 && left > 0 && !targets.isEmpty(); round++) {
-                int share = round == 0 ? Math.max(1, left / targets.size()) : left;
-                for (IEnergyStorage target : targets) {
-                    if (left <= 0) {
-                        break;
-                    }
-                    int accepted = target.receiveEnergy(Math.min(share, left), false);
-                    left -= accepted;
-                    delivered += accepted;
-                }
+            if (othersMayHave && left > 0) {
+                delivered += share(others, left, simulate);
             }
             return delivered;
         } finally {
             delivering = false;
         }
+    }
+
+    private static int share(List<IEnergyStorage> targets, int amount, boolean simulate) {
+        int left = amount;
+        int delivered = 0;
+        if (simulate) {
+            for (IEnergyStorage target : targets) {
+                delivered += target.receiveEnergy(left - delivered, true);
+            }
+            return Math.min(delivered, left);
+        }
+        for (int round = 0; round < 2 && left > 0 && !targets.isEmpty(); round++) {
+            int share = round == 0 ? Math.max(1, left / targets.size()) : left;
+            for (IEnergyStorage target : targets) {
+                if (left <= 0) {
+                    break;
+                }
+                int accepted = target.receiveEnergy(Math.min(share, left), false);
+                left -= accepted;
+                delivered += accepted;
+            }
+        }
+        return delivered;
+    }
+
+    /** The network a cable belongs to; for blocks of this package. */
+    static CableNetwork at(Level level, BlockPos cable) {
+        return of(level, cable);
     }
 }

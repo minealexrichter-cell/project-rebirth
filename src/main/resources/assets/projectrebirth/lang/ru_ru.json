@@ -512,5 +512,9 @@
   "screen.projectrebirth.air_filtration.around": "Загрязнение вокруг: %s",
   "screen.projectrebirth.air_filtration.energy": "Энергия %s FE, расход %s FE/т",
   "screen.projectrebirth.air_filtration.cartridge": "Картридж %s%%",
-  "screen.projectrebirth.air_filtration.doors": "Железных дверей на границе: %s"
+  "screen.projectrebirth.air_filtration.doors": "Железных дверей на границе: %s",
+  "block.projectrebirth.backup_battery": "Резервный аккумулятор",
+  "message.projectrebirth.backup_battery.status": "Резервный аккумулятор: %s / %s FE, %s, блоков жизнеобеспечения: %s",
+  "message.projectrebirth.backup_battery.feeding": "ПИТАЕТ ЖИЗНЕОБЕСПЕЧЕНИЕ",
+  "message.projectrebirth.backup_battery.waiting": "в ожидании"
 }

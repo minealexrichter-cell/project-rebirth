@@ -26,6 +26,7 @@
     "projectrebirth:weapon_workshop",
     "projectrebirth:air_filtration_unit",
     "projectrebirth:airlock_door",
-    "projectrebirth:sealed_hatch"
+    "projectrebirth:sealed_hatch",
+    "projectrebirth:backup_battery"
   ]
 }

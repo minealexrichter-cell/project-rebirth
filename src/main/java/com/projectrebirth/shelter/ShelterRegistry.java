@@ -72,7 +72,18 @@ public final class ShelterRegistry {
                     .isValidSpawn((state, level, pos, type) -> false)
                     .requiresCorrectToolForDrops());
 
+    /** Feeds only life support, only when the main power does not keep up. */
+    public static final DeferredBlock<com.projectrebirth.technology.energy.BackupBatteryBlock> BACKUP_BATTERY = BLOCKS.registerBlock("backup_battery",
+            com.projectrebirth.technology.energy.BackupBatteryBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 7 : 0)
+                    .requiresCorrectToolForDrops());
+
     public static final DeferredItem<BlockItem> AIR_FILTRATION_UNIT_ITEM = ITEMS.registerSimpleBlockItem(AIR_FILTRATION_UNIT);
+    public static final DeferredItem<BlockItem> BACKUP_BATTERY_ITEM = ITEMS.registerSimpleBlockItem(BACKUP_BATTERY);
     public static final DeferredItem<DoubleHighBlockItem> AIRLOCK_DOOR_ITEM = ITEMS.register("airlock_door",
             () -> new DoubleHighBlockItem(AIRLOCK_DOOR.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> SEALED_HATCH_ITEM = ITEMS.registerSimpleBlockItem(SEALED_HATCH);
@@ -86,6 +97,14 @@ public final class ShelterRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AirFiltrationUnitBlockEntity>> AIR_FILTRATION_UNIT_ENTITY =
             BLOCK_ENTITIES.register("air_filtration_unit", () -> BlockEntityType.Builder.of(AirFiltrationUnitBlockEntity::new,
                     AIR_FILTRATION_UNIT.get()).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<com.projectrebirth.technology.energy.BackupBatteryBlockEntity>> BACKUP_BATTERY_ENTITY =
+            BLOCK_ENTITIES.register("backup_battery", () -> BlockEntityType.Builder.of(com.projectrebirth.technology.energy.BackupBatteryBlockEntity::new,
+                    BACKUP_BATTERY.get()).build(null));
+
+    static {
+        com.projectrebirth.technology.energy.BackupBatteryBlockEntity.setType(BACKUP_BATTERY_ENTITY::get);
+    }
 
     private ShelterRegistry() {
     }
@@ -104,5 +123,7 @@ public final class ShelterRegistry {
                 (unit, side) -> unit.automation());
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, AIR_FILTRATION_UNIT_ENTITY.get(),
                 (unit, side) -> unit.energy());
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, BACKUP_BATTERY_ENTITY.get(),
+                (battery, side) -> battery.input());
     }
 }

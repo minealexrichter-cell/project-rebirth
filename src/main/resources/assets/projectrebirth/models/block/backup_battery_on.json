@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "projectrebirth:block/backup_battery_top",
+    "side": "projectrebirth:block/backup_battery_side_on"
+  }
+}

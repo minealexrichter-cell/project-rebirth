@@ -141,6 +141,10 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue BODY_MODIFICATION_ENERGY_PER_TICK;
     public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_REPAIR_PER_ITEM;
     public static final ModConfigSpec.BooleanValue STATIONS_NEED_ENERGY;
+    public static final ModConfigSpec.DoubleValue LIFE_SUPPORT_CHARGED_SHARE;
+    public static final ModConfigSpec.DoubleValue BACKUP_START_SHARE;
+    public static final ModConfigSpec.IntValue BACKUP_CAPACITY;
+    public static final ModConfigSpec.IntValue BACKUP_TRANSFER;
     public static final ModConfigSpec.IntValue STATION_ENERGY_CAPACITY;
     public static final ModConfigSpec.IntValue STATION_ENERGY_PER_TICK;
     public static final ModConfigSpec.IntValue MAINTENANCE_ENERGY_PER_TICK;
@@ -523,6 +527,18 @@ public final class RebirthConfig {
         STATIONS_NEED_ENERGY = builder
                 .comment("Whether production and maintenance stations need energy. false = they work without it, as in 0.1.0")
                 .define("stationsNeedEnergy", true);
+        LIFE_SUPPORT_CHARGED_SHARE = builder
+                .comment("Life support (air filtration and the like) gets energy from the cable first; other machines on the same cable get it only while every life support block holds at least this share of its buffer")
+                .defineInRange("lifeSupportChargedShare", 0.9, 0.0, 1.0);
+        BACKUP_START_SHARE = builder
+                .comment("A backup battery feeds a life support block once that block holds less than this share of its buffer: the main power does not keep up")
+                .defineInRange("backupStartShare", 0.5, 0.0, 1.0);
+        BACKUP_CAPACITY = builder
+                .comment("Energy the backup battery stores")
+                .defineInRange("backupCapacity", 200000, 1, 1_000_000_000);
+        BACKUP_TRANSFER = builder
+                .comment("Energy per tick the backup battery takes in and gives out")
+                .defineInRange("backupTransferPerTick", 200, 1, 100_000_000);
         STATION_ENERGY_CAPACITY = builder
                 .comment("Energy buffer of every production and maintenance station")
                 .defineInRange("stationCapacity", 20000, 1, 100_000_000);

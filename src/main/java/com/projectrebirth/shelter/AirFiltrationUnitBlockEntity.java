@@ -31,7 +31,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
  * its filter cartridge by the work its room needs ({@link Shelters} counts that once a second). A used up cartridge goes
  * to the spent slot and the next one takes its place.
  */
-public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuProvider {
+public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuProvider, com.projectrebirth.technology.energy.LifeSupport {
     public static final int ACTIVE_SLOT = 0;
     public static final int SPARE_SLOT = 1;
     public static final int SPENT_SLOT = 2;
@@ -139,6 +139,11 @@ public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuPro
     }
 
     public ModEnergyStorage energy() {
+        return energy;
+    }
+
+    @Override
+    public net.neoforged.neoforge.energy.IEnergyStorage lifeSupportEnergy() {
         return energy;
     }
 

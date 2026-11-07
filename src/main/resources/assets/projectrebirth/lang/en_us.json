@@ -512,5 +512,9 @@
   "screen.projectrebirth.air_filtration.around": "Pollution around: %s",
   "screen.projectrebirth.air_filtration.energy": "Energy %s FE, uses %s FE/t",
   "screen.projectrebirth.air_filtration.cartridge": "Cartridge %s%%",
-  "screen.projectrebirth.air_filtration.doors": "Iron doors on the border: %s"
+  "screen.projectrebirth.air_filtration.doors": "Iron doors on the border: %s",
+  "block.projectrebirth.backup_battery": "Backup Battery",
+  "message.projectrebirth.backup_battery.status": "Backup battery: %s / %s FE, %s, life support blocks: %s",
+  "message.projectrebirth.backup_battery.feeding": "FEEDING LIFE SUPPORT",
+  "message.projectrebirth.backup_battery.waiting": "standing by"
 }

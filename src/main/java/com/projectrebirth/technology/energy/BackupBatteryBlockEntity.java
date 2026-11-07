@@ -38,6 +38,10 @@ public class BackupBatteryBlockEntity extends BlockEntity {
     private boolean onReserve;
     private int lastSignal = -1;
     private int supported;
+    /** Who placed it: they and their faction hear when it takes over and when it runs empty. */
+    @javax.annotation.Nullable
+    private java.util.UUID owner;
+    private boolean emptyTold;
 
     public BackupBatteryBlockEntity(BlockPos pos, BlockState state) {
         super(type.get(), pos, state);
@@ -49,6 +53,16 @@ public class BackupBatteryBlockEntity extends BlockEntity {
 
     public ModEnergyStorage energy() {
         return energy;
+    }
+
+    @javax.annotation.Nullable
+    public java.util.UUID owner() {
+        return owner;
+    }
+
+    public void setOwner(@javax.annotation.Nullable java.util.UUID owner) {
+        this.owner = owner;
+        setChanged();
     }
 
     /** What other blocks see: it only takes energy in. */
@@ -112,7 +126,17 @@ public class BackupBatteryBlockEntity extends BlockEntity {
         if (reserve != onReserve) {
             onReserve = reserve;
             TechSounds.setWorking(this, onReserve);
+            // it stops feeding either because the main power is back or because it is empty (that has its own warning)
+            if (level.getServer() != null && (reserve || energy.getEnergyStored() > 0)) {
+                com.projectrebirth.shelter.ShelterAlerts.tell(level.getServer(), owner, worldPosition, reserve ? "reserve_on" : "reserve_off", reserve);
+            }
         }
+        // still needed but nothing left: the life support is on its own
+        boolean empty = energy.getEnergyStored() == 0 && targets.stream().anyMatch(t -> !LifeSupport.charged(t, start));
+        if (empty && !emptyTold && level.getServer() != null && (onReserve || lastGave > Long.MIN_VALUE / 2)) {
+            com.projectrebirth.shelter.ShelterAlerts.tell(level.getServer(), owner, worldPosition, "reserve_empty", true);
+        }
+        emptyTold = empty;
         int signal = signal();
         if (signal != lastSignal) {
             lastSignal = signal;
@@ -124,11 +148,15 @@ public class BackupBatteryBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putInt("energy", energy.saved());
+        if (owner != null) {
+            tag.putUUID("owner", owner);
+        }
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         energy.load(tag.getInt("energy"));
+        owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
     }
 }

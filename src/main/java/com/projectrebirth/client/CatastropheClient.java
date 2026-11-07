@@ -100,7 +100,8 @@ public final class CatastropheClient {
         }
         shown += Mth.clamp(target() - shown, -0.01f, 0.01f);
         BlockPos eyes = BlockPos.containing(minecraft.gameRenderer.getMainCamera().getPosition());
-        float openTarget = level.canSeeSky(eyes) ? 1.0f : 0.35f;
+        // in a sealed room the storm stays outside: no haze, fog or tinted air inside
+        float openTarget = EnvironmentClient.inSealedRoom() ? 0.0f : level.canSeeSky(eyes) ? 1.0f : 0.35f;
         open += Mth.clamp(openTarget - open, -0.05f, 0.05f);
         if (minecraft.isPaused()) {
             return;
@@ -116,7 +117,7 @@ public final class CatastropheClient {
      * green sparks in a radiation burst. Fewer with the "decreased" or "minimal" particle setting.
      */
     private static void tickParticles(ClientLevel level, LocalPlayer player, Minecraft minecraft) {
-        if (shown < 0.1f || minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.MINIMAL) {
+        if (shown < 0.1f || EnvironmentClient.inSealedRoom() || minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.MINIMAL) {
             return;
         }
         float many = minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.DECREASED ? 0.4f : 1.0f;
@@ -207,7 +208,7 @@ public final class CatastropheClient {
         if (!is(Environment.TOXIC_STORM) || shown <= 0.0f || event.getMode() != net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN) {
             return;
         }
-        float strength = shown * (0.4f + 0.6f * open);
+        float strength = EnvironmentClient.inSealedRoom() ? 0.0f : shown * (0.4f + 0.6f * open);
         float far = Mth.lerp(strength, event.getFarPlaneDistance(), Math.min(event.getFarPlaneDistance(), STORM_FOG_END / Math.max(0.2f, open)));
         event.setFarPlaneDistance(far);
         event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), far * 0.05f));

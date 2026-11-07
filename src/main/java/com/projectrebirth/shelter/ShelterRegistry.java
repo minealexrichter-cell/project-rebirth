@@ -102,7 +102,17 @@ public final class ShelterRegistry {
                     .lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 9 : 2)
                     .requiresCorrectToolForDrops());
 
+    public static final DeferredBlock<ShelterControlPanelBlock> SHELTER_CONTROL_PANEL = BLOCKS.registerBlock("shelter_control_panel",
+            ShelterControlPanelBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .lightLevel(state -> 4)
+                    .requiresCorrectToolForDrops());
+
     public static final DeferredItem<BlockItem> AIR_FILTRATION_UNIT_ITEM = ITEMS.registerSimpleBlockItem(AIR_FILTRATION_UNIT);
+    public static final DeferredItem<BlockItem> SHELTER_CONTROL_PANEL_ITEM = ITEMS.registerSimpleBlockItem(SHELTER_CONTROL_PANEL);
     public static final DeferredItem<DoubleHighBlockItem> DECONTAMINATION_CHAMBER_ITEM = ITEMS.register("decontamination_chamber",
             () -> new DoubleHighBlockItem(DECONTAMINATION_CHAMBER.get(), new Item.Properties()));
     public static final DeferredItem<BlockItem> RADIATION_PURGE_STATION_ITEM = ITEMS.registerSimpleBlockItem(RADIATION_PURGE_STATION);
@@ -132,6 +142,12 @@ public final class ShelterRegistry {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadiationPurgeStationBlockEntity>> RADIATION_PURGE_STATION_ENTITY =
             BLOCK_ENTITIES.register("radiation_purge_station", () -> BlockEntityType.Builder.of(RadiationPurgeStationBlockEntity::new,
                     RADIATION_PURGE_STATION.get()).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ShelterControlPanelBlockEntity>> SHELTER_CONTROL_PANEL_ENTITY =
+            BLOCK_ENTITIES.register("shelter_control_panel", () -> BlockEntityType.Builder.of(ShelterControlPanelBlockEntity::new,
+                    SHELTER_CONTROL_PANEL.get()).build(null));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<ShelterPanelMenu>> SHELTER_PANEL_MENU =
+            MENUS.register("shelter_control_panel", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(ShelterPanelMenu::new));
 
     private static final DeferredRegister<net.neoforged.neoforge.attachment.AttachmentType<?>> ATTACHMENTS =
             DeferredRegister.create(net.neoforged.neoforge.registries.NeoForgeRegistries.ATTACHMENT_TYPES, ProjectRebirth.MOD_ID);

@@ -57,6 +57,11 @@ public final class EnvironmentClient {
         return last == null ? 0.0f : last.radiation();
     }
 
+    /** Whether the server says the player is inside a sealed room now (its own air; no storm inside). */
+    static boolean inSealedRoom() {
+        return last != null && (last.shelter() == EnvironmentStatusPayload.SHELTER_CLEAN || last.shelter() == EnvironmentStatusPayload.SHELTER_POLLUTED);
+    }
+
     static boolean carriesDosimeter(Player player) {
         return player.getInventory().contains(stack -> stack.is(EnvironmentRegistry.DOSIMETER.get()));
     }
@@ -101,7 +106,25 @@ public final class EnvironmentClient {
         }
         y += ROW;
         renderHazards(graphics, font, y, carriesDosimeter(player));
+        y += ROW;
+        renderShelter(graphics, font, y);
         graphics.pose().popPose();
+    }
+
+    /** The shelter the player is in (only inside one) and the contamination on them (only if there is any to speak of). */
+    private static void renderShelter(GuiGraphics graphics, Font font, int y) {
+        if (last.shelter() != EnvironmentStatusPayload.SHELTER_NONE) {
+            int state = last.shelter();
+            int color = state == EnvironmentStatusPayload.SHELTER_CLEAN ? 0xFF81C784 : state == EnvironmentStatusPayload.SHELTER_POLLUTED ? 0xFFFFA726 : 0xFFFF5555;
+            graphics.drawString(font, Component.translatable("hud.projectrebirth.shelter"), 0, y, 0xFFFFFFFF);
+            GuiAtlas.sealIcon(graphics, LABEL_WIDTH, y - 1);
+            graphics.drawString(font, Component.translatable("hud.projectrebirth.shelter." + state), LABEL_WIDTH + 11, y, color);
+            y += ROW;
+        }
+        if (last.contamination() >= 0.5f) {
+            graphics.drawString(font, Component.translatable("hud.projectrebirth.contamination"), 0, y, 0xFFFFFFFF);
+            graphics.drawString(font, number(last.contamination()), LABEL_WIDTH, y, last.contamination() >= 30.0f ? 0xFFFFA726 : 0xFFD4E157);
+        }
     }
 
     /** What is dangerous here now, after protection. */

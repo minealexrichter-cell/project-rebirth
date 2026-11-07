@@ -79,6 +79,15 @@ final class CableNetwork {
         return new CableNetwork(endpoints);
     }
 
+    /** Where the machines of this network are. */
+    List<BlockPos> machines() {
+        List<BlockPos> found = new ArrayList<>();
+        for (Endpoint endpoint : endpoints) {
+            found.add(endpoint.pos());
+        }
+        return found;
+    }
+
     /** The life support blocks of this network, for a backup battery on it. */
     List<IEnergyStorage> lifeSupport(Level level) {
         List<IEnergyStorage> found = new ArrayList<>();

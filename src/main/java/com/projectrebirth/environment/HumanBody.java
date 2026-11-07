@@ -117,7 +117,9 @@ public final class HumanBody {
             float pollution = reaching(player, exposure, Hazard.POLLUTION);
             float acid = reaching(player, exposure, Hazard.ACID);
             PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, pollution, acid, biology.dose(), biology.toxin(),
-                    dangerMask(radiation, pollution, acid)));
+                    dangerMask(radiation, pollution, acid),
+                    com.projectrebirth.shelter.Shelters.stateAt(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())),
+                    com.projectrebirth.shelter.Contamination.of(player)));
         }
     }
 

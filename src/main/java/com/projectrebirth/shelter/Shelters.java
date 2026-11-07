@@ -49,6 +49,10 @@ public final class Shelters {
     private final Long2ObjectOpenHashMap<Room> roomOfUnit = new Long2ObjectOpenHashMap<>();
     /** The air of sealed rooms only: a leaking room changes nothing for those inside it. */
     private final Long2ObjectOpenHashMap<Room> sealedAt = new Long2ObjectOpenHashMap<>();
+    /** The air of leaking rooms, so that those inside are told their shelter leaks. */
+    private final Long2ObjectOpenHashMap<Room> leakingAt = new Long2ObjectOpenHashMap<>();
+    /** What each room has warned about, by its first unit. */
+    private final Long2ObjectOpenHashMap<ShelterAlerts.State> alerts = new Long2ObjectOpenHashMap<>();
     private final LongLinkedOpenHashSet waiting = new LongLinkedOpenHashSet();
     @Nullable
     private RoomScan scan;
@@ -78,6 +82,43 @@ public final class Shelters {
     public static Room sealedRoomAt(ServerLevel level, BlockPos pos) {
         Shelters shelters = find(level);
         return shelters == null || shelters.sealedAt.isEmpty() ? null : shelters.sealedAt.get(pos.asLong());
+    }
+
+    /** Where a place is for the HUD: one of the SHELTER_ numbers of {@link com.projectrebirth.environment.EnvironmentStatusPayload}. */
+    public static int stateAt(ServerLevel level, BlockPos pos) {
+        Shelters shelters = find(level);
+        if (shelters == null) {
+            return com.projectrebirth.environment.EnvironmentStatusPayload.SHELTER_NONE;
+        }
+        Room sealed = shelters.sealedAt.get(pos.asLong());
+        if (sealed != null) {
+            return sealed.pollution() > RebirthConfig.HUD_DANGER_POLLUTION.get()
+                    ? com.projectrebirth.environment.EnvironmentStatusPayload.SHELTER_POLLUTED
+                    : com.projectrebirth.environment.EnvironmentStatusPayload.SHELTER_CLEAN;
+        }
+        return shelters.leakingAt.containsKey(pos.asLong())
+                ? com.projectrebirth.environment.EnvironmentStatusPayload.SHELTER_LEAK
+                : com.projectrebirth.environment.EnvironmentStatusPayload.SHELTER_NONE;
+    }
+
+    /** The rooms of the units at these places, each once. */
+    public java.util.List<Room> roomsOf(Iterable<BlockPos> units) {
+        java.util.List<Room> rooms = new ArrayList<>();
+        Set<Room> seen = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+        for (BlockPos unit : units) {
+            Room room = roomOfUnit.get(unit.asLong());
+            if (room != null && seen.add(room)) {
+                rooms.add(room);
+            }
+        }
+        return rooms;
+    }
+
+    /** The room whose air is at a place, sealed or leaking. */
+    @Nullable
+    public Room roomAt(BlockPos pos) {
+        Room sealed = sealedAt.get(pos.asLong());
+        return sealed != null ? sealed : leakingAt.get(pos.asLong());
     }
 
     @Nullable
@@ -122,6 +163,7 @@ public final class Shelters {
     void removeUnit(BlockPos pos) {
         long key = pos.asLong();
         units.remove(key);
+        alerts.remove(key);
         savedPollution.remove(key);
         waiting.remove(key);
         if (scan != null && scan.origin() == key) {
@@ -152,12 +194,11 @@ public final class Shelters {
     }
 
     private void forget(Room room) {
-        if (room.isSealed()) {
-            for (LongIterator it = room.air().iterator(); it.hasNext(); ) {
-                long key = it.nextLong();
-                if (sealedAt.get(key) == room) {
-                    sealedAt.remove(key);
-                }
+        Long2ObjectOpenHashMap<Room> map = room.isSealed() ? sealedAt : leakingAt;
+        for (LongIterator it = room.air().iterator(); it.hasNext(); ) {
+            long key = it.nextLong();
+            if (map.get(key) == room) {
+                map.remove(key);
             }
         }
     }
@@ -267,10 +308,9 @@ public final class Shelters {
             savedPollution.remove(unit);
             waiting.remove(unit);
         }
-        if (found.isSealed()) {
-            for (LongIterator it = found.air().iterator(); it.hasNext(); ) {
-                sealedAt.put(it.nextLong(), found);
-            }
+        Long2ObjectOpenHashMap<Room> map = found.isSealed() ? sealedAt : leakingAt;
+        for (LongIterator it = found.air().iterator(); it.hasNext(); ) {
+            map.put(it.nextLong(), found);
         }
         tellUnits(found);
     }
@@ -300,6 +340,7 @@ public final class Shelters {
             float outside = Environment.isEnabled() ? Environment.ordinaryExposureAt(level, BlockPos.of(first)).get(Hazard.POLLUTION) : 0.0f;
             work(room, outside);
             tellUnits(room);
+            alert(room, now);
         }
     }
 
@@ -331,6 +372,79 @@ public final class Shelters {
         for (int i = 0; i < working.size(); i++) {
             float share = shares.get(i);
             working.get(i).useCartridge((float) (baseEach * share + work * share / power));
+        }
+    }
+
+    /** Tells the owner of a room and their faction when a trouble has lasted a while, and when it is over. */
+    private void alert(Room room, long now) {
+        long first = Long.MAX_VALUE;
+        java.util.UUID owner = null;
+        List<AirFiltrationUnitBlockEntity> units = new ArrayList<>();
+        for (LongIterator it = room.units().iterator(); it.hasNext(); ) {
+            long key = it.nextLong();
+            first = Math.min(first, key);
+            BlockPos pos = BlockPos.of(key);
+            if (level.isLoaded(pos) && level.getBlockEntity(pos) instanceof AirFiltrationUnitBlockEntity unit) {
+                units.add(unit);
+                if (owner == null) {
+                    owner = unit.owner();
+                }
+            }
+        }
+        if (owner == null || first == Long.MAX_VALUE) {
+            return;
+        }
+        ShelterAlerts.State told = alerts.computeIfAbsent(first, key -> new ShelterAlerts.State());
+        BlockPos where = BlockPos.of(first);
+        long delay = RebirthConfig.SHELTER_ALERT_DELAY.get() * (long) TICKS_PER_SECOND;
+        if (!room.isSealed()) {
+            if (told.leakSince < 0) {
+                told.leakSince = now;
+            }
+            if (!told.leakTold && now - told.leakSince >= delay) {
+                BlockPos leak = room.leakPos();
+                ShelterAlerts.tell(level.getServer(), owner, where, "leak", true,
+                        net.minecraft.network.chat.Component.translatable("shelter.projectrebirth.leak." + room.leak().id()), leak.getX(), leak.getY(), leak.getZ());
+                told.leakTold = true;
+            }
+            return;
+        }
+        if (told.leakTold) {
+            ShelterAlerts.tell(level.getServer(), owner, where, "sealed", false);
+        }
+        told.leakSince = -1;
+        told.leakTold = false;
+        boolean noCartridge = false;
+        boolean low = false;
+        boolean noEnergy = false;
+        for (AirFiltrationUnitBlockEntity unit : units) {
+            int state = unit.state();
+            noCartridge |= state == AirFiltrationUnitBlockEntity.STATE_NO_CARTRIDGE || state == AirFiltrationUnitBlockEntity.STATE_SPENT_FULL;
+            noEnergy |= state == AirFiltrationUnitBlockEntity.STATE_NO_ENERGY;
+            low |= unit.cartridgeLow();
+        }
+        if (noCartridge && !told.noCartridgeTold) {
+            ShelterAlerts.tell(level.getServer(), owner, where, "no_cartridge", true);
+        }
+        told.noCartridgeTold = noCartridge;
+        if (low && !noCartridge && !told.cartridgeLowTold) {
+            ShelterAlerts.tell(level.getServer(), owner, where, "cartridge_low", true);
+        }
+        told.cartridgeLowTold = low;
+        if (noEnergy) {
+            if (told.noEnergySince < 0) {
+                told.noEnergySince = now;
+            }
+            if (!told.noEnergyTold && now - told.noEnergySince >= delay) {
+                ShelterAlerts.tell(level.getServer(), owner, where, "no_energy", true);
+                told.noEnergyTold = true;
+            }
+        } else {
+            if (told.noEnergyTold) {
+                ShelterAlerts.tell(level.getServer(), owner, where, "energy_back", false);
+            }
+            told.noEnergySince = -1;
+            told.noEnergyTold = false;
         }
     }
 

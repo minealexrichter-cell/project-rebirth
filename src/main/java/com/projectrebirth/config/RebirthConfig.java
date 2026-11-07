@@ -88,6 +88,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue PURGE_CAPACITY;
     public static final ModConfigSpec.IntValue PURGE_RECEIVE;
     public static final ModConfigSpec.IntValue AIRLOCK_MAX_VOLUME;
+    public static final ModConfigSpec.IntValue SHELTER_ALERT_DELAY;
     public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_BASE_USE;
     public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_WORK_USE;
     public static final ModConfigSpec.IntValue SHELTER_ENERGY_BASE;
@@ -477,6 +478,8 @@ public final class RebirthConfig {
         SHELTER_ENERGY_RECEIVE = builder.comment("Energy an air filtration unit takes in per tick").defineInRange("energyReceivePerTick", 200, 1, 1_000_000_000);
         AIRLOCK_MAX_VOLUME = builder.comment("Largest closed space between airlock doors that counts as one airlock: its airlock doors and sealed hatches do not open at the same time")
                 .defineInRange("airlockMaxVolume", 64, 1, 4096);
+        SHELTER_ALERT_DELAY = builder.comment("Seconds a leak or a lack of energy lasts before the owner and their faction are warned (a door opened for a moment says nothing)")
+                .defineInRange("alertDelaySeconds", 10, 0, 3600);
         builder.pop();
 
         builder.comment("External contamination: on people, the gear they wear, bodies and power armor; it is shed into the air of a sealed room").push("contamination");

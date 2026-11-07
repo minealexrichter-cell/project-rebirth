@@ -70,6 +70,14 @@ public class AirFiltrationUnitBlock extends BaseEntityBlock {
     }
 
     @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @javax.annotation.Nullable net.minecraft.world.entity.LivingEntity placer,
+            net.minecraft.world.item.ItemStack stack) {
+        if (placer instanceof Player player && level.getBlockEntity(pos) instanceof AirFiltrationUnitBlockEntity unit) {
+            unit.setOwner(player.getUUID());
+        }
+    }
+
+    @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new AirFiltrationUnitBlockEntity(pos, state);
     }

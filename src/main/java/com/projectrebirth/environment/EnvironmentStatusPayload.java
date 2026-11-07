@@ -20,17 +20,30 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  * @param dose      their dose
  * @param toxin     their toxic load
  * @param danger    which hazards are dangerous for them now: bit {@code 1 << hazard.ordinal()}
+ * @param shelter   where they are: {@link #SHELTER_NONE}, {@link #SHELTER_CLEAN}, {@link #SHELTER_POLLUTED}, {@link #SHELTER_LEAK}
+ * @param contamination their external contamination
  */
-public record EnvironmentStatusPayload(float radiation, float pollution, float acid, float dose, float toxin, int danger) implements CustomPacketPayload {
+public record EnvironmentStatusPayload(float radiation, float pollution, float acid, float dose, float toxin, int danger, int shelter,
+        float contamination) implements CustomPacketPayload {
+    public static final int SHELTER_NONE = 0;
+    public static final int SHELTER_CLEAN = 1;
+    public static final int SHELTER_POLLUTED = 2;
+    public static final int SHELTER_LEAK = 3;
+
     public static final Type<EnvironmentStatusPayload> TYPE = new Type<>(ProjectRebirth.id("environment_status"));
-    public static final StreamCodec<ByteBuf, EnvironmentStatusPayload> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.FLOAT, EnvironmentStatusPayload::radiation,
-            ByteBufCodecs.FLOAT, EnvironmentStatusPayload::pollution,
-            ByteBufCodecs.FLOAT, EnvironmentStatusPayload::acid,
-            ByteBufCodecs.FLOAT, EnvironmentStatusPayload::dose,
-            ByteBufCodecs.FLOAT, EnvironmentStatusPayload::toxin,
-            ByteBufCodecs.VAR_INT, EnvironmentStatusPayload::danger,
-            EnvironmentStatusPayload::new);
+    public static final StreamCodec<ByteBuf, EnvironmentStatusPayload> STREAM_CODEC = StreamCodec.of(
+            (buf, payload) -> {
+                buf.writeFloat(payload.radiation());
+                buf.writeFloat(payload.pollution());
+                buf.writeFloat(payload.acid());
+                buf.writeFloat(payload.dose());
+                buf.writeFloat(payload.toxin());
+                ByteBufCodecs.VAR_INT.encode(buf, payload.danger());
+                ByteBufCodecs.VAR_INT.encode(buf, payload.shelter());
+                buf.writeFloat(payload.contamination());
+            },
+            buf -> new EnvironmentStatusPayload(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(),
+                    ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), buf.readFloat()));
 
     /** Set by the client side; on a server nothing arrives here. */
     public static Consumer<EnvironmentStatusPayload> clientHandler = payload -> {

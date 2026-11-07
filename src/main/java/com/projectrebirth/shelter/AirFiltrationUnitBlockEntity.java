@@ -63,6 +63,9 @@ public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuPro
     public static final int DATA_COUNT = 12;
 
     private static final String POLLUTION = "room_pollution";
+    /** Who placed it: they and their faction hear the warnings of its room. */
+    @Nullable
+    private java.util.UUID owner;
     /** NaN: never in a room yet. */
     private float pollution = Float.NaN;
     private int poweredTicks;
@@ -128,6 +131,22 @@ public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuPro
 
     public static boolean isFreshCartridge(ItemStack stack) {
         return stack.is(ShelterRegistry.FILTER_CARTRIDGE.get()) && CartridgeItem.life(stack) > 0.0f;
+    }
+
+    @Nullable
+    public java.util.UUID owner() {
+        return owner;
+    }
+
+    public void setOwner(@Nullable java.util.UUID owner) {
+        this.owner = owner;
+        setChanged();
+    }
+
+    /** The cartridge in use is nearly spent and there is no spare. */
+    public boolean cartridgeLow() {
+        ItemStack active = items.getStackInSlot(ACTIVE_SLOT);
+        return isFreshCartridge(active) && CartridgeItem.lifeShare(active) < 0.1f && items.getStackInSlot(SPARE_SLOT).isEmpty();
     }
 
     public ItemStackHandler items() {
@@ -296,6 +315,9 @@ public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuPro
         }
         tag.put("items", items.serializeNBT(registries));
         tag.putInt("energy", energy.saved());
+        if (owner != null) {
+            tag.putUUID("owner", owner);
+        }
     }
 
     @Override
@@ -304,6 +326,7 @@ public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuPro
         pollution = tag.contains(POLLUTION) ? tag.getFloat(POLLUTION) : Float.NaN;
         items.deserializeNBT(registries, tag.getCompound("items"));
         energy.load(tag.getInt("energy"));
+        owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
     }
 
     @Override

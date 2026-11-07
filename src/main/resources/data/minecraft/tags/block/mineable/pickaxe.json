@@ -29,6 +29,7 @@
     "projectrebirth:sealed_hatch",
     "projectrebirth:backup_battery",
     "projectrebirth:decontamination_chamber",
-    "projectrebirth:radiation_purge_station"
+    "projectrebirth:radiation_purge_station",
+    "projectrebirth:shelter_control_panel"
   ]
 }

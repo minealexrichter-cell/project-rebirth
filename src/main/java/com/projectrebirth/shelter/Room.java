@@ -94,7 +94,7 @@ public final class Room {
      */
     public float airSecond(float outside, float cleaningUnits) {
         double drift = isSealed()
-                ? RebirthConfig.SHELTER_SEALED_DRIFT.get() + partialLeaks * RebirthConfig.SHELTER_PARTIAL_DOOR_LEAK.get()
+                ? RebirthConfig.SHELTER_SEALED_DRIFT.get() + partialLeaks * RebirthConfig.SHELTER_PARTIAL_DOOR_LEAK.get() / Math.max(1, volume())
                 : RebirthConfig.SHELTER_LEAK_DRIFT.get();
         float next = pollution + (outside - pollution) * (float) Math.min(1.0, drift);
         float removed = 0.0f;

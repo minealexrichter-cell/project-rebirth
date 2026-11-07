@@ -3,7 +3,7 @@
   "category": "redstone",
   "pattern": [
     "ICI",
-    "FAF",
+    "FRF",
     "III"
   ],
   "key": {
@@ -11,13 +11,13 @@
       "item": "minecraft:iron_ingot"
     },
     "C": {
-      "item": "projectrebirth:circuit_board"
+      "item": "minecraft:copper_ingot"
     },
     "F": {
       "item": "projectrebirth:filter"
     },
-    "A": {
-      "item": "projectrebirth:actuator"
+    "R": {
+      "item": "minecraft:redstone"
     }
   },
   "result": {

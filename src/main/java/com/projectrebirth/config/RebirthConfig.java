@@ -459,15 +459,15 @@ public final class RebirthConfig {
                 .defineInRange("sealedRadiationMultiplier", 0.5, 0.0, 1.0);
         SHELTER_SEALED_DRIFT = builder.comment("Share of the difference to the air around that comes into a sealed room per second")
                 .defineInRange("sealedDriftPerSecond", 0.0005, 0.0, 1.0);
-        SHELTER_PARTIAL_DOOR_LEAK = builder.comment("Added to that share for each closed iron or copper door or hatch on the border (tag projectrebirth:sealing_partial)")
-                .defineInRange("partialDoorLeakPerSecond", 0.002, 0.0, 1.0);
+        SHELTER_PARTIAL_DOOR_LEAK = builder.comment("Blocks of air from around that each closed iron or copper door or hatch on the border lets in per second, whatever the size of the room (tag projectrebirth:sealing_partial)")
+                .defineInRange("partialDoorAirPerSecond", 0.25, 0.0, 1000.0);
         SHELTER_LEAK_DRIFT = builder.comment("Share of that difference that comes in per second while the room leaks")
                 .defineInRange("leakDriftPerSecond", 0.1, 0.0, 1.0);
         SHELTER_CLEAN_AIR_PER_SECOND = builder.comment("Blocks of air one working air filtration unit cleans per second")
                 .defineInRange("cleanAirPerSecond", 40.0, 0.0, 1_000_000.0);
         SHELTER_CARTRIDGE_LIFE = builder.comment("Life of one filter cartridge, in units of use").defineInRange("cartridgeLife", 3600.0, 1.0, 1.0E9);
         SHELTER_CARTRIDGE_BASE_USE = builder.comment("Cartridge use per second of work, per 1000 blocks of air of the room (shared by its units)")
-                .defineInRange("cartridgeUsePerThousandBlocks", 0.5, 0.0, 1.0E6);
+                .defineInRange("cartridgeUsePerThousandBlocks", 0.2, 0.0, 1.0E6);
         SHELTER_CARTRIDGE_WORK_USE = builder.comment("Cartridge use per unit of pollution taken out of one block of air: the more comes in (a storm, iron doors), the more is used")
                 .defineInRange("cartridgeUsePerPollution", 0.5, 0.0, 1.0E6);
         SHELTER_ENERGY_BASE = builder.comment("Energy an air filtration unit uses per tick while it works; none if energy.stationsNeedEnergy is false")
@@ -500,7 +500,7 @@ public final class RebirthConfig {
         DECON_CAPACITY = builder.comment("Energy the chamber holds").defineInRange("chamberEnergyCapacity", 20000, 1, 1_000_000_000);
         PURGE_DOSE_PER_SECOND = builder.comment("Radiation dose the purge station takes from a person standing on it, per second").defineInRange("purgeDosePerSecond", 0.5, 0.0, 1.0E6);
         PURGE_MAX_POLLUTION = builder.comment("The purge station works only in a sealed room whose air is at most this polluted").defineInRange("purgeMaxPollution", 1.0, 0.0, 1.0E6);
-        PURGE_ENERGY = builder.comment("Energy the purge station uses per tick while it works; none if energy.stationsNeedEnergy is false").defineInRange("purgeEnergyPerTick", 200, 0, 1_000_000);
+        PURGE_ENERGY = builder.comment("Energy the purge station uses per tick while it works; none if energy.stationsNeedEnergy is false").defineInRange("purgeEnergyPerTick", 80, 0, 1_000_000);
         PURGE_CAPACITY = builder.comment("Energy the purge station holds").defineInRange("purgeEnergyCapacity", 100000, 1, 1_000_000_000);
         PURGE_RECEIVE = builder.comment("Energy the purge station takes in per tick").defineInRange("purgeEnergyReceivePerTick", 1000, 1, 1_000_000_000);
         builder.pop();

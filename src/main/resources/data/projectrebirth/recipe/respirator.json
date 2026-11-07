@@ -6,9 +6,14 @@
     "W W"
   ],
   "key": {
-    "S": {
-      "item": "minecraft:string"
-    },
+    "S": [
+      {
+        "item": "minecraft:string"
+      },
+      {
+        "item": "minecraft:leather"
+      }
+    ],
     "W": {
       "tag": "minecraft:wool"
     }

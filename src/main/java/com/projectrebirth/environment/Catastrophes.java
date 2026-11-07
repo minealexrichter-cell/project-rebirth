@@ -125,6 +125,22 @@ public final class Catastrophes {
     @SubscribeEvent
     static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         sendTo(event.getEntity());
+        tellOnce(event.getEntity());
+    }
+
+    /**
+     * Once per player, in a new world and in one from before 1.3.0: the air is dangerous now, a respirator is needed, and the
+     * system can be switched off. Public for tests.
+     *
+     * @return whether the message was sent now
+     */
+    public static boolean tellOnce(Player player) {
+        if (!Environment.isEnabled() || player.getData(EnvironmentRegistry.NOTICE_SEEN)) {
+            return false;
+        }
+        player.setData(EnvironmentRegistry.NOTICE_SEEN, true);
+        player.sendSystemMessage(Component.translatable("message.projectrebirth.environment.notice"));
+        return true;
     }
 
     @SubscribeEvent

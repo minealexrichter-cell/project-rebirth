@@ -480,5 +480,6 @@
   "hud.projectrebirth.hazard.radiation": "☢ радиация",
   "hud.projectrebirth.hazard.radiation_value": "%s",
   "hud.projectrebirth.hazard.acid": "кислота",
-  "hud.projectrebirth.catastrophe.active_for": "⚠ %s, ещё ~%s мин"
+  "hud.projectrebirth.catastrophe.active_for": "⚠ %s, ещё ~%s мин",
+  "message.projectrebirth.environment.notice": "⚠ Project: Rebirth 1.3: воздух этого мира теперь враждебен. Грязный воздух понемногу отравляет, катастрофы приходят с предупреждением. Сделайте респиратор на верстаке (шерсть и нитки или кожа) и фильтры (бумага, уголь, шерсть), укрывайтесь под крышей. Администратор сервера может выключить систему: [environment] enabled = false в projectrebirth-server.toml"
 }

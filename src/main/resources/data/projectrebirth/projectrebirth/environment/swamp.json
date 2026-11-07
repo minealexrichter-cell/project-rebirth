@@ -2,7 +2,7 @@
   "biomes": "#c:is_swamp",
   "priority": 10,
   "background": {
-    "pollution": 2.5,
+    "pollution": 2.0,
     "radiation": 1
   },
   "event_multipliers": {

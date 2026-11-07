@@ -17,7 +17,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec SERVER_SPEC;
     private static final Map<BodyClass, BodyStats> BODY_STATS = new EnumMap<>(BodyClass.class);
     /** From the worst body to the best. */
-    private static final double[] DEFAULT_ACID_WEAR = {0.05, 0.04, 0.03, 0.02, 0.01};
+    private static final double[] DEFAULT_ACID_WEAR = {0.025, 0.02, 0.015, 0.01, 0.005};
     private static final Map<ArmorVariant, ArmorStats> ARMOR_STATS = new EnumMap<>(ArmorVariant.class);
 
     public static final ModConfigSpec.IntValue TRANSFER_RADIUS;
@@ -384,12 +384,12 @@ public final class RebirthConfig {
         PROTECTION_CHEST_SHARE = builder.comment("Share of the body covered by the chest piece").defineInRange("chestShare", 0.4, 0.0, 1.0);
         PROTECTION_LEGS_SHARE = builder.comment("Share of the body covered by the leg piece").defineInRange("legsShare", 0.25, 0.0, 1.0);
         PROTECTION_FEET_SHARE = builder.comment("Share of the body covered by the boots").defineInRange("feetShare", 0.15, 0.0, 1.0);
-        PROTECTION_FILTER_LIFE = builder.comment("Life of one filter, in seconds of air of pollution 1").defineInRange("filterLife", 2400.0, 1.0, 1000000.0);
+        PROTECTION_FILTER_LIFE = builder.comment("Life of one filter, in seconds of air of pollution 1").defineInRange("filterLife", 4800.0, 1.0, 1000000.0);
         PROTECTION_FILTER_SAFE_POLLUTION = builder.comment("Pollution up to which the air counts as safe and filters are not used: the ordinary background of the world")
                 .defineInRange("filterSafePollution", 1.0, 0.0, 1000.0);
         PROTECTION_FILTER_USE = builder.comment("Filter used per second per unit of pollution").defineInRange("filterUsePerPollution", 1.0, 0.0, 1000.0);
         PROTECTION_ACID_WEAR = builder.comment("Durability a piece loses to acid rain").defineInRange("acidWear", 1, 0, 1000);
-        PROTECTION_ACID_WEAR_INTERVAL = builder.comment("Seconds in acid rain between such losses").defineInRange("acidWearInterval", 5, 1, 3600);
+        PROTECTION_ACID_WEAR_INTERVAL = builder.comment("Seconds in acid rain between such losses").defineInRange("acidWearInterval", 10, 1, 3600);
         defineProtectionKit(builder, "respirator", 0.9, 0.0, 0.0);
         defineProtectionKit(builder, "hazmat", 0.95, 1.0, 0.3);
         defineProtectionKit(builder, "heavy_suit", 1.0, 1.0, 0.85);

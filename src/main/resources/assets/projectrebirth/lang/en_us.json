@@ -480,5 +480,6 @@
   "hud.projectrebirth.hazard.radiation": "☢ radiation",
   "hud.projectrebirth.hazard.radiation_value": "%s",
   "hud.projectrebirth.hazard.acid": "acid",
-  "hud.projectrebirth.catastrophe.active_for": "⚠ %s, ~%s min more"
+  "hud.projectrebirth.catastrophe.active_for": "⚠ %s, ~%s min more",
+  "message.projectrebirth.environment.notice": "⚠ Project: Rebirth 1.3: the air of this world is hostile now. Polluted air slowly poisons you, catastrophes come with a warning. Make a respirator on a crafting table (wool and string or leather) and filters (paper, coal, wool), shelter under a roof. A server operator can switch the system off: [environment] enabled = false in projectrebirth-server.toml"
 }

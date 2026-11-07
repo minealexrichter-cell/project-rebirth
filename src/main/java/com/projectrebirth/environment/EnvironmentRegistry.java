@@ -42,6 +42,10 @@ public final class EnvironmentRegistry {
     public static final Supplier<AttachmentType<Exposure>> LAST_EXPOSURE = ATTACHMENTS.register("last_exposure",
             () -> AttachmentType.builder(() -> Exposure.NONE).build());
 
+    /** Whether this player was told once that the environment is hostile now; saved with the player, kept on death. */
+    public static final Supplier<AttachmentType<Boolean>> NOTICE_SEEN = ATTACHMENTS.register("environment_notice_seen",
+            () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL, seen -> seen).copyOnDeath().build());
+
     /** The dose and the toxic load of a person; saved with the player. */
     public static final Supplier<AttachmentType<Biology>> BIOLOGY = ATTACHMENTS.register("biology",
             () -> AttachmentType.builder(() -> Biology.CLEAN).serialize(Biology.CODEC, biology -> !biology.equals(Biology.CLEAN)).build());

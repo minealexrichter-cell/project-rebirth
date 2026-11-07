@@ -120,7 +120,14 @@ public class DecontaminationChamberBlockEntity extends BlockEntity implements Li
                 setChanged();
             }
         }
-        TechSounds.setWorking(this, server.getGameTime() - lastWashed < 10);
+        boolean washing = server.getGameTime() - lastWashed < 10;
+        TechSounds.setWorking(this, washing);
+        // the water falls in the upper half too
+        BlockPos above = worldPosition.above();
+        BlockState upper = server.getBlockState(above);
+        if (upper.getBlock() instanceof DecontaminationChamberBlock && upper.getValue(TechSounds.WORKING) != washing) {
+            server.setBlock(above, upper.setValue(TechSounds.WORKING, washing), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
     }
 
     /** The line shown on right-click. */

@@ -569,5 +569,9 @@
   "message.projectrebirth.shelter_alert.energy_back": "Shelter at %s %s %s: air filtration has energy again",
   "message.projectrebirth.shelter_alert.reserve_on": "Backup battery at %s %s %s: the main power fails, life support runs on reserve",
   "message.projectrebirth.shelter_alert.reserve_off": "Backup battery at %s %s %s: the main power is back",
-  "message.projectrebirth.shelter_alert.reserve_empty": "Backup battery at %s %s %s: EMPTY, life support has no power"
+  "message.projectrebirth.shelter_alert.reserve_empty": "Backup battery at %s %s %s: EMPTY, life support has no power",
+  "subtitles.projectrebirth.shelter.filtration_hum": "Air filtration hums",
+  "subtitles.projectrebirth.shelter.airlock_hiss": "Airlock hisses",
+  "subtitles.projectrebirth.shelter.decontamination_shower": "Decontamination shower runs",
+  "subtitles.projectrebirth.shelter.leak_alarm": "Leak alarm sounds"
 }

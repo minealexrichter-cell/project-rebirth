@@ -4,7 +4,7 @@
       "model": "projectrebirth:block/decontamination_chamber_lower"
     },
     "facing=north,half=lower,working=true": {
-      "model": "projectrebirth:block/decontamination_chamber_lower"
+      "model": "projectrebirth:block/decontamination_chamber_lower_on"
     },
     "facing=north,half=upper,working=false": {
       "model": "projectrebirth:block/decontamination_chamber_upper"
@@ -17,7 +17,7 @@
       "y": 90
     },
     "facing=east,half=lower,working=true": {
-      "model": "projectrebirth:block/decontamination_chamber_lower",
+      "model": "projectrebirth:block/decontamination_chamber_lower_on",
       "y": 90
     },
     "facing=east,half=upper,working=false": {
@@ -33,7 +33,7 @@
       "y": 180
     },
     "facing=south,half=lower,working=true": {
-      "model": "projectrebirth:block/decontamination_chamber_lower",
+      "model": "projectrebirth:block/decontamination_chamber_lower_on",
       "y": 180
     },
     "facing=south,half=upper,working=false": {
@@ -49,7 +49,7 @@
       "y": 270
     },
     "facing=west,half=lower,working=true": {
-      "model": "projectrebirth:block/decontamination_chamber_lower",
+      "model": "projectrebirth:block/decontamination_chamber_lower_on",
       "y": 270
     },
     "facing=west,half=upper,working=false": {

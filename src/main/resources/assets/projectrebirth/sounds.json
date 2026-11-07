@@ -339,5 +339,41 @@
         "name": "projectrebirth:environment/geiger_click3"
       }
     ]
+  },
+  "shelter.filtration_hum": {
+    "subtitle": "subtitles.projectrebirth.shelter.filtration_hum",
+    "sounds": [
+      {
+        "name": "projectrebirth:shelter/filtration_hum",
+        "volume": 0.5
+      }
+    ]
+  },
+  "shelter.airlock_hiss": {
+    "subtitle": "subtitles.projectrebirth.shelter.airlock_hiss",
+    "sounds": [
+      {
+        "name": "projectrebirth:shelter/airlock_hiss",
+        "volume": 1
+      }
+    ]
+  },
+  "shelter.decontamination_shower": {
+    "subtitle": "subtitles.projectrebirth.shelter.decontamination_shower",
+    "sounds": [
+      {
+        "name": "projectrebirth:shelter/decontamination_shower",
+        "volume": 0.7
+      }
+    ]
+  },
+  "shelter.leak_alarm": {
+    "subtitle": "subtitles.projectrebirth.shelter.leak_alarm",
+    "sounds": [
+      {
+        "name": "projectrebirth:shelter/leak_alarm",
+        "volume": 0.8
+      }
+    ]
   }
 }

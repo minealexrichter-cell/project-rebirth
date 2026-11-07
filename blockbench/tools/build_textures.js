@@ -2030,6 +2030,290 @@
         return {canvas};
     };
 
+    // ---------------------------------------------------------------- shelter (version 1.4.0)
+
+    const FILTER_TAN = '#c8b77a', ALARM = '#ff4a3d';
+    const FAN_BLADES = [
+        ['..xx....', '..xxx...', '...xx.xx', '...ooxxx', 'xxxoo...', 'xx.xx...', '...xxx..', '....xx..'],
+        ['.x....x.', 'xxx..xxx', '.xxxxxx.', '...oo...', '...oo...', '.xxxxxx.', 'xxx..xxx', '.x....x.'],
+        ['....xx..', '...xxx..', 'xx.xx...', 'xxxoo...', '...ooxxx', '...xx.xx', '..xxx...', '..xx....'],
+        ['...xx...', '...xx...', 'x..xx..x', 'xxxooxxx', 'xxxooxxx', 'x..xx..x', '...xx...', '...xx...']];
+
+    /** Air filtration unit: a big fan behind a round grille, yellow marks. */
+    function filtrationFront(frame) {
+        const p = casing(new Painter(141), YELLOW);
+        p.inset(2, 2, 12, 12, '#14171b', 0.02);
+        p.rect(3, 2, 10, 1, '#2a3036').rect(2, 3, 1, 10, '#2a3036');
+        p.grid(FAN_BLADES[frame], {x: '#8c97a3', o: YELLOW}, 4, 4);
+        // the grille in front of the fan
+        [3, 6, 9, 12].forEach(y => p.rect(3, y, 10, 1, shade(STEEL, 0.9)));
+        p.px(LIGHT, [3, 3], [12, 3], [3, 12], [12, 12]);
+        return p;
+    }
+    block('air_filtration_unit_front', () => filtrationFront(0));
+    animated('air_filtration_unit_front_on', 4, 1, i => filtrationFront(i));
+    block('air_filtration_unit_side', () => {
+        const p = casing(new Painter(142), YELLOW);
+        // a window onto the filter cartridge inside
+        p.inset(4, 3, 8, 10, '#0c1e26', 0.02);
+        for (let x = 5; x < 11; x++) {
+            p.rect(x, 4, 1, 8, x % 2 ? FILTER_TAN : shade(FILTER_TAN, 1.2));
+        }
+        p.rect(5, 4, 6, 1, shade(FILTER_TAN, 0.7)).rect(5, 11, 6, 1, shade(FILTER_TAN, 0.7));
+        p.bevel(3, 13, 10, 1, LIGHT, 0.02);
+        return p;
+    });
+    block('air_filtration_unit_top', () => {
+        const p = casing(new Painter(143), YELLOW);
+        p.bevel(3, 3, 10, 10, shade(STEEL, 0.9), 0.03);
+        [4, 6, 8, 10].forEach(y => p.rect(4, y, 8, 1, DARK).rect(4, y + 1, 8, 1, shade(STEEL, 1.1)));
+        p.px(YELLOW, [7, 12], [8, 12]);
+        return p;
+    });
+
+    /** Airlock door: a heavy steel door, the lower half with a hazard band and a locking wheel, the upper with a thick window. */
+    block('airlock_door_bottom', () => {
+        const p = new Painter(151);
+        p.bevel(0, 0, 16, 16, STEEL, 0.03);
+        p.inset(2, 0, 12, 11, shade(STEEL, 0.85), 0.03);
+        p.rect(2, 0, 12, 1, shade(STEEL, 0.85));
+        hazard(p, 1, 12, 14, 3);
+        // the locking wheel
+        p.grid([
+            '..www..',
+            '.w.d.w.',
+            'w..d..w',
+            'wddddw.',
+            'w..d..w',
+            '.w.d.w.',
+            '..www..'], {w: YELLOW, d: '#9a7a1a'}, 5, 2);
+        p.rect(8, 5, 1, 1, DARK);
+        p.px(LIGHT, [1, 1], [14, 1], [1, 10], [14, 10]);
+        return p;
+    });
+    block('airlock_door_top', () => {
+        const p = new Painter(152);
+        p.bevel(0, 0, 16, 16, STEEL, 0.03);
+        p.inset(2, 2, 12, 14, shade(STEEL, 0.85), 0.03);
+        // a thick round window
+        p.grid([
+            '...ffff...',
+            '.ffggggff.',
+            '.fGgggggf.',
+            'fgGggggggf',
+            'fggggggggf',
+            'fggggggggf',
+            'fgggggggGf',
+            '.fggggGgf.',
+            '.ffggggff.',
+            '...ffff...'], {f: GUN, g: '#4d8ea6', G: '#c6eef8'}, 3, 3);
+        p.px(LIGHT, [1, 1], [14, 1], [1, 14], [14, 14]);
+        return p;
+    });
+    block('sealed_hatch', () => {
+        const p = new Painter(153);
+        p.bevel(0, 0, 16, 16, STEEL, 0.03);
+        hazard(p, 0, 0, 16, 1);
+        hazard(p, 0, 15, 16, 1);
+        p.inset(2, 2, 12, 12, shade(STEEL, 0.8), 0.03);
+        p.grid([
+            '...wwww...',
+            '..w.dd.w..',
+            '.w..dd..w.',
+            'w...dd...w',
+            'wddddddddw',
+            'wddddddddw',
+            'w...dd...w',
+            '.w..dd..w.',
+            '..w.dd.w..',
+            '...wwww...'], {w: YELLOW, d: '#9a7a1a'}, 3, 3);
+        p.rect(7, 7, 2, 2, DARK);
+        return p;
+    });
+
+    /** Backup battery: like the battery, with a red mark and a charge window on every side. */
+    function backupSide(level) {
+        const p = casing(new Painter(161), ALARM);
+        p.inset(5, 3, 6, 10, '#1a0c0c', 0.02);
+        p.bevel(3, 3, 1, 10, LIGHT).bevel(12, 3, 1, 10, LIGHT);
+        [11, 9, 7, 5].forEach((y, row) => p.rect(6, y, 4, 1, row < level ? (row < 2 ? GREEN : YELLOW) : '#3a1a1a'));
+        p.rect(6, 3, 4, 1, ALARM);
+        return p;
+    }
+    block('backup_battery_side', () => backupSide(4));
+    animated('backup_battery_side_on', 4, 4, i => {
+        const p = backupSide(4 - i);
+        p.rect(6, 3, 4, 1, i % 2 ? ALARM : '#ffd0c8');
+        return p;
+    });
+    block('backup_battery_top', () => {
+        const p = casing(new Painter(162), ALARM);
+        p.bevel(3, 3, 10, 10, shade(STEEL, 0.85), 0.03);
+        p.bevel(4, 6, 3, 4, '#c83a30').bevel(9, 6, 3, 4, '#2a2e33');
+        p.px('#ffffff', [5, 7]).px(LIGHT, [10, 7]);
+        return p;
+    });
+
+    /** Decontamination chamber: white tiles inside, a drain grate below, shower nozzles above, a falling water curtain. */
+    block('decontamination_chamber_tiles', () => {
+        const p = new Painter(171);
+        p.noise(0, 0, 16, 16, '#dfe6e9', 0.02);
+        for (let i = 0; i < 16; i += 4) {
+            p.rect(i, 0, 1, 16, '#a9b4ba').rect(0, i, 16, 1, '#a9b4ba');
+        }
+        p.rect(0, 13, 16, 1, '#57b9d8');
+        return p;
+    });
+    block('decontamination_chamber_grate', () => {
+        const p = new Painter(172);
+        p.noise(0, 0, 16, 16, GUN, 0.04);
+        for (let i = 1; i < 16; i += 3) {
+            p.rect(i, 1, 1, 14, '#14171b');
+        }
+        p.inset(6, 6, 4, 4, '#0c0e10', 0.01);
+        p.rect(0, 0, 16, 1, STEEL).rect(0, 15, 16, 1, STEEL);
+        return p;
+    });
+    block('decontamination_chamber_ceiling', () => {
+        const p = new Painter(173);
+        p.bevel(0, 0, 16, 16, STEEL, 0.03);
+        p.inset(3, 3, 10, 10, GUN, 0.02);
+        for (let y = 4; y < 12; y += 2) {
+            for (let x = 4; x < 12; x += 2) {
+                p.rect(x, y, 1, 1, '#9fe0ff');
+            }
+        }
+        return p;
+    });
+    animated('decontamination_chamber_water', 8, 2, i => {
+        const p = new Painter(174 + i);
+        for (let x = 1; x < 16; x += 2) {
+            const offset = (x * 5 + i * 2) % 16;
+            for (let k = 0; k < 3; k++) {
+                const y = (offset + k * 6) % 16;
+                p.rect(x, y, 1, 3, k === 0 ? 'rgba(220,245,255,0.85)' : 'rgba(120,200,240,0.55)');
+            }
+        }
+        return p;
+    });
+    block('decontamination_chamber_side', () => {
+        const p = casing(new Painter(175), CYAN);
+        p.inset(3, 3, 10, 10, '#dfe6e9', 0.02);
+        p.rect(3, 9, 10, 1, '#57b9d8');
+        p.grid(['.ww.', 'wwww', 'wwww', '.ww.'], {w: '#57b9d8'}, 6, 4);
+        return p;
+    });
+
+    /** Radiation purge station: a platform with an emitter ring that glows while it works. */
+    function purgeTop(glow) {
+        const p = new Painter(181);
+        p.bevel(0, 0, 16, 16, GUN, 0.03);
+        hazard(p, 0, 0, 16, 1);
+        hazard(p, 0, 15, 16, 1);
+        const ring = glow === null ? '#2f5a3c' : ['#4fcf7a', '#8ff0a8', '#d4ffe0', '#8ff0a8'][glow];
+        p.grid([
+            '....rrrr....',
+            '..rr....rr..',
+            '.r..dddd..r.',
+            '.r.d....d.r.',
+            'r.d..cc..d.r',
+            'r.d.cccc.d.r',
+            'r.d.cccc.d.r',
+            'r.d..cc..d.r',
+            '.r.d....d.r.',
+            '.r..dddd..r.',
+            '..rr....rr..',
+            '....rrrr....'], {r: ring, d: '#1a2a20', c: glow === null ? '#3a6a4a' : '#ffffff'}, 2, 2);
+        return p;
+    }
+    block('radiation_purge_station_top', () => purgeTop(null));
+    animated('radiation_purge_station_top_on', 4, 4, i => purgeTop(i));
+    block('radiation_purge_station_side', () => {
+        const p = new Painter(182);
+        p.bevel(0, 0, 16, 16, STEEL, 0.03);
+        hazard(p, 0, 12, 16, 4);
+        [2, 6, 10].forEach(x => p.inset(x, 13, 3, 2, DARK, 0.01));
+        p.rect(0, 11, 16, 1, '#2f5a3c');
+        return p;
+    });
+
+    /** Shelter control panel: a status screen, three lamps and keys; while it sounds the alarm the screen flashes red. */
+    function panelFront(alarm, frame) {
+        const p = casing(new Painter(191), CYAN);
+        const red = alarm && frame % 2 === 0;
+        p.inset(3, 3, 10, 7, red ? '#3a0c0c' : '#0a2318', 0.02);
+        if (alarm) {
+            p.grid(['...rr...', '...rr...', '...rr...', '........', '...rr...'], {r: red ? ALARM : '#7a2a24'}, 4, 4);
+        } else {
+            p.rect(4, 4, 5, 1, GREEN).rect(4, 6, 7, 1, shade(GREEN, 0.8)).rect(4, 8, 3, 1, GREEN).rect(9, 8, 2, 1, YELLOW);
+        }
+        p.px(alarm ? '#2a4a2a' : GREEN, [4, 11]).px(YELLOW, [6, 11]).px(red ? ALARM : '#5a1a1a', [8, 11]);
+        p.bevel(10, 11, 3, 2, LIGHT, 0.02);
+        return p;
+    }
+    block('shelter_control_panel_front', () => panelFront(false, 0));
+    animated('shelter_control_panel_front_on', 2, 6, i => panelFront(true, i));
+    block('shelter_control_panel_side', side(CYAN, 192));
+    block('shelter_control_panel_top', top(CYAN, 193, p => {
+        p.bevel(3, 3, 10, 10, shade(STEEL, 0.9), 0.03);
+        p.inset(6, 6, 4, 4, DARK);
+        p.rect(7, 7, 2, 2, ALARM);
+    }));
+
+    // Items of the shelter.
+    item('filter_cartridge', () => icon([
+        '................',
+        '.....kkkkkk.....',
+        '....kHHHHHHk....',
+        '....kkkkkkkk....',
+        '...kgYyYyYygk...',
+        '...kgyhyhyhgk...',
+        '...kgYyYyYygk...',
+        '...kgyhyhyhgk...',
+        '...kgYyYyYygk...',
+        '...kgyhyhyhgk...',
+        '...kgYyYyYygk...',
+        '...kgyhyhyhgk...',
+        '....kkkkkkkk....',
+        '....kHHHHHHk....',
+        '.....kkkkkk.....',
+        '................'], {k: '#14181d', H: '#b9c2cb', g: '#6d7680', Y: '#ffe58a', y: '#e0b33a', h: '#9a7a1a'}));
+    item('spent_filter_cartridge', () => icon([
+        '................',
+        '.....kkkkkk.....',
+        '....kHHHHHHk....',
+        '....kkkkkkkk....',
+        '...kgYyYyYygk...',
+        '...kgyhyhyhgk...',
+        '...kgYyyYyygk...',
+        '...kgyhyhhhgk...',
+        '...kgYyYhYygk...',
+        '...kgyhhhyhgk...',
+        '...kgYyYyYygk...',
+        '...kgyhyhyhgk...',
+        '....kkkkkkkk....',
+        '....kHHHHHHk....',
+        '.....kkkkkk.....',
+        '................'], {k: '#14181d', H: '#7b838a', g: '#4a5157', Y: '#6a6350', y: '#4b4636', h: '#2a2618'}));
+    item('decontamination_solution', () => bottle(['....kWWyyWWk....', '....kWyyyyWk....', '....kWWyyWWk....'], {C: '#37c6e8', l: '#57b9d8', y: '#f0c92f'}));
+    item('airlock_door', () => icon([
+        '....kkkkkkkk....',
+        '....kSSSSSSk....',
+        '....kSkkkkSk....',
+        '....kSkggkSk....',
+        '....kSkgGkSk....',
+        '....kSkkkkSk....',
+        '....kSSSSSSk....',
+        '....kSSSSSSk....',
+        '....kSSwwSSk....',
+        '....kSwSSwSk....',
+        '....kSSwwSSk....',
+        '....kSSSSSSk....',
+        '....kyzyzyzk....',
+        '....kzyzyzyk....',
+        '....kSSSSSSk....',
+        '....kkkkkkkk....'], {k: '#14181d', S: '#8c97a3', g: '#4d8ea6', G: '#c6eef8', w: YELLOW, y: '#f2c025', z: '#23262b'}));
+
     // ---------------------------------------------------------------- output
 
     function savePng(canvas, path) {

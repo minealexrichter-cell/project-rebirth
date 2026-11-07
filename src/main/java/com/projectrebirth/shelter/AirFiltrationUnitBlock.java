@@ -36,12 +36,12 @@ public class AirFiltrationUnitBlock extends BaseEntityBlock {
 
     public AirFiltrationUnitBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(com.projectrebirth.technology.TechSounds.WORKING, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, com.projectrebirth.technology.TechSounds.WORKING);
     }
 
     @Override
@@ -101,8 +101,14 @@ public class AirFiltrationUnitBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(Level level, BlockState state,
             net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
-        return level.isClientSide ? null : createTickerHelper(type, ShelterRegistry.AIR_FILTRATION_UNIT_ENTITY.get(),
-                (tickLevel, pos, tickState, unit) -> unit.serverTick());
+        if (type != ShelterRegistry.AIR_FILTRATION_UNIT_ENTITY.get()) {
+            return null;
+        }
+        if (level.isClientSide) {
+            return com.projectrebirth.technology.TechSounds.clientLoop(com.projectrebirth.technology.TechSounds.WORKING,
+                    com.projectrebirth.core.ModSounds.FILTRATION_HUM.get());
+        }
+        return createTickerHelper(type, ShelterRegistry.AIR_FILTRATION_UNIT_ENTITY.get(), (tickLevel, pos, tickState, unit) -> unit.serverTick());
     }
 
     private static String number(float value) {

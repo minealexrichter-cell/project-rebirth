@@ -38,6 +38,10 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> ENVIRONMENT_SIREN = register("environment.siren");
     public static final DeferredHolder<SoundEvent, SoundEvent> ENVIRONMENT_ACID_HISS = register("environment.acid_hiss");
     public static final DeferredHolder<SoundEvent, SoundEvent> DOSIMETER_CLICK = register("environment.dosimeter_click");
+    public static final DeferredHolder<SoundEvent, SoundEvent> FILTRATION_HUM = register("shelter.filtration_hum");
+    public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_HISS = register("shelter.airlock_hiss");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DECONTAMINATION_SHOWER = register("shelter.decontamination_shower");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LEAK_ALARM = register("shelter.leak_alarm");
 
     private ModSounds() {
     }

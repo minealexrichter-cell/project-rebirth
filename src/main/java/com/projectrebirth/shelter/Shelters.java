@@ -453,7 +453,11 @@ public final class Shelters {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (Long2ObjectMap.Entry<BlockState> entry : room.border().long2ObjectEntrySet()) {
             pos.set(entry.getLongKey());
-            if (!level.isLoaded(pos) || level.getBlockState(pos) != entry.getValue()) {
+            if (!level.isLoaded(pos)) {
+                return true;
+            }
+            BlockState now = level.getBlockState(pos);
+            if (now != entry.getValue() && Sealing.signature(now) != Sealing.signature(entry.getValue())) {
                 return true;
             }
         }

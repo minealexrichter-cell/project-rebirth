@@ -52,8 +52,8 @@ public final class ShelterRegistry {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops());
 
-    public static final DeferredBlock<DoorBlock> AIRLOCK_DOOR = BLOCKS.registerBlock("airlock_door",
-            properties -> new DoorBlock(AIRLOCK, properties),
+    public static final DeferredBlock<AirlockDoorBlock> AIRLOCK_DOOR = BLOCKS.registerBlock("airlock_door",
+            properties -> new AirlockDoorBlock(AIRLOCK, properties),
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .strength(5.0f, 6.0f)
@@ -62,8 +62,8 @@ public final class ShelterRegistry {
                     .pushReaction(PushReaction.DESTROY)
                     .requiresCorrectToolForDrops());
 
-    public static final DeferredBlock<TrapDoorBlock> SEALED_HATCH = BLOCKS.registerBlock("sealed_hatch",
-            properties -> new TrapDoorBlock(AIRLOCK, properties),
+    public static final DeferredBlock<SealedHatchBlock> SEALED_HATCH = BLOCKS.registerBlock("sealed_hatch",
+            properties -> new SealedHatchBlock(AIRLOCK, properties),
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)
                     .strength(5.0f, 6.0f)

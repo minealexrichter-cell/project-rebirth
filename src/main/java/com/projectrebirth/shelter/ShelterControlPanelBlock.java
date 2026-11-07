@@ -36,7 +36,7 @@ public class ShelterControlPanelBlock extends BaseEntityBlock {
 
     public ShelterControlPanelBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(com.projectrebirth.technology.TechSounds.WORKING, false));
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ShelterControlPanelBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, com.projectrebirth.technology.TechSounds.WORKING); // working: the leak alarm sounds
     }
 
     @Override
@@ -105,7 +105,13 @@ public class ShelterControlPanelBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? null : createTickerHelper(type, ShelterRegistry.SHELTER_CONTROL_PANEL_ENTITY.get(),
-                (tickLevel, pos, tickState, panel) -> panel.serverTick());
+        if (type != ShelterRegistry.SHELTER_CONTROL_PANEL_ENTITY.get()) {
+            return null;
+        }
+        if (level.isClientSide) {
+            return com.projectrebirth.technology.TechSounds.clientLoop(com.projectrebirth.technology.TechSounds.WORKING,
+                    com.projectrebirth.core.ModSounds.LEAK_ALARM.get());
+        }
+        return createTickerHelper(type, ShelterRegistry.SHELTER_CONTROL_PANEL_ENTITY.get(), (tickLevel, pos, tickState, panel) -> panel.serverTick());
     }
 }

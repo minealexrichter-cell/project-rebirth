@@ -210,6 +210,7 @@ public class ShelterControlPanelBlockEntity extends BlockEntity implements MenuP
             values[DATA_BACKUP] = capacity <= 0 ? 0 : (int) (stored * 1000L / capacity);
         }
         values[DATA_DANGER] = worst;
+        com.projectrebirth.technology.TechSounds.setWorking(this, worst == DANGER_LEAK);
         if (worst != danger) {
             danger = worst;
             server.updateNeighborsAt(worldPosition, getBlockState().getBlock());

@@ -213,6 +213,9 @@ public class AirFiltrationUnitBlockEntity extends BlockEntity implements MenuPro
             powered = energy.consume(energyPerTick());
         }
         lastTickPowered = powered;
+        if (level.getGameTime() % 10 == 0) {
+            com.projectrebirth.technology.TechSounds.setWorking(this, powered); // the fan turns and hums
+        }
         countedTicks++;
         if (powered) {
             poweredTicks++;

@@ -569,5 +569,9 @@
   "message.projectrebirth.shelter_alert.energy_back": "Убежище у %s %s %s: энергия у фильтрации снова есть",
   "message.projectrebirth.shelter_alert.reserve_on": "Резервный аккумулятор у %s %s %s: основное питание не справляется, жизнеобеспечение на резерве",
   "message.projectrebirth.shelter_alert.reserve_off": "Резервный аккумулятор у %s %s %s: основное питание восстановлено",
-  "message.projectrebirth.shelter_alert.reserve_empty": "Резервный аккумулятор у %s %s %s: РАЗРЯЖЕН, жизнеобеспечение без питания"
+  "message.projectrebirth.shelter_alert.reserve_empty": "Резервный аккумулятор у %s %s %s: РАЗРЯЖЕН, жизнеобеспечение без питания",
+  "subtitles.projectrebirth.shelter.filtration_hum": "Гудит фильтрация воздуха",
+  "subtitles.projectrebirth.shelter.airlock_hiss": "Шипит шлюз",
+  "subtitles.projectrebirth.shelter.decontamination_shower": "Льётся дезактивационный душ",
+  "subtitles.projectrebirth.shelter.leak_alarm": "Звучит тревога утечки"
 }

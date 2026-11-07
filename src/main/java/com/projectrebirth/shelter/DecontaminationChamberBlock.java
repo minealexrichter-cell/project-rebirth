@@ -194,7 +194,12 @@ public class DecontaminationChamberBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide || state.getValue(HALF) != DoubleBlockHalf.LOWER ? null
-                : createTickerHelper(type, ShelterRegistry.DECONTAMINATION_CHAMBER_ENTITY.get(), (tickLevel, pos, tickState, chamber) -> chamber.serverTick());
+        if (state.getValue(HALF) != DoubleBlockHalf.LOWER || type != ShelterRegistry.DECONTAMINATION_CHAMBER_ENTITY.get()) {
+            return null;
+        }
+        if (level.isClientSide) {
+            return TechSounds.clientLoop(TechSounds.WORKING, com.projectrebirth.core.ModSounds.DECONTAMINATION_SHOWER.get());
+        }
+        return createTickerHelper(type, ShelterRegistry.DECONTAMINATION_CHAMBER_ENTITY.get(), (tickLevel, pos, tickState, chamber) -> chamber.serverTick());
     }
 }

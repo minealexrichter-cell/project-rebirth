@@ -1,18 +1,33 @@
 {
   "variants": {
-    "facing=north": {
+    "facing=north,working=false": {
       "model": "projectrebirth:block/air_filtration_unit"
     },
-    "facing=east": {
+    "facing=north,working=true": {
+      "model": "projectrebirth:block/air_filtration_unit_on"
+    },
+    "facing=east,working=false": {
       "model": "projectrebirth:block/air_filtration_unit",
       "y": 90
     },
-    "facing=south": {
+    "facing=east,working=true": {
+      "model": "projectrebirth:block/air_filtration_unit_on",
+      "y": 90
+    },
+    "facing=south,working=false": {
       "model": "projectrebirth:block/air_filtration_unit",
       "y": 180
     },
-    "facing=west": {
+    "facing=south,working=true": {
+      "model": "projectrebirth:block/air_filtration_unit_on",
+      "y": 180
+    },
+    "facing=west,working=false": {
       "model": "projectrebirth:block/air_filtration_unit",
+      "y": 270
+    },
+    "facing=west,working=true": {
+      "model": "projectrebirth:block/air_filtration_unit_on",
       "y": 270
     }
   }

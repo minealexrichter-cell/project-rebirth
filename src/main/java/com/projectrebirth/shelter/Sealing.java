@@ -59,6 +59,17 @@ public final class Sealing {
                 || state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.LOWER;
     }
 
+    /** Which sides keep air in, as six bits: two states with the same signature seal alike (a machine switching on does not count). */
+    public static int signature(BlockState state) {
+        int bits = 0;
+        for (Direction side : Direction.values()) {
+            if (seals(state, side)) {
+                bits |= 1 << side.get3DDataValue();
+            }
+        }
+        return bits;
+    }
+
     /** Whether this side of the block keeps air from passing. */
     public static boolean seals(BlockState state, Direction side) {
         if (state.isAir() || state.is(NOT_SEALING)) {

@@ -336,6 +336,114 @@
         ]
     };
 
+    // ---------------------------------------------------------------- shelter (version 1.4.0)
+
+    /** Texture map where only some keys change while the block works. */
+    function shelterTextures(id, on, keys, changing, particle) {
+        const map = {};
+        for (const key of keys) {
+            map[key] = 'projectrebirth:block/' + id + '_' + key + (on && changing.includes(key) ? '_on' : '');
+        }
+        map.parts = 'projectrebirth:block/machine_parts';
+        map.particle = 'projectrebirth:block/' + id + '_' + (particle || keys[0]);
+        return map;
+    }
+
+    // Air filtration unit: the machine body with a big fan behind the front grille, vents and a duct on top.
+    [false, true].forEach(on => {
+        MODELS['air_filtration_unit' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('air_filtration_unit', on, ['front', 'side', 'top'], ['front'], 'side'),
+            elements: [...machine('yellow'), ...screen(on, 'steel'),
+                box([2, 14, 2], [5, 16, 5], 'steel', {up: 'dark'}),
+                box([11, 14, 10], [14, 15, 14], 'gun', {up: 'yellow'}),
+                box([6, 14, 3], [10, 15, 6], 'mid', {up: on ? 'green' : 'dark'}, on ? GLOW : undefined)
+            ]
+        };
+    });
+
+    // Backup battery: a cell with a charge window on every side, posts, a plinth and a top plate with terminals.
+    [false, true].forEach(on => {
+        const side = tex('side', [2, 2, 14, 14]);
+        MODELS['backup_battery' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('backup_battery', on, ['side', 'top'], ['side']),
+            elements: [
+                box([0, 0, 0], [16, 2, 16], 'mid', {up: 'gun'}),
+                without(box([2, 2, 2], [14, 14, 14], 'dark', {north: side, south: side, west: side, east: side}, on ? GLOW : undefined), 'up', 'down'),
+                without(box([0, 2, 0], [2, 14, 2], 'steel'), 'up', 'down'),
+                without(box([14, 2, 0], [16, 14, 2], 'steel'), 'up', 'down'),
+                without(box([0, 2, 14], [2, 14, 16], 'steel'), 'up', 'down'),
+                without(box([14, 2, 14], [16, 14, 16], 'steel'), 'up', 'down'),
+                box([0, 14, 0], [16, 16, 16], 'mid', {up: tex('top')})
+            ]
+        };
+    });
+
+    // Decontamination chamber: a booth open to the front, tiles inside, a drain below, nozzles above; water while it washes.
+    const TILES = tex('tiles');
+    const WATER = {north: tex('water'), south: tex('water'), west: tex('water'), east: tex('water')};
+    [false, true].forEach(on => {
+        ['lower', 'upper'].forEach(half => {
+            const lower = half === 'lower';
+            const y0 = lower ? 1 : 0, y1 = lower ? 16 : 14;
+            const elements = [
+                box([0, lower ? 1 : 0, 14], [16, 16, 16], 'steel', {north: TILES, south: tex('side')}),
+                box([0, lower ? 1 : 0, 0], [2, 16, 14], 'steel', {east: TILES, west: tex('side'), north: 'cyan'}),
+                box([14, lower ? 1 : 0, 0], [16, 16, 14], 'steel', {west: TILES, east: tex('side'), north: 'cyan'})
+            ];
+            if (lower) {
+                elements.push(box([0, 0, 0], [16, 1, 16], 'mid', {up: tex('grate')}));
+                elements.push(box([3, 4, 13], [5, 9, 14], 'steel', {north: 'yellow'}));
+            } else {
+                elements.push(box([2, 14, 0], [14, 16, 14], 'steel', {down: tex('ceiling')}));
+                elements.push(box([6, 13, 5], [10, 14, 9], 'gun', {down: on ? 'cyan' : 'dark'}, on ? GLOW : undefined));
+            }
+            if (on) {
+                elements.push(Object.assign({from: [3, y0, 4], to: [13, lower ? y1 : 13, 12], faces: WATER}));
+            }
+            const model = {
+                parent: 'minecraft:block/block',
+                textures: {tiles: 'projectrebirth:block/decontamination_chamber_tiles', grate: 'projectrebirth:block/decontamination_chamber_grate',
+                    ceiling: 'projectrebirth:block/decontamination_chamber_ceiling', side: 'projectrebirth:block/decontamination_chamber_side',
+                    water: 'projectrebirth:block/decontamination_chamber_water', parts: 'projectrebirth:block/machine_parts',
+                    particle: 'projectrebirth:block/decontamination_chamber_side'},
+                elements
+            };
+            if (on) {
+                model.render_type = 'minecraft:translucent';
+            }
+            MODELS['decontamination_chamber_' + half + (on ? '_on' : '')] = model;
+        });
+    });
+
+    // Radiation purge station: a platform with an emitter ring and four emitter posts at the corners.
+    [false, true].forEach(on => {
+        const sides = tex('side', [0, 12, 16, 16]);
+        const post = (x, z) => without(box([x, 4, z], [x + 2, 6, z + 2], 'gun', {up: on ? 'green' : 'dark'}, on ? GLOW : undefined), 'down');
+        MODELS['radiation_purge_station' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('radiation_purge_station', on, ['top', 'side'], ['top'], 'side'),
+            elements: [
+                box([0, 0, 0], [16, 4, 16], 'gun', {up: tex('top'), north: sides, south: sides, west: sides, east: sides}, on ? GLOW : undefined),
+                post(0, 0), post(14, 0), post(0, 14), post(14, 14)
+            ]
+        };
+    });
+
+    // Shelter control panel: a console with a status screen, an antenna and an alarm lamp that glows red while it sounds.
+    [false, true].forEach(on => {
+        MODELS['shelter_control_panel' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('shelter_control_panel', on, ['front', 'side', 'top'], ['front'], 'side'),
+            elements: [...machine('cyan'), ...screen(true, 'steel'),
+                box([12, 14, 2], [13, 16, 3], 'steel'),
+                box([3, 14, 3], [6, 16, 6], 'gun', {up: on ? 'red' : 'dark', north: on ? 'red' : 'gun'}, on ? GLOW : undefined),
+                box([8, 14, 10], [13, 15, 13], 'dark', {up: 'rubber'})
+            ]
+        };
+    });
+
     // ---------------------------------------------------------------- block states
 
     const ROTATIONS = {north: 0, east: 90, south: 180, west: 270};
@@ -375,6 +483,27 @@
     [false, true].forEach(working => {
         Object.entries(ROTATIONS).forEach(([facing, y]) => {
             STATES.solar_panel.variants['facing=' + facing + ',working=' + working] = variant(working ? 'solar_panel_on' : 'solar_panel', rotation(y));
+        });
+    });
+
+    // Shelter blocks of version 1.4.0.
+    STATES.air_filtration_unit = {variants: {}};
+    STATES.shelter_control_panel = {variants: {}};
+    Object.entries(ROTATIONS).forEach(([facing, y]) => {
+        [false, true].forEach(working => {
+            STATES.air_filtration_unit.variants['facing=' + facing + ',working=' + working] = variant('air_filtration_unit' + (working ? '_on' : ''), rotation(y));
+            STATES.shelter_control_panel.variants['facing=' + facing + ',working=' + working] = variant('shelter_control_panel' + (working ? '_on' : ''), rotation(y));
+        });
+    });
+    STATES.backup_battery = {variants: {'working=false': variant('backup_battery'), 'working=true': variant('backup_battery_on')}};
+    STATES.radiation_purge_station = {variants: {'working=false': variant('radiation_purge_station'), 'working=true': variant('radiation_purge_station_on')}};
+    STATES.decontamination_chamber = {variants: {}};
+    Object.entries(ROTATIONS).forEach(([facing, y]) => {
+        ['lower', 'upper'].forEach(half => {
+            [false, true].forEach(working => {
+                STATES.decontamination_chamber.variants['facing=' + facing + ',half=' + half + ',working=' + working] =
+                    variant('decontamination_chamber_' + half + (working ? '_on' : ''), rotation(y));
+            });
         });
     });
 

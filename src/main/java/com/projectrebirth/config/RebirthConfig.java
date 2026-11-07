@@ -77,6 +77,9 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue PROTECTION_ACID_WEAR;
     public static final ModConfigSpec.IntValue PROTECTION_ACID_WEAR_INTERVAL;
     public static final ModConfigSpec.IntValue MACHINE_ACID_WEAR_INTERVAL;
+    public static final ModConfigSpec.DoubleValue HUD_DANGER_POLLUTION;
+    public static final ModConfigSpec.DoubleValue HUD_DANGER_RADIATION;
+    public static final ModConfigSpec.DoubleValue HUD_DANGER_ACID;
     public static final ModConfigSpec.DoubleValue MACHINE_PILOT_RADIATION_PER_PLATE;
     public static final ModConfigSpec.BooleanValue MACHINE_ARMOR_ACID_WEAR;
     public static final ModConfigSpec.DoubleValue MACHINE_ARMOR_ACID_WEAR_PER_SECOND;
@@ -390,6 +393,12 @@ public final class RebirthConfig {
         defineProtectionKit(builder, "respirator", 0.9, 0.0, 0.0);
         defineProtectionKit(builder, "hazmat", 0.95, 1.0, 0.3);
         defineProtectionKit(builder, "heavy_suit", 1.0, 1.0, 0.85);
+        builder.pop();
+
+        builder.comment("When the HUD marks a hazard as dangerous: above these values, after protection").push("hud");
+        HUD_DANGER_POLLUTION = builder.comment("Polluted air").defineInRange("dangerPollution", 1.0, 0.0, 10000.0);
+        HUD_DANGER_RADIATION = builder.comment("Radiation").defineInRange("dangerRadiation", 1.5, 0.0, 10000.0);
+        HUD_DANGER_ACID = builder.comment("Acid").defineInRange("dangerAcid", 0.0, 0.0, 10000.0);
         builder.pop();
 
         builder.comment("Artificial bodies and power armor. Bodies have no biology; acid wears them by [bodies.<class>] acidWearPerSecond").push("machines");

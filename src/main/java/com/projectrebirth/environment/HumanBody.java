@@ -83,7 +83,7 @@ public final class HumanBody {
         if (!Environment.isEnabled() || !player.gameMode.isSurvival() || !player.isAlive()) {
             clearSymptoms(player);
             // The dosimeter still measures, it only does not gain anything.
-            tellClient(player, Environment.isEnabled() ? reaching(player, exposure, Hazard.RADIATION) : 0.0f);
+            tellClient(player, Environment.isEnabled() ? exposure : Exposure.NONE);
             return;
         }
         if (TransferService.isInArtificialBody(player)) {
@@ -91,7 +91,7 @@ public final class HumanBody {
             setBiology(player, afterSecond(biology(player), 0.0f, 0.0f, 0.0f));
             clearSymptoms(player);
             MachineBody.onSecond(player, exposure);
-            tellClient(player, reaching(player, exposure, Hazard.RADIATION));
+            tellClient(player, exposure);
             return;
         }
         float radiation = reaching(player, exposure, Hazard.RADIATION);
@@ -106,15 +106,37 @@ public final class HumanBody {
         setBiology(player, afterSecond(biology(player), radiation, pollution, acid));
         applySymptoms(player);
         hurtBySymptoms(player, acid);
-        tellClient(player, radiation);
+        tellClient(player, exposure);
     }
 
     /** What this person's own HUD may show. Test players have no real client behind them. */
-    private static void tellClient(ServerPlayer player, float radiation) {
+    private static void tellClient(ServerPlayer player, Exposure exposure) {
         if (player.connection.hasChannel(EnvironmentStatusPayload.TYPE)) {
             Biology biology = biology(player);
-            PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, biology.dose(), biology.toxin()));
+            float radiation = reaching(player, exposure, Hazard.RADIATION);
+            float pollution = reaching(player, exposure, Hazard.POLLUTION);
+            float acid = reaching(player, exposure, Hazard.ACID);
+            PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, pollution, acid, biology.dose(), biology.toxin(),
+                    dangerMask(radiation, pollution, acid)));
         }
+    }
+
+    /**
+     * Which hazards the HUD marks as dangerous: those above the ordinary background (the numbers are in
+     * [environment.hud]). Bit {@code 1 << hazard.ordinal()}.
+     */
+    public static int dangerMask(float radiation, float pollution, float acid) {
+        int mask = 0;
+        if (radiation > RebirthConfig.HUD_DANGER_RADIATION.get()) {
+            mask |= 1 << Hazard.RADIATION.ordinal();
+        }
+        if (pollution > RebirthConfig.HUD_DANGER_POLLUTION.get()) {
+            mask |= 1 << Hazard.POLLUTION.ordinal();
+        }
+        if (acid > RebirthConfig.HUD_DANGER_ACID.get()) {
+            mask |= 1 << Hazard.ACID.ordinal();
+        }
+        return mask;
     }
 
     /** The numbers of one second. */

@@ -203,16 +203,19 @@ public final class CatastropheClient {
         Component text = switch (state.phase()) {
             case WARNING -> left < 60 ? Component.translatable("hud.projectrebirth.catastrophe.warning_soon", name)
                     : Component.translatable("hud.projectrebirth.catastrophe.warning", name, Mth.ceil(left / 60.0f));
-            case ACTIVE -> Component.translatable("hud.projectrebirth.catastrophe.active", name);
+            case ACTIVE -> left < 60 ? Component.translatable("hud.projectrebirth.catastrophe.active", name)
+                    : Component.translatable("hud.projectrebirth.catastrophe.active_for", name, Mth.ceil(left / 60.0f));
             default -> Component.translatable("hud.projectrebirth.catastrophe.aftermath", name);
         };
         boolean blink = state.phase() == EventPhase.WARNING && (ticks() / 10) % 2 == 0;
         int color = state.phase() == EventPhase.AFTERMATH ? 0xFFCCCCCC : blink ? 0xFFFFFF55 : 0xFFFF8A24;
         int width = minecraft.font.width(text);
-        int x = 6;
-        int y = 6;
-        graphics.fill(x - 3, y - 3, x + width + 3, y + minecraft.font.lineHeight + 2, 0x90000000);
-        graphics.drawString(minecraft.font, text, x, y, color);
+        // The last line of the status panel, the same for a human, a body and a pilot.
+        HudLayout.pushPanel(graphics);
+        int y = HudLayout.CATASTROPHE_ROW;
+        graphics.fill(-2, y - 2, width + 2, y + minecraft.font.lineHeight, 0x90000000);
+        graphics.drawString(minecraft.font, text, 0, y, color);
+        graphics.pose().popPose();
     }
 
 }

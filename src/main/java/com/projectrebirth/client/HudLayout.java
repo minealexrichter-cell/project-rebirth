@@ -9,7 +9,9 @@ import net.minecraft.util.Mth;
 public final class HudLayout {
     /** Size of the status panel with all its lines, at scale 1. */
     public static final int PANEL_WIDTH = 205;
-    public static final int PANEL_HEIGHT = 84;
+    public static final int PANEL_HEIGHT = 96;
+    /** The last line of the panel, kept for the catastrophe in every state: human, body, armor. */
+    public static final int CATASTROPHE_ROW = 86;
     /** Size of the integrity bar at scale 1. */
     public static final int BAR_WIDTH = 81;
     public static final int BAR_HEIGHT = 9;

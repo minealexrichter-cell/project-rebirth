@@ -423,5 +423,15 @@
   "message.projectrebirth.environment.event_disabled": "This catastrophe is switched off in the config: %s",
   "message.projectrebirth.environment.no_catastrophes": "There are no catastrophes in this dimension",
   "message.projectrebirth.environment.started": "Started: %s, intensity %s, for %s s",
-  "message.projectrebirth.environment.cleared": "The environment is calm again"
+  "message.projectrebirth.environment.cleared": "The environment is calm again",
+  "item.projectrebirth.antiradin": "Antiradin",
+  "item.projectrebirth.sorbent": "Sorbent",
+  "effect.projectrebirth.radiation_sickness": "Radiation Sickness",
+  "effect.projectrebirth.toxic_poisoning": "Toxic Poisoning",
+  "death.attack.projectrebirth.radiation_sickness": "%1$s died of radiation sickness",
+  "death.attack.projectrebirth.toxic_poisoning": "%1$s died of poisoning",
+  "death.attack.projectrebirth.acid_rain": "%1$s dissolved in acid rain",
+  "message.projectrebirth.environment.status_body": "Body: dose %s (stage %s), toxic load %s (stage %s)",
+  "message.projectrebirth.environment.body_set": "Set the body of %s",
+  "message.projectrebirth.environment.medicine_no_biology": "An artificial body has nothing to treat"
 }

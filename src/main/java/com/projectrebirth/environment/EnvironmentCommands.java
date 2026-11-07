@@ -22,7 +22,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
-/** Operator commands: /rebirth environment status [player], event &lt;type&gt; [intensity], clear. They act on the dimension of whoever calls them. */
+/** Operator commands: /rebirth environment status [player], event &lt;type&gt; [intensity], clear, body &lt;player&gt; &lt;dose&gt; &lt;toxin&gt;. They act on the dimension of whoever calls them. */
 @EventBusSubscriber(modid = ProjectRebirth.MOD_ID)
 public final class EnvironmentCommands {
     private static final float MIN_INTENSITY = 0.1f;
@@ -51,7 +51,12 @@ public final class EnvironmentCommands {
                                         .then(Commands.argument("intensity", FloatArgumentType.floatArg(MIN_INTENSITY, MAX_INTENSITY))
                                                 .executes(ctx -> startEvent(ctx, StringArgumentType.getString(ctx, "type"),
                                                         FloatArgumentType.getFloat(ctx, "intensity"))))))
-                        .then(Commands.literal("clear").executes(EnvironmentCommands::clear))));
+                        .then(Commands.literal("clear").executes(EnvironmentCommands::clear))
+                        .then(Commands.literal("body")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("dose", FloatArgumentType.floatArg(0.0f))
+                                                .then(Commands.argument("toxin", FloatArgumentType.floatArg(0.0f))
+                                                        .executes(EnvironmentCommands::setBody)))))));
     }
 
     private static String number(float value) {
@@ -86,6 +91,17 @@ public final class EnvironmentCommands {
                         : shelter.underRoof() ? "environment.projectrebirth.shelter.roof" : "environment.projectrebirth.shelter.open")), false);
         source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_exposure", number(exposure.get(Hazard.POLLUTION)),
                 number(exposure.get(Hazard.RADIATION)), number(exposure.get(Hazard.ACID))), false);
+        Biology biology = HumanBody.biology(player);
+        source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_body", number(biology.dose()), HumanBody.doseStage(biology.dose()),
+                number(biology.toxin()), HumanBody.toxinStage(biology.toxin())), false);
+        return 1;
+    }
+
+    /** Sets the numbers of a person, for checking the symptoms. */
+    private static int setBody(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+        HumanBody.setBiology(player, new Biology(FloatArgumentType.getFloat(ctx, "dose"), FloatArgumentType.getFloat(ctx, "toxin")));
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.environment.body_set", player.getDisplayName()), true);
         return 1;
     }
 

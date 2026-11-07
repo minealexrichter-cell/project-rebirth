@@ -119,6 +119,7 @@ public final class Environment {
     static void onPlayerTick(PlayerTickEvent.Post event) {
         if (event.getEntity() instanceof ServerPlayer player && isSecondOf(player.level().getGameTime(), player.getId())) {
             updatePlayer(player);
+            HumanBody.onSecond(player, lastExposure(player));
         }
     }
 

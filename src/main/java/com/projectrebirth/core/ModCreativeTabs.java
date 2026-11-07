@@ -9,6 +9,7 @@ import com.projectrebirth.powerarmor.PowerArmorRegistry;
 import com.projectrebirth.technology.Metal;
 import com.projectrebirth.technology.Station;
 import com.projectrebirth.technology.TechItems;
+import com.projectrebirth.environment.EnvironmentRegistry;
 import com.projectrebirth.upgrades.UpgradeRegistry;
 import com.projectrebirth.weapons.WeaponRegistry;
 
@@ -52,6 +53,8 @@ public final class ModCreativeTabs {
                 output.accept(TechItems.SYNTHETIC_FIBER.get());
                 output.accept(BodyItems.TRANSFER_CAPSULE.get());
                 output.accept(BodyItems.REPAIR_KIT.get());
+                output.accept(EnvironmentRegistry.ANTIRADIN.get());
+                output.accept(EnvironmentRegistry.SORBENT.get());
                 output.accept(UpgradeRegistry.COPPER_PLATING.get());
                 output.accept(UpgradeRegistry.IRON_PLATING.get());
                 output.accept(UpgradeRegistry.TITANIUM_PLATING.get());

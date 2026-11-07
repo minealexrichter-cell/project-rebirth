@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.environment.HumanBody;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -63,8 +64,12 @@ public class HumanShellEntity extends Mob {
     public void tick() {
         super.tick();
         // Once a second: a shell whose record is gone (owner returned, or a stale copy) must disappear.
-        if (level() instanceof ServerLevel serverLevel && tickCount % 20 == 1 && !isRecorded(serverLevel)) {
-            discard();
+        if (level() instanceof ServerLevel serverLevel && tickCount % 20 == 1) {
+            if (!isRecorded(serverLevel)) {
+                discard();
+            } else if (serverLevel.getServer().getPlayerList().getPlayer(getOwnerId().get()) instanceof ServerPlayer owner) {
+                HumanBody.tickShell(this, serverLevel, owner);
+            }
         }
     }
 

@@ -1611,6 +1611,42 @@
         '................',
         '................'], WEAPON_PALETTE));
 
+    const SYMPTOM_PALETTE = {k: '#14181d', g: '#8fd14f', G: '#d2f58a', y: '#d9c63a', Y: '#f2e88a', d: '#3f5a22'};
+    TEXTURES['mob_effect/radiation_sickness'] = () => icon([
+        '................',
+        '.....kkkkkk.....',
+        '...kkdggggdkk...',
+        '..kdggGGGGggdk..',
+        '..kgggkkkkgggk..',
+        '.kgGgkkggkkgGgk.',
+        '.kgGgkgGGgkgGgk.',
+        '.kggGkgGGgkGggk.',
+        '.kgggkkggkkgggk.',
+        '.kdgggkkkkgggdk.',
+        '..kdgggggggggk..',
+        '..kkdggGGggdkk..',
+        '....kkddddkk....',
+        '......kkkk......',
+        '................',
+        '................'], SYMPTOM_PALETTE);
+    TEXTURES['mob_effect/toxic_poisoning'] = () => icon([
+        '................',
+        '......kkkk......',
+        '......kYYk......',
+        '......kYYk......',
+        '.....kyYYyk.....',
+        '....kyyYYyyk....',
+        '...kyyyyyyyyk...',
+        '...kyykkkkyyk...',
+        '..kyyyk.kkyyyk..',
+        '..kyyykkkyyyyk..',
+        '..kyyyyyyykyyk..',
+        '..kyyyykkkkyyk..',
+        '...kyyyyyyyyk...',
+        '....kkkkkkkk....',
+        '................',
+        '................'], SYMPTOM_PALETTE);
+
     item('upgrade_mounting_tool', () => icon([
         '................',
         '...........kkk..',

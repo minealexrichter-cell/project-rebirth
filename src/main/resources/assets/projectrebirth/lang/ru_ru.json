@@ -423,5 +423,15 @@
   "message.projectrebirth.environment.event_disabled": "Эта катастрофа выключена в конфиге: %s",
   "message.projectrebirth.environment.no_catastrophes": "В этом измерении катастроф нет",
   "message.projectrebirth.environment.started": "Начато: %s, интенсивность %s, на %s с",
-  "message.projectrebirth.environment.cleared": "Среда снова спокойна"
+  "message.projectrebirth.environment.cleared": "Среда снова спокойна",
+  "item.projectrebirth.antiradin": "Антирадин",
+  "item.projectrebirth.sorbent": "Сорбент",
+  "effect.projectrebirth.radiation_sickness": "Лучевая болезнь",
+  "effect.projectrebirth.toxic_poisoning": "Отравление",
+  "death.attack.projectrebirth.radiation_sickness": "%1$s умер(ла) от лучевой болезни",
+  "death.attack.projectrebirth.toxic_poisoning": "%1$s умер(ла) от отравления",
+  "death.attack.projectrebirth.acid_rain": "%1$s растворился(ась) под кислотным дождём",
+  "message.projectrebirth.environment.status_body": "Тело: доза %s (стадия %s), токсическая нагрузка %s (стадия %s)",
+  "message.projectrebirth.environment.body_set": "Заданы показатели тела: %s",
+  "message.projectrebirth.environment.medicine_no_biology": "Искусственному телу нечего лечить"
 }

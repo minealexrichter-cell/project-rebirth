@@ -1,6 +1,7 @@
 package com.projectrebirth.powerarmor;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.environment.HumanBody;
 
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +24,8 @@ public final class PowerArmorEvents {
     @SubscribeEvent(priority = EventPriority.HIGH)
     static void onIncomingDamage(LivingIncomingDamageEvent event) {
         if (event.getEntity().getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()
-                && !event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+                && !event.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !event.getSource().is(HumanBody.RADIATION_DAMAGE)
+                && !event.getSource().is(HumanBody.TOXIN_DAMAGE)) {
             event.setCanceled(true);
             // A landing armor hands its fall to the pilot too (vanilla does that for every vehicle); the armor already took
             // its own fall damage, by its own safe fall height, so the pilot's share is dropped instead of passed on.

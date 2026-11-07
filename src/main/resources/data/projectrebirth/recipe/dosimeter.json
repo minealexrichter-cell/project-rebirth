@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 95,
+  "time": 160,
+  "ingredients": [
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/copper",
+      "count": 2
+    },
+    {
+      "tag": "c:glass_panes",
+      "count": 1
+    },
+    {
+      "item": "minecraft:quartz",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:dosimeter",
+    "count": 1
+  }
+}

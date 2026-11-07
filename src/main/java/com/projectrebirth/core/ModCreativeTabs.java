@@ -55,6 +55,17 @@ public final class ModCreativeTabs {
                 output.accept(BodyItems.REPAIR_KIT.get());
                 output.accept(EnvironmentRegistry.ANTIRADIN.get());
                 output.accept(EnvironmentRegistry.SORBENT.get());
+                output.accept(EnvironmentRegistry.RESPIRATOR.get());
+                output.accept(EnvironmentRegistry.FILTER.get());
+                output.accept(EnvironmentRegistry.DOSIMETER.get());
+                output.accept(EnvironmentRegistry.HAZMAT_HELMET.get());
+                output.accept(EnvironmentRegistry.HAZMAT_SUIT.get());
+                output.accept(EnvironmentRegistry.HAZMAT_TROUSERS.get());
+                output.accept(EnvironmentRegistry.HAZMAT_BOOTS.get());
+                output.accept(EnvironmentRegistry.HEAVY_SUIT_HELMET.get());
+                output.accept(EnvironmentRegistry.HEAVY_SUIT.get());
+                output.accept(EnvironmentRegistry.HEAVY_SUIT_TROUSERS.get());
+                output.accept(EnvironmentRegistry.HEAVY_SUIT_BOOTS.get());
                 output.accept(UpgradeRegistry.COPPER_PLATING.get());
                 output.accept(UpgradeRegistry.IRON_PLATING.get());
                 output.accept(UpgradeRegistry.TITANIUM_PLATING.get());

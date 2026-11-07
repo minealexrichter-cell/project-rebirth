@@ -60,6 +60,16 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue ENVIRONMENT_UNDERGROUND_DEPTH;
     public static final ModConfigSpec.DoubleValue ENVIRONMENT_UNDERGROUND_POLLUTION;
     public static final ModConfigSpec.IntValue ENVIRONMENT_AFTERMATH_SECONDS;
+    private static final Map<String, ProtectionStats> PROTECTION_KITS = new HashMap<>();
+    public static final ModConfigSpec.DoubleValue PROTECTION_HEAD_SHARE;
+    public static final ModConfigSpec.DoubleValue PROTECTION_CHEST_SHARE;
+    public static final ModConfigSpec.DoubleValue PROTECTION_LEGS_SHARE;
+    public static final ModConfigSpec.DoubleValue PROTECTION_FEET_SHARE;
+    public static final ModConfigSpec.DoubleValue PROTECTION_FILTER_LIFE;
+    public static final ModConfigSpec.DoubleValue PROTECTION_FILTER_USE;
+    public static final ModConfigSpec.DoubleValue PROTECTION_FILTER_SAFE_POLLUTION;
+    public static final ModConfigSpec.IntValue PROTECTION_ACID_WEAR;
+    public static final ModConfigSpec.IntValue PROTECTION_ACID_WEAR_INTERVAL;
     public static final ModConfigSpec.DoubleValue HUMAN_DOSE_PER_RADIATION;
     public static final ModConfigSpec.DoubleValue HUMAN_DOSE_CLEARANCE;
     public static final ModConfigSpec.DoubleValue HUMAN_TOXIN_PER_POLLUTION;
@@ -345,6 +355,22 @@ public final class RebirthConfig {
         HUMAN_SORBENT_TOXIN = builder.comment("Toxic load removed by sorbent").defineInRange("sorbentToxin", 50.0, 0.0, 100000.0);
         HUMAN_PILOT_RADIATION_PROTECTION = builder.comment("Share of radiation that does not reach the pilot of a power armor").defineInRange("pilotRadiationProtection", 0.8, 0.0, 1.0);
         builder.pop();
+        builder.comment("Protective gear. Breathing protection is the head piece's, while its filter lasts; acid and radiation are kept off by each worn piece by its share").push("protection");
+        PROTECTION_HEAD_SHARE = builder.comment("Share of the body covered by the head piece").defineInRange("headShare", 0.2, 0.0, 1.0);
+        PROTECTION_CHEST_SHARE = builder.comment("Share of the body covered by the chest piece").defineInRange("chestShare", 0.4, 0.0, 1.0);
+        PROTECTION_LEGS_SHARE = builder.comment("Share of the body covered by the leg piece").defineInRange("legsShare", 0.25, 0.0, 1.0);
+        PROTECTION_FEET_SHARE = builder.comment("Share of the body covered by the boots").defineInRange("feetShare", 0.15, 0.0, 1.0);
+        PROTECTION_FILTER_LIFE = builder.comment("Life of one filter, in seconds of air of pollution 1").defineInRange("filterLife", 2400.0, 1.0, 1000000.0);
+        PROTECTION_FILTER_SAFE_POLLUTION = builder.comment("Pollution up to which the air counts as safe and filters are not used: the ordinary background of the world")
+                .defineInRange("filterSafePollution", 1.0, 0.0, 1000.0);
+        PROTECTION_FILTER_USE = builder.comment("Filter used per second per unit of pollution").defineInRange("filterUsePerPollution", 1.0, 0.0, 1000.0);
+        PROTECTION_ACID_WEAR = builder.comment("Durability a piece loses to acid rain").defineInRange("acidWear", 1, 0, 1000);
+        PROTECTION_ACID_WEAR_INTERVAL = builder.comment("Seconds in acid rain between such losses").defineInRange("acidWearInterval", 5, 1, 3600);
+        defineProtectionKit(builder, "respirator", 0.9, 0.0, 0.0);
+        defineProtectionKit(builder, "hazmat", 0.95, 1.0, 0.3);
+        defineProtectionKit(builder, "heavy_suit", 1.0, 1.0, 0.85);
+        builder.pop();
+
         builder.comment("The catastrophes: strength per hazard at intensity 1, on top of the background").push("events");
         defineEnvironmentEvent(builder, "acid_rain", Map.of(Hazard.POLLUTION, 2.0, Hazard.ACID, 1.0), 0.5, 1.5, 240, 480);
         defineEnvironmentEvent(builder, "toxic_storm", Map.of(Hazard.POLLUTION, 20.0), 0.5, 1.5, 180, 360);
@@ -483,6 +509,30 @@ public final class RebirthConfig {
     public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
                              ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
                              ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
+    }
+
+    private static void defineProtectionKit(ModConfigSpec.Builder builder, String id, double pollution, double acid, double radiation) {
+        builder.push(id);
+        PROTECTION_KITS.put(id, new ProtectionStats(
+                builder.comment("Share of polluted air kept off by the head piece with a filter").defineInRange("pollution", pollution, 0.0, 1.0),
+                builder.comment("Share of acid kept off by the full kit").defineInRange("acid", acid, 0.0, 1.0),
+                builder.comment("Share of radiation kept off by the full kit").defineInRange("radiation", radiation, 0.0, 1.0)));
+        builder.pop();
+    }
+
+    /** The numbers of a kit of protective gear, or null if the config does not know it. */
+    public static ProtectionStats protectionKit(String id) {
+        return PROTECTION_KITS.get(id);
+    }
+
+    public record ProtectionStats(ModConfigSpec.DoubleValue pollution, ModConfigSpec.DoubleValue acid, ModConfigSpec.DoubleValue radiation) {
+        public float of(com.projectrebirth.environment.Hazard hazard) {
+            return switch (hazard) {
+                case POLLUTION -> pollution.get().floatValue();
+                case ACID -> acid.get().floatValue();
+                case RADIATION -> radiation.get().floatValue();
+            };
+        }
     }
 
     private static void defineEnvironmentEvent(ModConfigSpec.Builder builder, String id, Map<Hazard, Double> strengths, double minIntensity, double maxIntensity,

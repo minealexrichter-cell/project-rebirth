@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_workstation",
+  "sort": 62,
+  "time": 350,
+  "ingredients": [
+    {
+      "item": "projectrebirth:hazmat_trousers",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 5
+    },
+    {
+      "tag": "c:ingots/iron",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:heavy_suit_trousers",
+    "count": 1
+  }
+}

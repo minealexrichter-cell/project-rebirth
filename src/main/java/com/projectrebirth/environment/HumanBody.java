@@ -25,6 +25,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingHealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -67,7 +68,7 @@ public final class HumanBody {
             // The cockpit is sealed; radiation is only weakened.
             return hazard == Hazard.RADIATION ? RebirthConfig.HUMAN_PILOT_RADIATION_PROTECTION.get().floatValue() : 1.0f;
         }
-        return 0.0f;
+        return Protection.ofGear(player, hazard);
     }
 
     private static float reaching(Player player, Exposure exposure, Hazard hazard) {
@@ -90,9 +91,24 @@ public final class HumanBody {
         float radiation = reaching(player, exposure, Hazard.RADIATION);
         float pollution = reaching(player, exposure, Hazard.POLLUTION);
         float acid = reaching(player, exposure, Hazard.ACID);
+        if (!(player.getVehicle() instanceof PowerArmorEntity)) {
+            Protection.useFilter(player, exposure.get(Hazard.POLLUTION));
+            if (exposure.get(Hazard.ACID) > 0.0f && everySeconds(player, RebirthConfig.PROTECTION_ACID_WEAR_INTERVAL.get())) {
+                Protection.wearByAcid(player);
+            }
+        }
         setBiology(player, afterSecond(biology(player), radiation, pollution, acid));
         applySymptoms(player);
         hurtBySymptoms(player, acid);
+        tellClient(player, radiation);
+    }
+
+    /** What this person's own HUD may show. Test players have no real client behind them. */
+    private static void tellClient(ServerPlayer player, float radiation) {
+        if (player.connection.hasChannel(EnvironmentStatusPayload.TYPE)) {
+            Biology biology = biology(player);
+            PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, biology.dose(), biology.toxin()));
+        }
     }
 
     /** The numbers of one second. */

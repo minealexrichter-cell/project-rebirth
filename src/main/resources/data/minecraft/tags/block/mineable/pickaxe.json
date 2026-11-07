@@ -27,6 +27,8 @@
     "projectrebirth:air_filtration_unit",
     "projectrebirth:airlock_door",
     "projectrebirth:sealed_hatch",
-    "projectrebirth:backup_battery"
+    "projectrebirth:backup_battery",
+    "projectrebirth:decontamination_chamber",
+    "projectrebirth:radiation_purge_station"
   ]
 }

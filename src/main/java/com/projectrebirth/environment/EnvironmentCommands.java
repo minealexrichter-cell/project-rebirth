@@ -106,6 +106,8 @@ public final class EnvironmentCommands {
         Biology biology = HumanBody.biology(player);
         source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_body", number(biology.dose()), HumanBody.doseStage(biology.dose()),
                 number(biology.toxin()), HumanBody.toxinStage(biology.toxin())), false);
+        source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_contamination",
+                number(com.projectrebirth.shelter.Contamination.of(player.getVehicle() instanceof com.projectrebirth.powerarmor.PowerArmorEntity armor ? armor : player))), false);
         return 1;
     }
 

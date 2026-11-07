@@ -516,5 +516,19 @@
   "block.projectrebirth.backup_battery": "Резервный аккумулятор",
   "message.projectrebirth.backup_battery.status": "Резервный аккумулятор: %s / %s FE, %s, блоков жизнеобеспечения: %s",
   "message.projectrebirth.backup_battery.feeding": "ПИТАЕТ ЖИЗНЕОБЕСПЕЧЕНИЕ",
-  "message.projectrebirth.backup_battery.waiting": "в ожидании"
+  "message.projectrebirth.backup_battery.waiting": "в ожидании",
+  "block.projectrebirth.decontamination_chamber": "Дезактивационная камера",
+  "block.projectrebirth.radiation_purge_station": "Станция радиационной очистки",
+  "item.projectrebirth.decontamination_solution": "Дезактивирующий раствор",
+  "message.projectrebirth.airlock.blocked": "Шлюз: сначала закройте другую дверь",
+  "message.projectrebirth.environment.status_contamination": "Внешнее загрязнение: %s",
+  "message.projectrebirth.decontamination.status": "Камера: раствор %s (+%s), %s FE; на вас %s",
+  "message.projectrebirth.purge.status": "Очистка: доза %s, −%s/с, %s FE — %s",
+  "message.projectrebirth.purge.reason.working": "работает",
+  "message.projectrebirth.purge.reason.nobody": "встаньте на платформу",
+  "message.projectrebirth.purge.reason.no_dose": "дозы нет",
+  "message.projectrebirth.purge.reason.not_sealed": "только в герметичном помещении",
+  "message.projectrebirth.purge.reason.dirty_air": "воздух помещения загрязнён",
+  "message.projectrebirth.purge.reason.no_energy": "не хватает энергии",
+  "message.projectrebirth.purge.reason.artificial_body": "у искусственного тела нет дозы"
 }

@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 80,
+  "time": 600,
+  "ingredients": [
+    {
+      "tag": "c:ingots/titanium",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:synthetic_fiber",
+      "count": 4
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:radiation_purge_station",
+    "count": 1
+  }
+}

@@ -71,6 +71,23 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue SHELTER_LEAK_DRIFT;
     public static final ModConfigSpec.DoubleValue SHELTER_CLEAN_AIR_PER_SECOND;
     public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_LIFE;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_MAX;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_PER_POLLUTION;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_PER_RADIATION;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_PER_ACID;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_SHED_SHARE;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_AIR_PER_UNIT;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_DECAY;
+    public static final ModConfigSpec.DoubleValue DECON_PER_SECOND;
+    public static final ModConfigSpec.DoubleValue DECON_PER_SOLUTION;
+    public static final ModConfigSpec.IntValue DECON_ENERGY;
+    public static final ModConfigSpec.IntValue DECON_CAPACITY;
+    public static final ModConfigSpec.DoubleValue PURGE_DOSE_PER_SECOND;
+    public static final ModConfigSpec.DoubleValue PURGE_MAX_POLLUTION;
+    public static final ModConfigSpec.IntValue PURGE_ENERGY;
+    public static final ModConfigSpec.IntValue PURGE_CAPACITY;
+    public static final ModConfigSpec.IntValue PURGE_RECEIVE;
+    public static final ModConfigSpec.IntValue AIRLOCK_MAX_VOLUME;
     public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_BASE_USE;
     public static final ModConfigSpec.DoubleValue SHELTER_CARTRIDGE_WORK_USE;
     public static final ModConfigSpec.IntValue SHELTER_ENERGY_BASE;
@@ -458,6 +475,31 @@ public final class RebirthConfig {
                 .defineInRange("energyPerTickPerThousandBlocks", 10, 0, 1_000_000);
         SHELTER_ENERGY_CAPACITY = builder.comment("Energy an air filtration unit holds").defineInRange("energyCapacity", 20000, 1, 1_000_000_000);
         SHELTER_ENERGY_RECEIVE = builder.comment("Energy an air filtration unit takes in per tick").defineInRange("energyReceivePerTick", 200, 1, 1_000_000_000);
+        AIRLOCK_MAX_VOLUME = builder.comment("Largest closed space between airlock doors that counts as one airlock: its airlock doors and sealed hatches do not open at the same time")
+                .defineInRange("airlockMaxVolume", 64, 1, 4096);
+        builder.pop();
+
+        builder.comment("External contamination: on people, the gear they wear, bodies and power armor; it is shed into the air of a sealed room").push("contamination");
+        CONTAMINATION_MAX = builder.comment("Most contamination one carrier holds").defineInRange("max", 100.0, 1.0, 1.0E6);
+        CONTAMINATION_PER_POLLUTION = builder.comment("Gained per second outside a sealed room per unit of polluted air above environment.protection.filterSafePollution")
+                .defineInRange("perPollution", 0.02, 0.0, 1000.0);
+        CONTAMINATION_PER_RADIATION = builder.comment("Gained per second per unit of radiation above environment.hud.dangerRadiation (fallout)").defineInRange("perRadiation", 0.002, 0.0, 1000.0);
+        CONTAMINATION_PER_ACID = builder.comment("Gained per second per unit of acid").defineInRange("perAcid", 0.1, 0.0, 1000.0);
+        CONTAMINATION_SHED_SHARE = builder.comment("Share of it shed into the air of a sealed room per second").defineInRange("shedPerSecond", 0.02, 0.0, 1.0);
+        CONTAMINATION_AIR_PER_UNIT = builder.comment("Pollution one unit of it brings into one block of air (spread over the room's volume)").defineInRange("airPollutionPerUnit", 20.0, 0.0, 1.0E6);
+        CONTAMINATION_DECAY = builder.comment("What comes off by itself per second").defineInRange("decayPerSecond", 0.01, 0.0, 1.0E6);
+        builder.pop();
+
+        builder.comment("Decontamination chamber and radiation purge station").push("decontamination");
+        DECON_PER_SECOND = builder.comment("Contamination the chamber takes off one carrier per second").defineInRange("chamberPerSecond", 20.0, 0.0, 1.0E6);
+        DECON_PER_SOLUTION = builder.comment("Contamination one decontamination solution washes off").defineInRange("chamberPerSolution", 100.0, 0.001, 1.0E6);
+        DECON_ENERGY = builder.comment("Energy the chamber uses per tick while it washes; none if energy.stationsNeedEnergy is false").defineInRange("chamberEnergyPerTick", 40, 0, 1_000_000);
+        DECON_CAPACITY = builder.comment("Energy the chamber holds").defineInRange("chamberEnergyCapacity", 20000, 1, 1_000_000_000);
+        PURGE_DOSE_PER_SECOND = builder.comment("Radiation dose the purge station takes from a person standing on it, per second").defineInRange("purgeDosePerSecond", 0.5, 0.0, 1.0E6);
+        PURGE_MAX_POLLUTION = builder.comment("The purge station works only in a sealed room whose air is at most this polluted").defineInRange("purgeMaxPollution", 1.0, 0.0, 1.0E6);
+        PURGE_ENERGY = builder.comment("Energy the purge station uses per tick while it works; none if energy.stationsNeedEnergy is false").defineInRange("purgeEnergyPerTick", 200, 0, 1_000_000);
+        PURGE_CAPACITY = builder.comment("Energy the purge station holds").defineInRange("purgeEnergyCapacity", 100000, 1, 1_000_000_000);
+        PURGE_RECEIVE = builder.comment("Energy the purge station takes in per tick").defineInRange("purgeEnergyReceivePerTick", 1000, 1, 1_000_000_000);
         builder.pop();
 
         builder.comment("The catastrophes: strength per hazard at intensity 1, on top of the background").push("events");

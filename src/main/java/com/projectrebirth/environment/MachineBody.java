@@ -37,6 +37,7 @@ public final class MachineBody {
         if (!Environment.isEnabled() || !body.isAlive() || !(body.level() instanceof ServerLevel level)) {
             return;
         }
+        com.projectrebirth.shelter.Contamination.second(body);
         Exposure exposure = Environment.exposureAt(level, body.blockPosition());
         acidSecond(body, body.getBodyClass(), body.upgrades(), exposure.get(Hazard.ACID), level.getGameTime());
     }
@@ -72,6 +73,9 @@ public final class MachineBody {
 
     /** One second of a power armor, if acid wears armor at all (off by default). Called by the armor itself. */
     public static void tickArmor(PowerArmorEntity armor) {
+        if (Environment.isEnabled() && !armor.isWrecked()) {
+            com.projectrebirth.shelter.Contamination.second(armor);
+        }
         if (!Environment.isEnabled() || !RebirthConfig.MACHINE_ARMOR_ACID_WEAR.get() || armor.isWrecked()
                 || !(armor.level() instanceof ServerLevel level)) {
             return;

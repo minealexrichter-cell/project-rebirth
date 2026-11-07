@@ -82,7 +82,31 @@ public final class ShelterRegistry {
                     .lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 7 : 0)
                     .requiresCorrectToolForDrops());
 
+    public static final DeferredBlock<DecontaminationChamberBlock> DECONTAMINATION_CHAMBER = BLOCKS.registerBlock("decontamination_chamber",
+            DecontaminationChamberBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .pushReaction(PushReaction.BLOCK)
+                    .requiresCorrectToolForDrops());
+
+    public static final DeferredBlock<RadiationPurgeStationBlock> RADIATION_PURGE_STATION = BLOCKS.registerBlock("radiation_purge_station",
+            RadiationPurgeStationBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(3.5f, 6.0f)
+                    .sound(SoundType.METAL)
+                    .noOcclusion()
+                    .lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 9 : 2)
+                    .requiresCorrectToolForDrops());
+
     public static final DeferredItem<BlockItem> AIR_FILTRATION_UNIT_ITEM = ITEMS.registerSimpleBlockItem(AIR_FILTRATION_UNIT);
+    public static final DeferredItem<DoubleHighBlockItem> DECONTAMINATION_CHAMBER_ITEM = ITEMS.register("decontamination_chamber",
+            () -> new DoubleHighBlockItem(DECONTAMINATION_CHAMBER.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> RADIATION_PURGE_STATION_ITEM = ITEMS.registerSimpleBlockItem(RADIATION_PURGE_STATION);
+    public static final DeferredItem<Item> DECONTAMINATION_SOLUTION = ITEMS.registerSimpleItem("decontamination_solution", new Item.Properties().stacksTo(16));
     public static final DeferredItem<BlockItem> BACKUP_BATTERY_ITEM = ITEMS.registerSimpleBlockItem(BACKUP_BATTERY);
     public static final DeferredItem<DoubleHighBlockItem> AIRLOCK_DOOR_ITEM = ITEMS.register("airlock_door",
             () -> new DoubleHighBlockItem(AIRLOCK_DOOR.get(), new Item.Properties()));
@@ -102,6 +126,19 @@ public final class ShelterRegistry {
             BLOCK_ENTITIES.register("backup_battery", () -> BlockEntityType.Builder.of(com.projectrebirth.technology.energy.BackupBatteryBlockEntity::new,
                     BACKUP_BATTERY.get()).build(null));
 
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DecontaminationChamberBlockEntity>> DECONTAMINATION_CHAMBER_ENTITY =
+            BLOCK_ENTITIES.register("decontamination_chamber", () -> BlockEntityType.Builder.of(DecontaminationChamberBlockEntity::new,
+                    DECONTAMINATION_CHAMBER.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadiationPurgeStationBlockEntity>> RADIATION_PURGE_STATION_ENTITY =
+            BLOCK_ENTITIES.register("radiation_purge_station", () -> BlockEntityType.Builder.of(RadiationPurgeStationBlockEntity::new,
+                    RADIATION_PURGE_STATION.get()).build(null));
+
+    private static final DeferredRegister<net.neoforged.neoforge.attachment.AttachmentType<?>> ATTACHMENTS =
+            DeferredRegister.create(net.neoforged.neoforge.registries.NeoForgeRegistries.ATTACHMENT_TYPES, ProjectRebirth.MOD_ID);
+    /** External contamination of a player, a body or a power armor; saved, gone on death. */
+    public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<Float>> CONTAMINATION = ATTACHMENTS.register("contamination",
+            () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> 0.0f).serialize(com.mojang.serialization.Codec.FLOAT, amount -> amount > 0.0f).build());
+
     static {
         com.projectrebirth.technology.energy.BackupBatteryBlockEntity.setType(BACKUP_BATTERY_ENTITY::get);
     }
@@ -114,6 +151,7 @@ public final class ShelterRegistry {
         ITEMS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
         MENUS.register(modEventBus);
+        ATTACHMENTS.register(modEventBus);
         COMPONENTS.register(modEventBus);
         modEventBus.addListener(ShelterRegistry::registerCapabilities);
     }
@@ -125,5 +163,11 @@ public final class ShelterRegistry {
                 (unit, side) -> unit.energy());
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, BACKUP_BATTERY_ENTITY.get(),
                 (battery, side) -> battery.input());
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, DECONTAMINATION_CHAMBER_ENTITY.get(),
+                (chamber, side) -> chamber.automation());
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, DECONTAMINATION_CHAMBER_ENTITY.get(),
+                (chamber, side) -> chamber.energy());
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, RADIATION_PURGE_STATION_ENTITY.get(),
+                (station, side) -> station.energy());
     }
 }

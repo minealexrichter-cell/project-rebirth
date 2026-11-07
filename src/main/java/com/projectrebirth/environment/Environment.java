@@ -129,6 +129,10 @@ public final class Environment {
         if (event.getEntity() instanceof ServerPlayer player && isSecondOf(player.level().getGameTime(), player.getId())) {
             updatePlayer(player);
             HumanBody.onSecond(player, lastExposure(player));
+            // in a power armor the armor carries the contamination; creative and spectator players carry none
+            if (player.gameMode.isSurvival() && !(player.getVehicle() instanceof com.projectrebirth.powerarmor.PowerArmorEntity armor && !armor.isWrecked())) {
+                com.projectrebirth.shelter.Contamination.second(player);
+            }
         }
     }
 

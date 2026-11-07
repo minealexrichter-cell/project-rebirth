@@ -516,5 +516,19 @@
   "block.projectrebirth.backup_battery": "Backup Battery",
   "message.projectrebirth.backup_battery.status": "Backup battery: %s / %s FE, %s, life support blocks: %s",
   "message.projectrebirth.backup_battery.feeding": "FEEDING LIFE SUPPORT",
-  "message.projectrebirth.backup_battery.waiting": "standing by"
+  "message.projectrebirth.backup_battery.waiting": "standing by",
+  "block.projectrebirth.decontamination_chamber": "Decontamination Chamber",
+  "block.projectrebirth.radiation_purge_station": "Radiation Purge Station",
+  "item.projectrebirth.decontamination_solution": "Decontamination Solution",
+  "message.projectrebirth.airlock.blocked": "Airlock: close the other door first",
+  "message.projectrebirth.environment.status_contamination": "External contamination: %s",
+  "message.projectrebirth.decontamination.status": "Chamber: solution %s (+%s), %s FE; you: %s",
+  "message.projectrebirth.purge.status": "Purge: dose %s, −%s/s, %s FE — %s",
+  "message.projectrebirth.purge.reason.working": "working",
+  "message.projectrebirth.purge.reason.nobody": "stand on the platform",
+  "message.projectrebirth.purge.reason.no_dose": "no dose to take",
+  "message.projectrebirth.purge.reason.not_sealed": "only in a sealed room",
+  "message.projectrebirth.purge.reason.dirty_air": "the room air is polluted",
+  "message.projectrebirth.purge.reason.no_energy": "not enough energy",
+  "message.projectrebirth.purge.reason.artificial_body": "an artificial body has no dose"
 }

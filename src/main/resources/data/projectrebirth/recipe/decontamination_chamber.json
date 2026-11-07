@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "IGI",
+    "I I",
+    "ICI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "C": {
+      "item": "projectrebirth:circuit_board"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:decontamination_chamber",
+    "count": 1
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "working=false": {
+      "model": "projectrebirth:block/radiation_purge_station"
+    },
+    "working=true": {
+      "model": "projectrebirth:block/radiation_purge_station_on"
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "wall": "projectrebirth:block/decontamination_chamber_wall",
+    "floor": "projectrebirth:block/decontamination_chamber_floor",
+    "roof": "projectrebirth:block/decontamination_chamber_roof",
+    "particle": "projectrebirth:block/decontamination_chamber_wall"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#floor"
+        },
+        "south": {
+          "texture": "#floor"
+        },
+        "east": {
+          "texture": "#floor"
+        },
+        "west": {
+          "texture": "#floor"
+        },
+        "up": {
+          "texture": "#floor"
+        },
+        "down": {
+          "texture": "#floor"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        14
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wall"
+        },
+        "south": {
+          "texture": "#wall"
+        },
+        "east": {
+          "texture": "#wall"
+        },
+        "west": {
+          "texture": "#wall"
+        },
+        "up": {
+          "texture": "#wall"
+        },
+        "down": {
+          "texture": "#wall"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        1,
+        0
+      ],
+      "to": [
+        2,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wall"
+        },
+        "south": {
+          "texture": "#wall"
+        },
+        "east": {
+          "texture": "#wall"
+        },
+        "west": {
+          "texture": "#wall"
+        },
+        "up": {
+          "texture": "#wall"
+        },
+        "down": {
+          "texture": "#wall"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        1,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#wall"
+        },
+        "south": {
+          "texture": "#wall"
+        },
+        "east": {
+          "texture": "#wall"
+        },
+        "west": {
+          "texture": "#wall"
+        },
+        "up": {
+          "texture": "#wall"
+        },
+        "down": {
+          "texture": "#wall"
+        }
+      }
+    }
+  ]
+}

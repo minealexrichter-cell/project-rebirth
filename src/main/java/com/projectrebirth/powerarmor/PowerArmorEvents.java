@@ -46,6 +46,14 @@ public final class PowerArmorEvents {
                 && event.getEntityBeingMounted() instanceof PowerArmorEntity armor && armor.isPilotLocked()
                 && event.getEntityMounting().isAlive() && !event.getEntityMounting().isRemoved()) {
             event.setCanceled(true);
+            return;
+        }
+        // 1.5.2: a pilot who sneaks to get out of an armor with an opening shell waits for it to open; the armor lets them out.
+        // Only the pilot's own request: a teleport, death or logout lets them out at once.
+        if (!event.getLevel().isClientSide() && event.isDismounting() && event.getEntityBeingMounted() instanceof PowerArmorEntity armor
+                && event.getEntityMounting() instanceof net.minecraft.server.level.ServerPlayer pilot && pilot.isShiftKeyDown()
+                && pilot.isAlive() && !pilot.hasDisconnected() && !armor.isReleasingPilot() && armor.leaveThroughShell(pilot)) {
+            event.setCanceled(true);
         }
     }
 

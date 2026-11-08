@@ -133,7 +133,8 @@ public final class PowerArmorClient {
     }
 
     private static void hidePilot(RenderPlayerEvent.Pre event) {
-        if (event.getEntity().getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()) {
+        // the pilot is seen only in a wreck or while the shell stands open (1.5.2)
+        if (event.getEntity().getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked() && armor.isShellClosed()) {
             event.setCanceled(true);
         }
     }

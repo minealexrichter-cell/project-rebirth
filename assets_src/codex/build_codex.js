@@ -250,8 +250,8 @@ category('armor', P + 'power_armor', 'Power Armor', 'Силовая броня',
     entry('power_armor', P + 'power_armor', -3, 0, [], 'Power Armor', 'Силовая броня', [
         entity(P + 'power_armor', 'A walking suit of armor for a human or a body inside it.', 'Шагающая броня для человека или тела внутри.'),
         recipe(P + 'power_armor', 'Made at the armor workstation.', 'Делается на станции брони.'),
-        text('Place it from its item. Right-click to climb in, Shift to get out. The pilot is protected: all damage goes to the armor.\n\nArmor strikes with both hands for more damage, reaches farther and jumps higher; items in its fists keep their poses — bow, crossbow, trident, shield.',
-            'Ставится из предмета. ПКМ — сесть, Shift — выйти. Пилот защищён: весь урон получает броня.\n\nБроня бьёт обеими руками сильнее, дотягивается дальше и прыгает выше; предметы в её кулаках держатся как надо — лук, арбалет, трезубец, щит.'),
+        text('Place it from its item. Right-click to climb in, Shift to get out; the combat armor opens first: the chest plate swings down, the visor lifts. The pilot is protected: all damage goes to the armor.\n\nArmor strikes with both hands for more damage, reaches farther and jumps higher; items in its fists keep their poses — bow, crossbow, trident, shield.',
+            'Ставится из предмета. ПКМ — сесть, Shift — выйти; боевая броня сначала раскрывается: грудная плита откидывается, забрало поднимается. Пилот защищён: весь урон получает броня.\n\nБроня бьёт обеими руками сильнее, дотягивается дальше и прыгает выше; предметы в её кулаках держатся как надо — лук, арбалет, трезубец, щит.'),
         note('In armor the 9th hotbar slot becomes the ability slot; what was in it comes back when you get out.', 'В броне 9-й слот хотбара становится слотом способности; то, что в нём лежало, вернётся после выхода.')
     ]),
     entry('integrity', P + 'repair_wrench', -1, -1, ['power_armor'], 'Integrity and Repair', 'Целостность и ремонт', [

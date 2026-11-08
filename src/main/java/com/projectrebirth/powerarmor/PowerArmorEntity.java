@@ -96,6 +96,18 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private static final EntityDataAccessor<Boolean> FLOODLIGHT_ON = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> AIMING_WEAPON = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Long> WEAPON_RELOAD_END = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.LONG);
+    /** The shell that opens to let the pilot in and out (1.5.2): one of the SHELL_ states. */
+    private static final EntityDataAccessor<Byte> SHELL = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BYTE);
+    public static final byte SHELL_CLOSED = 0;
+    public static final byte SHELL_OPENING = 1;
+    public static final byte SHELL_OPEN = 2;
+    public static final byte SHELL_CLOSING = 3;
+    /** The lengths of the open and close animations, and how long it stays open while the pilot steps in or out. */
+    public static final int SHELL_OPEN_TICKS = 24;
+    public static final int SHELL_HOLD_TICKS = 6;
+    public static final int SHELL_CLOSE_TICKS = 20;
+    /** How far the player who asked to get in may walk away before the armor gives up and closes again. */
+    private static final double SHELL_ENTER_DISTANCE = 4.0;
 
     private static final ResourceLocation PILOT_ATTACK_MODIFIER = ProjectRebirth.id("power_armor_attack");
     private static final ResourceLocation PILOT_KNOCKBACK_MODIFIER = ProjectRebirth.id("power_armor_knockback");
@@ -114,6 +126,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.power_armor.walk");
     private static final RawAnimation SHUTDOWN = RawAnimation.begin().thenPlayAndHold("animation.power_armor.shutdown");
     private static final RawAnimation WRECKED = RawAnimation.begin().thenPlayAndHold("animation.power_armor.wrecked");
+    private static final RawAnimation SHELL_OPEN_ANIMATION = RawAnimation.begin().thenPlayAndHold("animation.power_armor.open");
+    private static final RawAnimation SHELL_CLOSE_ANIMATION = RawAnimation.begin().thenPlay("animation.power_armor.close");
 
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     @Nullable
@@ -131,6 +145,11 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     /** 0..1 jump strength requested by the pilot (charged with the jump key), applied when on the ground. */
     private float pendingJump;
     private int lastAttackAnimationTick;
+    /** Server only: ticks left in the current shell state, and what happens when it is open. Not saved: a loaded armor is shut. */
+    private int shellTicks;
+    @Nullable
+    private Player enteringPlayer;
+    private boolean pilotLeaving;
 
     public PowerArmorEntity(EntityType<? extends PowerArmorEntity> type, Level level) {
         super(type, level);
@@ -160,6 +179,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         builder.define(FLOODLIGHT_ON, false);
         builder.define(AIMING_WEAPON, false);
         builder.define(WEAPON_RELOAD_END, 0L);
+        builder.define(SHELL, SHELL_CLOSED);
     }
 
     // ---------------------------------------------------------------- state
@@ -217,6 +237,98 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     public boolean isWrecked() {
         return entityData.get(STATE) == STATE_WRECKED;
+    }
+
+    // ---------------------------------------------------------------- the opening shell (1.5.2)
+
+    public byte shellState() {
+        return entityData.get(SHELL);
+    }
+
+    /** Whether the shell is shut: the armor walks and hides its pilot only then. */
+    public boolean isShellClosed() {
+        return shellState() == SHELL_CLOSED;
+    }
+
+    /** Whether getting in and out goes through the opening shell, for this armor's model and the server's settings. */
+    public boolean opensShell() {
+        return getVariant().opensShell() && RebirthConfig.ARMOR_OPENING_SHELL.get();
+    }
+
+    /** True while the armor itself lets the pilot out. */
+    public boolean isReleasingPilot() {
+        return releasingPilot;
+    }
+
+    private void setShell(byte state, int ticks) {
+        entityData.set(SHELL, state);
+        shellTicks = ticks;
+    }
+
+    private void shellSound(boolean opening) {
+        level().playSound(null, blockPosition(), opening ? SoundEvents.IRON_DOOR_OPEN : SoundEvents.IRON_DOOR_CLOSE, SoundSource.NEUTRAL, 1.0f, 0.6f);
+        level().playSound(null, blockPosition(), opening ? SoundEvents.PISTON_EXTEND : SoundEvents.PISTON_CONTRACT, SoundSource.NEUTRAL, 0.6f, 0.7f);
+    }
+
+    /** Opens the shell for a player who wants to get in; they step in when it is open. Public for tests. */
+    public void openFor(Player player) {
+        enteringPlayer = player;
+        pilotLeaving = false;
+        setShell(SHELL_OPENING, SHELL_OPEN_TICKS);
+        shellSound(true);
+        say(player, "opening");
+    }
+
+    /**
+     * Called when the pilot asks to get out (sneak): opens the shell, and the pilot steps out when it is open. False if the
+     * armor does not open this way now; then the normal way out applies.
+     */
+    public boolean leaveThroughShell(Player pilot) {
+        if (!opensShell() || !isActive() || getPilot() != pilot) {
+            return false;
+        }
+        if (isShellClosed()) {
+            enteringPlayer = null;
+            pilotLeaving = true;
+            setShell(SHELL_OPENING, SHELL_OPEN_TICKS);
+            shellSound(true);
+        }
+        // already opening or closing: the request is taken, the pilot waits
+        return true;
+    }
+
+    /** One tick of the shell, on the server: open, let in or out, close. Public for tests (mock armors tick by themselves). */
+    public void tickShell() {
+        byte state = shellState();
+        if (state == SHELL_CLOSED || --shellTicks > 0) {
+            return;
+        }
+        if (state == SHELL_OPENING) {
+            setShell(SHELL_OPEN, SHELL_HOLD_TICKS);
+        } else if (state == SHELL_OPEN) {
+            if (pilotLeaving) {
+                pilotLeaving = false;
+                releasePilot();
+            } else if (enteringPlayer != null) {
+                Player player = enteringPlayer;
+                enteringPlayer = null;
+                if (player != null && player.isAlive() && !player.isRemoved() && player.level() == level() && !player.isPassenger() && !isVehicle() && isActive() && canBeUsedBy(player)
+                        && player.distanceTo(this) <= SHELL_ENTER_DISTANCE && player.startRiding(this)) {
+                    player.displayClientMessage(Component.translatable("message.projectrebirth.armor.entered",
+                            Mth.ceil(getStructural()), Mth.ceil(getMaxStructural()), Mth.ceil(getCritical()), Mth.ceil(getMaxCritical())), true);
+                }
+            }
+            setShell(SHELL_CLOSING, SHELL_CLOSE_TICKS);
+            shellSound(false);
+        } else {
+            setShell(SHELL_CLOSED, 0);
+        }
+    }
+
+    /** The pilot stands in the shell rather than sitting: seen only while it is open. */
+    @Override
+    public boolean shouldRiderSit() {
+        return false;
     }
 
     /** A shut-down armor keeps its pilot inside unless the armor itself is letting them out. */
@@ -396,6 +508,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             return;
         }
         entityData.set(STATE, STATE_WRECKED);
+        setShell(SHELL_CLOSED, 0);
+        enteringPlayer = null;
+        pilotLeaving = false;
         entityData.set(STRUCTURAL, 0.0f);
         entityData.set(CRITICAL, 0.0f);
         entityData.set(HATCH_PROGRESS, 0.0f);
@@ -469,6 +584,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             }
         }
         tickHatch(pilot);
+        tickShell();
         if (tickCount % 20 == 0) {
             MachineBody.tickArmor(this);
         }
@@ -629,7 +745,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     @Override
     public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
         Direction facing = getDirection();
-        Direction[] order = {facing.getOpposite(), facing.getClockWise(), facing.getCounterClockWise(), facing};
+        // out of an open shell the pilot steps forward, through its open front; otherwise behind the armor
+        Direction[] order = opensShell() && !isShellClosed()
+                ? new Direction[] {facing, facing.getClockWise(), facing.getCounterClockWise(), facing.getOpposite()}
+                : new Direction[] {facing.getOpposite(), facing.getClockWise(), facing.getCounterClockWise(), facing};
         for (Direction direction : order) {
             for (int up = 0; up <= 1; up++) {
                 BlockPos pos = blockPosition().relative(direction, 1).above(up);
@@ -715,6 +834,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             say(player, "not_owner");
         } else if (player.isPassenger()) {
             say(player, "cannot_enter_now");
+        } else if (!isShellClosed()) {
+            say(player, "shell_busy");
+        } else if (opensShell()) {
+            openFor(player);
         } else if (player.startRiding(this)) {
             player.displayClientMessage(Component.translatable("message.projectrebirth.armor.entered",
                     Mth.ceil(getStructural()), Mth.ceil(getMaxStructural()), Mth.ceil(getCritical()), Mth.ceil(getMaxCritical())), true);
@@ -905,7 +1028,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     @Override
     public void travel(Vec3 input) {
-        if (isParked()) {
+        if (isParked() || !isShellClosed()) {
             Parked.keepOnlyFalling(this);
             super.travel(Vec3.ZERO);
         } else {
@@ -969,6 +1092,12 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
                 return state.setAndContinue(SHUTDOWN);
             }
             return state.setAndContinue(state.isMoving() ? WALK : IDLE);
+        }));
+        // The shell: opens and holds open, then closes; shut, it does nothing (the parts rest closed).
+        controllers.add(new AnimationController<>(this, "shell", 0, state -> switch (shellState()) {
+            case SHELL_OPENING, SHELL_OPEN -> state.setAndContinue(SHELL_OPEN_ANIMATION);
+            case SHELL_CLOSING -> state.setAndContinue(SHELL_CLOSE_ANIMATION);
+            default -> PlayState.STOP;
         }));
         // Plays only when triggered; its arm and torso keyframes override the main animation for that moment.
         controllers.add(new AnimationController<>(this, ACTION_CONTROLLER, 2, state -> PlayState.STOP)

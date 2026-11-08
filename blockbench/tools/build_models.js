@@ -904,50 +904,144 @@
         left_leg: {r: {'0.000': [0, 0, 0], '1.000': [6, -4, -4]}}
     }});
 
-    // Combat: the heavy tank. Gunmetal and olive plates, red visor, massive shoulders, jump pack.
+    /**
+     * The hatch of an armor that opens to let its pilot in and out (1.5.2): each moving part swings from shut to open with a
+     * short unlatching jolt first, holds open, and swings back. open: {bone: [x, y, z] rotation when open}.
+     */
+    const CHEST_OPEN = 95, VISOR_OPEN = -105;
+    function hatchAnimations(open) {
+        const openBones = {}, closeBones = {};
+        for (const [bone, v] of Object.entries(open)) {
+            const part = f => v.map(a => Math.round(a * f * 100) / 100);
+            openBones[bone] = {r: {'0.000': [0, 0, 0], '0.150': part(0.06), '0.300': part(0.1), '1.200': part(1)}};
+            closeBones[bone] = {r: {'0.000': part(1), '0.850': part(0.04), '1.000': [0, 0, 0]}};
+        }
+        return {
+            'animation.power_armor.open': {length: 1.2, loop: 'hold', ease: 'easeInOutSine', bones: openBones},
+            'animation.power_armor.close': {length: 1.0, loop: 'once', ease: 'easeInOutSine', bones: closeBones}
+        };
+    }
+
+    // Combat (1.5.2): the heavy tank, rebuilt with detail. Worn gunmetal plates with bright edges, olive panels, a red visor,
+    // round servo hubs at the shoulders and knees, a power pack with two exhaust canisters on the back. It opens at the front:
+    // the chest plate swings down like a ramp and the visor lifts, and the pilot steps in (see PowerArmorEntity, hatch).
     (function () {
-        const metal = '#4c5359', olive = '#5f6b3e', dark = '#25282c', red = '#ff3b2f', steel = '#8b9299', amber = '#e0a020';
+        const metal = '#4a5056', worn = '#6d757c', olive = '#55603a', dark = '#212428', steel = '#98a0a7', red = '#ff3b2f',
+            amber = '#e0a020', rust = '#6b4a2e', inner = '#141619', glow = '#ff5a3a';
+        const rivets = (w, h) => [[1, 1, 1, 1, steel], [w - 2, 1, 1, 1, steel], [1, h - 2, 1, 1, steel], [w - 2, h - 2, 1, 1, steel]];
+        /** A round servo hub seen from its face: a dark disc with a steel ring, spokes and an amber centre. */
+        const hub = s => [[0, 0, s, s, dark], [1, 0, s - 2, 1, steel], [1, s - 1, s - 2, 1, steel], [0, 1, 1, s - 2, steel], [s - 1, 1, 1, s - 2, steel],
+            [Math.floor(s / 2), 1, 1, s - 2, worn], [1, Math.floor(s / 2), s - 2, 1, worn], [Math.floor(s / 2), Math.floor(s / 2), 1, 1, amber]];
+        const scuff = [[2, 3, 2, 1, worn], [5, 6, 1, 1, rust]];
+        const canister = {c: worn, n: 0.06, all: [[0, 1, 3, 1, dark], [0, 4, 3, 1, rust], [0, 6, 3, 1, dark]], tp: [[1, 1, 1, 1, '#0a0b0d']]};
+        const sideHub = {c: dark, n: 0.04, sd: hub(4)};
+        const hose = {c: rust, n: 0.08, edge: false};
+        const guard = {c: olive, sd: [[1, 1, 3, 2, shade(olive, 0.8)]]};
+        const door = C([-8.5, 20, -5.5], [17, 13, 2.5], {c: metal,
+            f: [[0, 0, 17, 1, steel], [1, 7, 15, 1, dark], [1, 9, 15, 1, worn], [1, 10, 15, 1, dark], [7, 10, 3, 2, amber], ...rivets(17, 13), [3, 11, 2, 1, worn]],
+            k: [[1, 1, 15, 11, inner], [2, 2, 2, 9, dark], [13, 2, 2, 9, dark], [7, 3, 3, 2, glow]],
+            sd: [[0, 0, 3, 1, steel], [1, 2, 1, 9, dark]], tp: [[1, 1, 15, 1, worn]]});
+        const lip = C([-7, 33, -5], [14, 2, 2], {c: dark, n: 0.05, f: [[1, 0, 12, 1, worn]], tp: [[2, 0, 10, 1, steel]]});
+        const bust = C([-7.5, 26, -6.5], [15, 6, 1], {c: metal, f: [[0, 0, 15, 1, steel], [1, 1, 13, 1, worn], [7, 2, 1, 3, dark], [2, 3, 3, 1, dark], [10, 3, 3, 1, dark], [12, 4, 1, 1, rust]],
+            tp: [[0, 0, 15, 1, steel]], sd: [[0, 0, 1, 6, steel]]});
+        const spine = C([-1, 20.5, -6.5], [2, 5.5, 1], {c: worn, n: 0.05, f: [[0, 0, 2, 1, steel], [0, 2, 2, 1, dark], [0, 4, 2, 1, dark]]});
+        const chestHub = C([-8, 29.5, -7], [3, 3, 1], {c: dark, n: 0.04, f: hub(3), edge: false});
+        const faceplate = C([-4.5, 35, -5.5], [9, 6, 1.5], {c: metal,
+            f: [[0, 0, 9, 1, steel], [1, 2, 2, 1, red], [6, 2, 2, 1, red], [3, 2, 3, 1, dark], [1, 1, 2, 1, dark], [6, 1, 2, 1, dark],
+                [4, 3, 1, 3, worn], [0, 5, 9, 1, dark]],
+            k: [[0, 0, 9, 6, inner], [1, 2, 2, 1, '#7a1c16'], [6, 2, 2, 1, '#7a1c16']]});
+        const snout = C([-2, 34.5, -7], [4, 3, 1.5], {c: dark, n: 0.05, f: [[0, 0, 4, 1, steel], [1, 1, 2, 1, '#0a0b0d'], [0, 2, 4, 1, worn]],
+            tp: [[1, 0, 2, 1, steel]]});
+        const filter = C([-4.5, 34, -6.5], [2, 2, 2], {c: olive, f: [[0, 0, 2, 2, shade(olive, 0.8)]], sd: [[0, 0, 2, 1, worn]]});
         SPECS.power_armor = {
-            res: 128, seed: 606, wrecked: true,
+            res: 256, seed: 606, wrecked: true,
             joints: {knee: 8, elbow: 20},
             armTable: 'combat',
-            bones: armorBones({
-                legPivot: [-4, 16, 0], headPivot: [0, 34, 0], armPivot: [-11, 31, 0], hand: [-11.5, 11, 0],
-                armLeftUv: ARM_LEFT_UV,
-                leg: [
-                    C([-7, 3, -3], [6, 13, 6], {c: metal, all: [[0, 6, 6, 1, dark]], sd: [[1, 1, 4, 4, shade(metal, 0.8)]]}),
-                    C([-7.5, 0, -5], [7, 3, 8], {c: dark, n: 0.06, f: [[1, 0, 5, 1, steel]], tp: [[1, 1, 5, 6, metal]]}),
-                    C([-7.5, 7, -4], [7, 5, 1], {c: olive, f: [[3, 0, 1, 5, dark], ...hazard(0, 4, 7, 1, amber, dark, 1)]}),
-                    C([-7.5, 12, -3.5], [7, 4, 7], {c: olive, sd: [[1, 1, 5, 2, shade(olive, 0.8)]], f: [[1, 1, 5, 1, dark]]})
-                ],
-                torso: [
-                    C([-7, 16, -4], [14, 4, 8], {c: dark, n: 0.05, f: [...vents(1, 1, 12, 2, metal)]}),
-                    C([-9, 20, -5], [18, 14, 10], {c: metal,
-                        f: [[0, 0, 18, 1, steel], [1, 11, 16, 2, dark], [8, 11, 2, 2, amber]],
-                        k: [[2, 2, 14, 10, dark]], sd: [[1, 2, 8, 2, olive], [1, 9, 8, 3, dark]], tp: [[3, 2, 12, 6, dark]]}),
-                    C([-6, 26, -6], [12, 7, 1], {c: olive, f: [[0, 0, 12, 1, shade(olive, 1.25)], [5, 1, 2, 5, dark], [1, 2, 3, 3, shade(olive, 0.78)], [8, 2, 3, 3, shade(olive, 0.78)]]}),
-                    C([-5, 21, -6], [10, 4, 1], {c: dark, n: 0.05, f: [...vents(1, 1, 8, 2, steel)]}),
-                    C([-6, 22, 5], [12, 11, 3], {c: olive, k: [[1, 1, 10, 2, dark], ...vents(2, 4, 8, 3, dark)]}),
-                    C([-5, 19, 5.5], [3, 3, 2], {c: dark, n: 0.05, k: [[1, 1, 1, 1, '#ff8a2e']], edge: false}),
-                    C([2, 19, 5.5], [3, 3, 2], {c: dark, n: 0.05, k: [[1, 1, 1, 1, '#ff8a2e']], edge: false})
-                ],
-                head: [
-                    C([-4, 34, -4], [8, 6, 8], {c: metal,
-                        f: [[0, 1, 8, 3, dark], [1, 2, 6, 1, red], [3, 4, 2, 2, steel]],
-                        sd: [[0, 1, 5, 2, dark], [5, 3, 3, 3, olive]], k: [...vents(1, 1, 6, 3, dark)], tp: [[3, 0, 2, 8, olive]]}),
-                    C([-5, 34, -3], [1, 3, 5], {c: olive}),
-                    mirror(C([-5, 34, -3], [1, 3, 5], {c: olive})),
-                    C([-0.5, 40, -3], [1, 1, 6], {c: red, n: 0.03, edge: false})
-                ],
-                arm: [
-                    C([-15, 28, -4.5], [7, 7, 9], {c: olive, f: [[1, 1, 5, 1, shade(olive, 1.25)], ...hazard(0, 5, 7, 1, amber, dark, 1)], sd: [[1, 2, 7, 3, shade(olive, 0.8)]]}, {uv: ARM_UV.shoulderR}),
-                    C([-14, 12, -3], [5, 16, 6], {c: metal, all: [[0, 3, 6, 1, dark], [0, 8, 6, 1, dark]]}, {uv: ARM_UV.armR}),
-                    C([-14.5, 8, -3.5], [6, 4, 7], {c: dark, n: 0.06, f: [[1, 1, 1, 2, steel], [3, 1, 1, 2, steel], [5, 1, 1, 2, steel]], all: [[0, 0, 6, 1, steel]]}, {uv: ARM_UV.fistR}),
-                    C([-15.5, 33, -5], [8, 3, 10], {c: metal, tp: [[1, 1, 6, 8, shade(metal, 1.15)]], sd: [[0, 2, 10, 1, dark]]}),
-                    C([-15, 12, -4], [7, 7, 8], {c: olive, f: [[3, 1, 1, 5, dark]], sd: [[1, 1, 6, 1, dark]], bt: [[1, 1, 5, 6, dark]]})
-                ]
-            }),
-            animations: armorAnimations({
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                ...limbs('leg', 'root', [-4, 16, 0], [
+                    // the main column (the knee cuts it in two); the leg upgrades are measured from it
+                    C([-7, 2, -3], [6, 14, 6], {c: dark, n: 0.06, all: [[0, 5, 6, 1, worn], [0, 9, 6, 1, worn]], sd: [[1, 1, 4, 3, metal]]}),
+                    // thigh plates
+                    C([-7.5, 9.5, -4.5], [7, 6.5, 1.5], {c: metal, f: [[0, 0, 7, 1, steel], [1, 2, 5, 1, dark], [1, 4, 5, 1, dark], [5, 5, 1, 1, rust]],
+                        sd: [[0, 0, 1, 6, steel]]}),
+                    C([-8.5, 9, -3.5], [1.5, 7, 7], {c: olive, sd: [[1, 1, 5, 1, shade(olive, 1.2)], [1, 4, 5, 2, shade(olive, 0.8)], [3, 2, 1, 1, steel]]}),
+                    C([-6, 13, 3], [4, 3, 1.5], {c: metal, k: [[0, 0, 4, 1, steel], [1, 1, 2, 1, dark]]}),
+                    // the knee: a cap, a servo hub on the outer side, a piston behind
+                    C([-7, 6.5, -5], [6, 3.5, 2], {c: metal, f: [[0, 0, 6, 1, steel], [2, 1, 2, 2, dark], [2, 1, 1, 1, steel]], tp: [[0, 0, 6, 1, steel]]}),
+                    C([-9, 6.5, -2], [1.5, 4, 4], sideHub),
+                    C([-5.5, 5, 3], [3, 6, 1.5], {c: steel, n: 0.04, k: [[1, 0, 1, 6, dark]], edge: false}),
+                    // the shin guard and the outer shin plate
+                    C([-7.5, 2.5, -4.5], [7, 4, 1.5], {c: metal, f: [[0, 0, 7, 1, steel], [1, 1, 5, 1, dark], [1, 2, 5, 1, worn], ...hazard(0, 3, 7, 1, amber, dark, 1)]}),
+                    C([-8.5, 2.5, -2.5], [1.5, 4, 5], {c: olive, sd: [[1, 1, 3, 2, shade(olive, 0.8)]]}),
+                    // the boot: a wide sole, a toe cap, an ankle hub, a heel spur
+                    C([-8, 0, -6], [8, 2.5, 9.5], {c: dark, n: 0.06, tp: [[1, 1, 6, 3, metal], [1, 5, 6, 1, worn]], f: [[0, 0, 8, 1, steel]],
+                        sd: [[0, 0, 9, 1, worn], [2, 1, 1, 1, steel], [5, 1, 1, 1, steel]]}),
+                    C([-7.5, 0, -7], [7, 2, 1], {c: metal, f: [[0, 0, 7, 1, steel], [1, 1, 1, 1, dark], [3, 1, 1, 1, dark], [5, 1, 1, 1, dark]]}),
+                    C([-9, 1, -1.5], [1, 2.5, 2.5], {c: steel, n: 0.03, sd: [[1, 1, 1, 1, dark]], edge: false}),
+                    C([-6.5, 0, 3.5], [5, 1.5, 1.5], {c: metal, k: [[0, 0, 5, 1, steel]]}),
+                    // the hip joint
+                    C([-6.5, 15, -2.5], [5, 2.5, 5], {c: dark, n: 0.05, sd: [[1, 1, 3, 1, worn]]})
+                ]),
+                {name: 'torso', parent: 'root', pivot: [0, 16, 0], cubes: [
+                    // the hull; the chest plate (a bone of its own) covers its front, whose face is the inside of the suit
+                    C([-8, 19, -3], [16, 14, 8], {c: metal,
+                        f: [[0, 0, 16, 14, inner], [1, 1, 14, 1, dark], [2, 2, 2, 11, dark], [12, 2, 2, 11, dark], [5, 3, 6, 6, '#1d2023'],
+                            [6, 4, 4, 4, '#2a2e33'], [7, 5, 2, 2, glow], [5, 10, 6, 1, '#3a2a22'], [3, 12, 10, 1, dark]],
+                        k: [[0, 0, 16, 1, steel], [1, 12, 14, 1, dark]], sd: [[0, 0, 8, 1, steel], [1, 2, 6, 2, olive], [1, 9, 6, 3, dark], [3, 5, 2, 2, steel]],
+                        tp: [[2, 1, 12, 6, dark]]}),
+                    // the waist: the pelvis with vents and a ribbed belly
+                    C([-6.5, 16, -3.5], [13, 3, 7], {c: dark, n: 0.05, f: [...vents(1, 0, 11, 2, metal)], k: [...vents(1, 0, 11, 2, metal)]}),
+                    C([-6, 17, -4.5], [12, 3, 1.5], {c: metal, f: [[0, 0, 12, 1, steel], [1, 1, 10, 1, dark], [5, 2, 2, 1, amber]]}),
+                    // the power pack on the back: a housing, a fusion core port, two exhaust canisters
+                    C([-7, 21, 5], [14, 11, 4], {c: metal, k: [[0, 0, 14, 1, steel], [1, 2, 3, 7, dark], [10, 2, 3, 7, dark], ...vents(5, 7, 4, 2, dark), ...scuff],
+                        sd: [[0, 0, 4, 1, steel], [1, 3, 2, 5, olive]], tp: [[1, 1, 12, 2, dark]]}),
+                    C([-2, 24, 9], [4, 4, 1], {c: dark, n: 0.04, k: hub(4)}),
+                    C([-6.5, 26, 9], [3, 7, 2.5], canister),
+                    mirror(C([-6.5, 26, 9], [3, 7, 2.5], canister)),
+                    // the shoulder yoke, a servo hub on each side of the chest, two hoses from the collar to the pack
+                    C([-9, 33, -3.5], [18, 2, 8.5], {c: metal, tp: [[1, 1, 16, 1, steel], [1, 6, 16, 1, dark]], f: [[0, 0, 18, 1, steel]], k: [[0, 0, 18, 1, steel]]}),
+                    C([-9.5, 27, -2], [1.5, 4, 4], sideHub),
+                    mirror(C([-9.5, 27, -2], [1.5, 4, 4], sideHub)),
+                    C([-5.5, 32, 4], [2, 1.5, 3], hose),
+                    mirror(C([-5.5, 32, 4], [2, 1.5, 3], hose))
+                ]},
+                {name: 'chest_door', parent: 'torso', pivot: [0, 20, -5.5], cubes: [door, lip, bust, spine, chestHub, mirror(chestHub)]},
+                {name: 'head', parent: 'torso', pivot: [0, 34, 0], cubes: [
+                    // the helmet: a shell (its front face is the inside), a crest, side guards, an antenna, a neck ring
+                    C([-4, 34, -4.5], [8, 7, 9], {c: metal, f: [[0, 0, 8, 7, inner]],
+                        sd: [[0, 0, 9, 1, steel], [1, 2, 5, 3, dark], [6, 2, 2, 4, olive], ...scuff], k: [...vents(1, 2, 6, 3, dark)], tp: [[3, 0, 2, 9, olive], [1, 1, 1, 7, worn]]}),
+                    C([-1, 41, -4], [2, 1, 8], {c: olive, tp: [[0, 0, 2, 1, steel]]}),
+                    C([-5, 35.5, -3], [1, 4, 5], guard),
+                    mirror(C([-5, 35.5, -3], [1, 4, 5], guard)),
+                    C([3.5, 41, 1.5], [1, 3, 1], {c: steel, n: 0.03, tp: [[0, 0, 1, 1, red]], edge: false}),
+                    C([-4.5, 33.5, -3.5], [9, 1, 8], {c: dark, n: 0.05})
+                ]},
+                {name: 'visor', parent: 'head', pivot: [0, 41, -5.5], cubes: [faceplate, snout, filter, mirror(filter),
+                    C([-4.5, 40, -6.5], [9, 1, 1], {c: metal, f: [[0, 0, 9, 1, steel]], edge: false})]},
+                ...limbs('arm', 'torso', [-11, 31, 0], [
+                    // the three arm cubes the first-person arm also draws (fixed texture areas, see ArmorArmRenderer)
+                    C([-16, 28, -5], [8, 7, 10], {c: metal, f: [[0, 0, 8, 1, steel], ...hazard(0, 6, 8, 1, amber, dark, 1)],
+                        sd: [[0, 0, 10, 1, steel], [2, 2, 6, 3, shade(metal, 0.85)], [1, 6, 8, 1, dark], ...rivets(10, 7)], tp: [[1, 1, 6, 8, worn]]}, {uv: ARM_UV.shoulderR}),
+                    C([-14, 12, -3], [5, 16, 6], {c: dark, n: 0.06, all: [[0, 3, 6, 1, worn], [0, 6, 6, 1, worn], [0, 12, 6, 1, worn]]}, {uv: ARM_UV.armR}),
+                    C([-14.5, 8, -3.5], [6, 4, 7], {c: dark, n: 0.06, f: [[0, 0, 6, 1, steel], [1, 1, 1, 2, steel], [3, 1, 1, 2, steel], [5, 1, 1, 2, steel]],
+                        all: [[0, 0, 6, 1, steel]]}, {uv: ARM_UV.fistR}),
+                    // the pauldron cap and the forearm guard (the first-person arm draws these two as well)
+                    C([-16.5, 33, -5.5], [9, 3, 11], {c: metal, tp: [[1, 1, 7, 9, worn], [4, 1, 1, 9, dark]], sd: [[0, 0, 11, 1, steel]], f: [[0, 0, 9, 1, steel]]}),
+                    C([-15, 12, -4], [7, 7, 8], {c: metal, f: [[0, 0, 7, 1, steel], [3, 1, 1, 5, dark], [1, 4, 2, 1, rust]], sd: [[0, 0, 8, 1, steel], [1, 2, 6, 1, dark], [1, 4, 6, 1, dark]],
+                        bt: [[1, 1, 5, 6, dark]]}),
+                    // a hub on the shoulder, the elbow, a bicep plate, knuckles, a forearm piston
+                    C([-17, 29.5, -2], [1, 4, 4], sideHub),
+                    C([-14, 29, -6], [4, 4, 1], {c: dark, n: 0.04, f: hub(4), edge: false}),
+                    C([-14.5, 19, -3.5], [6, 2, 7], {c: dark, n: 0.05, all: [[0, 0, 6, 1, worn]]}),
+                    C([-15, 21.5, -2.5], [1, 5, 5], {c: olive, sd: [[1, 1, 3, 3, shade(olive, 0.8)]]}),
+                    C([-14.5, 9, -4.5], [6, 2.5, 1], {c: metal, f: [[0, 0, 6, 1, steel], [1, 1, 1, 1, dark], [4, 1, 1, 1, dark]]}),
+                    C([-12.5, 13, 4], [2, 6, 1], {c: steel, n: 0.04, k: [[0, 0, 1, 6, dark]], edge: false})
+                ], ARM_LEFT_UV),
+                {name: 'right_hand', parent: 'right_arm', pivot: [-11.5, 11, 0], cubes: []},
+                {name: 'left_hand', parent: 'left_arm', pivot: [11.5, 11, 0], cubes: []}
+            ],
+            animations: Object.assign(armorAnimations({
                 idle: {length: 4, bob: -0.5, arm: -3, armZ: 2},
                 // A heavy, even march: short knee lift, arms held low, a solid drop on every step.
                 walk: {length: 0.95, stride: 24, knee: [4, 14, 14, 58, 20], arm: 15, armLag: 0.04, armOut: 3, elbow: [12, 16], bob: 1.0, roll: 1.8, lean: 4, twist: 5},
@@ -963,7 +1057,7 @@
                 }},
                 shutdown: SLUMP(22, 2, 20),
                 wrecked: COLLAPSE(32, 8, -6, 3)
-            })
+            }), hatchAnimations({chest_door: [CHEST_OPEN, 0, 0], visor: [VISOR_OPEN, 0, 0]}))
         };
     })();
 
@@ -1318,7 +1412,10 @@
         const bone = name => spec.bones.find(b => b.name === name);
         const torso = bone('torso'), head = bone('head'), arm = bone('right_arm'), leftArm = bone('left_arm'), leg = bone('right_leg'), leftLeg = bone('left_leg');
         const hull = torso.cubes.reduce((best, c) => (c.s[0] * c.s[1] > best.s[0] * best.s[1] ? c : best));
-        const front = minOf(torso.cubes, 2), back = maxOf(torso.cubes, 2), top = maxOf(head.cubes, 1);
+        // an armor with a chest hatch carries its chest upgrades on the hatch, so they open with it
+        const door = bone('chest_door');
+        const chest = door ? {parent: 'chest_door', pivot: door.pivot} : {parent: 'torso', pivot: torso.pivot};
+        const front = minOf(door ? door.cubes : torso.cubes, 2), back = maxOf(torso.cubes, 2), top = maxOf(head.cubes, 1);
         const shoulder = arm.cubes[0], upper = arm.cubes[1];
         const elbow = spec.joints.elbow, knee = spec.joints.knee;
         const lowLeg = leg.cubes.filter(c => c.o[1] + c.s[1] > knee);
@@ -1330,8 +1427,8 @@
         const part = (name, parent, pivot, cubes) => ({name, parent, pivot, cubes});
         spec.bones.push(
             part('slot_head_floodlight', 'head', head.pivot, [C([-1.5, top, -2.5], [3, 2, 3], LAMP)]),
-            part('slot_chest_plating', 'torso', torso.pivot, [C([-5, hull.o[1] + 3, front - 1], [10, 8, 1], PLATE)]),
-            part('slot_chest_floodlight', 'torso', torso.pivot, [C([-1.5, hull.o[1] + 8, front - 1.5], [3, 3, 1.5], LAMP)]),
+            part('slot_chest_plating', chest.parent, chest.pivot, [C([-5, hull.o[1] + 3, front - 1], [10, 8, 1], PLATE)]),
+            part('slot_chest_floodlight', chest.parent, chest.pivot, [C([-1.5, hull.o[1] + 8, front - 1.5], [3, 3, 1.5], LAMP)]),
             part('slot_back_air', 'torso', torso.pivot, [C([-2.5, hull.o[1] + 2, back], [5, 8, 3], TANK)]),
             // The mount of the banner: its pole stands on the back, and the banner rises 14 pixels above the armor.
             part('slot_back_banner', 'torso', [0, top + 14 - 32 * 2 / 3, back], []),
@@ -1349,7 +1446,7 @@
             f: [[1, 0, 1, 2, '#a970ff'], [4, 0, 1, 2, '#a970ff'], [7, 0, 1, 2, '#a970ff']],
             k: [[1, 0, 1, 2, '#a970ff'], [4, 0, 1, 2, '#a970ff'], [7, 0, 1, 2, '#a970ff']]};
         spec.bones.push(
-            part('slot_chest_emi', 'torso', torso.pivot, [C([-4.5, hull.o[1] + 0.5, front - 1], [9, 2.5, 1], screen, {late: true})]),
+            part('slot_chest_emi', chest.parent, chest.pivot, [C([-4.5, hull.o[1] + 0.5, front - 1], [9, 2.5, 1], screen, {late: true})]),
             part('slot_back_emi', 'torso', torso.pivot, [C([-4.5, hull.o[1] + 10.5, back], [9, 2, 1], screen, {late: true})])
         );
     }

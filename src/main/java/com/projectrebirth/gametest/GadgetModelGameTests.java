@@ -55,7 +55,9 @@ public class GadgetModelGameTests {
         for (BodyClass bodyClass : BodyClass.values()) {
             check(helper, bodyClass.id(), BODY_PARTS, 64);
         }
-        for (String armor : List.of("power_armor", "mobile_power_armor", "worker_power_armor")) {
+        // the combat armor has the detailed model of 1.5.2 on a 256 texture (its first-person arm reads that size too)
+        check(helper, "power_armor", ARMOR_PARTS, 256);
+        for (String armor : List.of("mobile_power_armor", "worker_power_armor")) {
             check(helper, armor, ARMOR_PARTS, 128);
         }
         helper.succeed();

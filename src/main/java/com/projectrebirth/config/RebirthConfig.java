@@ -45,6 +45,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ARMOR_RESTART_FRACTION;
     public static final ModConfigSpec.IntValue ARMOR_HATCH_RELEASE_SECONDS;
     public static final ModConfigSpec.DoubleValue ARMOR_HATCH_CRITICAL_COST;
+    public static final ModConfigSpec.BooleanValue ARMOR_OPENING_SHELL;
     public static final ModConfigSpec.DoubleValue ARMOR_WRECK_PILOT_DAMAGE;
     public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_STRUCTURAL_PER_INGOT;
     public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_CRITICAL_PER_PLATE;
@@ -355,6 +356,9 @@ public final class RebirthConfig {
         ARMOR_HATCH_CRITICAL_COST = builder
                 .comment("Share of max critical integrity lost when the hatch is blown from inside")
                 .defineInRange("hatchCriticalCostFraction", 0.15, 0.0, 1.0);
+        ARMOR_OPENING_SHELL = builder
+                .comment("The armor opens before the pilot gets in and out (1.5.2; the combat armor for now). False: in and out at once, as before")
+                .define("openingShell", true);
         ARMOR_WRECK_PILOT_DAMAGE = builder
                 .comment("Damage the pilot takes when the armor is wrecked with them inside")
                 .defineInRange("wreckPilotDamage", 6.0, 0.0, 1000.0);

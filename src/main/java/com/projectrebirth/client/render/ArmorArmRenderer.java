@@ -57,13 +57,18 @@ public class ArmorArmRenderer {
     /** Must match the arm boxes of geo/entity/&lt;item id&gt;.geo.json; small details out of the first-person view are left out. */
     private static Box[] boxes(ArmorVariant variant) {
         return switch (variant) {
-            case COMBAT -> new Box[] {Box.own(SHOULDER_U, 7, 7, 9, -4), Box.own(ARM_U, 5, 16, 6, 3), Box.own(FIST_U, 6, 4, 7, 19),
-                    Box.shared(56, 12, 8, 3, 10, -5), Box.shared(92, 19, 7, 7, 8, 12)};
+            case COMBAT -> new Box[] {Box.own(SHOULDER_U, 8, 7, 10, -4), Box.own(ARM_U, 5, 16, 6, 3), Box.own(FIST_U, 6, 4, 7, 19),
+                    Box.shared(140, 0, 9, 3, 11, -5), Box.shared(111, 14, 7, 7, 8, 12)};
             case MOBILE -> new Box[] {Box.own(SHOULDER_U, 5, 5, 7, -3), Box.own(ARM_U, 4, 15, 5, 2), Box.own(FIST_U, 5, 4, 6, 17),
                     Box.shared(70, 19, 5, 5, 6, 11)};
             case WORKER -> new Box[] {Box.own(SHOULDER_U, 8, 8, 10, -4), Box.own(ARM_U, 6, 14, 7, 4), Box.own(FIST_U, 8, 5, 9, 18),
                     Box.shared(32, 34, 8, 5, 8, 13)};
         };
+    }
+
+    /** Size of the variant's texture: the combat armor has the detailed 256 model of 1.5.2, the others 128. */
+    private static int textureSize(ArmorVariant variant) {
+        return variant == ArmorVariant.COMBAT ? 256 : 128;
     }
 
     /** The arm plate's texture area, fixed like the arm boxes (see ARM_UV in blockbench/tools/build_models.js). */
@@ -95,7 +100,7 @@ public class ArmorArmRenderer {
             root.addOrReplaceChild("left_arm", cubes(variant, false), PartPose.offset(5.0f, 2.0f, 0.0f));
             root.addOrReplaceChild("right_plate", plateCube(variant, true), PartPose.offset(-5.0f, 2.0f, 0.0f));
             root.addOrReplaceChild("left_plate", plateCube(variant, false), PartPose.offset(5.0f, 2.0f, 0.0f));
-            ModelPart baked = LayerDefinition.create(mesh, 128, 128).bakeRoot();
+            ModelPart baked = LayerDefinition.create(mesh, textureSize(variant), textureSize(variant)).bakeRoot();
             rightArms.put(variant, baked.getChild("right_arm"));
             leftArms.put(variant, baked.getChild("left_arm"));
             rightPlates.put(variant, baked.getChild("right_plate"));

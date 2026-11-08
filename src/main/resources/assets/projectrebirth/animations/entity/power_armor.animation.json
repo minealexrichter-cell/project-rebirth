@@ -945,6 +945,85 @@
 					}
 				}
 			}
+		},
+		"animation.power_armor.open": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 1.2,
+			"bones": {
+				"chest_door": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.15": {
+							"vector": [5.7, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"0.3": {
+							"vector": [9.5, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"1.2": {
+							"vector": [95, 0, 0],
+							"easing": "easeInOutSine"
+						}
+					}
+				},
+				"visor": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.15": {
+							"vector": [-6.3, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"0.3": {
+							"vector": [-10.5, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"1.2": {
+							"vector": [-105, 0, 0],
+							"easing": "easeInOutSine"
+						}
+					}
+				}
+			}
+		},
+		"animation.power_armor.close": {
+			"animation_length": 1,
+			"bones": {
+				"chest_door": {
+					"rotation": {
+						"0.0": {
+							"vector": [95, 0, 0]
+						},
+						"0.85": {
+							"vector": [3.8, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"1.0": {
+							"vector": [0, 0, 0],
+							"easing": "easeInOutSine"
+						}
+					}
+				},
+				"visor": {
+					"rotation": {
+						"0.0": {
+							"vector": [-105, 0, 0]
+						},
+						"0.85": {
+							"vector": [-4.2, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"1.0": {
+							"vector": [0, 0, 0],
+							"easing": "easeInOutSine"
+						}
+					}
+				}
+			}
 		}
 	},
 	"geckolib_format_version": 2

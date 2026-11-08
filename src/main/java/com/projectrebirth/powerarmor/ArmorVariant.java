@@ -34,6 +34,14 @@ public enum ArmorVariant {
     }
 
     /** Used in the config, in saves and in translation keys. */
+    /**
+     * Whether the armor visibly opens to let its pilot in and out (1.5.2). Only the combat armor has a model with the moving
+     * parts yet; the others will get theirs, and then only this needs to change.
+     */
+    public boolean opensShell() {
+        return this == COMBAT;
+    }
+
     public String id() {
         return id;
     }

@@ -1,0 +1,20 @@
+{
+  "icon": "projectrebirth:advanced_synthetic_body",
+  "x": 2,
+  "y": 0,
+  "parents": [
+    "improved_robot_body"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:advanced_synthetic_body",
+      "text": "codex.projectrebirth.advanced_synthetic_body.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:advanced_synthetic_body",
+      "text": "codex.projectrebirth.advanced_synthetic_body.p2"
+    }
+  ]
+}

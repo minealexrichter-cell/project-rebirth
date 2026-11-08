@@ -58,7 +58,7 @@ final class CodexPages {
         return switch (page.type()) {
             case "item" -> 50;
             case "block" -> 84;
-            case "entity" -> 104;
+            case "entity" -> 92;
             case "recipe" -> 78;
             default -> 0;
         };
@@ -197,6 +197,22 @@ final class CodexPages {
         pose.popPose();
     }
 
+    /** The name over a recipe in red ink, made smaller if it is wider than the room. */
+    private static void label(GuiGraphics graphics, Font font, Component name, int x, int y, int room) {
+        int width = font.width(name);
+        if (width <= room) {
+            graphics.drawString(font, name, x, y, CodexScreen.RED_INK, false);
+            return;
+        }
+        float scale = room / (float) width;
+        PoseStack pose = graphics.pose();
+        pose.pushPose();
+        pose.translate(x, y + (1.0f - scale) * font.lineHeight / 2.0f, 0.0f);
+        pose.scale(scale, scale, 1.0f);
+        graphics.drawString(font, name, 0, 0, CodexScreen.RED_INK, false);
+        pose.popPose();
+    }
+
     private static ItemStack cycle(Ingredient ingredient) {
         ItemStack[] items = ingredient.getItems();
         if (items.length == 0) {
@@ -231,7 +247,7 @@ final class CodexPages {
         if (recipe instanceof FabricationRecipe fabrication) {
             ItemStack station = CodexScreen.stackOf(ProjectRebirth.MOD_ID + ":" + fabrication.station().id());
             graphics.renderItem(station, gridX, y + 1);
-            graphics.drawString(font, station.getHoverName(), gridX + 20, y + 5, CodexScreen.RED_INK, false);
+            label(graphics, font, station.getHoverName(), gridX + 20, y + 5, x + width - gridX - 20);
             List<SizedIngredient> ingredients = fabrication.ingredients();
             for (int i = 0; i < ingredients.size(); i++) {
                 ItemStack stack = cycle(ingredients.get(i).ingredient()).copyWithCount(ingredients.get(i).count());
@@ -250,7 +266,7 @@ final class CodexPages {
                 : recipe instanceof net.minecraft.world.item.crafting.AbstractCookingRecipe ? net.minecraft.world.item.Items.FURNACE
                 : net.minecraft.world.item.Items.CRAFTING_TABLE);
         graphics.renderItem(where, gridX, y + 1);
-        graphics.drawString(font, where.getHoverName(), gridX + 20, y + 5, CodexScreen.RED_INK, false);
+        label(graphics, font, where.getHoverName(), gridX + 20, y + 5, x + width - gridX - 20);
         for (int i = 0; i < ingredients.size(); i++) {
             slot(screen, graphics, font, cycle(ingredients.get(i)), gridX + (i % columns) * 18, y + 20 + (i / columns) * 18, mouseX, mouseY);
         }

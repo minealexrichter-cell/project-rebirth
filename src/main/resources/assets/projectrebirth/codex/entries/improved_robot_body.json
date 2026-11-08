@@ -1,0 +1,20 @@
+{
+  "icon": "projectrebirth:improved_robot_body",
+  "x": 0,
+  "y": 0,
+  "parents": [
+    "basic_robot_body"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:improved_robot_body",
+      "text": "codex.projectrebirth.improved_robot_body.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:improved_robot_body",
+      "text": "codex.projectrebirth.improved_robot_body.p2"
+    }
+  ]
+}

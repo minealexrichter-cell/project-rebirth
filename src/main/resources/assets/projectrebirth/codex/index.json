@@ -35,6 +35,33 @@
         "cable",
         "battery"
       ]
+    },
+    {
+      "id": "bodies",
+      "icon": "projectrebirth:basic_robot_body",
+      "entries": [
+        "consciousness",
+        "basic_robot_body",
+        "improved_robot_body",
+        "advanced_synthetic_body",
+        "hightech_synthetic_body",
+        "premium_synthetic_body",
+        "body_life",
+        "body_modification",
+        "gadgets"
+      ]
+    },
+    {
+      "id": "armor",
+      "icon": "projectrebirth:power_armor",
+      "entries": [
+        "power_armor",
+        "integrity",
+        "emergency",
+        "variants",
+        "armor_upgrades",
+        "weapons"
+      ]
     }
   ]
 }

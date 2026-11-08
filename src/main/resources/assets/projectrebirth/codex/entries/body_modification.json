@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:body_modification_station",
+  "x": 2,
+  "y": -2,
+  "parents": [
+    "advanced_synthetic_body"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:body_modification_station",
+      "text": "codex.projectrebirth.body_modification.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:body_modification_station"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_modification.p3"
+    }
+  ]
+}

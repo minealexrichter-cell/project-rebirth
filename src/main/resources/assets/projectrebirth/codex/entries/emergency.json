@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:rescue_tool",
+  "x": 1,
+  "y": -1,
+  "parents": [
+    "integrity"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.emergency.p1"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:rescue_tool",
+      "text": "codex.projectrebirth.emergency.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:rescue_tool"
+    }
+  ]
+}

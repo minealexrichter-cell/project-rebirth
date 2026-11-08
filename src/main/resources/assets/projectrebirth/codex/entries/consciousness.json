@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:transfer_capsule",
+  "x": -4,
+  "y": 0,
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.consciousness.p1"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:transfer_capsule",
+      "text": "codex.projectrebirth.consciousness.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:transfer_capsule"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.consciousness.p4"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.consciousness.p5"
+    }
+  ]
+}

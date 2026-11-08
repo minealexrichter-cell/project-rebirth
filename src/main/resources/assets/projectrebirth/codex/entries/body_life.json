@@ -1,0 +1,31 @@
+{
+  "icon": "projectrebirth:repair_kit",
+  "x": -2,
+  "y": 2,
+  "parents": [
+    "basic_robot_body"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_life.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_life.p2"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:repair_kit",
+      "text": "codex.projectrebirth.body_life.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:repair_kit"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.body_life.p5"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "icon": "projectrebirth:jetpack",
+  "x": 4,
+  "y": -2,
+  "parents": [
+    "body_modification"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.gadgets.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:titanium_plating"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:sealing_module",
+      "text": "codex.projectrebirth.gadgets.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:sealing_module"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:jetpack",
+      "text": "codex.projectrebirth.gadgets.p5"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:jetpack"
+    }
+  ]
+}

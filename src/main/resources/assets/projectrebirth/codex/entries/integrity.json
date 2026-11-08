@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:repair_wrench",
+  "x": -1,
+  "y": -1,
+  "parents": [
+    "power_armor"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.integrity.p1"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:repair_wrench",
+      "text": "codex.projectrebirth.integrity.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:repair_wrench"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.integrity.p4"
+    }
+  ]
+}

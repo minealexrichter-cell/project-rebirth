@@ -145,6 +145,121 @@ category('energy', P + 'battery', 'Energy', 'Энергия', [
     ])
 ]);
 
+// ================================================================ bodies
+
+const bodyClass = (id, x, y, parents, en, ru, captionEn, captionRu, recipeEn, recipeRu) => entry(id, P + id, x, y, parents, en, ru, [
+    entity(P + id, captionEn, captionRu),
+    recipe(P + id, recipeEn, recipeRu)
+]);
+
+category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
+    entry('consciousness', P + 'transfer_capsule', -4, 0, [], 'Transfer of Consciousness', 'Перенос сознания', [
+        text('Your mind can leave the human body and live in an artificial one. The human body stays behind in the transfer capsule; there it is safe from hunger but not from attack.',
+            'Сознание может покинуть человеческое тело и жить в искусственном. Человеческое тело остаётся в капсуле переноса: там оно не голодает, но уязвимо для ударов.'),
+        block(P + 'transfer_capsule', 'The transfer capsule, two blocks high, made at the assembly station.', 'Капсула переноса в два блока высотой, делается на сборочной станции.'),
+        recipe(P + 'transfer_capsule'),
+        text('Place a body from its item. Right-click the capsule: it lists all your bodies — class, integrity, distance, state — with a button "Transfer". A body must stand within 16 blocks of the capsule.\n\nZ returns you to the human body. If the artificial body is destroyed, the mind comes back by itself; without a human body it goes to a spare body, and with no bodies left an ordinary death follows.',
+            'Поставьте тело из предмета. ПКМ по капсуле — список всех ваших тел (класс, прочность, расстояние, состояние) с кнопкой «Перенестись». Тело должно стоять не дальше 16 блоков от капсулы.\n\nZ возвращает в человеческое тело. Если искусственное тело уничтожено, сознание возвращается само; без человеческого тела — переходит в запасное, а если тел не осталось, наступает обычная смерть.'),
+        note('Bodies and their inventories survive leaving the game and a server restart.', 'Тела и их инвентарь переживают выход из игры и перезапуск сервера.')
+    ]),
+    bodyClass('basic_robot_body', -2, 0, ['consciousness'], 'Basic Robot', 'Базовый робот',
+        'Class 1, robotic. Integrity 20, armor 2, speed ×0.85. One gadget slot.', 'Класс 1, роботизированный. Прочность 20, броня 2, скорость ×0,85. Один слот гаджета.',
+        'The first body, made at the assembly station.', 'Первое тело, делается на сборочной станции.'),
+    bodyClass('improved_robot_body', 0, 0, ['basic_robot_body'], 'Improved Robot', 'Улучшенный робот',
+        'Class 2, robotic. Integrity 26, armor 4, speed ×0.95, damage +0.5. Two gadget slots.', 'Класс 2, роботизированный. Прочность 26, броня 4, скорость ×0,95, урон +0,5. Два слота гаджетов.',
+        'A better body is made from the one before it; its gadgets go over to the new one.', 'Лучшее тело делается из предыдущего; его гаджеты переходят в новое.'),
+    bodyClass('advanced_synthetic_body', 2, 0, ['improved_robot_body'], 'Advanced Synthetic', 'Продвинутый синтетик',
+        'Class 3, synthetic. Integrity 30, armor 6, speed ×1.0, damage +1. Mends itself slowly. Three slots.', 'Класс 3, синтетический. Прочность 30, броня 6, скорость ×1,0, урон +1. Понемногу чинится сам. Три слота.',
+        'Synthetic bodies need synthetic fiber.', 'Синтетическим телам нужна синтетическая ткань.'),
+    bodyClass('hightech_synthetic_body', 4, 0, ['advanced_synthetic_body'], 'High-Tech Synthetic', 'Высокотехнологичный синтетик',
+        'Class 4, synthetic. Integrity 36, armor 8, speed ×1.1, damage +2. Four slots.', 'Класс 4, синтетический. Прочность 36, броня 8, скорость ×1,1, урон +2. Четыре слота.',
+        'Titanium, processors and a power cell.', 'Титан, процессоры и энергоячейка.'),
+    bodyClass('premium_synthetic_body', 4, 2, ['hightech_synthetic_body'], 'Premium Synthetic', 'Премиальный синтетик',
+        'Class 5, synthetic. Integrity 40, armor 10, speed ×1.2, damage +3, the fastest self-repair. Five slots.',
+        'Класс 5, синтетический. Прочность 40, броня 10, скорость ×1,2, урон +3, быстрее всех чинится сам. Пять слотов.',
+        'The best body of the mod: it also needs netherite and an echo shard. It is the only one that eats golden apples and drinks potions.', 'Лучшее тело мода: ему нужны ещё незерит и эхо-осколок. Единственное ест золотые яблоки и пьёт зелья.'),
+    entry('body_life', P + 'repair_kit', -2, 2, ['basic_robot_body'], 'Life in a Body', 'Жизнь в теле', [
+        text('Instead of hearts a body has an integrity bar; it has no hunger. Bodies of classes 1–4 neither eat nor drink, and potions do not work on them.\n\nBodies do not wear ordinary armor, elytra, pumpkins or heads. Their inventory is their own: in place of armor slots it has a panel with the class, integrity and gadget slots.',
+            'Вместо сердец у тела полоса прочности, голода нет. Тела классов 1–4 не едят и не пьют, зелья на них не действуют.\n\nОбычную броню, элитры, тыкву и головы тела не носят. Инвентарь у тела свой: вместо слотов брони — панель с классом, прочностью и слотами гаджетов.'),
+        text('Synthetic bodies (classes 3–5) mend themselves a few seconds after damage.\n\nAn empty body stands like a solid thing: you can stand on it and nothing pushes it away.',
+            'Синтетические тела (классы 3–5) понемногу чинятся сами через несколько секунд после урона.\n\nПустое тело стоит как твёрдый предмет: на него можно встать, его ничто не сдвигает.'),
+        item(P + 'repair_kit', 'The repair kit mends 35% of integrity in 4 seconds; damage breaks the repair off.', 'Ремкомплект за 4 секунды чинит 35% прочности; урон прерывает ремонт.'),
+        recipe(P + 'repair_kit'),
+        note('A packed body is mended at the maintenance station: robots with iron, synthetics with synthetic fiber.', 'Упакованное тело чинит станция обслуживания: роботов — железом, синтетиков — синтетической тканью.')
+    ]),
+    entry('body_modification', P + 'body_modification_station', 2, -2, ['advanced_synthetic_body'], 'Body Modification', 'Модификация тел', [
+        block(P + 'body_modification_station', 'Puts gadgets into a packed body and takes them out.', 'Ставит гаджеты в упакованное тело и снимает их.'),
+        recipe(P + 'body_modification_station'),
+        text('Put the packed body in and pick a gadget: installing takes 5 seconds and energy, removing is instant. A body has as many gadget slots as its class — from one to five.\n\nWhen a body is made into a better one at the assembly station, its gadgets go over; those that do not fit come back as items.',
+            'Положите упакованное тело и выберите гаджет: установка занимает 5 секунд и энергию, снятие мгновенно. Слотов гаджетов у тела столько, каков его класс, — от одного до пяти.\n\nКогда тело улучшают на сборочной станции, гаджеты переходят в новое; лишние возвращаются предметами.')
+    ]),
+    entry('gadgets', P + 'jetpack', 4, -2, ['body_modification'], 'Gadgets', 'Гаджеты', [
+        text('Gadgets are made at the implant fabricator.\n\nArmor plates add armor: copper +1, iron +2, titanium +3 and +1 toughness, for each plate. Different materials do not mix on one body.',
+            'Гаджеты делаются в цехе имплантов.\n\nБронепластины добавляют броню: медь +1, железо +2, титан +3 и +1 к стойкости — за каждую пластину. Разные материалы на одном теле не смешиваются.'),
+        recipe(P + 'titanium_plating'),
+        item(P + 'sealing_module', 'The sealing module keeps the air under water and, since 1.3, keeps acid and dust off the body. It does not save from being stuck in blocks.',
+            'Модуль герметизации сохраняет воздух под водой, а с 1.3 защищает тело от кислоты и пыли. От удушья в блоках не спасает.'),
+        recipe(P + 'sealing_module'),
+        item(P + 'jetpack', 'The jetpack: hold jump in the air to rise up to 8 blocks above the ground under the body. 6 seconds of thrust, refilled only on the ground; with none left the body falls as usual.',
+            'Джетпак: удерживайте прыжок в воздухе — тело поднимается до 8 блоков над землёй под собой. 6 секунд тяги, пополняется только на земле; без тяги тело падает как обычно.'),
+        recipe(P + 'jetpack')
+    ])
+]);
+
+// ================================================================ power armor
+
+category('armor', P + 'power_armor', 'Power Armor', 'Силовая броня', [
+    entry('power_armor', P + 'power_armor', -3, 0, [], 'Power Armor', 'Силовая броня', [
+        entity(P + 'power_armor', 'A walking suit of armor for a human or a body inside it.', 'Шагающая броня для человека или тела внутри.'),
+        recipe(P + 'power_armor', 'Made at the armor workstation.', 'Делается на станции брони.'),
+        text('Place it from its item. Right-click to climb in, Shift to get out. The pilot is protected: all damage goes to the armor.\n\nArmor strikes with both hands for more damage, reaches farther and jumps higher; items in its fists keep their poses — bow, crossbow, trident, shield.',
+            'Ставится из предмета. ПКМ — сесть, Shift — выйти. Пилот защищён: весь урон получает броня.\n\nБроня бьёт обеими руками сильнее, дотягивается дальше и прыгает выше; предметы в её кулаках держатся как надо — лук, арбалет, трезубец, щит.'),
+        note('In armor the 9th hotbar slot becomes the ability slot; what was in it comes back when you get out.', 'В броне 9-й слот хотбара становится слотом способности; то, что в нём лежало, вернётся после выхода.')
+    ]),
+    entry('integrity', P + 'repair_wrench', -1, -1, ['power_armor'], 'Integrity and Repair', 'Целостность и ремонт', [
+        text('Armor has two bars. Structural integrity takes ordinary hits and comes back by itself after a while. Critical integrity is worn by explosions and fire.\n\nAt zero structural integrity the armor shuts down. At zero critical it becomes a wreck that can only be taken apart.',
+            'У брони две шкалы. Структурная целостность принимает обычные удары и сама восстанавливается через время. Критическая изнашивается от взрывов и огня.\n\nПри нулевой структурной броня отключается. При нулевой критической становится развалиной, которую можно только разобрать.'),
+        item(P + 'repair_wrench', 'The repair wrench mends structural integrity in the field with iron. Shift with the wrench packs the armor into its item.', 'Ремонтный ключ в поле чинит структурную целостность железом. Shift с ключом упаковывает броню в предмет.'),
+        recipe(P + 'repair_wrench'),
+        note('Critical integrity is mended only at the maintenance station, with armor plates.', 'Критическая целостность чинится только на станции обслуживания — бронепластинами.')
+    ]),
+    entry('emergency', P + 'rescue_tool', 1, -1, ['integrity'], 'Emergency Exit', 'Аварийный выход', [
+        text('A shut-down armor holds its pilot. Hold V inside to blow the hatch and climb out.',
+            'Отключённая броня держит пилота. Удерживайте V внутри, чтобы сбросить люк и выбраться.'),
+        item(P + 'rescue_tool', 'The rescue tool pulls a pilot out of armor from outside.', 'Аварийный инструмент вытаскивает пилота из брони снаружи.'),
+        recipe(P + 'rescue_tool')
+    ]),
+    entry('variants', P + 'mobile_power_armor', -1, 1, ['power_armor'], 'Three Kinds of Armor', 'Три вида брони', [
+        text('Combat armor: structural 100, critical 50, the strongest blows; with the ability slot chosen it hits harder.\n\nMobile armor: 70 and 35, faster, jumps higher and falls up to 15 blocks without harm; with the slot chosen it runs faster.\n\nWorker armor: 60 and 30, mines like a diamond tool; B switches between 3×3 and one block; with the slot chosen it mines.',
+            'Боевая: структурная 100, критическая 50, самые сильные удары; с выбранным слотом способности бьёт ещё сильнее.\n\nМобильная: 70 и 35, быстрее, прыгает выше и падает до 15 блоков без урона; с выбранным слотом бежит быстрее.\n\nРабочая: 60 и 30, добывает как алмазный инструмент; B переключает 3×3 и один блок; с выбранным слотом добывает.'),
+        recipe(P + 'mobile_power_armor', 'Mobile armor.', 'Мобильная броня.'),
+        recipe(P + 'worker_power_armor', 'Worker armor.', 'Рабочая броня.')
+    ]),
+    entry('armor_upgrades', P + 'upgrade_mounting_tool', 1, 1, ['variants'], 'Armor Upgrades', 'Улучшения брони', [
+        text('With the mounting tool, Shift + right-click your own empty armor: a window with 7 slots of hull parts opens. Putting an upgrade into a slot installs it, taking it out removes it. A banner goes on the back.',
+            'Устройство монтажа: Shift + ПКМ по своей пустой броне открывает окно с 7 слотами частей корпуса. Положить улучшение в слот — установить, забрать — снять. Знамя ставится на спину.'),
+        recipe(P + 'upgrade_mounting_tool'),
+        text('Plating raises the most structural integrity, for each part: copper +10, iron +20, titanium +30 and +5 critical. The compressed air module raises the jump and the safe fall height. The floodlight (N) lights where the pilot looks.',
+            'Обшивка поднимает максимум структурной целостности за каждую часть: медь +10, железо +20, титан +30 и +5 критической. Модуль сжатого воздуха повышает прыжок и безопасную высоту падения. Прожектор (N) освещает то, куда смотрит пилот.'),
+        recipe(P + 'armor_titanium_plating'),
+        recipe(P + 'compressed_air_module'),
+        recipe(P + 'floodlight')
+    ]),
+    entry('weapons', P + 'assault_rifle', 1, 3, ['variants'], 'Weapons', 'Оружие', [
+        text('Guns fire only from working power armor: left click fires, right click aims, R reloads. Without armor a gun can be carried, but it is a heavy load and does not fire. Each gun has its own rounds, made at the weapon workshop.',
+            'Оружие стреляет только из работающей силовой брони: ЛКМ — огонь, ПКМ — прицеливание, R — перезарядка. Без брони его можно носить, но это тяжёлый груз, и оно не стреляет. У каждого оружия свои патроны, они делаются в оружейной мастерской.'),
+        item(P + 'assault_rifle', 'Assault rifle: automatic, 30 rounds, 4 damage a bullet, 64 blocks.', 'Автоматическая винтовка: очередями, 30 патронов, 4 урона за пулю, 64 блока.'),
+        recipe(P + 'assault_rifle'),
+        recipe(P + 'assault_rifle_ammo'),
+        item(P + 'battle_rifle', 'Battle rifle: one shot at a time with a scope, 10 rounds, 13 damage, 128 blocks.', 'Полуавтоматическая винтовка: по одному выстрелу, с прицелом, 10 патронов, 13 урона, 128 блоков.'),
+        recipe(P + 'battle_rifle'),
+        recipe(P + 'battle_rifle_ammo'),
+        item(P + 'combat_shotgun', 'Combat shotgun: 6 shells, 8 pellets of 2.8 damage, 24 blocks; reloaded a shell at a time.', 'Боевой дробовик: 6 патронов, 8 дробин по 2,8 урона, 24 блока; заряжается по одному патрону.'),
+        recipe(P + 'combat_shotgun'),
+        recipe(P + 'shotgun_shell')
+    ])
+]);
+
 // ================================================================ output
 
 function langPage(entryId, index) {

@@ -1,0 +1,20 @@
+{
+  "icon": "projectrebirth:basic_robot_body",
+  "x": -2,
+  "y": 0,
+  "parents": [
+    "consciousness"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:basic_robot_body",
+      "text": "codex.projectrebirth.basic_robot_body.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:basic_robot_body",
+      "text": "codex.projectrebirth.basic_robot_body.p2"
+    }
+  ]
+}

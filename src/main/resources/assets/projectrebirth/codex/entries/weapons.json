@@ -1,0 +1,53 @@
+{
+  "icon": "projectrebirth:assault_rifle",
+  "x": 1,
+  "y": 3,
+  "parents": [
+    "variants"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.weapons.p1"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:assault_rifle",
+      "text": "codex.projectrebirth.weapons.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:assault_rifle"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:assault_rifle_ammo"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:battle_rifle",
+      "text": "codex.projectrebirth.weapons.p5"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:battle_rifle"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:battle_rifle_ammo"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:combat_shotgun",
+      "text": "codex.projectrebirth.weapons.p8"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:combat_shotgun"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:shotgun_shell"
+    }
+  ]
+}

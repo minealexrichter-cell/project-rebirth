@@ -1,0 +1,25 @@
+{
+  "icon": "projectrebirth:power_armor",
+  "x": -3,
+  "y": 0,
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:power_armor",
+      "text": "codex.projectrebirth.power_armor.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:power_armor",
+      "text": "codex.projectrebirth.power_armor.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.power_armor.p3"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.power_armor.p4"
+    }
+  ]
+}

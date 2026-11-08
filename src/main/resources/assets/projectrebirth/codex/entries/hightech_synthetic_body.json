@@ -1,0 +1,20 @@
+{
+  "icon": "projectrebirth:hightech_synthetic_body",
+  "x": 4,
+  "y": 0,
+  "parents": [
+    "advanced_synthetic_body"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:hightech_synthetic_body",
+      "text": "codex.projectrebirth.hightech_synthetic_body.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:hightech_synthetic_body",
+      "text": "codex.projectrebirth.hightech_synthetic_body.p2"
+    }
+  ]
+}

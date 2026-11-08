@@ -1,0 +1,25 @@
+{
+  "icon": "projectrebirth:armor_workstation",
+  "x": 4,
+  "y": -1,
+  "parents": [
+    "assembly_station"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:armor_workstation",
+      "text": "codex.projectrebirth.armor_workstation.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:armor_workstation",
+      "text": "codex.projectrebirth.armor_workstation.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:armor_plate",
+      "text": "codex.projectrebirth.armor_workstation.p3"
+    }
+  ]
+}

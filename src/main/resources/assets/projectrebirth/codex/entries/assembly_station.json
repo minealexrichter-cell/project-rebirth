@@ -1,0 +1,30 @@
+{
+  "icon": "projectrebirth:assembly_station",
+  "x": 2,
+  "y": 0,
+  "parents": [
+    "electronics_fabricator"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:assembly_station",
+      "text": "codex.projectrebirth.assembly_station.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:assembly_station",
+      "text": "codex.projectrebirth.assembly_station.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:actuator",
+      "text": "codex.projectrebirth.assembly_station.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:synthetic_fiber",
+      "text": "codex.projectrebirth.assembly_station.p4"
+    }
+  ]
+}

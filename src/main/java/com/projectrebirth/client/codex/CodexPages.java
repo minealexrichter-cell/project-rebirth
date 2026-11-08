@@ -56,8 +56,8 @@ final class CodexPages {
 
     static int pictureHeight(CodexBook.Page page) {
         return switch (page.type()) {
-            case "item" -> 54;
-            case "block" -> 96;
+            case "item" -> 50;
+            case "block" -> 84;
             case "entity" -> 104;
             case "recipe" -> 78;
             default -> 0;
@@ -73,11 +73,30 @@ final class CodexPages {
                     : font.split(Component.translatable(page.text()), note ? width - 10 : width);
             int picture = pictureHeight(page);
             int start = 0;
-            boolean withPicture = picture > 0;
+            // plain text goes on below the text of the page before, if there is room for a few lines
+            if ("text".equals(page.type()) && !pages.isEmpty()) {
+                Layout last = pages.get(pages.size() - 1);
+                int used = (last.title() ? TITLE : 0) + (last.picture() && last.page() != null ? pictureHeight(last.page()) : 0)
+                        + (last.lines().size() + 1) * LINE;
+                int room = (height - used) / LINE;
+                if (!last.note() && room >= 3) {
+                    int count = Math.min(lines.size(), room);
+                    List<FormattedCharSequence> joined = new ArrayList<>(last.lines());
+                    joined.add(FormattedCharSequence.EMPTY);
+                    joined.addAll(lines.subList(0, count));
+                    pages.set(pages.size() - 1, new Layout(last.titleKey(), last.title(), last.page(), last.picture(), joined, false));
+                    start = count;
+                    first = false;
+                    if (start >= lines.size()) {
+                        continue;
+                    }
+                }
+            }
+            boolean withPicture = picture > 0 && start == 0;
             do {
                 int room = height - (first ? TITLE : 0) - (withPicture ? picture : 0) - (note ? 8 : 0);
                 int count = Math.max(withPicture ? 0 : 1, Math.min(lines.size() - start, room / LINE));
-                pages.add(new Layout(entry.titleKey(), first, page, withPicture, lines.subList(start, start + count), note));
+                pages.add(new Layout(entry.titleKey(), first, page, withPicture, lines.subList(start, Math.min(lines.size(), start + count)), note));
                 start += count;
                 first = false;
                 withPicture = false;
@@ -155,7 +174,7 @@ final class CodexPages {
         boolean twoHigh = state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF);
         Minecraft minecraft = Minecraft.getInstance();
         float angle = ((minecraft.level == null ? 0 : minecraft.level.getGameTime()) + partialTick) * 1.2f;
-        float size = twoHigh ? 30.0f : 44.0f;
+        float size = twoHigh ? 27.0f : 40.0f;
         PoseStack pose = graphics.pose();
         pose.pushPose();
         pose.translate(centerX, centerY, 150);
@@ -226,9 +245,12 @@ final class CodexPages {
         }
         List<Ingredient> ingredients = recipe.getIngredients();
         int columns = recipe instanceof ShapedRecipe shaped ? shaped.getWidth() : 3;
-        Component table = Component.translatable("block.minecraft.crafting_table");
-        graphics.renderItem(new ItemStack(net.minecraft.world.item.Items.CRAFTING_TABLE), gridX, y + 1);
-        graphics.drawString(font, table, gridX + 20, y + 5, CodexScreen.RED_INK, false);
+        // where it is made: a crafting table, or a furnace for smelting
+        ItemStack where = new ItemStack(recipe instanceof net.minecraft.world.item.crafting.BlastingRecipe ? net.minecraft.world.item.Items.BLAST_FURNACE
+                : recipe instanceof net.minecraft.world.item.crafting.AbstractCookingRecipe ? net.minecraft.world.item.Items.FURNACE
+                : net.minecraft.world.item.Items.CRAFTING_TABLE);
+        graphics.renderItem(where, gridX, y + 1);
+        graphics.drawString(font, where.getHoverName(), gridX + 20, y + 5, CodexScreen.RED_INK, false);
         for (int i = 0; i < ingredients.size(); i++) {
             slot(screen, graphics, font, cycle(ingredients.get(i)), gridX + (i % columns) * 18, y + 20 + (i / columns) * 18, mouseX, mouseY);
         }

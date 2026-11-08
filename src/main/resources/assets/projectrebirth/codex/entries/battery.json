@@ -1,0 +1,24 @@
+{
+  "icon": "projectrebirth:battery",
+  "x": 2,
+  "y": 3,
+  "parents": [
+    "cable"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:battery",
+      "text": "codex.projectrebirth.battery.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:battery",
+      "text": "codex.projectrebirth.battery.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.battery.p3"
+    }
+  ]
+}

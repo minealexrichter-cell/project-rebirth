@@ -1,0 +1,24 @@
+{
+  "icon": "projectrebirth:solar_panel",
+  "x": 2,
+  "y": 1,
+  "parents": [
+    "energy_basics"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:solar_panel",
+      "text": "codex.projectrebirth.solar_panel.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:solar_panel",
+      "text": "codex.projectrebirth.solar_panel.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.solar_panel.p3"
+    }
+  ]
+}

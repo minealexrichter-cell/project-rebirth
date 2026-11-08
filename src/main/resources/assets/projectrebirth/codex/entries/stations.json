@@ -1,0 +1,22 @@
+{
+  "icon": "projectrebirth:assembly_station",
+  "x": 0,
+  "y": 2,
+  "parents": [
+    "electronics_fabricator"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.stations.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.stations.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.stations.p3"
+    }
+  ]
+}

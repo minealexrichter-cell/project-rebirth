@@ -1,0 +1,19 @@
+{
+  "icon": "projectrebirth:bronze_ingot",
+  "x": -2,
+  "y": 0,
+  "parents": [
+    "ores"
+  ],
+  "pages": [
+    {
+      "type": "recipe",
+      "value": "projectrebirth:bronze_ingot",
+      "text": "codex.projectrebirth.bronze.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.bronze.p2"
+    }
+  ]
+}

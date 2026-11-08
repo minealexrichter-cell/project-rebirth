@@ -34,7 +34,7 @@ public class CodexScreen extends Screen {
     private static final int TAB_W = 30;
     private static final int TAB_H = 26;
     private static final int NODE = 26;
-    private static final int GRID = 34;
+    private static final int GRID = 30;
     private static final int SPINE = 16;
 
     /** Kept while the game runs, so the book opens where it was closed. */
@@ -123,8 +123,16 @@ public class CodexScreen extends Screen {
         return categories.stream().filter(c -> c.id().equals(category)).findFirst().orElse(categories.get(0));
     }
 
+    /** Where the map of the current category is moved to; at first it is centred on its entries. */
     private int[] pan() {
-        return PAN.computeIfAbsent(category, key -> new int[2]);
+        return PAN.computeIfAbsent(category, key -> {
+            List<CodexBook.Entry> entries = currentCategory().entries();
+            int minX = entries.stream().mapToInt(CodexBook.Entry::x).min().orElse(0);
+            int maxX = entries.stream().mapToInt(CodexBook.Entry::x).max().orElse(0);
+            int minY = entries.stream().mapToInt(CodexBook.Entry::y).min().orElse(0);
+            int maxY = entries.stream().mapToInt(CodexBook.Entry::y).max().orElse(0);
+            return new int[] {-(minX + maxX) * GRID / 2, -(minY + maxY) * GRID / 2 + 8};
+        });
     }
 
     private int nodeX(CodexBook.Entry entry) {

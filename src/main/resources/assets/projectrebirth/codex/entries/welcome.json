@@ -3,9 +3,23 @@
   "x": 0,
   "y": 0,
   "pages": [
-    { "type": "text", "text": "codex.projectrebirth.welcome.intro" },
-    { "type": "item", "value": "projectrebirth:rebirth_codex", "text": "codex.projectrebirth.welcome.book" },
-    { "type": "note", "text": "codex.projectrebirth.welcome.navigation" },
-    { "type": "recipe", "value": "projectrebirth:rebirth_codex", "text": "codex.projectrebirth.welcome.recipe" }
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.welcome.p1"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:rebirth_codex",
+      "text": "codex.projectrebirth.welcome.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.welcome.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:rebirth_codex",
+      "text": "codex.projectrebirth.welcome.p4"
+    }
   ]
 }

@@ -1,0 +1,26 @@
+{
+  "icon": "projectrebirth:titanium_ore",
+  "x": -4,
+  "y": 0,
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.ores.p1"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:tin_ore",
+      "text": "codex.projectrebirth.ores.p2"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:deepslate_titanium_ore",
+      "text": "codex.projectrebirth.ores.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:titanium_ingot_from_blasting",
+      "text": "codex.projectrebirth.ores.p4"
+    }
+  ]
+}

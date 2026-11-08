@@ -1,0 +1,15 @@
+{
+  "icon": "projectrebirth:cable",
+  "x": 0,
+  "y": 0,
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.energy_basics.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.energy_basics.p2"
+    }
+  ]
+}

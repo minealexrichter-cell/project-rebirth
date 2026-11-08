@@ -1,0 +1,35 @@
+{
+  "icon": "projectrebirth:electronics_fabricator",
+  "x": 0,
+  "y": 0,
+  "parents": [
+    "bronze"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:electronics_fabricator",
+      "text": "codex.projectrebirth.electronics_fabricator.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:electronics_fabricator",
+      "text": "codex.projectrebirth.electronics_fabricator.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:circuit_board",
+      "text": "codex.projectrebirth.electronics_fabricator.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:processor",
+      "text": "codex.projectrebirth.electronics_fabricator.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:power_cell",
+      "text": "codex.projectrebirth.electronics_fabricator.p5"
+    }
+  ]
+}

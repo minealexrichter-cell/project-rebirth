@@ -1,0 +1,24 @@
+{
+  "icon": "projectrebirth:weapon_workshop",
+  "x": 5,
+  "y": 0,
+  "parents": [
+    "armor_workstation"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:weapon_workshop",
+      "text": "codex.projectrebirth.weapon_workshop.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:weapon_workshop",
+      "text": "codex.projectrebirth.weapon_workshop.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.weapon_workshop.p3"
+    }
+  ]
+}

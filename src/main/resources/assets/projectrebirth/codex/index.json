@@ -3,7 +3,38 @@
     {
       "id": "basics",
       "icon": "projectrebirth:rebirth_codex",
-      "entries": ["welcome", "progression"]
+      "entries": [
+        "welcome",
+        "path",
+        "keys"
+      ]
+    },
+    {
+      "id": "technology",
+      "icon": "projectrebirth:electronics_fabricator",
+      "entries": [
+        "ores",
+        "bronze",
+        "stations",
+        "electronics_fabricator",
+        "assembly_station",
+        "armor_workstation",
+        "implant_fabricator",
+        "armor_upgrade_fabricator",
+        "weapon_workshop",
+        "maintenance_station"
+      ]
+    },
+    {
+      "id": "energy",
+      "icon": "projectrebirth:battery",
+      "entries": [
+        "energy_basics",
+        "combustion_generator",
+        "solar_panel",
+        "cable",
+        "battery"
+      ]
     }
   ]
 }

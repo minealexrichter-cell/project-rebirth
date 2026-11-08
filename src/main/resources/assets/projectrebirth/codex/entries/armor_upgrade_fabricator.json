@@ -1,0 +1,24 @@
+{
+  "icon": "projectrebirth:armor_upgrade_fabricator",
+  "x": 5,
+  "y": -2,
+  "parents": [
+    "armor_workstation"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:armor_upgrade_fabricator",
+      "text": "codex.projectrebirth.armor_upgrade_fabricator.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:armor_upgrade_fabricator",
+      "text": "codex.projectrebirth.armor_upgrade_fabricator.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.armor_upgrade_fabricator.p3"
+    }
+  ]
+}

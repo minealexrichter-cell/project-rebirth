@@ -1,0 +1,22 @@
+{
+  "icon": "projectrebirth:circuit_board",
+  "x": 2,
+  "y": 0,
+  "parents": [
+    "welcome"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.path.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.path.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.path.p3"
+    }
+  ]
+}

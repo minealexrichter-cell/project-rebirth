@@ -1,0 +1,24 @@
+{
+  "icon": "projectrebirth:implant_fabricator",
+  "x": 4,
+  "y": 1,
+  "parents": [
+    "assembly_station"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:implant_fabricator",
+      "text": "codex.projectrebirth.implant_fabricator.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:implant_fabricator",
+      "text": "codex.projectrebirth.implant_fabricator.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.implant_fabricator.p3"
+    }
+  ]
+}

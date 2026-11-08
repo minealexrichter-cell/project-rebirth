@@ -1,0 +1,24 @@
+{
+  "icon": "projectrebirth:maintenance_station",
+  "x": 2,
+  "y": 2,
+  "parents": [
+    "assembly_station"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:maintenance_station",
+      "text": "codex.projectrebirth.maintenance_station.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:maintenance_station",
+      "text": "codex.projectrebirth.maintenance_station.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.maintenance_station.p3"
+    }
+  ]
+}

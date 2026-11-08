@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:backup_battery",
+  "x": 1,
+  "y": 1,
+  "parents": [
+    "filter_cartridges"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:backup_battery",
+      "text": "codex.projectrebirth.backup_battery.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:backup_battery"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.backup_battery.p3"
+    }
+  ]
+}

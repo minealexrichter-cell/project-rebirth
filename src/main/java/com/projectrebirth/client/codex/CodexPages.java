@@ -46,9 +46,20 @@ final class CodexPages {
     private static final int TITLE = 24;
     private static final Map<String, Entity> ENTITIES = new HashMap<>();
 
-    /** One page of paper: maybe the entry's title, maybe the picture of its source page, and lines of text. */
+    /**
+     * One page of paper: maybe the entry's title, maybe the picture of its source page, lines of text, and maybe a short
+     * note that fitted below them.
+     */
     record Layout(String titleKey, boolean title, @Nullable CodexBook.Page page, boolean picture, List<FormattedCharSequence> lines,
-                  boolean note) {
+                  boolean note, List<FormattedCharSequence> trailingNote) {
+        Layout(String titleKey, boolean title, @Nullable CodexBook.Page page, boolean picture, List<FormattedCharSequence> lines,
+               boolean note) {
+            this(titleKey, title, page, picture, lines, note, List.of());
+        }
+
+        int usedHeight() {
+            return (title ? TITLE : 0) + (picture && page != null ? pictureHeight(page) : 0) + (lines.size() + 1) * LINE;
+        }
     }
 
     private CodexPages() {
@@ -73,13 +84,20 @@ final class CodexPages {
                     : font.split(Component.translatable(page.text()), note ? width - 10 : width);
             int picture = pictureHeight(page);
             int start = 0;
+            // a short note goes below the page before, whole, if it fits there
+            if (note && !pages.isEmpty()) {
+                Layout last = pages.get(pages.size() - 1);
+                if (!last.note() && last.trailingNote().isEmpty() && last.usedHeight() + lines.size() * LINE + 6 <= height) {
+                    pages.set(pages.size() - 1, new Layout(last.titleKey(), last.title(), last.page(), last.picture(), last.lines(), false, lines));
+                    first = false;
+                    continue;
+                }
+            }
             // plain text goes on below the text of the page before, if there is room for a few lines
             if ("text".equals(page.type()) && !pages.isEmpty()) {
                 Layout last = pages.get(pages.size() - 1);
-                int used = (last.title() ? TITLE : 0) + (last.picture() && last.page() != null ? pictureHeight(last.page()) : 0)
-                        + (last.lines().size() + 1) * LINE;
-                int room = (height - used) / LINE;
-                if (!last.note() && room >= 3) {
+                int room = (height - last.usedHeight()) / LINE;
+                if (!last.note() && last.trailingNote().isEmpty() && room >= 3) {
                     int count = Math.min(lines.size(), room);
                     List<FormattedCharSequence> joined = new ArrayList<>(last.lines());
                     joined.add(FormattedCharSequence.EMPTY);
@@ -128,6 +146,16 @@ final class CodexPages {
         for (FormattedCharSequence line : page.lines()) {
             graphics.drawString(font, line, x, y, CodexScreen.INK, false);
             y += LINE;
+        }
+        if (!page.trailingNote().isEmpty()) {
+            y += page.lines().isEmpty() ? 0 : LINE;
+            int boxHeight = page.trailingNote().size() * LINE + 6;
+            graphics.fill(x, y, x + width, y + boxHeight, 0x22603010);
+            graphics.fill(x, y, x + 2, y + boxHeight, 0xFF9A3A1A);
+            for (FormattedCharSequence line : page.trailingNote()) {
+                graphics.drawString(font, line, x + 6, y + 4, CodexScreen.INK, false);
+                y += LINE;
+            }
         }
     }
 

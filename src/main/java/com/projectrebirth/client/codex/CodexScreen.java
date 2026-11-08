@@ -209,7 +209,10 @@ public class CodexScreen extends Screen {
     }
 
     private int tabY(int index) {
-        return top + 18 + index * (TAB_H + 4);
+        // tabs keep a gap of 4 while they fit; with many categories or a short book they move closer together
+        int step = categories.size() < 2 ? TAB_H + 4
+                : Mth.clamp((bookHeight - 32 - TAB_H) / (categories.size() - 1), TAB_H - 4, TAB_H + 4);
+        return top + 16 + index * step;
     }
 
     private void drawTabs(GuiGraphics graphics, int mouseX, int mouseY) {

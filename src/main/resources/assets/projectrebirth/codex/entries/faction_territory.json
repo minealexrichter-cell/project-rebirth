@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:faction_core",
+  "x": -1,
+  "y": 1,
+  "parents": [
+    "factions"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:faction_core",
+      "text": "codex.projectrebirth.faction_territory.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:faction_core"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.faction_territory.p3"
+    }
+  ]
+}

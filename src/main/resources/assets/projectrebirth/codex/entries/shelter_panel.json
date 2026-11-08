@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:shelter_control_panel",
+  "x": 3,
+  "y": 1,
+  "parents": [
+    "backup_battery"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:shelter_control_panel",
+      "text": "codex.projectrebirth.shelter_panel.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:shelter_control_panel"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.shelter_panel.p3"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "icon": "minecraft:golden_helmet",
+  "x": -1,
+  "y": -1,
+  "parents": [
+    "factions"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.faction_roles.p1"
+    }
+  ]
+}

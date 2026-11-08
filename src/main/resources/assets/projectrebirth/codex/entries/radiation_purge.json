@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:radiation_purge_station",
+  "x": 3,
+  "y": -1,
+  "parents": [
+    "decontamination"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:radiation_purge_station",
+      "text": "codex.projectrebirth.radiation_purge.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:radiation_purge_station"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.radiation_purge.p3"
+    }
+  ]
+}

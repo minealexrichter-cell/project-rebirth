@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:dosimeter",
+  "x": 1,
+  "y": 1,
+  "parents": [
+    "protection"
+  ],
+  "pages": [
+    {
+      "type": "item",
+      "value": "projectrebirth:dosimeter",
+      "text": "codex.projectrebirth.dosimeter.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dosimeter"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.dosimeter.p3"
+    }
+  ]
+}

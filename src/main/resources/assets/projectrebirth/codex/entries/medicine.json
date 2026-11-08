@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:antiradin",
+  "x": 1,
+  "y": -1,
+  "parents": [
+    "catastrophes"
+  ],
+  "pages": [
+    {
+      "type": "item",
+      "value": "projectrebirth:antiradin",
+      "text": "codex.projectrebirth.medicine.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:antiradin"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:sorbent",
+      "text": "codex.projectrebirth.medicine.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:sorbent"
+    }
+  ]
+}

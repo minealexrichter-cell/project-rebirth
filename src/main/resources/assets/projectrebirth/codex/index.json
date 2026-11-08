@@ -62,6 +62,41 @@
         "armor_upgrades",
         "weapons"
       ]
+    },
+    {
+      "id": "factions",
+      "icon": "projectrebirth:faction_core",
+      "entries": [
+        "factions",
+        "faction_roles",
+        "faction_territory",
+        "faction_diplomacy"
+      ]
+    },
+    {
+      "id": "environment",
+      "icon": "projectrebirth:respirator",
+      "entries": [
+        "hostile_world",
+        "catastrophes",
+        "protection",
+        "dosimeter",
+        "medicine",
+        "machines_environment"
+      ]
+    },
+    {
+      "id": "shelter",
+      "icon": "projectrebirth:air_filtration_unit",
+      "entries": [
+        "sealed_room",
+        "shelter_doors",
+        "filter_cartridges",
+        "decontamination",
+        "radiation_purge",
+        "backup_battery",
+        "shelter_panel"
+      ]
     }
   ]
 }

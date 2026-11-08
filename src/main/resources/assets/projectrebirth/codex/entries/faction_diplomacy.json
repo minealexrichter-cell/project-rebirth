@@ -1,0 +1,19 @@
+{
+  "icon": "minecraft:iron_sword",
+  "x": 1,
+  "y": 0,
+  "parents": [
+    "faction_roles",
+    "faction_territory"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.faction_diplomacy.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.faction_diplomacy.p2"
+    }
+  ]
+}

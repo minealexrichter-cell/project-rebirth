@@ -1,0 +1,19 @@
+{
+  "icon": "minecraft:dead_bush",
+  "x": -3,
+  "y": 0,
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.hostile_world.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.hostile_world.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.hostile_world.p3"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:filter_cartridge",
+  "x": -1,
+  "y": 1,
+  "parents": [
+    "sealed_room"
+  ],
+  "pages": [
+    {
+      "type": "item",
+      "value": "projectrebirth:filter_cartridge",
+      "text": "codex.projectrebirth.filter_cartridges.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:filter_cartridge"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:filter_cartridge_refill",
+      "text": "codex.projectrebirth.filter_cartridges.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.filter_cartridges.p4"
+    }
+  ]
+}

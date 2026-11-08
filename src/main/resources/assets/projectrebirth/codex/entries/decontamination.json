@@ -1,0 +1,32 @@
+{
+  "icon": "projectrebirth:decontamination_chamber",
+  "x": 1,
+  "y": -1,
+  "parents": [
+    "shelter_doors"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.decontamination.p1"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:decontamination_chamber",
+      "text": "codex.projectrebirth.decontamination.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:decontamination_chamber"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:decontamination_solution",
+      "text": "codex.projectrebirth.decontamination.p4"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.decontamination.p5"
+    }
+  ]
+}

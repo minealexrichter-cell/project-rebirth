@@ -260,6 +260,131 @@ category('armor', P + 'power_armor', 'Power Armor', 'Силовая броня',
     ])
 ]);
 
+// ================================================================ factions
+
+category('factions', P + 'faction_core', 'Factions', 'Фракции', [
+    entry('factions', 'minecraft:white_banner', -3, 0, [], 'Factions', 'Фракции', [
+        text('A faction is a group of players who share a name, a color and land. Press G to open the faction window: create a faction, pick its color, invite players and answer invitations.\n\nMembers carry the tag "[Faction] Name" above the head, in chat and in the player list.',
+            'Фракция — это группа игроков с общим названием, цветом и землёй. Клавиша G открывает окно фракции: там создают фракцию, выбирают цвет, приглашают игроков и отвечают на приглашения.\n\nУ участников над головой, в чате и в списке игроков виден тег «[Фракция] Имя».'),
+        note('Friendly fire between members and allies is off by default. The leader turns it on in the window, if the server allows it.',
+            'Дружественный огонь между своими и союзниками по умолчанию выключен. Лидер включает его в окне, если сервер это разрешает.')
+    ]),
+    entry('faction_roles', 'minecraft:golden_helmet', -1, -1, ['factions'], 'Roles', 'Роли', [
+        text('Leader: everything — color, friendly fire, alliances and wars, any role below leader; may hand leadership over.\n\nOfficer: invites, places the core, removes members and recruits, moves people between member and recruit.\n\nMember: uses chests, stations and capsules on the faction land.\n\nRecruit: only doors there.',
+            'Лидер: всё — цвет, дружественный огонь, союзы и войны, любая роль ниже лидера; может передать лидерство.\n\nОфицер: приглашает, ставит ядро, исключает участников и новичков, переводит между участником и новичком.\n\nУчастник: пользуется сундуками, станциями и капсулами на земле фракции.\n\nНовичок: там только двери.')
+    ]),
+    entry('faction_territory', P + 'faction_core', -1, 1, ['factions'], 'Territory', 'Территория', [
+        block(P + 'faction_core', 'The core guards a square of 24 blocks each way, full height.', 'Ядро охраняет квадрат на 24 блока во все стороны, на всю высоту.'),
+        recipe(P + 'faction_core'),
+        text('A leader or an officer places the core; a faction has one, and its square may not touch another faction\'s. On that land strangers do not open chests, stations or doors, and allies only use the doors.\n\nThe faction may break its own core at any time; the land goes with it.',
+            'Ядро ставит лидер или офицер; у фракции оно одно, и его квадрат не может касаться чужого. На этой земле чужаки не открывают сундуки, станции и двери, а союзники пользуются только дверьми.\n\nСвоё ядро фракция может сломать в любой момент — земля пропадёт вместе с ним.')
+    ]),
+    entry('faction_diplomacy', 'minecraft:iron_sword', 1, 0, ['faction_roles', 'faction_territory'], 'Alliances and Wars', 'Союзы и войны', [
+        text('Leaders make an alliance when both agree. Allies do not hurt each other while friendly fire is off and may use each other\'s doors.\n\nA leader may declare war. For 10 minutes it is only preparation; then, while someone of the defenders is online, the enemy may open their doors and break their core.',
+            'Союз заключают лидеры по согласию обоих. Союзники не ранят друг друга, пока выключен дружественный огонь, и пользуются дверьми друг друга.\n\nЛидер может объявить войну. Первые 10 минут — только подготовка; затем, пока кто-то из защитников в сети, враги могут открывать их двери и ломать ядро.'),
+        note('Peace is made when both leaders agree. A war ends by itself after 72 hours.', 'Мир заключается по согласию обоих лидеров. Война заканчивается сама через 72 часа.')
+    ])
+]);
+
+// ================================================================ hostile environment
+
+category('environment', P + 'respirator', 'Hostile Environment', 'Враждебная среда', [
+    entry('hostile_world', 'minecraft:dead_bush', -3, 0, [], 'A Poisoned World', 'Отравленный мир', [
+        text('The air of the world is polluted and radiation is everywhere. An unprotected person slowly gathers a toxic load and a radiation dose: hours in calm weather, minutes in a catastrophe. The body clears both by itself, slowly.\n\nA roof helps a little (a quarter less pollution). Full protection without gear is only a sealed shelter.',
+            'Воздух мира загрязнён, радиация есть везде. Человек без защиты понемногу набирает токсическую нагрузку и дозу облучения: в спокойную погоду за часы, в катастрофу за минуты. Тело само понемногу выводит и то и другое.\n\nКрыша немного помогает (загрязнения на четверть меньше). Полная защита без снаряжения — только герметичное убежище.'),
+        text('Toxins (of 100): from 30 nausea, from 60 weakness, from 90 damage.\n\nDose (of 500): from 50 weakness, from 100 slower healing, from 200 less health, from 300 damage.\n\nAfter death both start from zero.',
+            'Токсины (из 100): с 30 тошнота, с 60 слабость, с 90 урон.\n\nДоза (из 500): с 50 слабость, со 100 хуже лечится, с 200 меньше здоровья, с 300 урон.\n\nПосле смерти обе начинаются с нуля.'),
+        note('The HUD shows the toxins, the filter and the hazards around you; the dose — only with a dosimeter.', 'HUD показывает токсины, фильтр и опасности вокруг; дозу — только с дозиметром.')
+    ]),
+    entry('catastrophes', 'minecraft:clock', -1, -1, ['hostile_world'], 'Catastrophes', 'Катастрофы', [
+        text('Catastrophes come by themselves, the first one no sooner than 40 minutes into a new world. Two minutes before, a message, a siren and a HUD line warn you.\n\nAcid rain: real rain; toxins and damage in the open, it wears gear and bodies without a sealing module.',
+            'Катастрофы приходят сами, первая — не раньше чем через 40 минут нового мира. За две минуты предупреждают сообщение, сирена и строка в HUD.\n\nКислотный дождь: настоящий дождь; на открытом месте токсины и урон, изнашивает снаряжение и тела без модуля герметизации.'),
+        text('Toxic storm: a thick yellow-green fog, toxins come fast; a respirator and a roof help.\n\nRadiation burst: flashes in the sky and a fast dose. A roof does not save you; a heavy suit and armor do, and in a shelter it is half as strong.',
+            'Токсичный шторм: густой жёлто-зелёный туман, токсины набираются быстро; помогают респиратор и крыша.\n\nРадиационный выброс: вспышки в небе и быстрая доза. Крыша не спасает; защищают тяжёлый костюм и броня, в убежище радиация вдвое слабее.')
+    ]),
+    entry('protection', P + 'respirator', -1, 1, ['hostile_world'], 'Protective Gear', 'Защитное снаряжение', [
+        item(P + 'respirator', 'The respirator keeps out polluted air while its filter lasts.', 'Респиратор не пускает грязный воздух, пока жив фильтр.'),
+        recipe(P + 'respirator'),
+        recipe(P + 'filter', 'A filter is used only in dirty air. Right-click puts it in.', 'Фильтр тратится только в грязном воздухе. ПКМ — вставить.'),
+        text('The hazmat suit guards against toxins and acid, the heavy suit against radiation too. Protection is counted by the parts you wear: the helmet of a suit takes a filter like a respirator.\n\nTrousers and boots are made the same way as the parts below.',
+            'Химкостюм защищает от токсинов и кислоты, тяжёлый костюм — ещё и от радиации. Защита считается по надетым частям: шлем костюма берёт фильтр, как респиратор.\n\nШтаны и ботинки делаются так же, как части ниже.'),
+        recipe(P + 'hazmat_helmet'),
+        recipe(P + 'hazmat_suit'),
+        recipe(P + 'heavy_suit_helmet'),
+        recipe(P + 'heavy_suit')
+    ]),
+    entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
+        item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
+        recipe(P + 'dosimeter'),
+        note('Nobody feels radiation. Without a dosimeter the HUD does not show the dose at all.', 'Радиацию никто не чувствует. Без дозиметра HUD дозу вовсе не показывает.')
+    ]),
+    entry('medicine', P + 'antiradin', 1, -1, ['catastrophes'], 'Medicine', 'Лекарства', [
+        item(P + 'antiradin', 'Antiradin: drink it to lose 80 of the dose.', 'Антирадин: выпейте, чтобы снять 80 единиц дозы.'),
+        recipe(P + 'antiradin'),
+        item(P + 'sorbent', 'Sorbent: drink it to lose 50 of the toxic load.', 'Сорбент: выпейте, чтобы снять 50 единиц токсинов.'),
+        recipe(P + 'sorbent')
+    ]),
+    entry('machines_environment', P + 'sealing_module', 3, 0, ['medicine', 'dosimeter'], 'Bodies and Armor', 'Тела и броня', [
+        text('Artificial bodies do not get sick, but acid wears them down without a sealing module; better bodies wear slower.\n\nA power armor pilot is safe from toxins and acid, and only a fifth of the radiation reaches them. Plating adds more protection.',
+            'Искусственные тела не болеют, но без модуля герметизации их изнашивает кислота; лучшие тела — медленнее.\n\nПилот силовой брони защищён от токсинов и кислоты, а радиации до него доходит только пятая часть. Обшивка добавляет защиту.'),
+        note('In a catastrophe, contamination settles on bodies and armor too. Wash it off before you go into the shelter.', 'В катастрофу загрязнение оседает и на телах, и на броне. Смойте его, прежде чем входить в убежище.')
+    ])
+]);
+
+// ================================================================ shelter
+
+category('shelter', P + 'air_filtration_unit', 'Shelter', 'Убежище', [
+    entry('sealed_room', P + 'air_filtration_unit', -3, 0, [], 'Sealed Room', 'Герметичное помещение', [
+        text('A sealed room is the only place where a person is fully safe without gear: its own air, half the radiation, no acid.\n\nThe air filtration unit placed inside finds the room by itself: up to 4096 blocks of air per unit, up to 8 units in one room.',
+            'Герметичное помещение — единственное место, где человек полностью защищён без снаряжения: свой воздух, радиация вдвое слабее, кислоты нет.\n\nУстановка фильтрации воздуха, поставленная внутри, сама находит помещение: до 4096 блоков воздуха на установку, до 8 установок в одном помещении.'),
+        block(P + 'air_filtration_unit', 'It needs energy and a filter cartridge.', 'Ей нужны энергия и фильтрующий картридж.'),
+        recipe(P + 'air_filtration_unit'),
+        text('Walls are blocks that close a whole face: full blocks, glass, slabs and stairs by their whole side. Leaves, fences, panes and open sky leak.',
+            'Стены — блоки, закрывающие грань целиком: полные блоки, стекло, полублоки и ступени целой гранью. Листва, заборы, панели и открытое небо — утечка.'),
+        note('The mod\'s energy cable may go through a wall: the room stays sealed.', 'Энергокабель мода можно провести сквозь стену: помещение останется герметичным.')
+    ]),
+    entry('shelter_doors', P + 'airlock_door', -1, -1, ['sealed_room'], 'Doors and Airlock', 'Двери и шлюз', [
+        block(P + 'airlock_door', 'The airlock door holds the air when closed.', 'Шлюзовая дверь держит воздух, когда закрыта.'),
+        recipe(P + 'airlock_door'),
+        recipe(P + 'sealed_hatch', 'The sealed hatch is the same for floors and ceilings.', 'Герметичный люк — то же для пола и потолка.'),
+        text('Iron and copper doors and trapdoors leak a little; wooden ones do not hold the air at all.\n\nTwo airlock doors with a small room between them (up to 64 blocks) make an airlock: they never open at the same time.',
+            'Железные и медные двери и люки пропускают немного воздуха, деревянные не держат вовсе.\n\nДве шлюзовые двери с маленькой комнатой между ними (до 64 блоков) — это шлюз: они никогда не открываются одновременно.')
+    ]),
+    entry('filter_cartridges', P + 'filter_cartridge', -1, 1, ['sealed_room'], 'Cartridges and Energy', 'Картриджи и энергия', [
+        item(P + 'filter_cartridge', 'The cartridge cleans the air; the dirtier, the faster it wears.', 'Картридж очищает воздух; чем грязнее, тем быстрее он тратится.'),
+        recipe(P + 'filter_cartridge'),
+        recipe(P + 'filter_cartridge_refill', 'A spent cartridge is refilled at the assembly station.', 'Отработанный картридж заправляют на сборочной станции.'),
+        text('The unit takes energy through the cable: 4 FE a tick and 10 more per 1000 blocks of its room. Its window shows the room, the air, the energy and the cartridge. Hoppers bring new cartridges and take the spent ones.',
+            'Установка берёт энергию по кабелю: 4 FE за тик и ещё 10 за каждую 1000 блоков её помещения. Окно установки показывает помещение, воздух, энергию и картридж. Воронки подают новые картриджи и забирают отработанные.')
+    ]),
+    entry('decontamination', P + 'decontamination_chamber', 1, -1, ['shelter_doors'], 'Decontamination', 'Дезактивация', [
+        text('In a catastrophe, external contamination settles on people, their gear, bodies and armor. What is not washed off is brought into the air of the shelter.',
+            'В катастрофу на людях, их снаряжении, телах и броне оседает внешнее загрязнение. Не смытое, оно заносится в воздух убежища.'),
+        block(P + 'decontamination_chamber', 'Step in: the chamber washes you in a few seconds.', 'Войдите: камера смоет загрязнение за несколько секунд.'),
+        recipe(P + 'decontamination_chamber'),
+        recipe(P + 'decontamination_solution', 'Right-click the chamber with it, or use hoppers.', 'ПКМ по камере или подача воронкой.'),
+        note('Armor and bodies are too large to step in: they are washed standing right in front of the chamber.', 'Броня и тела в камеру не помещаются: их моет, когда они стоят вплотную перед ней.')
+    ]),
+    entry('radiation_purge', P + 'radiation_purge_station', 3, -1, ['decontamination'], 'Radiation Purge', 'Радиационная очистка', [
+        block(P + 'radiation_purge_station', 'Stand on it to lose the dose slowly.', 'Встаньте на неё — доза будет медленно уходить.'),
+        recipe(P + 'radiation_purge_station'),
+        text('The station works only in a sealed room with clean air and uses 80 FE a tick. It is a late machine: titanium, processors and power cells.',
+            'Станция работает только в герметичном помещении с чистым воздухом и тратит 80 FE за тик. Это поздняя машина: титан, процессоры и энергоячейки.')
+    ]),
+    entry('backup_battery', P + 'backup_battery', 1, 1, ['filter_cartridges'], 'Backup Battery', 'Резервный аккумулятор', [
+        block(P + 'backup_battery', 'It feeds only life support, and only when needed.', 'Питает только жизнеобеспечение и только при нехватке.'),
+        recipe(P + 'backup_battery'),
+        text('Life support is the air filtration unit and the decontamination chamber. The cable feeds them first, and when that is not enough the backup steps in.',
+            'Жизнеобеспечение — установка фильтрации и дезактивационная камера. Кабель питает их первыми, а при нехватке включается резерв.')
+    ]),
+    entry('shelter_panel', P + 'shelter_control_panel', 3, 1, ['backup_battery'], 'Shelter Control Panel', 'Панель контроля убежища', [
+        block(P + 'shelter_control_panel', 'It shows the rooms and the reserve, and finds a leak.', 'Показывает помещения и резерв, находит утечку.'),
+        recipe(P + 'shelter_control_panel'),
+        text('The panel gives a redstone signal by the danger: 0 all is well … 15 a leak. When a leak or a lack of energy lasts 10 seconds, the owner and their faction are warned; so too about cartridges and the reserve.\n\nThe HUD shows a "Shelter" line and the contamination on you.',
+            'Панель выдаёт сигнал красного камня по опасности: 0 порядок … 15 утечка. Если утечка или нехватка энергии длится 10 секунд, владелец и его фракция получают предупреждение; так же — о картриджах и резерве.\n\nВ HUD видны строка «Убежище» и загрязнение на вас.')
+    ])
+]);
+
 // ================================================================ output
 
 function langPage(entryId, index) {

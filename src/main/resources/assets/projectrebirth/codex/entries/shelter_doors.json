@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:airlock_door",
+  "x": -1,
+  "y": -1,
+  "parents": [
+    "sealed_room"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:airlock_door",
+      "text": "codex.projectrebirth.shelter_doors.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:airlock_door"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:sealed_hatch",
+      "text": "codex.projectrebirth.shelter_doors.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.shelter_doors.p4"
+    }
+  ]
+}

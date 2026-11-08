@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:air_filtration_unit",
+  "x": -3,
+  "y": 0,
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.sealed_room.p1"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:air_filtration_unit",
+      "text": "codex.projectrebirth.sealed_room.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:air_filtration_unit"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.sealed_room.p4"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.sealed_room.p5"
+    }
+  ]
+}

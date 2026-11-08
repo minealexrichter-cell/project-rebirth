@@ -1,0 +1,18 @@
+{
+  "icon": "minecraft:clock",
+  "x": -1,
+  "y": -1,
+  "parents": [
+    "hostile_world"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.catastrophes.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.catastrophes.p2"
+    }
+  ]
+}

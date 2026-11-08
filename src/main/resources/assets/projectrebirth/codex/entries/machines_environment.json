@@ -1,0 +1,19 @@
+{
+  "icon": "projectrebirth:sealing_module",
+  "x": 3,
+  "y": 0,
+  "parents": [
+    "medicine",
+    "dosimeter"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.machines_environment.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.machines_environment.p2"
+    }
+  ]
+}

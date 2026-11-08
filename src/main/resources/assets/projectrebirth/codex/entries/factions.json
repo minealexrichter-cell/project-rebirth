@@ -1,0 +1,15 @@
+{
+  "icon": "minecraft:white_banner",
+  "x": -3,
+  "y": 0,
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.factions.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.factions.p2"
+    }
+  ]
+}

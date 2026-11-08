@@ -1,0 +1,44 @@
+{
+  "icon": "projectrebirth:respirator",
+  "x": -1,
+  "y": 1,
+  "parents": [
+    "hostile_world"
+  ],
+  "pages": [
+    {
+      "type": "item",
+      "value": "projectrebirth:respirator",
+      "text": "codex.projectrebirth.protection.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:respirator"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:filter",
+      "text": "codex.projectrebirth.protection.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.protection.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:hazmat_helmet"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:hazmat_suit"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:heavy_suit_helmet"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:heavy_suit"
+    }
+  ]
+}

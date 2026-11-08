@@ -147,11 +147,14 @@
     }
 
     /** Gives every cube a texture area: fixed uvs first, then first free place, mirrored cubes reuse their partner's. */
-    function pack(cubes, res) {
+    function pack(cubes, startRes) {
         // A mirrored cube whose partner is not part of the model gets its own area.
         cubes.filter(c => c.share && !cubes.includes(c.share)).forEach(c => { delete c.share; });
-        const used = new Uint8Array(res * res);
-        const size = c => [Math.ceil(2 * (c.s[0] + c.s[2])), Math.ceil(c.s[2] + c.s[1])];
+        let res = startRes;
+        let used = new Uint8Array(res * res);
+        // late parts take the area their paint really covers (sizes rounded up, as the paint does)
+        const size = c => c.late ? [2 * (Math.ceil(c.s[0]) + Math.ceil(c.s[2])), Math.ceil(c.s[2]) + Math.ceil(c.s[1])]
+                : [Math.ceil(2 * (c.s[0] + c.s[2])), Math.ceil(c.s[2] + c.s[1])];
         const mark = (u, v, w, h) => {
             for (let y = v; y < v + h; y++) {
                 for (let x = u; x < u + w; x++) {
@@ -181,31 +184,54 @@
         cubes.filter(c => c.uv).forEach(c => mark(c.uv[0], c.uv[1], ...size(c)));
         // Biggest first, so the small parts fill the gaps.
         const area = c => size(c)[0] * size(c)[1];
-        for (const c of [...cubes].sort((a, b) => area(b) - area(a))) {
-            if (c.uv || c.share) {
-                continue;
-            }
+        const place = c => {
             const [w, h] = size(c);
-            let placed = false;
-            for (let v = 0; v <= res - h && !placed; v++) {
-                for (let u = 0; u <= res - w && !placed; u++) {
+            for (let v = 0; v <= res - h; v++) {
+                for (let u = 0; u <= res - w; u++) {
                     if (free(u, v, w, h)) {
                         mark(u, v, w, h);
                         c.uv = [u, v];
-                        placed = true;
+                        return true;
                     }
                 }
             }
-            if (!placed) {
+            return false;
+        };
+        // The parts of the accepted models first, exactly as they were always packed; the parts added later (late: true,
+        // the gadgets of 1.5.0) only into what is left, so that nothing already painted moves.
+        for (const c of [...cubes].filter(c => !c.late).sort((a, b) => area(b) - area(a))) {
+            if (c.uv || c.share) {
+                continue;
+            }
+            if (!place(c)) {
                 throw new Error('No texture space for a cube of size ' + c.s);
             }
         }
+        // the paint of an older part with a fractional size spills a little past its packed area: keep the late parts off it
+        for (const c of cubes.filter(c => !c.late && c.uv)) {
+            const w = 2 * (Math.ceil(c.s[0]) + Math.ceil(c.s[2])), h = Math.ceil(c.s[2]) + Math.ceil(c.s[1]);
+            for (let y = c.uv[1]; y < Math.min(res, c.uv[1] + h); y++) {
+                for (let x = c.uv[0]; x < Math.min(res, c.uv[0] + w); x++) {
+                    used[y * res + x] = 1;
+                }
+            }
+        }
+        for (const c of [...cubes].filter(c => c.late).sort((a, b) => area(b) - area(a))) {
+            if (c.uv || c.share) {
+                continue;
+            }
+            // the texture may not grow: the first-person arms of bodies (vanilla player arm, 64) and armors (128) read it by size
+            if (!place(c)) {
+                throw new Error('No texture space for a late cube of size ' + c.s + ': make the new parts smaller');
+            }
+        }
         cubes.filter(c => c.share).forEach(c => { c.uv = c.share.uv; });
+        return res;
     }
 
     function paintTexture(spec, cubes) {
         const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = spec.res;
+        canvas.width = canvas.height = spec.texRes || spec.res;
         const ctx = canvas.getContext('2d');
         const rand = random(spec.seed || 12345);
         for (const c of cubes) {
@@ -1169,13 +1195,14 @@
         Project.model_identifier = id;
         Project.geckolib_modid = 'projectrebirth';
         Project.geckolib_model_type = spec.weapon ? 'Item' : 'Entity';
-        Project.texture_width = spec.res;
-        Project.texture_height = spec.res;
         Project.box_uv = true;
         Project.visible_box = spec.res === 128 ? [3.5, 4, 2] : [2, 3, 1.5];
 
         const cubes = allCubes(spec);
-        pack(cubes, spec.res);
+        // the texture may have grown for the parts added later; everything else keeps its place
+        spec.texRes = pack(cubes, spec.res);
+        Project.texture_width = spec.texRes;
+        Project.texture_height = spec.texRes;
         const canvas = paintTexture(spec, cubes);
         const texture = new Texture({name: id + '.png'}).fromDataURL(canvas.toDataURL('image/png')).add(false);
 
@@ -1219,8 +1246,9 @@
         const data = texture.canvas || texture.img;
         const write = (path, canvas) => fs.writeFileSync(path, Buffer.from(canvas.toDataURL('image/png').split(',')[1], 'base64'));
         const source = document.createElement('canvas');
-        source.width = source.height = spec.res;
-        source.getContext('2d').drawImage(data, 0, 0, spec.res, spec.res);
+        const size = spec.texRes || spec.res;
+        source.width = source.height = size;
+        source.getContext('2d').drawImage(data, 0, 0, size, size);
         write(ASSETS + (spec.weapon ? 'textures/item/weapon/' : 'textures/entity/') + id + '.png', source);
         if (spec.wrecked) {
             write(ASSETS + 'textures/entity/' + id + '_wrecked.png', wreckedFrom(source, spec.seed + 1));
@@ -1271,6 +1299,19 @@
             {name: 'jetpack_nozzle_right', parent: 'upgrade_jetpack', pivot: [-1.5, 12.5, back + 1], cubes: []},
             {name: 'jetpack_nozzle_left', parent: 'upgrade_jetpack', pivot: [1.5, 12.5, back + 1], cubes: []}
         );
+        // 1.5.0: the extra battery (a cell on the front of the belt, with a yellow band), the cooling module (finned radiators
+        // on both sides of the jetpack's place on the back) and the electronics shielding (a copper mesh plate on the upper back).
+        const front = minOf(torso.cubes, 2);
+        const cell = C([-1.5, 12.5, front - 1], [3, 1.5, 1], {c: '#2b3038', n: 0.03, edge: false, f: [[0, 0, 3, 1, '#e0a800'], [1, 0, 1, 1, '#ffd54f']]}, {late: true});
+        const fins = C([-4, 16, back], [1, 4.5, 0.5], {c: '#9aa5ad', n: 0.03, edge: false,
+            k: [[0, 1, 1, 1, '#5d666d'], [0, 3, 1, 1, '#4fc3f7']]}, {late: true});
+        const mesh = C([-2.5, 22.3, back], [5, 1.5, 1], {c: '#3a3f44', n: 0.03, edge: false,
+            k: [[0, 0, 5, 1, '#d9894a'], [0, 0, 1, 1, '#d9894a'], [2, 0, 1, 1, '#d9894a'], [4, 0, 1, 1, '#d9894a']]}, {late: true});
+        spec.bones.push(
+            {name: 'upgrade_battery', parent: 'torso', pivot: torso.pivot, cubes: [cell]},
+            {name: 'upgrade_cooling', parent: 'torso', pivot: torso.pivot, cubes: [fins, mirror(fins)]},
+            {name: 'upgrade_shielding', parent: 'torso', pivot: torso.pivot, cubes: [mesh]}
+        );
     }
 
     function armorUpgradeBones(spec) {
@@ -1302,6 +1343,14 @@
             part('slot_left_leg_plating', 'left_leg', leftLeg.pivot, [mirror(legPlate)]),
             part('slot_right_leg_air', 'right_leg', leg.pivot, [legTank]),
             part('slot_left_leg_air', 'left_leg', leftLeg.pivot, [mirror(legTank)])
+        );
+        // 1.5.0: the EMI screen, a dark plate with a violet grid, low on the chest or high on the back
+        const screen = {c: '#2e3338', n: 0.03, edge: false,
+            f: [[1, 0, 1, 2, '#a970ff'], [4, 0, 1, 2, '#a970ff'], [7, 0, 1, 2, '#a970ff']],
+            k: [[1, 0, 1, 2, '#a970ff'], [4, 0, 1, 2, '#a970ff'], [7, 0, 1, 2, '#a970ff']]};
+        spec.bones.push(
+            part('slot_chest_emi', 'torso', torso.pivot, [C([-4.5, hull.o[1] + 0.5, front - 1], [9, 2.5, 1], screen, {late: true})]),
+            part('slot_back_emi', 'torso', torso.pivot, [C([-4.5, hull.o[1] + 10.5, back], [9, 2, 1], screen, {late: true})])
         );
     }
 

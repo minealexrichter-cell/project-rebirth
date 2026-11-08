@@ -230,6 +230,22 @@
 					"name": "slot_back_banner",
 					"parent": "torso",
 					"pivot": [0, 33.66667, 8]
+				},
+				{
+					"name": "slot_chest_emi",
+					"parent": "torso",
+					"pivot": [0, 16, 0],
+					"cubes": [
+						{"origin": [-4.5, 20.5, -7], "size": [9, 2.5, 1], "uv": [92, 50]}
+					]
+				},
+				{
+					"name": "slot_back_emi",
+					"parent": "torso",
+					"pivot": [0, 16, 0],
+					"cubes": [
+						{"origin": [-4.5, 30.5, 8], "size": [9, 2, 1], "uv": [30, 51]}
+					]
 				}
 			]
 		}

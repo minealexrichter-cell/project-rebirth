@@ -26,9 +26,13 @@ public final class UpgradeVisuals {
             "upgrade_plating_right_leg", "upgrade_plating_left_leg");
     private static final String BODY_SEAL = "upgrade_seal";
     private static final String BODY_JETPACK = "upgrade_jetpack";
+    // 1.5.0
+    private static final String BODY_BATTERY = "upgrade_battery";
+    private static final String BODY_COOLING = "upgrade_cooling";
+    private static final String BODY_SHIELDING = "upgrade_shielding";
     private static final List<String> ARMOR_BONES = List.of("slot_head_floodlight", "slot_chest_plating", "slot_chest_floodlight", "slot_back_air",
             "slot_right_arm_plating", "slot_right_arm_floodlight", "slot_left_arm_plating", "slot_left_arm_floodlight",
-            "slot_right_leg_plating", "slot_right_leg_air", "slot_left_leg_plating", "slot_left_leg_air");
+            "slot_right_leg_plating", "slot_right_leg_air", "slot_left_leg_plating", "slot_left_leg_air", "slot_chest_emi", "slot_back_emi");
     private static final Map<String, Integer> MATERIAL_COLORS = Map.of("copper", 0xFFD98A5A, "iron", 0xFFC9CED3, "titanium", 0xFF8FA6C8);
     public static final int NO_TINT = 0xFFFFFFFF;
 
@@ -59,6 +63,9 @@ public final class UpgradeVisuals {
         }
         show(model, BODY_SEAL, BodyGadgets.has(access, upgrades, BodyGadgets.SEALING));
         show(model, BODY_JETPACK, BodyGadgets.has(access, upgrades, BodyGadgets.JETPACK));
+        show(model, BODY_BATTERY, BodyGadgets.has(access, upgrades, com.projectrebirth.bodies.power.BodyPower.BATTERY));
+        show(model, BODY_COOLING, BodyGadgets.has(access, upgrades, com.projectrebirth.bodies.power.BodyHeat.COOLING));
+        show(model, BODY_SHIELDING, BodyGadgets.has(access, upgrades, com.projectrebirth.environment.Emi.SHIELDING));
         return plating;
     }
 
@@ -90,6 +97,7 @@ public final class UpgradeVisuals {
                 case ArmorUpgradeEffects.PLATING -> "_plating";
                 case ArmorUpgradeEffects.FLOODLIGHT -> "_floodlight";
                 case ArmorUpgradeEffects.COMPRESSED_AIR -> "_air";
+                case com.projectrebirth.environment.Emi.SCREEN -> "_emi";
                 default -> "_none";
             };
             show(model, bone, true);

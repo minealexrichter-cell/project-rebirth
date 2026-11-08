@@ -168,6 +168,31 @@
 					"name": "jetpack_nozzle_left",
 					"parent": "upgrade_jetpack",
 					"pivot": [1.5, 12.5, 4]
+				},
+				{
+					"name": "upgrade_battery",
+					"parent": "torso",
+					"pivot": [0, 12, 0],
+					"cubes": [
+						{"origin": [-1.5, 12.5, -3.5], "size": [3, 1.5, 1], "uv": [45, 32]}
+					]
+				},
+				{
+					"name": "upgrade_cooling",
+					"parent": "torso",
+					"pivot": [0, 12, 0],
+					"cubes": [
+						{"origin": [-4, 16, 3], "size": [1, 4.5, 0.5], "uv": [53, 34]},
+						{"origin": [3, 16, 3], "size": [1, 4.5, 0.5], "uv": [53, 34]}
+					]
+				},
+				{
+					"name": "upgrade_shielding",
+					"parent": "torso",
+					"pivot": [0, 12, 0],
+					"cubes": [
+						{"origin": [-2.5, 22.3, 3], "size": [5, 1.5, 1], "uv": [33, 32]}
+					]
 				}
 			]
 		}

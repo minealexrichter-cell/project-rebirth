@@ -93,18 +93,23 @@ root
 | `upgrade_seal` | маска герметизации на голове: маска на всё лицо и два фильтра по бокам (с 1.3.0) |
 | `upgrade_jetpack` | ранец на спине |
 | `jetpack_nozzle_right`, `jetpack_nozzle_left` | точки сопел внутри ранца |
+| `upgrade_battery` | доп. аккумулятор (`extra_battery`): жёлтая ячейка внизу груди (с 1.5.0) |
+| `upgrade_cooling` | модуль охлаждения (`cooling_module`): два ряда рёбер по бокам спины (с 1.5.0) |
+| `upgrade_shielding` | экранирование электроники (`emi_shielding`): медная сетка вверху спины, под шеей (с 1.5.0) |
 
 **Броня** (все 3 вида), отдельная кость на каждое сочетание слота и улучшения:
 
 | Слот | Кости |
 |---|---|
 | голова | `slot_head_floodlight` |
-| грудь | `slot_chest_plating`, `slot_chest_floodlight` |
-| спина | `slot_back_air`, `slot_back_banner` (точка крепления: само знамя рисует код, это целое ванильное знамя) |
+| грудь | `slot_chest_plating`, `slot_chest_floodlight`, `slot_chest_emi` (ЭМИ-экран, с 1.5.0) |
+| спина | `slot_back_air`, `slot_back_emi` (ЭМИ-экран, с 1.5.0), `slot_back_banner` (точка крепления: само знамя рисует код, это целое ванильное знамя) |
 | правая рука | `slot_right_arm_plating`, `slot_right_arm_floodlight` |
 | левая рука | `slot_left_arm_plating`, `slot_left_arm_floodlight` |
 | правая нога | `slot_right_leg_plating`, `slot_right_leg_air` |
 | левая нога | `slot_left_leg_plating`, `slot_left_leg_air` |
+
+Новые детали 1.5.0 упакованы в свободные места текстуры: размер текстуры менять нельзя (тела 64×64, броня 128×128) — по нему рисуются руки от первого лица.
 
 ## 3. Блоки
 
@@ -134,7 +139,10 @@ root
 `synthetic_fiber`), слитки и сырьё металлов, `bronze_ingot`.
 
 Улучшения: `copper_plating`, `iron_plating`, `titanium_plating`, `armor_copper_plating`, `armor_iron_plating`, `armor_titanium_plating`,
-`sealing_module`, `jetpack`, `compressed_air_module`, `floodlight`, `upgrade_mounting_tool`.
+`sealing_module`, `jetpack`, `compressed_air_module`, `floodlight`, `upgrade_mounting_tool`;
+с 1.5.0: `extra_battery`, `cooling_module`, `emi_shielding`, `emi_screen`, `thermal_liner`, `body_battery`.
+
+Блоки 1.5.0: `charging_pad` (зарядная площадка), `heater` (обогреватель) — пока значки и текстуры-заглушки (`build_power_placeholders.js`), замена в блоке H.
 
 Оружие: `assault_rifle`, `battle_rifle`, `combat_shotgun`; патроны: `assault_rifle_ammo`, `battle_rifle_ammo`, `shotgun_shell`. Значки: `textures/item/<id>.png`, 16×16 (`build_textures.js`).
 

@@ -41,7 +41,7 @@ category('basics', P + 'rebirth_codex', 'Basics', 'Основы', [
     entry('keys', 'minecraft:compass', 2, 2, ['welcome'], 'Keys and Settings', 'Клавиши и настройки', [
         text('Keys of the mod (change them in Controls, section "Project: Rebirth"):\n\nZ — return to the human body\nV (hold) — emergency release of the hatch of a shut-down armor\n9 in armor — the ability slot\nB — worker armor: mine 3×3 or one block\nN — floodlight of the armor\nR — reload a weapon\nG — the faction window\nH — HUD and transfer animation settings',
             'Клавиши мода (меняются в настройках управления, раздел «Project: Rebirth»):\n\nZ — вернуться в человеческое тело\nV (удерживать) — аварийный сброс люка отключённой брони\n9 в броне — слот способности\nB — рабочая броня: добыча 3×3 или 1 блок\nN — прожектор брони\nR — перезарядка оружия\nG — окно фракции\nH — настройки HUD и анимации переноса'),
-        text('H opens the HUD settings: turn it on or off, its size and where the panels stand, and the transfer animation. They are kept for each player.\n\nThe balance of the whole mod — times, health, damage, costs — is in config/projectrebirth-server.toml on the server (in single player, in the game folder).',
+        text('H opens the HUD settings: turn it on or off, its size and where the panels stand, and the transfer animation. They are kept for each player.\n\nThe balance of the mod is in config/projectrebirth-server.toml.',
             'H открывает настройки HUD: включение, размер, где стоят панели, и анимацию переноса. Они хранятся у каждого игрока.\n\nБаланс всего мода — время, прочность, урон, стоимость — в файле config/projectrebirth-server.toml на сервере (в одиночной игре — в папке игры).')
     ])
 ]);
@@ -239,7 +239,7 @@ category('armor', P + 'power_armor', 'Power Armor', 'Силовая броня',
         text('With the mounting tool, Shift + right-click your own empty armor: a window with 7 slots of hull parts opens. Putting an upgrade into a slot installs it, taking it out removes it. A banner goes on the back.',
             'Устройство монтажа: Shift + ПКМ по своей пустой броне открывает окно с 7 слотами частей корпуса. Положить улучшение в слот — установить, забрать — снять. Знамя ставится на спину.'),
         recipe(P + 'upgrade_mounting_tool'),
-        text('Plating raises the most structural integrity, for each part: copper +10, iron +20, titanium +30 and +5 critical. The compressed air module raises the jump and the safe fall height. The floodlight (N) lights where the pilot looks.',
+        text('Plating per part: copper +10, iron +20, titanium +30 structural (+5 critical). Compressed air: higher jump, safer fall. Floodlight (N): light where you look.',
             'Обшивка поднимает максимум структурной целостности за каждую часть: медь +10, железо +20, титан +30 и +5 критической. Модуль сжатого воздуха повышает прыжок и безопасную высоту падения. Прожектор (N) освещает то, куда смотрит пилот.'),
         recipe(P + 'armor_titanium_plating'),
         recipe(P + 'compressed_air_module'),
@@ -276,7 +276,7 @@ category('factions', P + 'faction_core', 'Factions', 'Фракции', [
     entry('faction_territory', P + 'faction_core', -1, 1, ['factions'], 'Territory', 'Территория', [
         block(P + 'faction_core', 'The core guards a square of 24 blocks each way, full height.', 'Ядро охраняет квадрат на 24 блока во все стороны, на всю высоту.'),
         recipe(P + 'faction_core'),
-        text('A leader or an officer places the core; a faction has one, and its square may not touch another faction\'s. On that land strangers do not open chests, stations or doors, and allies only use the doors.\n\nThe faction may break its own core at any time; the land goes with it.',
+        text('A leader or an officer places the core; a faction has one, and its square may not touch another faction\'s. There strangers do not open chests, stations or doors; allies use only doors.\n\nThe faction may break its own core at any time; the land goes with it.',
             'Ядро ставит лидер или офицер; у фракции оно одно, и его квадрат не может касаться чужого. На этой земле чужаки не открывают сундуки, станции и двери, а союзники пользуются только дверьми.\n\nСвоё ядро фракция может сломать в любой момент — земля пропадёт вместе с ним.')
     ]),
     entry('faction_diplomacy', 'minecraft:iron_sword', 1, 0, ['faction_roles', 'faction_territory'], 'Alliances and Wars', 'Союзы и войны', [

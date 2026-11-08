@@ -223,6 +223,9 @@ public class CodexScreen extends Screen {
             int y = tabY(i);
             graphics.blit(ATLAS, x, y, active ? 30 : 0, 80, TAB_W, TAB_H);
             graphics.renderItem(stackOf(tab.icon()), x + 7, y + 5);
+            if (CodexReadState.anyUnread(tab)) {
+                unreadMark(graphics, x + 3, y + 3);
+            }
             if (mouseX >= x && mouseX < x + TAB_W - 6 && mouseY >= y && mouseY < y + TAB_H) {
                 hoveredText = Component.translatable(tab.titleKey());
             }
@@ -258,6 +261,9 @@ public class CodexScreen extends Screen {
             int u = hovered ? 26 : entry.parents().isEmpty() ? 52 : 0;
             graphics.blit(ATLAS, x, y, u, 48, NODE, NODE);
             graphics.renderItem(stackOf(entry.icon()), x + 5, y + 5);
+            if (!CodexReadState.isRead(entry.id())) {
+                unreadMark(graphics, x + NODE - 8, y + 1);
+            }
             if (hovered) {
                 hoveredText = Component.translatable(entry.titleKey());
             }
@@ -272,6 +278,19 @@ public class CodexScreen extends Screen {
         graphics.drawString(font, title, titleX + 8, innerTop() + 7, RED_INK, false);
         Component hint = Component.translatable("codex.projectrebirth.map_hint");
         graphics.drawString(font, hint, innerLeft() + innerWidth() - font.width(hint) - 6, innerTop() + innerHeight() - 11, 0x907A6248, false);
+    }
+
+    /** A small glowing seal on what has not been read yet, drawn above the item icons. */
+    private static void unreadMark(GuiGraphics graphics, int x, int y) {
+        float pulse = 0.5f + 0.5f * Mth.sin((System.currentTimeMillis() % 1600L) / 1600.0f * Mth.TWO_PI);
+        int glow = (int) (0x50 + 0x70 * pulse) << 24 | 0xFFC040;
+        graphics.pose().pushPose();
+        graphics.pose().translate(0, 0, 300);
+        graphics.fill(x - 1, y - 1, x + 7, y + 7, glow);
+        graphics.fill(x, y, x + 6, y + 6, 0xFF5A1A0A);
+        graphics.fill(x + 1, y + 1, x + 5, y + 5, 0xFFD8402A);
+        graphics.fill(x + 2, y + 1, x + 4, y + 2, 0xFFF08060);
+        graphics.pose().popPose();
     }
 
     /** A line of ink from one medallion to another: across, then down, two pixels wide with a lighter core. */
@@ -341,6 +360,9 @@ public class CodexScreen extends Screen {
         openEntry = entry == null ? null : entry.id();
         spread = 0;
         layout = entry == null ? List.of() : CodexPages.layout(font, entry, pageWidth(), pageHeight());
+        if (entry != null) {
+            CodexReadState.markRead(entry.id());
+        }
     }
 
     /** Opens an entry by id (for links between entries); stays on the map if there is no such entry. */

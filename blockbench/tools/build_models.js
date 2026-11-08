@@ -942,6 +942,28 @@
             return ops;
         };
         const sideHub = U([0, 0, 0], [1, 4, 4], {sd: hub(4), edge: false});
+        /**
+         * A cross-shaped valve wheel standing out of a hub: two steel spokes and an amber cap. axis 0 (x) or 2 (z) is the way
+         * the hub faces; face is the hub's outer plane, dir -1 or +1 the way out; cu, cv the hub's centre (u = the other
+         * horizontal axis, v = y); s the hub's size. The spokes sink 0.15 and 0.3 into the hub and the cap into the spokes, so
+         * no two faces meet in one plane.
+         */
+        const valve = (axis, face, dir, cu, cv, s) => {
+            const u = axis === 0 ? 2 : 0;
+            const length = s + 1;
+            const box = (uLo, uHi, vLo, vHi, aLo, aHi, paint) => {
+                const lo = [0, 0, 0], hi = [0, 0, 0];
+                lo[u] = uLo; hi[u] = uHi; lo[1] = vLo; hi[1] = vHi;
+                lo[axis] = Math.min(face + dir * aLo, face + dir * aHi); hi[axis] = Math.max(face + dir * aLo, face + dir * aHi);
+                return C(lo, [0, 1, 2].map(k => Math.round((hi[k] - lo[k]) * 1000) / 1000), paint);
+            };
+            const spoke = {c: light, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false};
+            return [
+                box(cu - 0.5, cu + 0.5, cv - length / 2, cv + length / 2, -0.15, 0.85, spoke),
+                box(cu - length / 2, cu + length / 2, cv - 0.5, cv + 0.5, -0.3, 0.7, spoke),
+                box(cu - 1, cu + 1, cv - 1, cv + 1, 0.45, 1.45, {c: amber, n: 0.04, all: [[0, 0, 2, 1, shade(amber, 1.25)]], tp: [[0, 0, 2, 1, shade(amber, 1.25)]], edge: false})
+            ];
+        };
         const at = (cube, o) => Object.assign({}, cube, {o});
 
         // ---------------------------------------------------------------- the legs (right; the left is mirrored)
@@ -954,6 +976,7 @@
             P([-7.5, 6, -4], [7, 4, 2], {f: [[0, 0, 7, 1, light], [1, 1, 5, 2, shade(plate, 0.82)], [0, 3, 7, 1, dark]], tp: [[0, 0, 7, 1, light]]}),
             U([-5, 7, -4.6], [2, 2, 1], {f: [[0, 0, 2, 2, deep], [0, 0, 1, 1, light]], edge: false}),
             at(sideHub, [-8.1, 6.5, -1.5]),
+            ...valve(0, -8.1, -1, 0.5, 8.4, 4),
             C([-5, 4, 2.3], [2, 6, 1], {c: light, n: 0.04, k: [[0, 0, 1, 6, edge]], edge: false}),
             P([-7, 2.2, -3], [6, 4, 6], {f: [[0, 0, 6, 1, light], [0, 3, 6, 1, dark]], sd: [[0, 0, 6, 1, light], [2, 1, 2, 2, dark]], k: [[0, 0, 6, 1, light]]}),
             P([-6.5, 2.5, -3.8], [5, 3, 1], {f: [[0, 0, 5, 1, light], ...hazard(0, 2, 5, 1, amber, dark, 1)]}),
@@ -985,6 +1008,7 @@
             P([-7, 20, 4.5], [14, 11, 5], {k: [[0, 0, 14, 1, light], ...grille(4, 6, 6, 4), [1, 1, 2, 9, dark], [11, 1, 2, 9, dark], ...rivets(14, 11)],
                 sd: [[0, 0, 5, 1, light], [1, 2, 3, 6, olive]], tp: [[1, 1, 12, 3, dark]]}),
             U([-1.5, 23, 9.2], [3, 3, 1], {k: hub(3), edge: false}),
+            ...valve(2, 10.2, 1, 0, 24.5, 3),
             C([-6.5, 21.8, 8.8], [3, 9, 3], {c: tan, n: 0.07, all: [[0, 1, 3, 1, dark], [0, 4, 3, 1, rust], [0, 7, 3, 1, dark]], tp: [[1, 1, 1, 1, deep]]}),
             mirror(C([-6.5, 21.8, 8.8], [3, 9, 3], {c: tan, n: 0.07, all: [[0, 1, 3, 1, dark], [0, 4, 3, 1, rust], [0, 7, 3, 1, dark]], tp: [[1, 1, 1, 1, deep]]})),
             C([-5.5, 31.3, 5.5], [2, 2, 4], {c: rust, n: 0.08, edge: false, all: [[0, 1, 4, 1, shade(rust, 0.7)]]}),
@@ -1011,6 +1035,8 @@
             P([-1, 21.5, -7], [2, 5, 1], {f: [[0, 0, 2, 1, light], [0, 2, 2, 1, dark], [0, 4, 2, 1, dark]]}),
             chestPanel, mirror(chestPanel),
             chestHub, mirror(chestHub),
+            ...valve(2, -7.6, -1, -8, 29.5, 3),
+            ...valve(2, -7.6, -1, -8, 29.5, 3).map(c => mirror(c)),
             P([-9.4, 21.4, -6.9], [1, 11, 1], {f: [[0, 0, 1, 11, edge], [0, 0, 1, 1, light]], edge: false}),
             mirror(P([-9.4, 21.4, -6.9], [1, 11, 1], {f: [[0, 0, 1, 11, edge], [0, 0, 1, 1, light]], edge: false})),
             P([-7, 28.5, -7.4], [5, 1, 1], {f: [[0, 0, 5, 1, light]], edge: false}),
@@ -1025,6 +1051,8 @@
             C([-1, 42.5, -4.2], [2, 1, 9], {c: olive, n: 0.05, tp: [[0, 0, 2, 1, shade(olive, 1.3)]]}),
             at(sideHub, [-5.6, 36, -2]),
             mirror(at(sideHub, [-5.6, 36, -2])),
+            ...valve(0, -5.6, -1, 0, 38, 4),
+            ...valve(0, -5.6, -1, 0, 38, 4).map(c => mirror(c)),
             C([3.5, 42.6, 2], [1, 3, 1], {c: light, n: 0.03, tp: [[0, 0, 1, 1, '#ff3b2f']], edge: false}),
             U([-4, 33.6, -3.8], [8, 1, 8], {}),
             P([-4, 42.4, -4], [8, 1, 8], {tp: [[0, 0, 8, 1, light], [3, 1, 2, 6, shade(plate, 0.85)]], all: [[0, 0, 8, 1, light]]}),
@@ -1032,16 +1060,26 @@
             mirror(P([-5.4, 35.2, -4.6], [1, 4, 6], {sd: [[0, 0, 6, 1, light], [1, 2, 4, 1, dark]]})),
             P([-4, 35.5, 4.6], [8, 5, 1], {k: [[0, 0, 8, 1, light], ...grille(1, 1, 6, 3)]})
         ];
-        const cheek = U([-4.8, 35.5, -7.4], [2, 2, 2], {f: [[0, 0, 2, 2, deep], [0, 0, 2, 1, edge]], sd: [[0, 0, 2, 1, edge]]});
+        const sideFilter = [
+            C([-5.6, 34.3, -8.2], [2, 2, 3], {c: olive, n: 0.05, all: [[0, 0, 3, 1, shade(olive, 1.25)]], f: [[0, 0, 2, 2, shade(olive, 0.75)], [0, 0, 1, 1, shade(olive, 1.3)]]},
+                {rot: [10, -28, 0], pivot: [-4, 35.3, -6.6]}),
+            C([-5.4, 34.5, -8.6], [2, 2, 1], {c: light, n: 0.03, f: [[0, 0, 2, 2, edge], [0, 0, 1, 1, light]], edge: false},
+                {rot: [10, -28, 0], pivot: [-4, 35.3, -6.6]}),
+            C([-4.9, 35.6, -6.4], [1, 1, 3], {c: rust, n: 0.08, all: [[0, 0, 3, 1, shade(rust, 0.7)]], edge: false}, {rot: [0, -12, 0], pivot: [-4.4, 36.1, -5]})
+        ];
         const eye = C([-3.5, 38.5, -6.5], [2, 1, 1], {c: lens, n: 0.02, edge: false, f: [[0, 0, 2, 1, lens]]});
         const visor = [
-            P([-4.5, 35, -6.2], [9, 7, 1], {f: [[0, 0, 9, 1, light], [0, 6, 9, 1, dark], [1, 2, 3, 2, deep], [5, 2, 3, 2, deep], [4, 1, 1, 5, edge],
-                [1, 4, 2, 1, dark], [6, 4, 2, 1, dark]], k: [[0, 0, 9, 7, deep]]}),
+            P([-4.5, 35, -6.2], [9, 7, 1], {f: [[0, 0, 9, 1, light], [1, 2, 3, 2, deep], [5, 2, 3, 2, deep], [4, 1, 1, 3, edge], [0, 6, 9, 1, dark]],
+                k: [[0, 0, 9, 7, deep]]}),
             eye, mirror(eye),
             P([-5, 40.5, -7.4], [10, 1, 2], {f: [[0, 0, 10, 1, light]], tp: [[0, 0, 10, 1, light]], edge: false}),
-            U([-2, 35.3, -7.5], [4, 3, 2], {f: [[0, 0, 4, 1, edge], [0, 2, 4, 1, edge]], tp: [[0, 0, 4, 1, edge]]}),
-            P([-1, 36, -8], [2, 2, 1], {f: [[0, 0, 2, 2, deep], [0, 0, 2, 1, light]], edge: false}),
-            cheek, mirror(cheek)
+            // the mask: a base over mouth and chin, a snout with a grille, a round filter of two crossed blocks and a cap
+            U([-3, 34.9, -6.9], [6, 3, 1], {f: [[0, 0, 6, 1, edge], [0, 2, 6, 1, deep]], tp: [[0, 0, 6, 1, edge]]}),
+            P([-2.5, 35.2, -7.8], [5, 2, 1], {f: [[0, 0, 5, 1, light], [0, 1, 5, 1, deep], [1, 1, 1, 1, edge], [3, 1, 1, 1, edge]], tp: [[0, 0, 5, 1, light]]}),
+            U([-1.5, 34.4, -9.3], [3, 3, 2], {all: [[0, 0, 3, 1, edge]], f: [[0, 0, 3, 3, dark], [1, 1, 1, 1, deep]]}),
+            P([-2, 34.9, -9.1], [4, 2, 2], {all: [[0, 0, 4, 1, light]], f: [[0, 0, 4, 2, plate], [0, 0, 4, 1, light]]}),
+            C([-1, 35.3, -9.8], [2, 2, 1], {c: amber, n: 0.04, f: [[0, 0, 2, 2, amber], [0, 0, 1, 1, shade(amber, 1.3)]], edge: false}),
+            ...sideFilter, ...sideFilter.map(c => mirror(c))
         ];
 
         // ---------------------------------------------------------------- the arms (right; the left is mirrored)
@@ -1056,7 +1094,9 @@
             U([-14.5, 19.5, -3.5], [6, 2, 7], {all: [[0, 0, 6, 1, edge]]}),
             C([-14.6, 22, -2.5], [1, 5, 5], {c: olive, n: 0.05, sd: [[1, 1, 3, 3, shade(olive, 0.8)], [0, 0, 5, 1, shade(olive, 1.25)]]}),
             U([-14.5, 29.5, -6.2], [4, 4, 1], {f: hub(4), edge: false}),
+            ...valve(2, -6.2, -1, -12.5, 31.5, 4),
             at(sideHub, [-17.2, 29.5, -2]),
+            ...valve(0, -17.2, -1, 0, 31.5, 4),
             P([-14, 8, -4.3], [5, 2, 1], {f: [[0, 0, 5, 1, light], [1, 1, 1, 1, dark], [3, 1, 1, 1, dark]]}),
             C([-12.5, 13.5, 3.6], [2, 6, 1], {c: light, n: 0.04, k: [[0, 0, 1, 6, edge]], edge: false}),
             P([-16.8, 32.5, -6.4], [8, 2, 1], {f: [[0, 0, 8, 1, light], [0, 1, 8, 1, dark]]}),
@@ -1509,7 +1549,9 @@
         // an armor with a chest hatch carries its chest upgrades on the hatch, so they open with it
         const door = bone('chest_door');
         const chest = door ? {parent: 'chest_door', pivot: door.pivot} : {parent: 'torso', pivot: torso.pivot};
-        const front = minOf(door ? door.cubes : torso.cubes, 2), back = maxOf(torso.cubes, 2), top = maxOf(head.cubes, 1);
+        // a thin part on top (an antenna) does not count: the lamp stands on the helmet itself, sunk 0.2 into it
+        const crown = spec.noCoplanarFaces ? head.cubes.filter(c => c.s[0] >= 2 && c.s[2] >= 2) : head.cubes;
+        const front = minOf(door ? door.cubes : torso.cubes, 2), back = maxOf(torso.cubes, 2), top = maxOf(crown, 1) - (spec.noCoplanarFaces ? 0.2 : 0);
         const shoulder = arm.cubes[0], upper = arm.cubes[1];
         const elbow = spec.joints.elbow, knee = spec.joints.knee;
         const lowLeg = leg.cubes.filter(c => c.o[1] + c.s[1] > knee);

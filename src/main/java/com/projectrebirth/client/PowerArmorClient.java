@@ -214,8 +214,14 @@ public final class PowerArmorClient {
         HudLayout.pushPanel(graphics);
         int x = 0;
         Component state = Component.translatable(armor.isDisabled() ? "hud.projectrebirth.armor.state_disabled" : "hud.projectrebirth.armor.state_ok");
-        graphics.drawString(font, Component.translatable("hud.projectrebirth.armor.title", Component.translatable(armor.getVariant().translationKey()), state),
-                x, 12, armor.isDisabled() ? 0xFF5555 : 0x7FE8FF);
+        Component title = Component.translatable("hud.projectrebirth.armor.title", Component.translatable(armor.getVariant().translationKey()), state);
+        graphics.drawString(font, title, x, 12, armor.isDisabled() ? 0xFF5555 : 0x7FE8FF);
+        if (Interference.active()) {
+            // 1.5.0: the armor's electronics are disturbed (the numbers jump, the floodlight flickers)
+            int markX = x + font.width(title) + 4;
+            GuiAtlas.alarm(graphics, markX, 11, GuiAtlas.Alarm.INTERFERENCE);
+            graphics.drawString(font, Component.translatable("hud.projectrebirth.body.alarm.interference"), markX + 11, 12, 0xFFCE93D8);
+        }
         int y = 24;
         bar(graphics, font, x, y, Component.translatable("hud.projectrebirth.armor.structural"),
                 armor.getStructural(), armor.getMaxStructural(), 0xFF4FC3F7);

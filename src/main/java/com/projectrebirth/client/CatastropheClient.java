@@ -259,6 +259,18 @@ public final class CatastropheClient {
     }
 
     /** The type of the catastrophe and the rough time to it; exact time and intensity come with the weather station (1.6.0). */
+    /** The hazard a catastrophe brings, for its mark; null for an unknown one (from a newer config). */
+    static com.projectrebirth.environment.Hazard hazardOf(String event) {
+        return switch (event) {
+            case Environment.ACID_RAIN -> com.projectrebirth.environment.Hazard.ACID;
+            case Environment.TOXIC_STORM -> com.projectrebirth.environment.Hazard.POLLUTION;
+            case Environment.RADIATION_BURST -> com.projectrebirth.environment.Hazard.RADIATION;
+            case Environment.DUST_STORM -> com.projectrebirth.environment.Hazard.DUST;
+            case Environment.EMI_STORM -> com.projectrebirth.environment.Hazard.EMI;
+            default -> null;
+        };
+    }
+
     private static void renderWarning(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.options.hideGui || !HudLayout.enabled() || state.phase() == EventPhase.CALM || state.event().isEmpty()) {
@@ -275,12 +287,17 @@ public final class CatastropheClient {
         };
         boolean blink = state.phase() == EventPhase.WARNING && (ticks() / 10) % 2 == 0;
         int color = state.phase() == EventPhase.AFTERMATH ? 0xFFCCCCCC : blink ? 0xFFFFFF55 : 0xFFFF8A24;
-        int width = minecraft.font.width(text);
-        // The last line of the status panel, the same for a human, a body and a pilot.
+        com.projectrebirth.environment.Hazard hazard = hazardOf(state.event());
+        int textX = hazard == null ? 0 : 11;
+        int width = textX + minecraft.font.width(text);
+        // The last line of the status panel, the same for a human, a body and a pilot; the mark tells the kind of catastrophe.
         HudLayout.pushPanel(graphics);
         int y = HudLayout.CATASTROPHE_ROW;
         graphics.fill(-2, y - 2, width + 2, y + minecraft.font.lineHeight, 0x90000000);
-        graphics.drawString(minecraft.font, text, 0, y, color);
+        if (hazard != null) {
+            GuiAtlas.hazardMark(graphics, 0, y - 1, hazard);
+        }
+        graphics.drawString(minecraft.font, text, textX, y, color);
         graphics.pose().popPose();
     }
 

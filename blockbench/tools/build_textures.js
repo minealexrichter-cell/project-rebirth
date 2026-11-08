@@ -2027,6 +2027,45 @@
         const greys = ['#ffffff', '#f2f2f2', '#e4e4e4', '#d8d8d8', '#cccccc', '#bfbfbf', '#a8a8a8'];
         greys.forEach((c, i) => rect(50, 34 + i, 8, 1, c));
         rect(57, 34, 1, 7, '#6f6f6f');
+
+        // 1.5.0, block G. The marks of the dust and the EMI hazards, 9x9, next to the other hazards.
+        rect(122, 34, 9, 9, '#211b12'); rect(132, 34, 9, 9, '#1c1426');
+        mark(122, ['.........', '.ss..s...', '..sssss..', 's..sS.ss.', '.sssssss.', '..s.sss.s', '.sss..ss.', '...s.s...', '.........'], {s: '#d7b377', S: '#f3dcae'});
+        mark(132, ['.........', '.....v...', '....vv...', '...vv....', '..vvvvv..', '....vv...', '...vv....', '...v.....', '.........'], {v: '#ce93d8'});
+
+        // The alarms of a body, 9x9 on a dark ground (1.5.0): no charge, overheated, critical wear, interference;
+        // and the heat and cold of a human.
+        const alarm = (ox, ground, rows, palette) => {
+            rect(ox, 46, 9, 9, ground);
+            frame(ox, 46, 9, 9, '#0f1215', '#0f1215');
+            rows.forEach((row, y) => [...row].forEach((ch, x) => {
+                if (ch !== '.') {
+                    rect(ox + x, 46 + y, 1, 1, palette[ch]);
+                }
+            }));
+        };
+        // an empty battery with a red bolt
+        alarm(80, '#2a1414', ['.........', '...ww....', '..wwwww..', '..w..rw..', '..w.r.w..', '..wr..w..', '..wwwww..', '.........', '.........'], {w: '#cfd8dc', r: '#ff5252'});
+        // a flame
+        alarm(90, '#2a1a10', ['.........', '....o....', '...oo....', '...ooo.o.', '..ooyoo..', '..oyyyo..', '..oyyyo..', '...ooo...', '.........'], {o: '#ff6d00', y: '#ffd740'});
+        // a broken gear
+        alarm(100, '#24160f', ['.........', '...g.g...', '..ggggg..', '.gg.r.gg.', '..g.r.g..', '.gg.r.gg.', '..ggggg..', '...g.g...', '.........'], {g: '#bcaaa4', r: '#ff5252'});
+        // static: a broken wave
+        alarm(110, '#1c1426', ['.........', '.........', '.v...v...', 'v.v.v.v.v', '...v...v.', '.........', '.w.w..w..', '.........', '.........'], {v: '#ce93d8', w: '#f3e5f5'});
+        // a sun
+        alarm(120, '#2a1a10', ['.........', '....y....', '.y.....y.', '...ooo...', '.y.ooo.y.', '...ooo...', '.y.....y.', '....y....', '.........'], {o: '#ff7043', y: '#ffd740'});
+        // a snowflake
+        alarm(130, '#10202a', ['.........', '....b....', '.b..b..b.', '..b.b.b..', '.bbbwbbb.', '..b.b.b..', '.b..b..b.', '....b....', '.........'], {b: '#4fc3f7', w: '#e1f5fe'});
+
+        // The small marks of the body's thin bars, 5x5 (1.5.0): charge (a bolt), heat (a thermometer), wear (a gear).
+        const small = (ox, rows, palette) => rows.forEach((row, y) => [...row].forEach((ch, x) => {
+            if (ch !== '.') {
+                rect(ox + x, 56 + y, 1, 1, palette[ch]);
+            }
+        }));
+        small(80, ['..yy.', '.yy..', 'yyyyy', '..yy.', '.yy..'], {y: '#ffd54f'});
+        small(86, ['.ww..', '.ww..', '.wr..', 'rrrr.', '.rr..'], {w: '#cfd8dc', r: '#ff7043'});
+        small(92, ['g.g.g', '.ggg.', 'gg.gg', '.ggg.', 'g.g.g'], {g: '#bcaaa4'});
         return {canvas};
     };
 

@@ -96,14 +96,22 @@ public final class EnvironmentClient {
                 stageColor(toxinStage, 3), number(last.toxin()) + stageText(toxinStage));
         y += ROW;
         if (!Float.isNaN(last.temperature())) {
-            // temperature (1.5.0, temporary until the HUD of block G): the place, and the heat or cold stress as a bar
-            int thermalStage = com.projectrebirth.environment.Temperature.stage(last.thermal());
-            boolean hot = last.thermal() > 0.0f;
-            String text = Math.round(last.temperature()) + "°C" + (thermalStage > 0 ? " · " + Component.translatable(hot
-                    ? "hud.projectrebirth.human.hot" : "hud.projectrebirth.human.cold").getString() + stageText(thermalStage) : "");
-            bar(graphics, font, y, Component.translatable("hud.projectrebirth.human.temperature"),
-                    Math.abs(last.thermal()) / com.projectrebirth.environment.Temperature.MAX_STRESS,
-                    thermalStage == 0 ? 0xFF90A4AE : hot ? 0xFFFF7043 : 0xFF4FC3F7, text);
+            // temperature (1.5.0): the stress fills from the middle, to the right in heat and to the left in cold; then the
+            // temperature of the place, and with stress its mark (sun or snowflake) and stage
+            float thermal = last.thermal();
+            int thermalStage = com.projectrebirth.environment.Temperature.stage(thermal);
+            boolean hot = thermal > 0.0f;
+            int stressColor = thermalStage == 0 ? 0xFF90A4AE : thermalStage >= 3 ? 0xFFE53935 : hot ? 0xFFFF7043 : 0xFF4FC3F7;
+            graphics.drawString(font, Component.translatable("hud.projectrebirth.human.temperature"), 0, y, 0xFFFFFFFF);
+            GuiAtlas.centredBar(graphics, LABEL_WIDTH, y, BAR_WIDTH, 9, thermal / com.projectrebirth.environment.Temperature.MAX_STRESS, stressColor);
+            int x = LABEL_WIDTH + BAR_WIDTH + 4;
+            String degrees = Math.round(last.temperature()) + "°C";
+            graphics.drawString(font, degrees, x, y, 0xFFFFFFFF);
+            if (thermalStage > 0) {
+                x += font.width(degrees) + 3;
+                GuiAtlas.alarm(graphics, x, y - 1, hot ? GuiAtlas.Alarm.HOT : GuiAtlas.Alarm.COLD);
+                graphics.drawString(font, Component.translatable("hud.projectrebirth.human.stage_short", thermalStage), x + 11, y, stressColor);
+            }
             y += ROW;
         }
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);

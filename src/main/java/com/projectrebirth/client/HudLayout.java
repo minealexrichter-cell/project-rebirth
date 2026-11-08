@@ -9,12 +9,23 @@ import net.minecraft.util.Mth;
 public final class HudLayout {
     /** Size of the status panel with all its lines, at scale 1. */
     public static final int PANEL_WIDTH = 205;
-    public static final int PANEL_HEIGHT = 96;
-    /** The last line of the panel, kept for the catastrophe in every state: human, body, armor. */
-    public static final int CATASTROPHE_ROW = 86;
+    public static final int PANEL_HEIGHT = 108;
+    /** The height of one line of the panel. */
+    public static final int ROW = 12;
+    /**
+     * The last line of the panel, kept for the catastrophe in every state: human, body, armor. Below the eight lines of the
+     * human panel at their fullest (1.5.0 added the temperature line).
+     */
+    public static final int CATASTROPHE_ROW = 98;
     /** Size of the integrity bar at scale 1. */
     public static final int BAR_WIDTH = 81;
     public static final int BAR_HEIGHT = 9;
+    /** Height of the body's thin bars of wear, charge and heat (1.5.0). */
+    public static final int BODY_THIN_BAR = 5;
+    /** The body's whole stack at scale 1: integrity, three thin bars and the jetpack thrust, with the gaps. */
+    public static final int BODY_STACK_HEIGHT = BAR_HEIGHT + 1 + 3 * (BODY_THIN_BAR + 1) + 6;
+    /** The stack with its marks and up to five icons on the right. */
+    public static final int BODY_STACK_WIDTH = BAR_WIDTH + 1 + 5 * 10;
 
     private HudLayout() {
     }
@@ -37,12 +48,13 @@ public final class HudLayout {
 
     /** Left edge of the integrity bar drawn at scale {@link #scale()}, moved from {@code x} but kept on the screen. */
     public static int barX(int x, int guiWidth) {
-        return Mth.clamp(x + RebirthClientConfig.HUD_BAR_OFFSET_X.get(), 0, Math.max(0, guiWidth - Math.round(BAR_WIDTH * scale())));
+        return Mth.clamp(x + RebirthClientConfig.HUD_BAR_OFFSET_X.get(), 0, Math.max(0, guiWidth - Math.round(BODY_STACK_WIDTH * scale())));
     }
 
     /** Bottom edge of the integrity bar, moved from {@code bottom} but kept on the screen. */
     public static int barBottom(int bottom, int guiHeight) {
-        int height = Math.round(BAR_HEIGHT * scale());
+        // the whole stack stays on the screen, not only the integrity bar
+        int height = Math.round(BODY_STACK_HEIGHT * scale());
         return Mth.clamp(bottom + RebirthClientConfig.HUD_BAR_OFFSET_Y.get(), height, Math.max(height, guiHeight));
     }
 

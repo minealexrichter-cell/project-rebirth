@@ -108,9 +108,10 @@ public class HudSettingsScreen extends Screen {
             int panelY = HudLayout.panelY(height);
             frame(graphics, panelX, panelY, Math.round(HudLayout.PANEL_WIDTH * scale), Math.round(HudLayout.PANEL_HEIGHT * scale),
                     Component.translatable("screen.projectrebirth.hud_settings.panel"));
-            int barHeight = Math.round(HudLayout.BAR_HEIGHT * scale);
+            // the body's whole stack: integrity, the thin bars of wear, charge and heat, the thrust, the marks and alarms
+            int barHeight = Math.round(HudLayout.BODY_STACK_HEIGHT * scale);
             frame(graphics, HudLayout.barX(width / 2 - HEARTS_LEFT, width), HudLayout.barBottom(height - HEARTS_BOTTOM, height) - barHeight,
-                    Math.round(HudLayout.BAR_WIDTH * scale), barHeight, Component.translatable("screen.projectrebirth.hud_settings.bar"));
+                    Math.round(HudLayout.BODY_STACK_WIDTH * scale), barHeight, Component.translatable("screen.projectrebirth.hud_settings.bar"));
         }
     }
 

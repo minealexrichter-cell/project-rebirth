@@ -236,7 +236,9 @@ category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
         item(P + 'body_battery', 'Hold right-click in a body: in 3 seconds it hands over its charge. Damage breaks it off.', 'Удерживайте ПКМ в теле: за 3 секунды он отдаст заряд. Урон прерывает.'),
         recipe(P + 'body_battery'),
         note('Charge the body battery in the pad: right-click the pad with it, right-click with an empty hand to take it back. Chargers of other mods work too.',
-            'Аккумулятор тела заряжается в платформе: ПКМ по ней с аккумулятором, ПКМ пустой рукой — забрать. Подходят и зарядники других модов.')
+            'Аккумулятор тела заряжается в платформе: ПКМ по ней с аккумулятором, ПКМ пустой рукой — забрать. Подходят и зарядники других модов.'),
+        note('In the HUD, above the integrity bar: thin bars of heat, charge and wear, each with its mark, and the numbers in the panel. Marks right of the integrity bar warn: no charge, overheating, critical wear, interference.',
+            'В HUD над полосой прочности — тонкие полосы нагрева, заряда и износа, у каждой свой значок, а цифры — в панели. Значки справа от полосы прочности предупреждают: нет заряда, перегрев, критический износ, помехи.')
     ])
 ]);
 
@@ -372,7 +374,9 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         text('Between 5 and 30°C you are comfortable. Outside, heat or cold stress grows; in comfort it goes away.\n\nFrom 30 weakness, from 60 slower healing, from 90 damage. Heat makes you hungry faster, cold slower.',
             'От 5 до 30°C вам комфортно. Вне этого растёт стресс от жары или холода, в комфорте он проходит.\n\nС 30 слабость, с 60 хуже лечится, с 90 урон. В жару голод приходит быстрее, в холод медленнее.'),
         note('Artificial bodies do not feel cold; heat goes into their overheating. The pilot of a power armor is protected.',
-            'Искусственные тела холода не чувствуют, жара идёт в их перегрев. Пилот силовой брони защищён.')
+            'Искусственные тела холода не чувствуют, жара идёт в их перегрев. Пилот силовой брони защищён.'),
+        note('In the HUD the line Temperature fills from the middle: to the right in heat, to the left in cold; a sun or a snowflake shows the stage.',
+            'В HUD строка «Темп.» заполняется от середины: вправо в жару, влево в холод; солнце или снежинка показывают стадию.')
     ]),
     entry('thermal_gear', P + 'thermal_liner', 1, 3, ['temperature'], 'Against Heat and Cold', 'От жары и холода', [
         text('The heavy suit keeps off most heat and cold, the hazmat suit a little. Each piece counts by its share.\n\nA thermal liner sewn into any piece — a suit or ordinary armor — keeps off 70% for that piece.',

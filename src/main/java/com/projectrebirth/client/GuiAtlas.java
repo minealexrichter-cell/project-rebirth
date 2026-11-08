@@ -65,10 +65,57 @@ public final class GuiAtlas {
             case POLLUTION -> 92;
             case RADIATION -> 102;
             case ACID -> 112;
-            case DUST -> 92; // placeholder: the polluted air mark until block H draws its own
-            case EMI -> 102; // placeholder: the radiation mark until block H draws its own
+            case DUST -> 122;
+            case EMI -> 132;
         };
         blit(graphics, x, y, u, 34, 9, 9);
+    }
+
+    /** The 9 x 9 alarms of the HUD (1.5.0). */
+    public enum Alarm {
+        NO_CHARGE(80), OVERHEAT(90), CRITICAL_WEAR(100), INTERFERENCE(110), HOT(120), COLD(130);
+
+        private final int u;
+
+        Alarm(int u) {
+            this.u = u;
+        }
+    }
+
+    public static void alarm(GuiGraphics graphics, int x, int y, Alarm alarm) {
+        blit(graphics, x, y, alarm.u, 46, 9, 9);
+    }
+
+    /** The 5 x 5 marks of the body's thin bars (1.5.0). */
+    public enum Small {
+        CHARGE(80), HEAT(86), WEAR(92);
+
+        private final int u;
+
+        Small(int u) {
+            this.u = u;
+        }
+    }
+
+    public static void small(GuiGraphics graphics, int x, int y, Small mark) {
+        blit(graphics, x, y, mark.u, 56, 5, 5);
+    }
+
+    /**
+     * A bar that fills from its middle: to the right for a positive value (heat), to the left for a negative one (cold).
+     * The value is -1 to 1.
+     */
+    public static void centredBar(GuiGraphics graphics, int x, int y, int width, int height, float value, int color) {
+        nineSlice(graphics, x, y, width, height, 96, 0, 9, 2);
+        int half = (width - 2) / 2;
+        int filled = Math.round(half * Mth.clamp(Math.abs(value), 0.0f, 1.0f));
+        int start = value >= 0.0f ? x + 1 + half : x + 1 + half - filled;
+        graphics.setColor((color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f, 1.0f);
+        for (int done = 0; done < filled; done += 8) {
+            blit(graphics, start + done, y + 1, 50, 34, Math.min(8, filled - done), Math.min(7, height - 2));
+        }
+        graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        graphics.fill(x + 1 + half, y + 1, x + 2 + half, y + height - 1, 0xFFFFFFFF);
     }
 
     /** An energy gauge filling up from the bottom. */

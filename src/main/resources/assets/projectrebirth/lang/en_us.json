@@ -598,6 +598,11 @@
   "tooltip.projectrebirth.body_battery.charge": "Stored: %s / %s FE",
   "tooltip.projectrebirth.body_battery.hint": "Hold right-click in a body to hand over the charge",
   "message.projectrebirth.command.charge": "Charge of %s set to %s%%",
+  "item.projectrebirth.cooling_module": "Cooling Module",
+  "message.projectrebirth.body_heat.warm": "The body is getting hot. Rest, find shade or water.",
+  "message.projectrebirth.body_heat.throttled": "Overheating: the body throttles itself — slower, weaker blows, no jetpack.",
+  "message.projectrebirth.body_heat.overheated": "The body has overheated! Cool it down: stand still in the shade or step into water.",
+  "message.projectrebirth.body_heat.cooled": "The body has cooled down.",
   "codex.projectrebirth.category.basics": "Basics",
   "codex.projectrebirth.entry.welcome": "The Rebirth Codex",
   "codex.projectrebirth.welcome.p1": "This book follows you through Project: Rebirth: from the first ores and machines to artificial bodies, power armor, factions and survival in a hostile world.\n\nEach tab on the left is a part of the mod. A map shows its entries; a line leads from what you need first to what follows.",
@@ -709,6 +714,11 @@
   "codex.projectrebirth.gadgets.p3": "The sealing module keeps the air under water and, since 1.3, keeps acid and dust off the body. It does not save from being stuck in blocks.",
   "codex.projectrebirth.gadgets.p5": "The jetpack: hold jump in the air to rise up to 8 blocks above the ground under the body. 6 seconds of thrust, refilled only on the ground; with none left the body falls as usual.",
   "codex.projectrebirth.gadgets.p7": "The extra battery adds 40 000 FE to the charge of a body and takes one slot.",
+  "codex.projectrebirth.gadgets.p9": "The cooling module takes heat away all the time: a body with it overheats much later.",
+  "codex.projectrebirth.entry.body_heat": "Overheating",
+  "codex.projectrebirth.body_heat.p1": "Since 1.5 a body heats up. Running, blows, mining and above all the jetpack heat it, and so do deserts, badlands, the Nether, fire, lava and magma close by.\n\nRest, shade, rain, cold lands and most of all water cool it. Better bodies cool faster.",
+  "codex.projectrebirth.body_heat.p2": "From 70 the body warns. Above 85 it throttles: slower, weaker blows, no jetpack. At 100 it has overheated and stays throttled until it cools below 85.\n\nOverheating never destroys a body and never takes control: lead it into water or shade.",
+  "codex.projectrebirth.body_heat.p3": "A power armor does not heat up: a body inside one only cools. An empty body standing in the world cools down too.",
   "codex.projectrebirth.entry.body_charge": "Body Charge",
   "codex.projectrebirth.body_charge.p1": "Since 1.5 every artificial body runs on charge (FE). Walking, running, blows, breaking blocks, self-repair and above all the jetpack spend it. An empty body standing in the world keeps its charge; it goes with the body when you enter it, leave it or pack it.",
   "codex.projectrebirth.body_charge.p2": "A full basic body lasts about a game day of work, the premium one about four.\n\nBelow 20% the body warns and slows down. At 0% it is in emergency mode: slow walking, no running, jumping, jetpack or self-repair, slow mining. You keep control; Z always returns you home.",
@@ -800,5 +810,6 @@
   "codex.projectrebirth.backup_battery.p3": "Life support is the air filtration unit and the decontamination chamber. The cable feeds them first, and when that is not enough the backup steps in.",
   "codex.projectrebirth.entry.shelter_panel": "Shelter Control Panel",
   "codex.projectrebirth.shelter_panel.p1": "It shows the rooms and the reserve, and finds a leak.",
-  "codex.projectrebirth.shelter_panel.p3": "The panel gives a redstone signal by the danger: 0 all is well … 15 a leak. When a leak or a lack of energy lasts 10 seconds, the owner and their faction are warned; so too about cartridges and the reserve.\n\nThe HUD shows a \"Shelter\" line and the contamination on you."
+  "codex.projectrebirth.shelter_panel.p3": "The panel gives a redstone signal by the danger: 0 all is well … 15 a leak. When a leak or a lack of energy lasts 10 seconds, the owner and their faction are warned; so too about cartridges and the reserve.\n\nThe HUD shows a \"Shelter\" line and the contamination on you.",
+  "message.projectrebirth.command.heat": "Heat of %s set to %s"
 }

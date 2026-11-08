@@ -70,6 +70,8 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
     private ListTag storedInventory = new ListTag();
     /** Charge in FE; below 0 = not known yet (new, or from a world of 1.4.1), filled up when the body joins a level. */
     private float charge = -1.0f;
+    /** Heat, 0 to 100 (see {@link com.projectrebirth.bodies.power.BodyHeat}). */
+    private float heat;
     /** False only for a body that has never been in a level; saved so loaded bodies keep their damage. */
     private boolean statsInitialized;
 
@@ -139,6 +141,14 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
 
     public void setCharge(float charge) {
         this.charge = Mth.clamp(charge, 0.0f, BodyPower.capacity(this));
+    }
+
+    public float heat() {
+        return heat;
+    }
+
+    public void setHeat(float heat) {
+        this.heat = Mth.clamp(heat, 0.0f, com.projectrebirth.bodies.power.BodyHeat.MAX);
     }
 
     @Override
@@ -322,6 +332,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (!level().isClientSide && tickCount % 20 == 0) {
             BodyRules.tickSelfRepair(this, bodyClass);
             BodyPower.tickStanding(this);
+            com.projectrebirth.bodies.power.BodyHeat.tickStanding(this);
             com.projectrebirth.environment.MachineBody.tickStanding(this);
             BodyRegistry.get(getServer()).updateStanding(this);
         }
@@ -338,6 +349,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (charge >= 0.0f) {
             tag.putFloat("Charge", charge);
         }
+        if (heat > 0.0f) {
+            tag.putFloat("Heat", heat);
+        }
         Upgrades.save(tag, registryAccess(), upgrades());
     }
 
@@ -347,6 +361,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         storedInventory = tag.getList("BodyInventory", Tag.TAG_COMPOUND);
         charge = tag.contains("Charge") ? tag.getFloat("Charge") : -1.0f;
+        heat = tag.getFloat("Heat");
         entityData.set(UPGRADES, Upgrades.load(tag, registryAccess()));
         // Bodies saved before this flag existed are already initialized.
         // Saves from before the flag existed already have health; a body summoned by command with extra data

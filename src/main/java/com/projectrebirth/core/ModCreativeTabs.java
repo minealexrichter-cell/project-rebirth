@@ -85,6 +85,7 @@ public final class ModCreativeTabs {
                 output.accept(UpgradeRegistry.SEALING_MODULE.get());
                 output.accept(UpgradeRegistry.JETPACK.get());
                 output.accept(UpgradeRegistry.EXTRA_BATTERY.get());
+                output.accept(UpgradeRegistry.COOLING_MODULE.get());
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }

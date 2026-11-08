@@ -228,6 +228,7 @@ public final class TransferService {
         ListTag inventory = body.getStoredInventory();
         InstalledUpgrades upgrades = body.upgrades();
         float charge = body.charge();
+        float heat = body.heat();
         BodyRegistry.get(player.server).markControlled(player.getUUID(), body);
         body.setStoredInventory(new ListTag());
         body.setUpgrades(InstalledUpgrades.EMPTY);
@@ -243,6 +244,7 @@ public final class TransferService {
         player.setData(UpgradeRegistry.CONTROLLED_BODY, upgrades);
         player.setData(UpgradeRegistry.JETPACK_USED, 0.0f);
         player.setData(BodyPowerRegistry.CONTROLLED_CHARGE, charge);
+        player.setData(BodyPowerRegistry.CONTROLLED_HEAT, heat);
         applyBodyModifiers(player, bodyClass);
         player.teleportTo(level, pos.x, pos.y, pos.z, yaw, player.getXRot());
         level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -285,6 +287,8 @@ public final class TransferService {
         body.setStoredInventory(InventoryUtil.takeInventory(player));
         body.setUpgrades(player.getData(UpgradeRegistry.CONTROLLED_BODY));
         body.setCharge(BodyPower.charge(player));
+        body.setHeat(com.projectrebirth.bodies.power.BodyHeat.heat(player));
+        player.setData(BodyPowerRegistry.CONTROLLED_HEAT, 0.0f);
         player.setData(UpgradeRegistry.CONTROLLED_BODY, InstalledUpgrades.EMPTY);
         player.setData(BodyPowerRegistry.CONTROLLED_CHARGE, -1.0f);
         body.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0f);
@@ -344,6 +348,7 @@ public final class TransferService {
         }
         player.setData(UpgradeRegistry.CONTROLLED_BODY, InstalledUpgrades.EMPTY);
         player.setData(BodyPowerRegistry.CONTROLLED_CHARGE, -1.0f);
+        player.setData(BodyPowerRegistry.CONTROLLED_HEAT, 0.0f);
         deathLevel.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
         boolean robot = state(player).body().map(bodyClass -> !bodyClass.synthetic()).orElse(false);
         deathLevel.playSound(null, player.blockPosition(), robot ? ModSounds.ROBOT_DESTROYED.get() : SoundEvents.PLAYER_DEATH,
@@ -440,10 +445,12 @@ public final class TransferService {
             player.setHealth(player.getMaxHealth());
         }
         BodyPower.applyLimits(player);
+        com.projectrebirth.bodies.power.BodyHeat.applyLimits(player);
     }
 
     public static void removeBodyModifiers(Player player) {
         BodyPower.removeLimits(player);
+        com.projectrebirth.bodies.power.BodyHeat.removeLimits(player);
         removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER);
         removeModifier(player, Attributes.ARMOR, ARMOR_MODIFIER);
         removeModifier(player, Attributes.MOVEMENT_SPEED, SPEED_MODIFIER);

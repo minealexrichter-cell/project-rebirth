@@ -1,0 +1,22 @@
+{
+  "icon": "projectrebirth:cooling_module",
+  "x": 2,
+  "y": 2,
+  "parents": [
+    "body_charge"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_heat.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_heat.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.body_heat.p3"
+    }
+  ]
+}

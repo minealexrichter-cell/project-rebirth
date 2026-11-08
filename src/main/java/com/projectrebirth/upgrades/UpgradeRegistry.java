@@ -74,6 +74,7 @@ public final class UpgradeRegistry {
     public static final DeferredItem<Item> COMPRESSED_AIR_MODULE = upgradeItem("compressed_air_module", 1);
     public static final DeferredItem<Item> FLOODLIGHT = upgradeItem("floodlight", 1);
     public static final DeferredItem<Item> EXTRA_BATTERY = upgradeItem("extra_battery", 1);
+    public static final DeferredItem<Item> COOLING_MODULE = upgradeItem("cooling_module", 1);
 
     private UpgradeRegistry() {
     }

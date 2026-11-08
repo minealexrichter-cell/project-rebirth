@@ -204,7 +204,17 @@ category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
             'Джетпак: удерживайте прыжок в воздухе — тело поднимается до 8 блоков над землёй под собой. 6 секунд тяги, пополняется только на земле; без тяги тело падает как обычно.'),
         recipe(P + 'jetpack'),
         item(P + 'extra_battery', 'The extra battery adds 40 000 FE to the charge of a body and takes one slot.', 'Дополнительный аккумулятор добавляет телу 40 000 FE заряда и занимает один слот.'),
-        recipe(P + 'extra_battery')
+        recipe(P + 'extra_battery'),
+        item(P + 'cooling_module', 'The cooling module takes heat away all the time: a body with it overheats much later.', 'Модуль охлаждения постоянно отводит тепло: тело с ним перегревается гораздо позже.'),
+        recipe(P + 'cooling_module')
+    ]),
+    entry('body_heat', P + 'cooling_module', 2, 2, ['body_charge'], 'Overheating', 'Перегрев', [
+        text('Since 1.5 a body heats up. Running, blows, mining and above all the jetpack heat it, and so do deserts, badlands, the Nether, fire, lava and magma close by.\n\nRest, shade, rain, cold lands and most of all water cool it. Better bodies cool faster.',
+            'С 1.5 тело нагревается. Его греют бег, удары, добыча и сильнее всего джетпак, а ещё пустыни, столовые горы, Незер, огонь, лава и магма рядом.\n\nОстужают покой, тень, дождь, холодные земли и сильнее всего вода. Лучшие тела остывают быстрее.'),
+        text('From 70 the body warns. Above 85 it throttles: slower, weaker blows, no jetpack. At 100 it has overheated and stays throttled until it cools below 85.\n\nOverheating never destroys a body and never takes control: lead it into water or shade.',
+            'С 70 тело предупреждает. Выше 85 сбрасывает мощность: медленнее, удары слабее, джетпак не работает. На 100 тело перегрелось и остаётся слабым, пока не остынет ниже 85.\n\nПерегрев никогда не уничтожает тело и не отнимает управление: отведите его в воду или тень.'),
+        note('A power armor does not heat up: a body inside one only cools. An empty body standing in the world cools down too.',
+            'Силовая броня не нагревается: тело в ней только остывает. Пустое тело, стоящее в мире, тоже остывает.')
     ]),
     entry('body_charge', P + 'body_battery', 0, 2, ['body_life'], 'Body Charge', 'Заряд тела', [
         text('Since 1.5 every artificial body runs on charge (FE). Walking, running, blows, breaking blocks, self-repair and above all the jetpack spend it. An empty body standing in the world keeps its charge; it goes with the body when you enter it, leave it or pack it.',

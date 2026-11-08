@@ -51,4 +51,11 @@ function cell(band) {
 }
 image('item/body_battery.png', cell('#e0a800'));
 image('item/extra_battery.png', cell('#3fae5a'));
+// cooling module (block B): a plate with fins and a blue core
+image('item/cooling_module.png', (x, y) => {
+    if (x < 2 || x > 13 || y < 3 || y > 12) return [0, 0, 0, 0];
+    if (x === 2 || x === 13 || y === 3 || y === 12) return hex('#1f2326');
+    if (Math.hypot(x - 7.5, y - 7.5) < 2.3) return hex('#4fc3f7');
+    return x % 2 ? hex('#9aa5ad') : hex('#5d666d');
+});
 console.log('placeholders written');

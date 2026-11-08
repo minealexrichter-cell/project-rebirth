@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 47,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:actuator",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/copper",
+      "count": 6
+    },
+    {
+      "tag": "c:ingots/aluminum",
+      "count": 3
+    },
+    {
+      "item": "minecraft:packed_ice",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:cooling_module",
+    "count": 1
+  }
+}

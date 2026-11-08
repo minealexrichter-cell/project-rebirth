@@ -21,6 +21,8 @@ public final class RebirthConfig {
     // 1.5.0: the basic body lasts about one game day of ordinary work, the premium one about four
     private static final int[] DEFAULT_ENERGY_CAPACITY = {60_000, 80_000, 100_000, 130_000, 160_000};
     private static final double[] DEFAULT_ENERGY_USE = {1.0, 0.9, 0.8, 0.7, 0.65};
+    // 1.5.0 block B: better bodies cool faster
+    private static final double[] DEFAULT_COOLING = {1.0, 1.15, 1.3, 1.5, 1.7};
     private static final Map<ArmorVariant, ArmorStats> ARMOR_STATS = new EnumMap<>(ArmorVariant.class);
 
     public static final ModConfigSpec.IntValue TRANSFER_RADIUS;
@@ -156,6 +158,30 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue FLOODLIGHT_RANGE;
     public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
     public static final ModConfigSpec.IntValue EXTRA_BATTERY_CAPACITY;
+    public static final ModConfigSpec.DoubleValue COOLING_MODULE_COOLING;
+    public static final ModConfigSpec.BooleanValue BODY_HEAT_ENABLED;
+    public static final ModConfigSpec.DoubleValue HEAT_SPRINT;
+    public static final ModConfigSpec.DoubleValue HEAT_ATTACK;
+    public static final ModConfigSpec.DoubleValue HEAT_BLOCK;
+    public static final ModConfigSpec.DoubleValue HEAT_JETPACK;
+    public static final ModConfigSpec.DoubleValue HEAT_HOT_BIOME;
+    public static final ModConfigSpec.DoubleValue HEAT_HOT_BIOME_FROM;
+    public static final ModConfigSpec.DoubleValue HEAT_NETHER;
+    public static final ModConfigSpec.DoubleValue HEAT_NEAR_FIRE;
+    public static final ModConfigSpec.DoubleValue HEAT_NEAR_FIRE_MAX;
+    public static final ModConfigSpec.IntValue HEAT_FIRE_RADIUS;
+    public static final ModConfigSpec.DoubleValue HEAT_BURNING;
+    public static final ModConfigSpec.DoubleValue COOL_BASE;
+    public static final ModConfigSpec.DoubleValue COOL_REST;
+    public static final ModConfigSpec.DoubleValue COOL_WATER;
+    public static final ModConfigSpec.DoubleValue COOL_RAIN;
+    public static final ModConfigSpec.DoubleValue COOL_COLD_BIOME;
+    public static final ModConfigSpec.DoubleValue COOL_COLD_BIOME_BELOW;
+    public static final ModConfigSpec.DoubleValue COOL_SHADE;
+    public static final ModConfigSpec.DoubleValue HEAT_WARNING;
+    public static final ModConfigSpec.DoubleValue HEAT_THROTTLE;
+    public static final ModConfigSpec.DoubleValue HEAT_THROTTLE_SLOWDOWN;
+    public static final ModConfigSpec.DoubleValue HEAT_THROTTLE_ATTACK;
     public static final ModConfigSpec.BooleanValue BODY_ENERGY_ENABLED;
     public static final ModConfigSpec.DoubleValue BODY_ENERGY_IDLE;
     public static final ModConfigSpec.DoubleValue BODY_ENERGY_WALK;
@@ -354,9 +380,12 @@ public final class RebirthConfig {
             ModConfigSpec.DoubleValue energyUse = builder
                     .comment("Everything the body spends of its charge is multiplied by this: better bodies are more economical")
                     .defineInRange("energyUseMultiplier", DEFAULT_ENERGY_USE[bodyClass.ordinal()], 0.0, 100.0);
+            ModConfigSpec.DoubleValue cooling = builder
+                    .comment("All cooling of the body (see [body_heat]) is multiplied by this: better bodies cool faster")
+                    .defineInRange("coolingMultiplier", DEFAULT_COOLING[bodyClass.ordinal()], 0.0, 100.0);
             builder.pop();
             BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects,
-                    upgradeSlots, acidWear, energyCapacity, energyUse));
+                    upgradeSlots, acidWear, energyCapacity, energyUse, cooling));
         }
         builder.pop();
 
@@ -586,6 +615,9 @@ public final class RebirthConfig {
         EXTRA_BATTERY_CAPACITY = builder
                 .comment("Charge the extra battery gadget adds to a body, in FE")
                 .defineInRange("extraBatteryCapacity", 40_000, 0, 100_000_000);
+        COOLING_MODULE_COOLING = builder
+                .comment("Heat the cooling module gadget takes away per second (before the class's coolingMultiplier)")
+                .defineInRange("coolingModulePerSecond", 1.5, 0.0, 100.0);
         builder.comment("Jetpack: hold jump in the air").push("jetpack");
         JETPACK_THRUST_SECONDS = builder
                 .comment("Seconds of flight on a full reserve")
@@ -630,6 +662,37 @@ public final class RebirthConfig {
         BODY_BATTERY_RECEIVE = builder.comment("Charge a body battery takes in per tick (pad or chargers of other mods)").defineInRange("batteryReceivePerTick", 400, 1, 100_000_000);
         BODY_BATTERY_USE_SECONDS = builder.comment("Seconds a body battery takes to hand its charge over; damage interrupts it")
                 .defineInRange("batteryUseSeconds", 3.0, 0.25, 60.0);
+        builder.pop();
+
+        builder.comment("Heat of artificial bodies (1.5.0), a scale from 0 to 100, not degrees. Off: bodies never heat up, as in 1.4.1.",
+                "Amounts are per second unless said otherwise. Cooling is multiplied by bodies.<class>.coolingMultiplier.",
+                "A power armor does not heat up, and a body inside one only cools").push("body_heat");
+        BODY_HEAT_ENABLED = builder.comment("The whole system").define("enabled", true);
+        HEAT_SPRINT = builder.comment("Heat from running").defineInRange("sprint", 0.8, 0.0, 100.0);
+        HEAT_ATTACK = builder.comment("Heat per blow").defineInRange("perAttack", 0.3, 0.0, 100.0);
+        HEAT_BLOCK = builder.comment("Heat per block broken").defineInRange("perBlockBroken", 0.15, 0.0, 100.0);
+        HEAT_JETPACK = builder.comment("Heat per second of jetpack thrust").defineInRange("jetpack", 3.0, 0.0, 100.0);
+        HEAT_HOT_BIOME = builder.comment("Heat per degree of the biome's temperature above hotBiomeFrom (deserts and badlands are 2.0)")
+                .defineInRange("hotBiome", 0.6, 0.0, 100.0);
+        HEAT_HOT_BIOME_FROM = builder.comment("Biome temperature from which the climate heats a body").defineInRange("hotBiomeFrom", 1.0, -10.0, 10.0);
+        HEAT_NETHER = builder.comment("Heat in a dimension where water boils (the Nether)").defineInRange("nether", 1.5, 0.0, 100.0);
+        HEAT_NEAR_FIRE = builder.comment("Heat per block of fire, lava, magma or a lit campfire around the body").defineInRange("nearFire", 0.6, 0.0, 100.0);
+        HEAT_NEAR_FIRE_MAX = builder.comment("At most this much heat from fire around").defineInRange("nearFireMax", 4.0, 0.0, 100.0);
+        HEAT_FIRE_RADIUS = builder.comment("How far around the body fire is looked for, in blocks (checked once a second)").defineInRange("fireRadius", 2, 0, 5);
+        HEAT_BURNING = builder.comment("Heat while the body itself burns").defineInRange("burning", 4.0, 0.0, 100.0);
+        COOL_BASE = builder.comment("Cooling at all times").defineInRange("coolBase", 1.0, 0.0, 100.0);
+        COOL_REST = builder.comment("More cooling while the body stands still and does no work").defineInRange("coolRest", 1.0, 0.0, 100.0);
+        COOL_WATER = builder.comment("More cooling in water").defineInRange("coolWater", 6.0, 0.0, 100.0);
+        COOL_RAIN = builder.comment("More cooling in rain").defineInRange("coolRain", 2.0, 0.0, 100.0);
+        COOL_COLD_BIOME = builder.comment("More cooling in a cold biome").defineInRange("coolColdBiome", 1.0, 0.0, 100.0);
+        COOL_COLD_BIOME_BELOW = builder.comment("Biome temperature below which a biome is cold").defineInRange("coldBiomeBelow", 0.3, -10.0, 10.0);
+        COOL_SHADE = builder.comment("More cooling in the shade or indoors (no sky above)").defineInRange("coolShade", 0.5, 0.0, 100.0);
+        HEAT_WARNING = builder.comment("From this heat the body warns").defineInRange("warningFrom", 70.0, 0.0, 100.0);
+        HEAT_THROTTLE = builder.comment("Above this heat the body throttles: slower, weaker blows, no jetpack. At 100 it overheats,",
+                "and stays throttled until it cools below this again. Overheating never destroys a body")
+                .defineInRange("throttleFrom", 85.0, 0.0, 100.0);
+        HEAT_THROTTLE_SLOWDOWN = builder.comment("Part of the speed lost while throttled").defineInRange("throttleSlowdown", 0.25, 0.0, 0.9);
+        HEAT_THROTTLE_ATTACK = builder.comment("Part of the melee damage lost while throttled").defineInRange("throttleAttack", 0.3, 0.0, 1.0);
         builder.pop();
 
         builder.comment("Energy (NeoForge Energy, FE): generators, battery, cable and what the stations use").push("energy");
@@ -856,6 +919,7 @@ public final class RebirthConfig {
                             ModConfigSpec.DoubleValue selfRepairPerSecond, ModConfigSpec.IntValue selfRepairDelaySeconds,
                             ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects,
                             ModConfigSpec.IntValue upgradeSlots, ModConfigSpec.DoubleValue acidWearPerSecond,
-                            ModConfigSpec.IntValue energyCapacity, ModConfigSpec.DoubleValue energyUseMultiplier) {
+                            ModConfigSpec.IntValue energyCapacity, ModConfigSpec.DoubleValue energyUseMultiplier,
+                            ModConfigSpec.DoubleValue coolingMultiplier) {
     }
 }

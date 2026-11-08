@@ -29,6 +29,7 @@ public final class BodyHud {
     private static final int THRUST_HEIGHT = 5;
     private static final int THRUST_COLOR = 0xFF7FE8FF;
     private static final int CHARGE_HEIGHT = 4;
+    private static final int HEAT_HEIGHT = 3;
 
     private BodyHud() {
     }
@@ -66,8 +67,9 @@ public final class BodyHud {
         int bottom = graphics.guiHeight() - minecraft.gui.leftHeight + HEIGHT;
         boolean jetpack = Jetpack.equipped(player);
         boolean charge = BodyPower.enabled();
+        boolean heat = com.projectrebirth.bodies.power.BodyHeat.enabled();
         minecraft.gui.leftHeight += height + 1 + (jetpack ? Math.round((THRUST_HEIGHT + 1) * scale) : 0)
-                + (charge ? Math.round((CHARGE_HEIGHT + 1) * scale) : 0);
+                + (charge ? Math.round((CHARGE_HEIGHT + 1) * scale) : 0) + (heat ? Math.round((HEAT_HEIGHT + 1) * scale) : 0);
         graphics.pose().pushPose();
         graphics.pose().translate(HudLayout.barX(graphics.guiWidth() / 2 - 91, graphics.guiWidth()),
                 HudLayout.barBottom(bottom, graphics.guiHeight()), 0.0f);
@@ -88,6 +90,17 @@ public final class BodyHud {
                     : (player.tickCount / 10 % 2 == 0 ? 0xFFE53935 : 0xFF7F1D1D);
             above -= CHARGE_HEIGHT + 1;
             GuiAtlas.bar(graphics, x, above, WIDTH, CHARGE_HEIGHT, state == BodyPower.State.EMPTY ? 1.0f : BodyPower.fraction(player), chargeColor);
+        }
+        if (heat) {
+            // heat: grey-blue when cool, orange from the warning level, red and blinking while throttled (temporary, block G)
+            com.projectrebirth.bodies.power.BodyHeat.State heatState = com.projectrebirth.bodies.power.BodyHeat.state(player);
+            int heatColor = switch (heatState) {
+                case NORMAL -> 0xFF90A4AE;
+                case WARM -> 0xFFFF9800;
+                default -> player.tickCount / 10 % 2 == 0 ? 0xFFFF3D00 : 0xFF8D1C00;
+            };
+            above -= HEAT_HEIGHT + 1;
+            GuiAtlas.bar(graphics, x, above, WIDTH, HEAT_HEIGHT, com.projectrebirth.bodies.power.BodyHeat.heat(player) / com.projectrebirth.bodies.power.BodyHeat.MAX, heatColor);
         }
         if (jetpack) {
             GuiAtlas.bar(graphics, x, above - THRUST_HEIGHT - 1, WIDTH, THRUST_HEIGHT, Jetpack.reserve(player), THRUST_COLOR);

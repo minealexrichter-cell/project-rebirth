@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 /**
  * Operator commands for testing and administration:
  * /rebirth status [player], /rebirth return [player], /rebirth transfer [player] [capsule position],
- * /rebirth charge [player] [percent] (1.5.0).
+ * /rebirth charge [player] [percent], /rebirth heat [player] [0-100] (1.5.0).
  */
 public final class BodyCommands {
     private BodyCommands() {
@@ -45,7 +45,12 @@ public final class BodyCommands {
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("percent", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 100))
                                         .executes(ctx -> charge(ctx, EntityArgument.getPlayer(ctx, "player"),
-                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "percent")))))));
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "percent"))))))
+                .then(Commands.literal("heat")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("heat", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 100))
+                                        .executes(ctx -> heat(ctx, EntityArgument.getPlayer(ctx, "player"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "heat")))))));
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
@@ -72,6 +77,18 @@ public final class BodyCommands {
         com.projectrebirth.bodies.power.BodyPower.setCharge(player, com.projectrebirth.bodies.power.BodyPower.capacity(player) * percent / 100.0f);
         com.projectrebirth.bodies.power.BodyPower.applyLimits(player);
         ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.command.charge", player.getDisplayName(), percent), true);
+        return 1;
+    }
+
+    /** Sets the heat (0-100) of the body a player controls (1.5.0), for tests and administration. */
+    private static int heat(CommandContext<CommandSourceStack> ctx, ServerPlayer player, int heat) {
+        if (!TransferService.isInArtificialBody(player)) {
+            ctx.getSource().sendFailure(Component.translatable("message.projectrebirth.transfer.not_in_body"));
+            return 0;
+        }
+        com.projectrebirth.bodies.power.BodyHeat.setHeat(player, heat);
+        com.projectrebirth.bodies.power.BodyHeat.tickSecond(player);
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.command.heat", player.getDisplayName(), heat), true);
         return 1;
     }
 

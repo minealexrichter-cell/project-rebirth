@@ -49,6 +49,7 @@
         "body_life",
         "body_modification",
         "gadgets",
+        "body_heat",
         "body_charge"
       ]
     },

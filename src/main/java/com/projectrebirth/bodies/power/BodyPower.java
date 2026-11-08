@@ -230,6 +230,7 @@ public final class BodyPower {
     static void onAttack(AttackEntityEvent event) {
         if (!event.getEntity().level().isClientSide) {
             spend(event.getEntity(), RebirthConfig.BODY_ENERGY_ATTACK.get());
+            BodyHeat.add(event.getEntity(), RebirthConfig.HEAT_ATTACK.get());
         }
     }
 
@@ -237,6 +238,7 @@ public final class BodyPower {
     static void onBreak(BlockEvent.BreakEvent event) {
         if (!event.getPlayer().level().isClientSide) {
             spend(event.getPlayer(), RebirthConfig.BODY_ENERGY_BLOCK.get());
+            BodyHeat.add(event.getPlayer(), RebirthConfig.HEAT_BLOCK.get());
         }
     }
 

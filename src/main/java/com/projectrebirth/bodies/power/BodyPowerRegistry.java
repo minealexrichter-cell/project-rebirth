@@ -54,6 +54,13 @@ public final class BodyPowerRegistry {
                     .sync((holder, to) -> holder == to && to.connection.hasChannel(SyncAttachmentsPayload.TYPE), ByteBufCodecs.FLOAT)
                     .build());
 
+    /** Heat (0-100) of the body a player controls; synced only to the player. Not copied on death. */
+    public static final Supplier<AttachmentType<Float>> CONTROLLED_HEAT = ATTACHMENTS.register("controlled_body_heat",
+            () -> AttachmentType.builder(() -> 0.0f)
+                    .serialize(Codec.FLOAT, heat -> heat > 0.0f)
+                    .sync((holder, to) -> holder == to && to.connection.hasChannel(SyncAttachmentsPayload.TYPE), ByteBufCodecs.FLOAT)
+                    .build());
+
     public static final DeferredBlock<ChargingPadBlock> CHARGING_PAD = BLOCKS.registerBlock("charging_pad", ChargingPadBlock::new,
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)

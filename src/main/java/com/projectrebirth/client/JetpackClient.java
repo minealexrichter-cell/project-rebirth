@@ -27,7 +27,7 @@ public final class JetpackClient {
     private static void onClientTick(ClientTickEvent.Post event) {
         LocalPlayer player = Minecraft.getInstance().player;
         boolean wanted = player != null && Jetpack.equipped(player) && player.input.jumping && !waitingForRelease && Jetpack.inFlightConditions(player)
-                && !com.projectrebirth.bodies.power.BodyPower.isEmpty(player);
+                && !com.projectrebirth.bodies.power.BodyPower.isEmpty(player) && !com.projectrebirth.bodies.power.BodyHeat.isThrottled(player);
         if (wanted != sentWanted) {
             sentWanted = wanted;
             PacketDistributor.sendToServer(new Jetpack.ThrustPayload(wanted));

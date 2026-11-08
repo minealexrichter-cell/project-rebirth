@@ -40,6 +40,15 @@
     {
       "type": "recipe",
       "value": "projectrebirth:extra_battery"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:cooling_module",
+      "text": "codex.projectrebirth.gadgets.p9"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:cooling_module"
     }
   ]
 }

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "working=false": {
+      "model": "projectrebirth:block/heater"
+    },
+    "working=true": {
+      "model": "projectrebirth:block/heater_on"
+    }
+  }
+}

@@ -104,6 +104,27 @@ public final class Protection {
     }
 
     /**
+     * The share of heat ({@code heat}) or cold kept off, 0 to 1 (1.5.0): each worn piece by its share, by its kit or by a thermal
+     * liner sewn into it, whichever keeps off more. A liner also works in ordinary armor.
+     */
+    public static float thermal(Player player, boolean heat) {
+        float total = 0.0f;
+        for (EquipmentSlot slot : BODY) {
+            ItemStack stack = player.getItemBySlot(slot);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            Kit kit = kitOf(stack);
+            float piece = kit == null ? 0.0f : (heat ? kit.stats().heat() : kit.stats().cold()).get().floatValue();
+            if (stack.has(TemperatureRegistry.THERMAL_LINER_INSIDE.get())) {
+                piece = Math.max(piece, RebirthConfig.THERMAL_LINER_PROTECTION.get().floatValue());
+            }
+            total += share(slot) * piece;
+        }
+        return Math.min(1.0f, total);
+    }
+
+    /**
      * Uses the filter for one second of this air: more in worse air, nothing in air no worse than the ordinary background. Tells the person once when it
      * runs out. Public for tests.
      */

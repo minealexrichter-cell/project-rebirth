@@ -83,6 +83,8 @@
         "hostile_world",
         "catastrophes",
         "protection",
+        "temperature",
+        "thermal_gear",
         "dosimeter",
         "medicine",
         "machines_environment"

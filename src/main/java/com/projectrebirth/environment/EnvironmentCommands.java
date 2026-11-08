@@ -66,7 +66,22 @@ public final class EnvironmentCommands {
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("dose", FloatArgumentType.floatArg(0.0f))
                                                 .then(Commands.argument("toxin", FloatArgumentType.floatArg(0.0f))
-                                                        .executes(EnvironmentCommands::setBody)))))));
+                                                        .executes(EnvironmentCommands::setBody)))))
+                        .then(Commands.literal("thermal")
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .then(Commands.argument("stress", FloatArgumentType.floatArg(-100.0f, 100.0f))
+                                                .executes(EnvironmentCommands::setThermal))))));
+    }
+
+    /** Sets the heat (above 0) or cold (below 0) stress of a person (1.5.0), for tests and administration. */
+    private static int setThermal(com.mojang.brigadier.context.CommandContext<net.minecraft.commands.CommandSourceStack> ctx)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        net.minecraft.server.level.ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+        float stress = FloatArgumentType.getFloat(ctx, "stress");
+        Temperature.setStress(player, stress);
+        ctx.getSource().sendSuccess(() -> net.minecraft.network.chat.Component.translatable("message.projectrebirth.command.thermal",
+                player.getDisplayName(), number(stress)), true);
+        return 1;
     }
 
     private static String number(float value) {

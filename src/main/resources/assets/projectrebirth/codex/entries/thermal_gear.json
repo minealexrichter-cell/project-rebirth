@@ -1,0 +1,33 @@
+{
+  "icon": "projectrebirth:thermal_liner",
+  "x": 1,
+  "y": 3,
+  "parents": [
+    "temperature"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.thermal_gear.p1"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:thermal_liner",
+      "text": "codex.projectrebirth.thermal_gear.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:thermal_liner"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:heater",
+      "text": "codex.projectrebirth.thermal_gear.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:heater",
+      "text": "codex.projectrebirth.thermal_gear.p5"
+    }
+  ]
+}

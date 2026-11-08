@@ -347,6 +347,22 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'heavy_suit_helmet'),
         recipe(P + 'heavy_suit')
     ]),
+    entry('temperature', 'minecraft:snowball', -1, 3, ['protection'], 'Temperature', 'Температура', [
+        text('Since 1.5 places have a temperature: deserts, badlands and the Nether are hot, snowy lands and high mountains cold; nights, rain and height make it colder, a roof or deep ground evens it out, and fire, lava and furnaces warm it. A sealed shelter keeps 20°C.',
+            'С 1.5 у места есть температура: в пустынях, столовых горах и Незере жарко, в снежных землях и высоко в горах холодно; ночь, дождь и высота охлаждают, крыша и глубина сглаживают, огонь, лава и печи греют. В герметичном убежище всегда 20°C.'),
+        text('Between 5 and 30°C you are comfortable. Outside, heat or cold stress grows; in comfort it goes away.\n\nFrom 30 weakness, from 60 slower healing, from 90 damage. Heat makes you hungry faster, cold slower.',
+            'От 5 до 30°C вам комфортно. Вне этого растёт стресс от жары или холода, в комфорте он проходит.\n\nС 30 слабость, с 60 хуже лечится, с 90 урон. В жару голод приходит быстрее, в холод медленнее.'),
+        note('Artificial bodies do not feel cold; heat goes into their overheating. The pilot of a power armor is protected.',
+            'Искусственные тела холода не чувствуют, жара идёт в их перегрев. Пилот силовой брони защищён.')
+    ]),
+    entry('thermal_gear', P + 'thermal_liner', 1, 3, ['temperature'], 'Against Heat and Cold', 'От жары и холода', [
+        text('The heavy suit keeps off most heat and cold, the hazmat suit a little. Each piece counts by its share.\n\nA thermal liner sewn into any piece — a suit or ordinary armor — keeps off 70% for that piece.',
+            'Тяжёлый костюм хорошо защищает от жары и холода, химкостюм — немного. Каждая часть считается своей долей.\n\nТермоподкладка, вшитая в любую часть — костюма или обычной брони, — защищает эту часть на 70%.'),
+        item(P + 'thermal_liner', 'Put a piece and a liner on the crafting table. A lined piece alone gives the liner back.', 'Часть брони и подкладку — на верстак. Подшитая часть одна — подкладка вернётся.'),
+        recipe(P + 'thermal_liner'),
+        block(P + 'heater', 'Warms everything within 6 blocks by 20°C while it is cold around.', 'Пока вокруг холодно, греет всё в 6 блоках на 20°C.'),
+        recipe(P + 'heater', 'It runs on energy from the cable.', 'Работает от энергии из кабеля.')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

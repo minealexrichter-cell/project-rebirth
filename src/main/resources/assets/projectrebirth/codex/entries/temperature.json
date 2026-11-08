@@ -1,0 +1,22 @@
+{
+  "icon": "minecraft:snowball",
+  "x": -1,
+  "y": 3,
+  "parents": [
+    "protection"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.temperature.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.temperature.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.temperature.p3"
+    }
+  ]
+}

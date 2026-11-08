@@ -58,4 +58,25 @@ image('item/cooling_module.png', (x, y) => {
     if (Math.hypot(x - 7.5, y - 7.5) < 2.3) return hex('#4fc3f7');
     return x % 2 ? hex('#9aa5ad') : hex('#5d666d');
 });
+// block C: heater (a box with a grille that glows when it works), thermal liner, symptom icons
+const grille = (on) => (x, y) => {
+    if (x === 0 || y === 0 || x === 15 || y === 15) return hex('#2b2f33');
+    if (x >= 3 && x <= 12 && y >= 4 && y <= 11) return y % 2 ? (on ? hex('#ff7a1a') : hex('#4a2a1a')) : hex('#1c1f22');
+    return (x + y) % 3 ? hex('#5d666d') : hex('#535b61');
+};
+image('block/heater_side.png', grille(false));
+image('block/heater_side_on.png', grille(true));
+image('block/heater_top.png', (x, y) => (x === 0 || y === 0 || x === 15 || y === 15) ? hex('#2b2f33') : (x % 3 === 0 ? hex('#3d4246') : hex('#6b747b')));
+image('item/thermal_liner.png', (x, y) => {
+    if (x < 2 || x > 13 || y < 3 || y > 13) return [0, 0, 0, 0];
+    if (x === 2 || x === 13 || y === 3 || y === 13) return hex('#6d4c33');
+    return (x + y) % 4 < 2 ? hex('#c9a27a') : hex('#e2c9a5');
+});
+const drop = (core, rim) => (x, y) => {
+    const d = Math.hypot(x - 7.5, y - 8.5);
+    if (d > 6.5) return [0, 0, 0, 0];
+    return d > 5.2 ? hex(rim) : d < 2.5 ? hex('#ffffff') : hex(core);
+};
+image('mob_effect/heatstroke.png', drop('#ff7043', '#8d2a00'));
+image('mob_effect/hypothermia.png', drop('#81d4fa', '#1f4f7a'));
 console.log('placeholders written');

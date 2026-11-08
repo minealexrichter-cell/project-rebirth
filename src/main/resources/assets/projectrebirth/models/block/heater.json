@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "projectrebirth:block/heater_side",
+    "top": "projectrebirth:block/heater_top",
+    "bottom": "projectrebirth:block/machine_parts"
+  }
+}

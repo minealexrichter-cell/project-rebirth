@@ -82,6 +82,7 @@ public final class HumanBody {
         // The game mode as the server keeps it: creative and spectator players are left alone.
         if (!Environment.isEnabled() || !player.gameMode.isSurvival() || !player.isAlive()) {
             clearSymptoms(player);
+            Temperature.clearSymptoms(player);
             // The dosimeter still measures, it only does not gain anything.
             tellClient(player, Environment.isEnabled() ? exposure : Exposure.NONE);
             return;
@@ -90,6 +91,7 @@ public final class HumanBody {
             // The own body stands in its capsule, which looks after it: it only recovers.
             setBiology(player, afterSecond(biology(player), 0.0f, 0.0f, 0.0f));
             clearSymptoms(player);
+            Temperature.recoverSecond(player);
             MachineBody.onSecond(player, exposure);
             tellClient(player, exposure);
             return;
@@ -106,6 +108,11 @@ public final class HumanBody {
         setBiology(player, afterSecond(biology(player), radiation, pollution, acid));
         applySymptoms(player);
         hurtBySymptoms(player, acid);
+        if (player.getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()) {
+            Temperature.recoverSecond(player); // the cockpit keeps its own climate
+        } else {
+            Temperature.second(player);
+        }
         tellClient(player, exposure);
     }
 
@@ -119,7 +126,9 @@ public final class HumanBody {
             PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, pollution, acid, biology.dose(), biology.toxin(),
                     dangerMask(radiation, pollution, acid),
                     com.projectrebirth.shelter.Shelters.stateAt(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())),
-                    com.projectrebirth.shelter.Contamination.of(player)));
+                    com.projectrebirth.shelter.Contamination.of(player),
+                    TemperatureRegistry.enabled() ? Temperature.at(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())) : Float.NaN,
+                    Temperature.stress(player)));
         }
     }
 
@@ -305,6 +314,7 @@ public final class HumanBody {
         } else if (doseStage(biology.dose()) >= 2) {
             event.setAmount(event.getAmount() * RebirthConfig.HUMAN_DOSE_HEALING_MULTIPLIER.get().floatValue());
         }
+        event.setAmount(event.getAmount() * Temperature.healingMultiplier(player));
     }
 
     /** By default a new life starts clean; the config can keep a share of what the body had. */
@@ -314,8 +324,10 @@ public final class HumanBody {
             float kept = RebirthConfig.HUMAN_KEPT_ON_DEATH.get().floatValue();
             Biology old = biology(event.getOriginal());
             setBiology(event.getEntity(), new Biology(old.dose() * kept, old.toxin() * kept));
+            Temperature.setStress(event.getEntity(), 0.0f);
         } else {
             setBiology(event.getEntity(), biology(event.getOriginal()));
+            Temperature.setStress(event.getEntity(), Temperature.stress(event.getOriginal()));
         }
     }
 }

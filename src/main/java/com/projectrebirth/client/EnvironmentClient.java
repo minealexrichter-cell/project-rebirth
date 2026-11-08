@@ -95,6 +95,17 @@ public final class EnvironmentClient {
         bar(graphics, font, y, Component.translatable("hud.projectrebirth.human.toxin"), last.toxin() / RebirthConfig.HUMAN_TOXIN_DAMAGE.get().floatValue(),
                 stageColor(toxinStage, 3), number(last.toxin()) + stageText(toxinStage));
         y += ROW;
+        if (!Float.isNaN(last.temperature())) {
+            // temperature (1.5.0, temporary until the HUD of block G): the place, and the heat or cold stress as a bar
+            int thermalStage = com.projectrebirth.environment.Temperature.stage(last.thermal());
+            boolean hot = last.thermal() > 0.0f;
+            String text = Math.round(last.temperature()) + "°C" + (thermalStage > 0 ? " · " + Component.translatable(hot
+                    ? "hud.projectrebirth.human.hot" : "hud.projectrebirth.human.cold").getString() + stageText(thermalStage) : "");
+            bar(graphics, font, y, Component.translatable("hud.projectrebirth.human.temperature"),
+                    Math.abs(last.thermal()) / com.projectrebirth.environment.Temperature.MAX_STRESS,
+                    thermalStage == 0 ? 0xFF90A4AE : hot ? 0xFFFF7043 : 0xFF4FC3F7, text);
+            y += ROW;
+        }
         ItemStack head = player.getItemBySlot(EquipmentSlot.HEAD);
         if (Protection.breathes(head)) {
             float share = Mth.clamp(Protection.filterLeft(head) / RebirthConfig.PROTECTION_FILTER_LIFE.get().floatValue(), 0.0f, 1.0f);

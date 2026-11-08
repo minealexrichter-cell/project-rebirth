@@ -161,6 +161,40 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue FLOODLIGHT_RANGE;
     public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
     public static final ModConfigSpec.IntValue EXTRA_BATTERY_CAPACITY;
+    public static final ModConfigSpec.BooleanValue TEMP_ENABLED;
+    public static final ModConfigSpec.DoubleValue TEMP_BIOME_SCALE;
+    public static final ModConfigSpec.DoubleValue TEMP_BIOME_OFFSET;
+    public static final ModConfigSpec.DoubleValue TEMP_NIGHT;
+    public static final ModConfigSpec.IntValue TEMP_ALTITUDE_FROM;
+    public static final ModConfigSpec.DoubleValue TEMP_ALTITUDE_PER_DEGREE;
+    public static final ModConfigSpec.DoubleValue TEMP_RAIN;
+    public static final ModConfigSpec.DoubleValue TEMP_INDOOR;
+    public static final ModConfigSpec.DoubleValue TEMP_INDOOR_BLEND;
+    public static final ModConfigSpec.DoubleValue TEMP_UNDERGROUND;
+    public static final ModConfigSpec.DoubleValue TEMP_UNDERGROUND_BLEND;
+    public static final ModConfigSpec.DoubleValue TEMP_HOT_DIMENSION;
+    public static final ModConfigSpec.DoubleValue TEMP_SHELTER;
+    public static final ModConfigSpec.DoubleValue TEMP_FIRE;
+    public static final ModConfigSpec.DoubleValue TEMP_WARM_BLOCK;
+    public static final ModConfigSpec.DoubleValue TEMP_SOURCES_MAX;
+    public static final ModConfigSpec.IntValue TEMP_SOURCE_RADIUS;
+    public static final ModConfigSpec.DoubleValue TEMP_COMFORT_MIN;
+    public static final ModConfigSpec.DoubleValue TEMP_COMFORT_MAX;
+    public static final ModConfigSpec.DoubleValue TEMP_HEAT_RATE;
+    public static final ModConfigSpec.DoubleValue TEMP_COLD_RATE;
+    public static final ModConfigSpec.DoubleValue TEMP_RECOVERY;
+    public static final ModConfigSpec.DoubleValue TEMP_WEAKNESS;
+    public static final ModConfigSpec.DoubleValue TEMP_SLOW_HEALING;
+    public static final ModConfigSpec.DoubleValue TEMP_DAMAGE;
+    public static final ModConfigSpec.DoubleValue TEMP_HEALING_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue TEMP_HEAT_EXHAUSTION;
+    public static final ModConfigSpec.DoubleValue TEMP_COLD_EXHAUSTION_RELIEF;
+    public static final ModConfigSpec.DoubleValue THERMAL_LINER_PROTECTION;
+    public static final ModConfigSpec.DoubleValue HEATER_WARMTH;
+    public static final ModConfigSpec.IntValue HEATER_RADIUS;
+    public static final ModConfigSpec.DoubleValue HEATER_THERMOSTAT;
+    public static final ModConfigSpec.IntValue HEATER_ENERGY;
+    public static final ModConfigSpec.IntValue HEATER_CAPACITY;
     public static final ModConfigSpec.BooleanValue BODY_WEAR_ENABLED;
     public static final ModConfigSpec.DoubleValue WEAR_WORK;
     public static final ModConfigSpec.DoubleValue WEAR_OVERHEAT;
@@ -511,9 +545,51 @@ public final class RebirthConfig {
         PROTECTION_FILTER_USE = builder.comment("Filter used per second per unit of pollution").defineInRange("filterUsePerPollution", 1.0, 0.0, 1000.0);
         PROTECTION_ACID_WEAR = builder.comment("Durability a piece loses to acid rain").defineInRange("acidWear", 1, 0, 1000);
         PROTECTION_ACID_WEAR_INTERVAL = builder.comment("Seconds in acid rain between such losses").defineInRange("acidWearInterval", 10, 1, 3600);
-        defineProtectionKit(builder, "respirator", 0.9, 0.0, 0.0);
-        defineProtectionKit(builder, "hazmat", 0.95, 1.0, 0.3);
-        defineProtectionKit(builder, "heavy_suit", 1.0, 1.0, 0.85);
+        defineProtectionKit(builder, "respirator", 0.9, 0.0, 0.0, 0.0, 0.0);
+        defineProtectionKit(builder, "hazmat", 0.95, 1.0, 0.3, 0.25, 0.25);
+        defineProtectionKit(builder, "heavy_suit", 1.0, 1.0, 0.85, 0.8, 0.8);
+        builder.pop();
+
+        builder.comment("Temperature (1.5.0): the temperature of a place in degrees Celsius, and the heat or cold stress of a human body,",
+                "from -100 (cold) to 100 (heat). Off: no temperature, as in 1.4.1. Artificial bodies do not feel cold; heat goes into",
+                "their own overheating ([body_heat]). The pilot of a power armor is protected").push("temperature");
+        TEMP_ENABLED = builder.comment("The whole system (also needs environment.enabled)").define("enabled", true);
+        TEMP_BIOME_SCALE = builder.comment("Degrees per unit of the biome's temperature (plains 0.8, desert and savanna 2.0, snowy plains 0.0, frozen peaks -0.7)")
+                .defineInRange("biomeScale", 16.0, 0.0, 1000.0);
+        TEMP_BIOME_OFFSET = builder.comment("Added to that: the temperature of a biome of temperature 0").defineInRange("biomeOffset", 8.0, -1000.0, 1000.0);
+        TEMP_NIGHT = builder.comment("Degrees colder at night under the open sky (half that under a roof)").defineInRange("night", 8.0, 0.0, 1000.0);
+        TEMP_ALTITUDE_FROM = builder.comment("Height above which it gets colder").defineInRange("altitudeFrom", 80, -64, 320);
+        TEMP_ALTITUDE_PER_DEGREE = builder.comment("Blocks of height per degree colder above altitudeFrom").defineInRange("altitudePerDegree", 12.0, 0.1, 1000.0);
+        TEMP_RAIN = builder.comment("Degrees colder in rain or snow").defineInRange("rain", 4.0, 0.0, 1000.0);
+        TEMP_INDOOR = builder.comment("Under a roof the temperature moves towards this").defineInRange("indoor", 15.0, -100.0, 100.0);
+        TEMP_INDOOR_BLEND = builder.comment("How far it moves under a roof (0 = not at all, 1 = all the way)").defineInRange("indoorBlend", 0.3, 0.0, 1.0);
+        TEMP_UNDERGROUND = builder.comment("Deep underground the temperature moves towards this").defineInRange("underground", 12.0, -100.0, 100.0);
+        TEMP_UNDERGROUND_BLEND = builder.comment("How far it moves deep underground").defineInRange("undergroundBlend", 0.7, 0.0, 1.0);
+        TEMP_HOT_DIMENSION = builder.comment("The temperature of a dimension where water boils (the Nether)").defineInRange("hotDimension", 55.0, -100.0, 200.0);
+        TEMP_SHELTER = builder.comment("Inside a sealed room of a shelter: its climate").defineInRange("shelter", 20.0, -100.0, 100.0);
+        TEMP_FIRE = builder.comment("Degrees per block of fire, lava or magma around").defineInRange("fire", 5.0, 0.0, 1000.0);
+        TEMP_WARM_BLOCK = builder.comment("Degrees per lit campfire, furnace, smoker or blast furnace around").defineInRange("warmBlock", 3.0, 0.0, 1000.0);
+        TEMP_SOURCES_MAX = builder.comment("At most this many degrees from all of those").defineInRange("sourcesMax", 20.0, 0.0, 1000.0);
+        TEMP_SOURCE_RADIUS = builder.comment("How far around a person they are looked for (once a second)").defineInRange("sourceRadius", 3, 0, 6);
+        TEMP_COMFORT_MIN = builder.comment("Below this a person gets cold").defineInRange("comfortMin", 5.0, -100.0, 100.0);
+        TEMP_COMFORT_MAX = builder.comment("Above this a person gets hot").defineInRange("comfortMax", 30.0, -100.0, 100.0);
+        TEMP_HEAT_RATE = builder.comment("Heat stress per second per degree above comfortMax, before protection").defineInRange("heatRate", 0.01, 0.0, 100.0);
+        TEMP_COLD_RATE = builder.comment("Cold stress per second per degree below comfortMin, before protection").defineInRange("coldRate", 0.02, 0.0, 100.0);
+        TEMP_RECOVERY = builder.comment("Stress that goes away per second in comfort (also in an artificial body or a power armor)").defineInRange("recovery", 0.5, 0.0, 100.0);
+        TEMP_WEAKNESS = builder.comment("Stress from which the person is weak (the speed and attack penalties of environment.human)").defineInRange("weakness", 30.0, 0.0, 100.0);
+        TEMP_SLOW_HEALING = builder.comment("Stress from which healing is slower").defineInRange("slowHealing", 60.0, 0.0, 100.0);
+        TEMP_DAMAGE = builder.comment("Stress from which it hurts (environment.human.sicknessDamage every sicknessDamageInterval)").defineInRange("damage", 90.0, 0.0, 100.0);
+        TEMP_HEALING_MULTIPLIER = builder.comment("Healing is multiplied by this from slowHealing").defineInRange("healingMultiplier", 0.5, 0.0, 1.0);
+        TEMP_HEAT_EXHAUSTION = builder.comment("Hunger exhaustion added per second while hot (from weakness)").defineInRange("heatExhaustion", 0.05, 0.0, 10.0);
+        TEMP_COLD_EXHAUSTION_RELIEF = builder.comment("Hunger exhaustion taken away per second while cold (from weakness): cold slows hunger")
+                .defineInRange("coldExhaustionRelief", 0.02, 0.0, 10.0);
+        THERMAL_LINER_PROTECTION = builder.comment("Share of heat and cold a thermal liner keeps off, counted by the part's share like the suits")
+                .defineInRange("linerProtection", 0.7, 0.0, 1.0);
+        HEATER_WARMTH = builder.comment("Degrees a working heater adds around itself").defineInRange("heaterWarmth", 20.0, 0.0, 1000.0);
+        HEATER_RADIUS = builder.comment("How far a heater warms, in blocks").defineInRange("heaterRadius", 6, 1, 16);
+        HEATER_THERMOSTAT = builder.comment("A heater works only where it is colder than this without heaters").defineInRange("heaterThermostat", 18.0, -100.0, 100.0);
+        HEATER_ENERGY = builder.comment("Energy a heater uses per tick while it works; none if energy.stationsNeedEnergy is false").defineInRange("heaterEnergyPerTick", 15, 0, 1_000_000);
+        HEATER_CAPACITY = builder.comment("Energy a heater holds").defineInRange("heaterCapacity", 10_000, 1, 100_000_000);
         builder.pop();
 
         builder.comment("When the HUD marks a hazard as dangerous: above these values, after protection").push("hud");
@@ -826,12 +902,15 @@ public final class RebirthConfig {
                              ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
     }
 
-    private static void defineProtectionKit(ModConfigSpec.Builder builder, String id, double pollution, double acid, double radiation) {
+    private static void defineProtectionKit(ModConfigSpec.Builder builder, String id, double pollution, double acid, double radiation,
+                                            double heat, double cold) {
         builder.push(id);
         PROTECTION_KITS.put(id, new ProtectionStats(
                 builder.comment("Share of polluted air kept off by the head piece with a filter").defineInRange("pollution", pollution, 0.0, 1.0),
                 builder.comment("Share of acid kept off by the full kit").defineInRange("acid", acid, 0.0, 1.0),
-                builder.comment("Share of radiation kept off by the full kit").defineInRange("radiation", radiation, 0.0, 1.0)));
+                builder.comment("Share of radiation kept off by the full kit").defineInRange("radiation", radiation, 0.0, 1.0),
+                builder.comment("Share of heat kept off by the full kit (1.5.0)").defineInRange("heat", heat, 0.0, 1.0),
+                builder.comment("Share of cold kept off by the full kit (1.5.0)").defineInRange("cold", cold, 0.0, 1.0)));
         builder.pop();
     }
 
@@ -840,7 +919,8 @@ public final class RebirthConfig {
         return PROTECTION_KITS.get(id);
     }
 
-    public record ProtectionStats(ModConfigSpec.DoubleValue pollution, ModConfigSpec.DoubleValue acid, ModConfigSpec.DoubleValue radiation) {
+    public record ProtectionStats(ModConfigSpec.DoubleValue pollution, ModConfigSpec.DoubleValue acid, ModConfigSpec.DoubleValue radiation,
+                                  ModConfigSpec.DoubleValue heat, ModConfigSpec.DoubleValue cold) {
         public float of(com.projectrebirth.environment.Hazard hazard) {
             return switch (hazard) {
                 case POLLUTION -> pollution.get().floatValue();

@@ -28,18 +28,18 @@ public class EnvironmentHudGameTests {
         float radiation = RebirthConfig.HUD_DANGER_RADIATION.get().floatValue() + 0.1f;
         float pollution = RebirthConfig.HUD_DANGER_POLLUTION.get().floatValue() + 0.1f;
         int all = HumanBody.dangerMask(radiation, pollution, 0.5f);
-        EnvironmentStatusPayload payload = new EnvironmentStatusPayload(radiation, pollution, 0.5f, 0.0f, 0.0f, all, 0, 0.0f);
+        EnvironmentStatusPayload payload = new EnvironmentStatusPayload(radiation, pollution, 0.5f, 0.0f, 0.0f, all, 0, 0.0f, 20.0f, 0.0f);
         for (Hazard hazard : Hazard.values()) {
             helper.assertTrue(payload.dangerous(hazard), "Marked: " + hazard);
         }
-        EnvironmentStatusPayload onlyAcid = new EnvironmentStatusPayload(0.0f, 0.0f, 0.5f, 0.0f, 0.0f, HumanBody.dangerMask(0.0f, 0.0f, 0.5f), 0, 0.0f);
+        EnvironmentStatusPayload onlyAcid = new EnvironmentStatusPayload(0.0f, 0.0f, 0.5f, 0.0f, 0.0f, HumanBody.dangerMask(0.0f, 0.0f, 0.5f), 0, 0.0f, 20.0f, 0.0f);
         helper.assertTrue(onlyAcid.dangerous(Hazard.ACID) && !onlyAcid.dangerous(Hazard.POLLUTION) && !onlyAcid.dangerous(Hazard.RADIATION), "Only acid");
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
     public static void theStatusReachesTheClientWhole(GameTestHelper helper) {
-        EnvironmentStatusPayload sent = new EnvironmentStatusPayload(12.5f, 3.25f, 0.75f, 140.0f, 61.5f, 5, 2, 7.5f);
+        EnvironmentStatusPayload sent = new EnvironmentStatusPayload(12.5f, 3.25f, 0.75f, 140.0f, 61.5f, 5, 2, 7.5f, -12.5f, -42.0f);
         ByteBuf buffer = Unpooled.buffer();
         EnvironmentStatusPayload.STREAM_CODEC.encode(buffer, sent);
         helper.assertTrue(sent.equals(EnvironmentStatusPayload.STREAM_CODEC.decode(buffer)), "Status");

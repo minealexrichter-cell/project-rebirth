@@ -22,9 +22,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  * @param danger    which hazards are dangerous for them now: bit {@code 1 << hazard.ordinal()}
  * @param shelter   where they are: {@link #SHELTER_NONE}, {@link #SHELTER_CLEAN}, {@link #SHELTER_POLLUTED}, {@link #SHELTER_LEAK}
  * @param contamination their external contamination
+ * @param temperature   the temperature where they are, in degrees (NaN with temperature switched off)
+ * @param thermal       their heat (above 0) or cold (below 0) stress
  */
 public record EnvironmentStatusPayload(float radiation, float pollution, float acid, float dose, float toxin, int danger, int shelter,
-        float contamination) implements CustomPacketPayload {
+        float contamination, float temperature, float thermal) implements CustomPacketPayload {
     public static final int SHELTER_NONE = 0;
     public static final int SHELTER_CLEAN = 1;
     public static final int SHELTER_POLLUTED = 2;
@@ -41,9 +43,11 @@ public record EnvironmentStatusPayload(float radiation, float pollution, float a
                 ByteBufCodecs.VAR_INT.encode(buf, payload.danger());
                 ByteBufCodecs.VAR_INT.encode(buf, payload.shelter());
                 buf.writeFloat(payload.contamination());
+                buf.writeFloat(payload.temperature());
+                buf.writeFloat(payload.thermal());
             },
             buf -> new EnvironmentStatusPayload(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat(),
-                    ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), buf.readFloat()));
+                    ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_INT.decode(buf), buf.readFloat(), buf.readFloat(), buf.readFloat()));
 
     /** Set by the client side; on a server nothing arrives here. */
     public static Consumer<EnvironmentStatusPayload> clientHandler = payload -> {

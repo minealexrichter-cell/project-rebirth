@@ -186,7 +186,10 @@ public final class BodyHeat {
     /** Heat of a hot biome or a dimension where water boils. */
     public static double climateHeat(Level level, BlockPos pos) {
         double heat = 0.0;
-        float temperature = level.getBiome(pos).value().getBaseTemperature();
+        var biome = level.getBiome(pos);
+        // a biome made cooler by its profile (savannas) heats a body less, in the same biome units
+        float temperature = biome.value().getBaseTemperature()
+                + (float) (com.projectrebirth.environment.Temperature.biomeOffset(level, biome) / RebirthConfig.TEMP_BIOME_SCALE.get());
         double from = RebirthConfig.HEAT_HOT_BIOME_FROM.get();
         if (temperature > from) {
             heat += (temperature - from) * RebirthConfig.HEAT_HOT_BIOME.get();

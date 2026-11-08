@@ -550,7 +550,7 @@ public final class RebirthConfig {
         HUMAN_WEAKNESS_SPEED_PENALTY = builder.comment("Share of walking speed lost to weakness; radiation and toxins each take it").defineInRange("weaknessSpeedPenalty", 0.1, 0.0, 1.0);
         HUMAN_WEAKNESS_ATTACK_PENALTY = builder.comment("Share of attack damage lost to weakness; radiation and toxins each take it").defineInRange("weaknessAttackPenalty", 0.15, 0.0, 1.0);
         HUMAN_DOSE_HEALING_MULTIPLIER = builder.comment("Healing is multiplied by this at a high dose").defineInRange("doseHealingMultiplier", 0.5, 0.0, 1.0);
-        HUMAN_LAST_STAGE_HEALING_MULTIPLIER = builder.comment("Healing is multiplied by this at the last stage of the dose or the toxic load")
+        HUMAN_LAST_STAGE_HEALING_MULTIPLIER = builder.comment("Healing is multiplied by this at the last stage of the dose, the toxic load or the heat or cold stress (1.5.0)")
                 .defineInRange("lastStageHealingMultiplier", 0.0, 0.0, 1.0);
         HUMAN_DOSE_HEALTH_PENALTY = builder.comment("Maximum health lost at a very high dose").defineInRange("doseHealthPenalty", 6.0, 0.0, 1000.0);
         HUMAN_SICKNESS_DAMAGE = builder.comment("Damage at the last stage of the dose or the toxic load").defineInRange("sicknessDamage", 1.0, 0.0, 1000.0);

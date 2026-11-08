@@ -88,7 +88,8 @@ public final class Temperature {
             temperature = RebirthConfig.TEMP_HOT_DIMENSION.get().floatValue();
         } else {
             Holder<Biome> biome = level.getBiome(pos);
-            temperature = (float) (biome.value().getBaseTemperature() * RebirthConfig.TEMP_BIOME_SCALE.get() + RebirthConfig.TEMP_BIOME_OFFSET.get());
+            temperature = (float) (biome.value().getBaseTemperature() * RebirthConfig.TEMP_BIOME_SCALE.get() + RebirthConfig.TEMP_BIOME_OFFSET.get())
+                    + biomeOffset(level, biome);
             boolean sky = level.canSeeSky(pos);
             if (level.dimensionType().hasSkyLight() && level.isNight()) {
                 temperature -= (float) (RebirthConfig.TEMP_NIGHT.get() * (sky ? 1.0 : 0.5));
@@ -108,6 +109,11 @@ public final class Temperature {
             }
         }
         return temperature + sources(level, pos);
+    }
+
+    /** The degrees the biome's environment profile adds (1.5.0: savannas are cooler than deserts). */
+    public static float biomeOffset(Level level, Holder<Biome> biome) {
+        return Environment.profileFor(level.registryAccess(), biome).map(EnvironmentProfile::temperatureOffset).orElse(0.0f);
     }
 
     /** Fire, lava, magma, lit campfires and furnaces around; a few hundred blocks once a second. */
@@ -229,7 +235,13 @@ public final class Temperature {
 
     /** Healing is multiplied by this from the slow-healing stage. */
     public static float healingMultiplier(Player player) {
-        return TemperatureRegistry.enabled() && stage(stress(player)) >= 2 ? RebirthConfig.TEMP_HEALING_MULTIPLIER.get().floatValue() : 1.0f;
+        if (!TemperatureRegistry.enabled()) {
+            return 1.0f;
+        }
+        int stage = stage(stress(player));
+        // at the last stage, as with the dose and toxins: the damage is not healed away while it lasts
+        return stage >= 3 ? RebirthConfig.HUMAN_LAST_STAGE_HEALING_MULTIPLIER.get().floatValue()
+                : stage >= 2 ? RebirthConfig.TEMP_HEALING_MULTIPLIER.get().floatValue() : 1.0f;
     }
 
     public static void clearSymptoms(ServerPlayer player) {

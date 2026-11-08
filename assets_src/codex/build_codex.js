@@ -206,11 +206,13 @@ category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
         item(P + 'extra_battery', 'The extra battery adds 40 000 FE to the charge of a body and takes one slot.', 'Дополнительный аккумулятор добавляет телу 40 000 FE заряда и занимает один слот.'),
         recipe(P + 'extra_battery'),
         item(P + 'cooling_module', 'The cooling module takes heat away all the time: a body with it overheats much later.', 'Модуль охлаждения постоянно отводит тепло: тело с ним перегревается гораздо позже.'),
-        recipe(P + 'cooling_module')
+        recipe(P + 'cooling_module'),
+        item(P + 'emi_shielding', 'The electronics shielding takes away 90% of the interference of an EMI storm; the recipe is in the entry EMI Storm.',
+            'Экранирование электроники гасит 90% помех ЭМИ-бури; рецепт — в записи «ЭМИ-буря».')
     ]),
     entry('body_wear', P + 'actuator', -4, 2, ['body_life'], 'Wear', 'Износ', [
-        text('Since 1.5 a body has a second scale beside integrity: wear, from 0 to 100%. Integrity is lost to blows, falls, fire and weapons. Wear is the tiredness of the mechanisms: it grows slowly with work, fast while the body is overheated, and from acid rain.',
-            'С 1.5 у тела вторая шкала рядом с прочностью — износ, от 0 до 100%. Прочность отнимают удары, падения, огонь и оружие. Износ — усталость механизмов: медленно копится от работы, быстро — пока тело перегрето, и от кислотного дождя.'),
+        text('Since 1.5 a body has a second scale beside integrity: wear, from 0 to 100%. Integrity is lost to blows, falls, fire and weapons. Wear is the tiredness of the mechanisms: it grows slowly with work, fast while the body is overheated, and from acid rain, dust and faults in an EMI storm.',
+            'С 1.5 у тела вторая шкала рядом с прочностью — износ, от 0 до 100%. Прочность отнимают удары, падения, огонь и оружие. Износ — усталость механизмов: медленно копится от работы, быстро — пока тело перегрето, а ещё от кислотного дождя, пыли и сбоев в ЭМИ-бурю.'),
         text('25%: more charge used. 50%: slower, half the self-repair, faster heating. 75%: weaker blows. 100%: critical — half the integrity, much slower, no self-repair.\n\nA worn body is never destroyed by wear and stays under control.',
             '25%: заряд тратится быстрее. 50%: медленнее, самовосстановление вдвое слабее, нагрев быстрее. 75%: удары слабее. 100%: критический — прочность вдвое ниже, тело гораздо медленнее, самовосстановления нет.\n\nИзнос никогда не уничтожает тело и не отнимает управление.'),
         text('Wear does not mend by itself and not with a repair kit. Pack the body and service it at the maintenance station: actuators take wear off robots, circuit boards off synthetic bodies, 10% each. Better bodies wear more slowly.',
@@ -371,8 +373,8 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
     entry('temperature', 'minecraft:snowball', -1, 3, ['protection'], 'Temperature', 'Температура', [
         text('Since 1.5 places have a temperature: deserts, badlands and the Nether are hot, snowy lands and high mountains cold; nights, rain and height make it colder, a roof or deep ground evens it out, and fire, lava and furnaces warm it. A sealed shelter keeps 20°C.',
             'С 1.5 у места есть температура: в пустынях, столовых горах и Незере жарко, в снежных землях и высоко в горах холодно; ночь, дождь и высота охлаждают, крыша и глубина сглаживают, огонь, лава и печи греют. В герметичном убежище всегда 20°C.'),
-        text('Between 5 and 30°C you are comfortable. Outside, heat or cold stress grows; in comfort it goes away.\n\nFrom 30 weakness, from 60 slower healing, from 90 damage. Heat makes you hungry faster, cold slower.',
-            'От 5 до 30°C вам комфортно. Вне этого растёт стресс от жары или холода, в комфорте он проходит.\n\nС 30 слабость, с 60 хуже лечится, с 90 урон. В жару голод приходит быстрее, в холод медленнее.'),
+        text('Between 5 and 30°C you are comfortable. Outside, heat or cold stress grows; in comfort it goes away.\n\nFrom 30 weakness, from 60 slower healing, from 90 damage, and wounds no longer heal. Heat makes you hungry faster, cold slower.',
+            'От 5 до 30°C вам комфортно. Вне этого растёт стресс от жары или холода, в комфорте он проходит.\n\nС 30 слабость, с 60 хуже лечится, с 90 урон, и раны больше не заживают. В жару голод приходит быстрее, в холод медленнее.'),
         note('Artificial bodies do not feel cold; heat goes into their overheating. The pilot of a power armor is protected.',
             'Искусственные тела холода не чувствуют, жара идёт в их перегрев. Пилот силовой брони защищён.'),
         note('In the HUD the line Temperature fills from the middle: to the right in heat, to the left in cold; a sun or a snowflake shows the stage.',

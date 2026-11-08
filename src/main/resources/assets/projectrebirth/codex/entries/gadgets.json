@@ -49,6 +49,11 @@
     {
       "type": "recipe",
       "value": "projectrebirth:cooling_module"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:emi_shielding",
+      "text": "codex.projectrebirth.gadgets.p11"
     }
   ]
 }

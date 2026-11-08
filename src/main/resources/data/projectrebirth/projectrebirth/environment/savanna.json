@@ -1,0 +1,12 @@
+{
+  "biomes": "#minecraft:is_savanna",
+  "priority": 5,
+  "background": {
+    "pollution": 1,
+    "radiation": 1
+  },
+  "event_multipliers": {
+    "dust_storm": 0.7
+  },
+  "temperature_offset": -8
+}

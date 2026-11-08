@@ -52,7 +52,7 @@ public class EnvironmentGameTests {
     }
 
     private static EnvironmentProfile plainProfile(Map<String, Float> multipliers) {
-        return new EnvironmentProfile(HolderSet.direct(), 0, Map.of(Hazard.POLLUTION, 2.0f, Hazard.RADIATION, 4.0f), multipliers);
+        return new EnvironmentProfile(HolderSet.direct(), 0, Map.of(Hazard.POLLUTION, 2.0f, Hazard.RADIATION, 4.0f), multipliers, 0.0f);
     }
 
     private static float strength(String event, Hazard hazard) {

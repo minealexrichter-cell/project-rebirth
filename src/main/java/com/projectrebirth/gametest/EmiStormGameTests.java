@@ -74,7 +74,7 @@ public class EmiStormGameTests {
         helper.assertTrue(Environment.EVENTS.contains(Environment.EMI_STORM), "One of the catastrophes");
         helper.assertTrue(Environment.EMI_STORM.equals(EnvironmentState.chooseEvent(helper.getLevel().getRandom(), Environment.EMI_STORM::equals)),
                 "It can be chosen by its weight");
-        EnvironmentProfile profile = new EnvironmentProfile(HolderSet.direct(), 0, Map.of(), Map.of());
+        EnvironmentProfile profile = new EnvironmentProfile(HolderSet.direct(), 0, Map.of(), Map.of(), 0.0f);
         EnvironmentState state = new EnvironmentState();
         state.startActive(Environment.EMI_STORM, 1.0f, 100);
         float open = Environment.compute(profile, state, Environment.Shelter.NONE).get(Hazard.EMI);

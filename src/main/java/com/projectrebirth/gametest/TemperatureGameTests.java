@@ -71,6 +71,21 @@ public class TemperatureGameTests {
         helper.succeed();
     }
 
+    /** Block I: a savanna is as warm as a desert in vanilla; its profile makes it cooler, so that only true deserts are hot. */
+    @GameTest(template = TEMPLATE)
+    public static void aSavannaIsCoolerThanADesert(GameTestHelper helper) {
+        BlockPos at = helper.absolutePos(POS);
+        fillBiome(helper, "minecraft:desert");
+        float desert = Temperature.withoutHeaters(helper.getLevel(), at);
+        fillBiome(helper, "minecraft:savanna");
+        float savanna = Temperature.withoutHeaters(helper.getLevel(), at);
+        helper.assertTrue(desert > RebirthConfig.TEMP_COMFORT_MAX.get(), "A desert stays hot: " + desert);
+        helper.assertTrue(savanna < desert - 4.0f, "A savanna is cooler: " + savanna + " vs " + desert);
+        helper.assertTrue(com.projectrebirth.bodies.power.BodyHeat.climateHeat(helper.getLevel(), at)
+                < (2.0 - RebirthConfig.HEAT_HOT_BIOME_FROM.get()) * RebirthConfig.HEAT_HOT_BIOME.get(), "and heats a body less than a desert");
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE)
     public static void fireAndFurnacesWarm(GameTestHelper helper) {
         BlockPos at = helper.absolutePos(POS);
@@ -135,6 +150,9 @@ public class TemperatureGameTests {
         Temperature.second(player);
         helper.assertTrue(player.hasEffect(TemperatureRegistry.HYPOTHERMIA) && !player.hasEffect(TemperatureRegistry.HEATSTROKE), "Cold: hypothermia");
         helper.assertTrue(Temperature.stage(Temperature.stress(player)) == 3, "The last stage");
+        // block I: at the last stage the damage is not healed away, as with the dose and toxins
+        helper.assertTrue(Temperature.healingMultiplier(player) == RebirthConfig.HUMAN_LAST_STAGE_HEALING_MULTIPLIER.get().floatValue(),
+                "At the last stage it heals as little as with the last stage of the dose: " + Temperature.healingMultiplier(player));
 
         Temperature.setStress(player, 10.0f);
         Temperature.second(player);

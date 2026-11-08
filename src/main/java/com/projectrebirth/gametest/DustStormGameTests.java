@@ -70,8 +70,8 @@ public class DustStormGameTests {
 
     @GameTest(template = TEMPLATE)
     public static void dustIsStrongerInDesertsAndWeakUnderARoof(GameTestHelper helper) {
-        EnvironmentProfile desert = new EnvironmentProfile(HolderSet.direct(), 0, Map.of(), Map.of(Environment.DUST_STORM, 1.6f));
-        EnvironmentProfile forest = new EnvironmentProfile(HolderSet.direct(), 0, Map.of(), Map.of(Environment.DUST_STORM, 0.4f));
+        EnvironmentProfile desert = new EnvironmentProfile(HolderSet.direct(), 0, Map.of(), Map.of(Environment.DUST_STORM, 1.6f), 0.0f);
+        EnvironmentProfile forest = new EnvironmentProfile(HolderSet.direct(), 0, Map.of(), Map.of(Environment.DUST_STORM, 0.4f), 0.0f);
         EnvironmentState state = new EnvironmentState();
         state.startActive(Environment.DUST_STORM, 1.0f, 100);
         float open = Environment.compute(desert, state, Environment.Shelter.NONE).get(Hazard.DUST);

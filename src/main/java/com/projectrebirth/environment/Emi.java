@@ -106,7 +106,6 @@ public final class Emi {
             com.projectrebirth.bodies.BodyRules.addOwnEffect(player, slow);
             BodyWear.add(player, (float) (RebirthConfig.EMI_FAULT_WEAR.get() * BodyWear.classMultiplier(bodyClass)));
             player.displayClientMessage(Component.translatable("message.projectrebirth.emi.fault").withStyle(ChatFormatting.LIGHT_PURPLE), true);
-            // placeholder until the sounds of block H
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(), com.projectrebirth.core.ModSounds.EMI_FAULT.get(), SoundSource.PLAYERS, 0.7f, 1.0f);
         });
     }

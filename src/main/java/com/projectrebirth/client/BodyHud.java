@@ -30,6 +30,7 @@ public final class BodyHud {
     private static final int THRUST_COLOR = 0xFF7FE8FF;
     private static final int CHARGE_HEIGHT = 4;
     private static final int HEAT_HEIGHT = 3;
+    private static final int WEAR_HEIGHT = 3;
 
     private BodyHud() {
     }
@@ -68,8 +69,10 @@ public final class BodyHud {
         boolean jetpack = Jetpack.equipped(player);
         boolean charge = BodyPower.enabled();
         boolean heat = com.projectrebirth.bodies.power.BodyHeat.enabled();
+        boolean wear = com.projectrebirth.bodies.power.BodyWear.enabled() && com.projectrebirth.bodies.power.BodyWear.wear(player) > 0.0f;
         minecraft.gui.leftHeight += height + 1 + (jetpack ? Math.round((THRUST_HEIGHT + 1) * scale) : 0)
-                + (charge ? Math.round((CHARGE_HEIGHT + 1) * scale) : 0) + (heat ? Math.round((HEAT_HEIGHT + 1) * scale) : 0);
+                + (charge ? Math.round((CHARGE_HEIGHT + 1) * scale) : 0) + (heat ? Math.round((HEAT_HEIGHT + 1) * scale) : 0)
+                + (wear ? Math.round((WEAR_HEIGHT + 1) * scale) : 0);
         graphics.pose().pushPose();
         graphics.pose().translate(HudLayout.barX(graphics.guiWidth() / 2 - 91, graphics.guiWidth()),
                 HudLayout.barBottom(bottom, graphics.guiHeight()), 0.0f);
@@ -83,6 +86,12 @@ public final class BodyHud {
         GuiAtlas.bar(graphics, x, y, WIDTH, HEIGHT, fraction, color);
 
         int above = y;
+        if (wear) {
+            // wear: a thin brown bar right above integrity, red at critical wear (temporary, block G)
+            float worn = com.projectrebirth.bodies.power.BodyWear.wear(player);
+            above -= WEAR_HEIGHT + 1;
+            GuiAtlas.bar(graphics, x, above, WIDTH, WEAR_HEIGHT, worn / com.projectrebirth.bodies.power.BodyWear.MAX, worn >= com.projectrebirth.bodies.power.BodyWear.MAX ? 0xFFE53935 : 0xFFA1887F);
+        }
         if (charge) {
             // charge: yellow, orange when low, red and blinking in the emergency mode (1.5.0; the full HUD comes in block G)
             BodyPower.State state = BodyPower.state(player);

@@ -1,0 +1,32 @@
+{
+  "icon": "projectrebirth:actuator",
+  "x": -4,
+  "y": 2,
+  "parents": [
+    "body_life"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_wear.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_wear.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_wear.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:actuator",
+      "text": "codex.projectrebirth.body_wear.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:circuit_board",
+      "text": "codex.projectrebirth.body_wear.p5"
+    }
+  ]
+}

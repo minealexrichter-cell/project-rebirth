@@ -58,8 +58,10 @@ public class MachineEnvironmentGameTests {
         float full = open.getHealth();
         float done = MachineBody.acidSecond(open, BodyClass.BASIC_ROBOT, open.upgrades(), 1.0f, WEAR_SECOND);
         MachineBody.acidSecond(sealed, BodyClass.BASIC_ROBOT, sealed.upgrades(), 1.0f, WEAR_SECOND);
-        helper.assertTrue(done > 0.0f && open.getHealth() < full, "The open body wears: " + open.getHealth());
-        helper.assertTrue(sealed.getHealth() == sealed.getMaxHealth(), "The sealed body does not: " + sealed.getHealth());
+        // since 1.5.0 acid adds wear, not damage
+        helper.assertTrue(done > 0.0f && open.wear() == done, "The open body wears: " + open.wear());
+        helper.assertTrue(open.getHealth() == full, "Acid takes no integrity any more: " + open.getHealth());
+        helper.assertTrue(sealed.wear() == 0.0f, "The sealed body does not: " + sealed.wear());
         float expected = MachineBody.acidWear(BodyClass.BASIC_ROBOT) * RebirthConfig.MACHINE_ACID_WEAR_INTERVAL.get();
         helper.assertTrue(Math.abs(done - expected) < 0.0001f, "The wear of the seconds between comes at once: " + done + ", expected " + expected);
         helper.assertTrue(MachineBody.acidSecond(open, BodyClass.BASIC_ROBOT, open.upgrades(), 1.0f, 20L) == 0.0f, "Not every second");
@@ -78,11 +80,12 @@ public class MachineEnvironmentGameTests {
     }
 
     @GameTest(template = TEMPLATE)
-    public static void acidHoldsBackSelfRepair(GameTestHelper helper) {
+    public static void acidIsNotDamageAnyMore(GameTestHelper helper) {
         ArtificialBodyEntity body = body(helper, BodyClass.PREMIUM_SYNTHETIC);
         body.setData(BodyAttachments.LAST_DAMAGE, -10_000L);
         MachineBody.acidSecond(body, BodyClass.PREMIUM_SYNTHETIC, body.upgrades(), 1.5f, WEAR_SECOND);
-        helper.assertTrue(body.getData(BodyAttachments.LAST_DAMAGE) == helper.getLevel().getGameTime(), "The wear counts as damage for self-repair");
+        helper.assertTrue(body.getData(BodyAttachments.LAST_DAMAGE) == -10_000L, "Since 1.5.0 acid is wear, not damage: self-repair is not held back");
+        helper.assertTrue(body.wear() > 0.0f, "But the body wears");
         helper.succeed();
     }
 
@@ -98,21 +101,19 @@ public class MachineEnvironmentGameTests {
         helper.succeed();
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 120)
+    @GameTest(template = TEMPLATE)
     public static void aControlledBodyWearsToo(GameTestHelper helper) {
         ServerPlayer player = helper.makeMockServerPlayerInLevel();
         player.setGameMode(GameType.SURVIVAL);
-        // A new player cannot be hurt for its first 3 seconds.
-        helper.runAfterDelay(70, () -> {
-            float full = player.getHealth();
-            MachineBody.acidSecond(player, BodyClass.IMPROVED_ROBOT, InstalledUpgrades.EMPTY, 1.0f, WEAR_SECOND);
-            helper.assertTrue(player.getHealth() < full, "A player in a body without the module wears");
-            float sealedHealth = player.getHealth();
-            player.invulnerableTime = 0;
-            MachineBody.acidSecond(player, BodyClass.IMPROVED_ROBOT, upgrades(UpgradeRegistry.SEALING_MODULE.get()), 1.0f, WEAR_SECOND);
-            helper.assertTrue(player.getHealth() == sealedHealth, "With it, not");
-            helper.succeed();
-        });
+        player.setData(com.projectrebirth.bodies.BodyAttachments.POSSESSION, com.projectrebirth.bodies.PossessionState.of(BodyClass.IMPROVED_ROBOT));
+        float full = player.getHealth();
+        MachineBody.acidSecond(player, BodyClass.IMPROVED_ROBOT, InstalledUpgrades.EMPTY, 1.0f, WEAR_SECOND);
+        float worn = com.projectrebirth.bodies.power.BodyWear.wear(player);
+        helper.assertTrue(worn > 0.0f, "A player in a body without the module wears");
+        helper.assertTrue(player.getHealth() == full, "But keeps its integrity");
+        MachineBody.acidSecond(player, BodyClass.IMPROVED_ROBOT, upgrades(UpgradeRegistry.SEALING_MODULE.get()), 1.0f, WEAR_SECOND);
+        helper.assertTrue(com.projectrebirth.bodies.power.BodyWear.wear(player) == worn, "With it, not");
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)

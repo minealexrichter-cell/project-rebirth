@@ -107,8 +107,8 @@ category('technology', P + 'electronics_fabricator', 'Technology', 'Технол
         block(P + 'maintenance_station', 'Repairs packed armor and bodies. The critical integrity of armor is mended only here.',
             'Чинит упакованную броню и тела. Критическая целостность брони чинится только здесь.'),
         recipe(P + 'maintenance_station', 'Iron, an actuator, circuit boards and an anvil.', 'Железо, привод, платы и наковальня.'),
-        text('Put the packed armor or body in and add the materials: every two seconds the station uses one of them and 20 FE per tick.\n\nArmor: armor plates mend the critical integrity, iron ingots the structural one, up to the maximum with the plating of its upgrades. Robot bodies take iron ingots, synthetic bodies synthetic fiber.',
-            'Положите упакованную броню или тело и материалы: каждые две секунды станция тратит один предмет и 20 FE за тик.\n\nБроня: бронепластины чинят критическую целостность, железные слитки — структурную, до максимума с учётом обшивки улучшений. Роботизированные тела чинятся железом, синтетические — синтетической тканью.')
+        text('Put the packed armor or body in and add the materials: every two seconds the station uses one of them and 20 FE per tick.\n\nArmor: armor plates mend the critical integrity, iron ingots the structural one, up to the maximum with the plating of its upgrades. Robot bodies take iron ingots, synthetic bodies synthetic fiber. Since 1.5 the station also takes wear off bodies: actuators for robots, circuit boards for synthetics.',
+            'Положите упакованную броню или тело и материалы: каждые две секунды станция тратит один предмет и 20 FE за тик.\n\nБроня: бронепластины чинят критическую целостность, железные слитки — структурную, до максимума с учётом обшивки улучшений. Роботизированные тела чинятся железом, синтетические — синтетической тканью. С 1.5 станция снимает и износ тел: у роботов приводами, у синтетических — платами.')
     ])
 ]);
 
@@ -208,11 +208,21 @@ category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
         item(P + 'cooling_module', 'The cooling module takes heat away all the time: a body with it overheats much later.', 'Модуль охлаждения постоянно отводит тепло: тело с ним перегревается гораздо позже.'),
         recipe(P + 'cooling_module')
     ]),
+    entry('body_wear', P + 'actuator', -4, 2, ['body_life'], 'Wear', 'Износ', [
+        text('Since 1.5 a body has a second scale beside integrity: wear, from 0 to 100%. Integrity is lost to blows, falls, fire and weapons. Wear is the tiredness of the mechanisms: it grows slowly with work, fast while the body is overheated, and from acid rain.',
+            'С 1.5 у тела вторая шкала рядом с прочностью — износ, от 0 до 100%. Прочность отнимают удары, падения, огонь и оружие. Износ — усталость механизмов: медленно копится от работы, быстро — пока тело перегрето, и от кислотного дождя.'),
+        text('25%: more charge used. 50%: slower, half the self-repair, faster heating. 75%: weaker blows. 100%: critical — half the integrity, much slower, no self-repair.\n\nA worn body is never destroyed by wear and stays under control.',
+            '25%: заряд тратится быстрее. 50%: медленнее, самовосстановление вдвое слабее, нагрев быстрее. 75%: удары слабее. 100%: критический — прочность вдвое ниже, тело гораздо медленнее, самовосстановления нет.\n\nИзнос никогда не уничтожает тело и не отнимает управление.'),
+        text('Wear does not mend by itself and not with a repair kit. Pack the body and service it at the maintenance station: actuators take wear off robots, circuit boards off synthetic bodies, 10% each. Better bodies wear more slowly.',
+            'Износ не проходит сам и не снимается ремкомплектом. Упакуйте тело и обслужите его на станции обслуживания: у роботов износ снимают приводы, у синтетических — платы, по 10% за штуку. Лучшие тела изнашиваются медленнее.'),
+        recipe(P + 'actuator', 'An actuator: wear of robot bodies.', 'Привод — от износа роботов.'),
+        recipe(P + 'circuit_board', 'A circuit board: wear of synthetic bodies.', 'Плата — от износа синтетиков.')
+    ]),
     entry('body_heat', P + 'cooling_module', 2, 2, ['body_charge'], 'Overheating', 'Перегрев', [
         text('Since 1.5 a body heats up. Running, blows, mining and above all the jetpack heat it, and so do deserts, badlands, the Nether, fire, lava and magma close by.\n\nRest, shade, rain, cold lands and most of all water cool it. Better bodies cool faster.',
             'С 1.5 тело нагревается. Его греют бег, удары, добыча и сильнее всего джетпак, а ещё пустыни, столовые горы, Незер, огонь, лава и магма рядом.\n\nОстужают покой, тень, дождь, холодные земли и сильнее всего вода. Лучшие тела остывают быстрее.'),
-        text('From 70 the body warns. Above 85 it throttles: slower, weaker blows, no jetpack. At 100 it has overheated and stays throttled until it cools below 85.\n\nOverheating never destroys a body and never takes control: lead it into water or shade.',
-            'С 70 тело предупреждает. Выше 85 сбрасывает мощность: медленнее, удары слабее, джетпак не работает. На 100 тело перегрелось и остаётся слабым, пока не остынет ниже 85.\n\nПерегрев никогда не уничтожает тело и не отнимает управление: отведите его в воду или тень.'),
+        text('From 70 the body warns. Above 85 it throttles: slower, weaker blows, no jetpack. At 100 it has overheated: it stays throttled and wears fast until it cools below 85.\n\nOverheating never destroys a body and never takes control: lead it into water or shade.',
+            'С 70 тело предупреждает. Выше 85 сбрасывает мощность: медленнее, удары слабее, джетпак не работает. На 100 тело перегрелось: остаётся слабым и быстро изнашивается, пока не остынет ниже 85.\n\nПерегрев никогда не уничтожает тело и не отнимает управление: отведите его в воду или тень.'),
         note('A power armor does not heat up: a body inside one only cools. An empty body standing in the world cools down too.',
             'Силовая броня не нагревается: тело в ней только остывает. Пустое тело, стоящее в мире, тоже остывает.')
     ]),
@@ -349,8 +359,8 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'sorbent')
     ]),
     entry('machines_environment', P + 'sealing_module', 3, 0, ['medicine', 'dosimeter'], 'Bodies and Armor', 'Тела и броня', [
-        text('Artificial bodies do not get sick, but acid wears them down without a sealing module; better bodies wear slower.\n\nA power armor pilot is safe from toxins and acid, and only a fifth of the radiation reaches them. Plating adds more protection.',
-            'Искусственные тела не болеют, но без модуля герметизации их изнашивает кислота; лучшие тела — медленнее.\n\nПилот силовой брони защищён от токсинов и кислоты, а радиации до него доходит только пятая часть. Обшивка добавляет защиту.'),
+        text('Artificial bodies do not get sick, but without a sealing module acid adds wear (since 1.5, not damage); better bodies wear slower.\n\nA power armor pilot is safe from toxins and acid, and only a fifth of the radiation reaches them. Plating adds more protection.',
+            'Искусственные тела не болеют, но без модуля герметизации кислота копит износ (с 1.5 — не урон); лучшие тела — медленнее.\n\nПилот силовой брони защищён от токсинов и кислоты, а радиации до него доходит только пятая часть. Обшивка добавляет защиту.'),
         note('In a catastrophe, contamination settles on bodies and armor too. Wash it off before you go into the shelter.', 'В катастрофу загрязнение оседает и на телах, и на броне. Смойте его, прежде чем входить в убежище.')
     ])
 ]);

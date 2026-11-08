@@ -100,10 +100,14 @@ public final class BodyRules {
         if (entity instanceof Player player ? BodyPower.isEmpty(player) : entity instanceof ArtificialBodyEntity body && BodyPower.isEmpty(body)) {
             return;
         }
+        double wearMultiplier = com.projectrebirth.bodies.power.BodyWear.selfRepairMultiplier(entity);
+        if (wearMultiplier <= 0.0) {
+            return;
+        }
         long sinceDamage = entity.level().getGameTime() - entity.getData(BodyAttachments.LAST_DAMAGE);
         if (sinceDamage >= stats.selfRepairDelaySeconds().get() * 20L) {
             float before = entity.getHealth();
-            repair(entity, (float) perSecond);
+            repair(entity, (float) (perSecond * wearMultiplier));
             if (entity instanceof Player player) {
                 BodyPower.spend(player, (entity.getHealth() - before) * RebirthConfig.BODY_ENERGY_SELF_REPAIR.get());
             }

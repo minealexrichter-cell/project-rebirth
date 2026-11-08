@@ -15,7 +15,7 @@ import net.minecraft.world.entity.LivingEntity;
 /**
  * The environment and the machines: artificial bodies and power armor. They have no biology, so dose and toxins mean
  * nothing to them; acid rain wears their open mechanisms instead, unless a sealing module keeps it out. Better bodies wear
- * more slowly. The damage counts as damage, so it also holds back self-repair.
+ * more slowly. Since 1.5.0 acid adds wear (BodyWear), not damage: integrity is lost only to physical damage.
  */
 public final class MachineBody {
     private static final int TICKS_PER_SECOND = 20;
@@ -53,10 +53,9 @@ public final class MachineBody {
     }
 
     /**
-     * One second of acid on a body; the wear of several seconds comes at once, so that the body is not hurt every second.
-     * Public for tests.
+     * One second of acid on a body; the wear of several seconds comes at once. Public for tests.
      *
-     * @return the damage done this second
+     * @return the wear (percent) added this second
      */
     public static float acidSecond(LivingEntity body, BodyClass bodyClass, InstalledUpgrades upgrades, float acid, long gameTime) {
         int interval = RebirthConfig.MACHINE_ACID_WEAR_INTERVAL.get();
@@ -64,11 +63,7 @@ public final class MachineBody {
                 || !(body.level() instanceof ServerLevel level)) {
             return 0.0f;
         }
-        float damage = acid * acidWear(bodyClass) * interval;
-        if (damage > 0.0f) {
-            body.hurt(level.damageSources().source(HumanBody.ACID_DAMAGE), damage);
-        }
-        return damage;
+        return com.projectrebirth.bodies.power.BodyWear.add(body, acid * acidWear(bodyClass) * interval);
     }
 
     /** One second of a power armor, if acid wears armor at all (off by default). Called by the armor itself. */

@@ -72,6 +72,8 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
     private float charge = -1.0f;
     /** Heat, 0 to 100 (see {@link com.projectrebirth.bodies.power.BodyHeat}). */
     private float heat;
+    /** Wear, 0 to 100 percent (see {@link com.projectrebirth.bodies.power.BodyWear}). */
+    private float wear;
     /** False only for a body that has never been in a level; saved so loaded bodies keep their damage. */
     private boolean statsInitialized;
 
@@ -143,6 +145,17 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         this.charge = Mth.clamp(charge, 0.0f, BodyPower.capacity(this));
     }
 
+    public float wear() {
+        return wear;
+    }
+
+    public void setWear(float wear) {
+        this.wear = Mth.clamp(wear, 0.0f, com.projectrebirth.bodies.power.BodyWear.MAX);
+        if (!level().isClientSide) {
+            com.projectrebirth.bodies.power.BodyWear.applyLimits(this);
+        }
+    }
+
     public float heat() {
         return heat;
     }
@@ -174,6 +187,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
             setHealth(getMaxHealth());
         }
         setCharge(charge());
+        com.projectrebirth.bodies.power.BodyWear.applyLimits(this);
         statsInitialized = true;
     }
 
@@ -225,6 +239,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         }
         // always written: a gadget installed later (an extra battery) must not fill the body for free
         stack.set(BodyPowerRegistry.STORED_CHARGE.get(), charge());
+        if (wear > 0.0f) {
+            stack.set(BodyPowerRegistry.STORED_WEAR.get(), wear);
+        }
         Upgrades.putOnStack(stack, upgrades());
         entityData.set(UPGRADES, InstalledUpgrades.EMPTY);
         if (owner != null) {
@@ -352,6 +369,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (heat > 0.0f) {
             tag.putFloat("Heat", heat);
         }
+        if (wear > 0.0f) {
+            tag.putFloat("Wear", wear);
+        }
         Upgrades.save(tag, registryAccess(), upgrades());
     }
 
@@ -362,6 +382,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         storedInventory = tag.getList("BodyInventory", Tag.TAG_COMPOUND);
         charge = tag.contains("Charge") ? tag.getFloat("Charge") : -1.0f;
         heat = tag.getFloat("Heat");
+        wear = tag.getFloat("Wear");
         entityData.set(UPGRADES, Upgrades.load(tag, registryAccess()));
         // Bodies saved before this flag existed are already initialized.
         // Saves from before the flag existed already have health; a body summoned by command with extra data

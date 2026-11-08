@@ -90,8 +90,13 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
                 bar(graphics, BAR_Y + 10, Component.translatable("hud.projectrebirth.armor.critical"),
                         Maintenance.armorCritical(stack), Maintenance.maxCritical(stack), 0xFFFFA726);
             }
-            case ROBOT_BODY, SYNTHETIC_BODY -> bar(graphics, BAR_Y, Component.translatable("screen.projectrebirth.maintenance.integrity"),
-                    Maintenance.bodyIntegrity(stack), Maintenance.maxBodyIntegrity(stack), 0xFF66BB6A);
+            case ROBOT_BODY, SYNTHETIC_BODY -> {
+                bar(graphics, BAR_Y, Component.translatable("screen.projectrebirth.maintenance.integrity"),
+                        Maintenance.bodyIntegrity(stack), Maintenance.maxBodyIntegrity(stack), 0xFF66BB6A);
+                // wear (1.5.0): the bar fills with wear, empty = none
+                bar(graphics, BAR_Y + 10, Component.translatable("screen.projectrebirth.maintenance.wear"),
+                        Maintenance.bodyWear(stack), 100.0f, 0xFFA1887F);
+            }
             default -> {
             }
         }
@@ -109,8 +114,10 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
         if (Maintenance.materialFor(stack, menu::hasMaterial) == null) {
             return Component.translatable(switch (kind) {
                 case ARMOR -> armorNeed(stack);
-                case SYNTHETIC_BODY -> "screen.projectrebirth.maintenance.need_fiber";
-                default -> "screen.projectrebirth.maintenance.need_iron";
+                case SYNTHETIC_BODY -> Maintenance.bodyIntegrity(stack) < Maintenance.maxBodyIntegrity(stack)
+                        ? "screen.projectrebirth.maintenance.need_fiber" : "screen.projectrebirth.maintenance.need_board";
+                default -> Maintenance.bodyIntegrity(stack) < Maintenance.maxBodyIntegrity(stack)
+                        ? "screen.projectrebirth.maintenance.need_iron" : "screen.projectrebirth.maintenance.need_actuator";
             });
         }
         if (menu.energy() < MaintenanceBlockEntity.energyPerTick()) {

@@ -122,7 +122,7 @@ public final class BodyPower {
             return;
         }
         TransferService.state(player).body().ifPresent(bodyClass ->
-                setCharge(player, charge(player) - (float) (amount * useMultiplier(bodyClass))));
+                setCharge(player, charge(player) - (float) (amount * useMultiplier(bodyClass) * BodyWear.energyMultiplier(player))));
     }
 
     public static State state(Player player) {

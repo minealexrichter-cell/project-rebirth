@@ -92,7 +92,7 @@ public final class BodyHeat {
                 || player.isSpectator() || inArmor(player)) {
             return;
         }
-        setHeat(player, heat(player) + (float) amount);
+        setHeat(player, heat(player) + (float) (amount * BodyWear.heatMultiplier(player)));
         WORKED.add(player.getUUID());
     }
 
@@ -152,6 +152,7 @@ public final class BodyHeat {
                 gain += RebirthConfig.HEAT_BURNING.get();
             }
         }
+        gain *= BodyWear.heatMultiplier(player);
         double cooling = cooling(player, bodyClass, !moved && !worked);
         float heat = heat(player);
         setHeat(player, heat + (float) (gain - cooling));

@@ -72,6 +72,10 @@ public class ArtificialBodyItem extends Item {
         if (storedCharge != null) {
             body.setCharge(storedCharge);
         }
+        Float storedWear = stack.get(BodyPowerRegistry.STORED_WEAR.get());
+        if (storedWear != null) {
+            body.setWear(storedWear);
+        }
         level.addFreshEntity(body);
         // Max health comes from the config and is applied when the body joins the level.
         body.setHealth(storedIntegrity != null ? storedIntegrity : body.getMaxHealth());
@@ -92,6 +96,11 @@ public class ArtificialBodyItem extends Item {
             float capacity = BodyPower.capacity(access, bodyClass, Upgrades.ofStack(stack));
             tooltip.add(Component.translatable("tooltip.projectrebirth.body.charge", Math.round(Math.min(storedCharge, capacity) * 100.0f / capacity))
                     .withStyle(ChatFormatting.YELLOW));
+        }
+        Float storedWear = stack.get(BodyPowerRegistry.STORED_WEAR.get());
+        if (storedWear != null && storedWear > 0.0f && com.projectrebirth.bodies.power.BodyWear.enabled()) {
+            tooltip.add(Component.translatable("tooltip.projectrebirth.body.wear", Math.round(storedWear))
+                    .withStyle(storedWear >= com.projectrebirth.bodies.power.BodyWear.MAX ? ChatFormatting.RED : ChatFormatting.GOLD));
         }
         Upgrades.addTooltip(stack, tooltip);
         tooltip.add(Component.translatable("tooltip.projectrebirth.body.hint").withStyle(ChatFormatting.GRAY));

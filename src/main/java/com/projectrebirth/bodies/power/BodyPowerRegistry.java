@@ -61,6 +61,17 @@ public final class BodyPowerRegistry {
                     .sync((holder, to) -> holder == to && to.connection.hasChannel(SyncAttachmentsPayload.TYPE), ByteBufCodecs.FLOAT)
                     .build());
 
+    /** Wear (0-100 percent) of the body a player controls; synced only to the player. Not copied on death. */
+    public static final Supplier<AttachmentType<Float>> CONTROLLED_WEAR = ATTACHMENTS.register("controlled_body_wear",
+            () -> AttachmentType.builder(() -> 0.0f)
+                    .serialize(Codec.FLOAT, wear -> wear > 0.0f)
+                    .sync((holder, to) -> holder == to && to.connection.hasChannel(SyncAttachmentsPayload.TYPE), ByteBufCodecs.FLOAT)
+                    .build());
+
+    /** Wear of a packed body, in percent. Absent = none. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> STORED_WEAR = COMPONENTS.registerComponentType(
+            "stored_wear", builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
+
     public static final DeferredBlock<ChargingPadBlock> CHARGING_PAD = BLOCKS.registerBlock("charging_pad", ChargingPadBlock::new,
             BlockBehaviour.Properties.of()
                     .mapColor(MapColor.METAL)

@@ -103,7 +103,8 @@ public class BodyHeatGameTests {
         BlockPos at = helper.absolutePos(POS);
         double before = BodyHeat.climateHeat(helper.getLevel(), at);
         helper.getLevel().getServer().getCommands().performPrefixedCommand(helper.getLevel().getServer().createCommandSourceStack().withSuppressedOutput(),
-                "fillbiome " + at.getX() + " " + at.getY() + " " + at.getZ() + " " + at.getX() + " " + at.getY() + " " + at.getZ() + " minecraft:desert");
+                // the game blends neighbouring biome cells when it reads a biome, so fill a few cells all round
+                "fillbiome " + (at.getX() - 8) + " " + Math.max(at.getY() - 2, helper.getLevel().getMinBuildHeight()) + " " + (at.getZ() - 8) + " " + (at.getX() + 8) + " " + (at.getY() + 8) + " " + (at.getZ() + 8) + " minecraft:desert");
         double desert = BodyHeat.climateHeat(helper.getLevel(), at);
         helper.assertTrue(desert > before && desert > 0.0, "A desert heats: " + before + " -> " + desert);
         helper.succeed();

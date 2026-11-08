@@ -19,7 +19,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 /**
  * Operator commands for testing and administration:
  * /rebirth status [player], /rebirth return [player], /rebirth transfer [player] [capsule position],
- * /rebirth charge [player] [percent], /rebirth heat [player] [0-100] (1.5.0).
+ * /rebirth charge [player] [percent], /rebirth heat [player] [0-100],
+ * /rebirth wear [player] [0-100] (1.5.0).
  */
 public final class BodyCommands {
     private BodyCommands() {
@@ -50,7 +51,12 @@ public final class BodyCommands {
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("heat", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 100))
                                         .executes(ctx -> heat(ctx, EntityArgument.getPlayer(ctx, "player"),
-                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "heat")))))));
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "heat"))))))
+                .then(Commands.literal("wear")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("wear", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 100))
+                                        .executes(ctx -> wear(ctx, EntityArgument.getPlayer(ctx, "player"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "wear")))))));
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
@@ -89,6 +95,18 @@ public final class BodyCommands {
         com.projectrebirth.bodies.power.BodyHeat.setHeat(player, heat);
         com.projectrebirth.bodies.power.BodyHeat.tickSecond(player);
         ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.command.heat", player.getDisplayName(), heat), true);
+        return 1;
+    }
+
+    /** Sets the wear (0-100%) of the body a player controls (1.5.0), for tests and administration. */
+    private static int wear(CommandContext<CommandSourceStack> ctx, ServerPlayer player, int wear) {
+        if (!TransferService.isInArtificialBody(player)) {
+            ctx.getSource().sendFailure(Component.translatable("message.projectrebirth.transfer.not_in_body"));
+            return 0;
+        }
+        com.projectrebirth.bodies.power.BodyWear.setWear(player, wear);
+        com.projectrebirth.bodies.power.BodyWear.applyLimits(player);
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.command.wear", player.getDisplayName(), wear), true);
         return 1;
     }
 

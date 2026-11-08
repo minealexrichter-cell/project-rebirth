@@ -17,7 +17,10 @@ public final class RebirthConfig {
     public static final ModConfigSpec SERVER_SPEC;
     private static final Map<BodyClass, BodyStats> BODY_STATS = new EnumMap<>(BodyClass.class);
     /** From the worst body to the best. */
-    private static final double[] DEFAULT_ACID_WEAR = {0.025, 0.02, 0.015, 0.01, 0.005};
+    // 1.5.0 block B2: acid wears the new wear scale (percent), no longer the integrity
+    private static final double[] DEFAULT_ACID_WEAR = {0.05, 0.04, 0.03, 0.02, 0.01};
+    // basic body about 10% wear per game day of work, premium about 3%
+    private static final double[] DEFAULT_WEAR = {1.0, 0.8, 0.6, 0.45, 0.3};
     // 1.5.0: the basic body lasts about one game day of ordinary work, the premium one about four
     private static final int[] DEFAULT_ENERGY_CAPACITY = {60_000, 80_000, 100_000, 130_000, 160_000};
     private static final double[] DEFAULT_ENERGY_USE = {1.0, 0.9, 0.8, 0.7, 0.65};
@@ -158,6 +161,18 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue FLOODLIGHT_RANGE;
     public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
     public static final ModConfigSpec.IntValue EXTRA_BATTERY_CAPACITY;
+    public static final ModConfigSpec.BooleanValue BODY_WEAR_ENABLED;
+    public static final ModConfigSpec.DoubleValue WEAR_WORK;
+    public static final ModConfigSpec.DoubleValue WEAR_OVERHEAT;
+    public static final ModConfigSpec.DoubleValue WEAR_ENERGY_AT_25;
+    public static final ModConfigSpec.DoubleValue WEAR_SLOWDOWN_AT_50;
+    public static final ModConfigSpec.DoubleValue WEAR_SELF_REPAIR_AT_50;
+    public static final ModConfigSpec.DoubleValue WEAR_HEAT_AT_50;
+    public static final ModConfigSpec.DoubleValue WEAR_ATTACK_AT_75;
+    public static final ModConfigSpec.DoubleValue WEAR_FAULTS_AT_75;
+    public static final ModConfigSpec.DoubleValue WEAR_MAX_HEALTH_AT_100;
+    public static final ModConfigSpec.DoubleValue WEAR_SLOWDOWN_AT_100;
+    public static final ModConfigSpec.DoubleValue MAINTENANCE_BODY_WEAR_PER_ITEM;
     public static final ModConfigSpec.DoubleValue COOLING_MODULE_COOLING;
     public static final ModConfigSpec.BooleanValue BODY_HEAT_ENABLED;
     public static final ModConfigSpec.DoubleValue HEAT_SPRINT;
@@ -369,8 +384,12 @@ public final class RebirthConfig {
                     .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs)")
                     .define("immuneToEffects", !bodyClass.defaultLivingBody());
             ModConfigSpec.DoubleValue acidWear = builder
-                    .comment("Integrity acid rain takes per second per unit of acid from a body without a sealing module; better bodies wear more slowly")
-                    .defineInRange("acidWearPerSecond", DEFAULT_ACID_WEAR[bodyClass.ordinal()], 0.0, 100.0);
+                    .comment("Wear (percent) acid rain adds per second per unit of acid to a body without a sealing module (1.5.0: acid no",
+                            "longer takes integrity); better bodies wear more slowly")
+                    .defineInRange("acidWearPercentPerSecond", DEFAULT_ACID_WEAR[bodyClass.ordinal()], 0.0, 100.0);
+            ModConfigSpec.DoubleValue wear = builder
+                    .comment("Wear from work and overheating (see [body_wear]) is multiplied by this: better bodies wear more slowly")
+                    .defineInRange("wearMultiplier", DEFAULT_WEAR[bodyClass.ordinal()], 0.0, 100.0);
             ModConfigSpec.IntValue upgradeSlots = builder
                     .comment("Upgrade slots of the body. If lowered, what is already installed stays, but nothing more fits")
                     .defineInRange("upgradeSlots", bodyClass.defaultUpgradeSlots(), 0, 16);
@@ -385,7 +404,7 @@ public final class RebirthConfig {
                     .defineInRange("coolingMultiplier", DEFAULT_COOLING[bodyClass.ordinal()], 0.0, 100.0);
             builder.pop();
             BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects,
-                    upgradeSlots, acidWear, energyCapacity, energyUse, cooling));
+                    upgradeSlots, acidWear, energyCapacity, energyUse, cooling, wear));
         }
         builder.pop();
 
@@ -410,6 +429,9 @@ public final class RebirthConfig {
         MAINTENANCE_STEP_TICKS = builder
                 .comment("Ticks per repair step; every step uses one material item (20 ticks = 1 second)")
                 .defineInRange("stepTicks", 40, 1, 72000);
+        MAINTENANCE_BODY_WEAR_PER_ITEM = builder
+                .comment("Wear (percent) taken off a body per actuator (robot bodies) or circuit board (synthetic bodies), 1.5.0")
+                .defineInRange("bodyWearPerItem", 10.0, 0.1, 100.0);
         MAINTENANCE_BODY_REPAIR_PER_ITEM = builder
                 .comment("Body integrity restored per iron ingot (robot bodies) or synthetic fiber (synthetic bodies)")
                 .defineInRange("bodyRepairPerItem", 8.0, 0.1, 1024.0);
@@ -500,7 +522,7 @@ public final class RebirthConfig {
         HUD_DANGER_ACID = builder.comment("Acid").defineInRange("dangerAcid", 0.0, 0.0, 10000.0);
         builder.pop();
 
-        builder.comment("Artificial bodies and power armor. Bodies have no biology; acid wears them by [bodies.<class>] acidWearPerSecond").push("machines");
+        builder.comment("Artificial bodies and power armor. Bodies have no biology; acid wears them by [bodies.<class>] acidWearPercentPerSecond").push("machines");
         MACHINE_ACID_WEAR_INTERVAL = builder.comment("Seconds between the acid wear of a body (the wear of these seconds comes at once)").defineInRange("bodyAcidWearInterval", 5, 1, 3600);
         MACHINE_PILOT_RADIATION_PER_PLATE = builder.comment("Share of radiation each armor plating keeps off the pilot, on top of pilotRadiationProtection").defineInRange("pilotRadiationPerPlate", 0.03, 0.0, 1.0);
         MACHINE_ARMOR_ACID_WEAR = builder.comment("Whether acid rain wears power armor").define("armorAcidWear", false);
@@ -693,6 +715,26 @@ public final class RebirthConfig {
                 .defineInRange("throttleFrom", 85.0, 0.0, 100.0);
         HEAT_THROTTLE_SLOWDOWN = builder.comment("Part of the speed lost while throttled").defineInRange("throttleSlowdown", 0.25, 0.0, 0.9);
         HEAT_THROTTLE_ATTACK = builder.comment("Part of the melee damage lost while throttled").defineInRange("throttleAttack", 0.3, 0.0, 1.0);
+        builder.pop();
+
+        builder.comment("Wear of artificial bodies (1.5.0), 0 to 100 percent: tiredness of the mechanisms, apart from integrity. It does not",
+                "mend by itself and not with a repair kit, only at the maintenance station. A worn body is never destroyed by it.",
+                "Off: no wear, as in 1.4.1 (acid then wears nothing either)").push("body_wear");
+        BODY_WEAR_ENABLED = builder.comment("The whole system").define("enabled", true);
+        WEAR_WORK = builder.comment("Wear per second while a player controls the body (before bodies.<class>.wearMultiplier);",
+                "0.00833 = about 10% per game day").defineInRange("workPerSecond", 0.00833, 0.0, 100.0);
+        WEAR_OVERHEAT = builder.comment("Wear per second while the body is overheated (reached heat 100 and has not cooled below the throttle level)")
+                .defineInRange("overheatedPerSecond", 1.0, 0.0, 100.0);
+        WEAR_ENERGY_AT_25 = builder.comment("From 25% wear: the body spends this much more charge (0.1 = 10%)").defineInRange("energyAt25", 0.1, 0.0, 10.0);
+        WEAR_SLOWDOWN_AT_50 = builder.comment("From 50%: part of the speed lost").defineInRange("slowdownAt50", 0.1, 0.0, 0.9);
+        WEAR_SELF_REPAIR_AT_50 = builder.comment("From 50%: self-repair is multiplied by this").defineInRange("selfRepairAt50", 0.5, 0.0, 1.0);
+        WEAR_HEAT_AT_50 = builder.comment("From 50%: heating is multiplied by this").defineInRange("heatAt50", 1.25, 1.0, 10.0);
+        WEAR_ATTACK_AT_75 = builder.comment("From 75%: part of the melee damage lost").defineInRange("attackAt75", 0.15, 0.0, 1.0);
+        WEAR_FAULTS_AT_75 = builder.comment("From 75%: faults in an electromagnetic storm are this many times as frequent (the storm comes later in 1.5.0)")
+                .defineInRange("faultsAt75", 1.5, 1.0, 10.0);
+        WEAR_MAX_HEALTH_AT_100 = builder.comment("At 100% (critical wear): part of the maximum integrity lost; no self-repair at all")
+                .defineInRange("maxIntegrityAt100", 0.5, 0.0, 0.9);
+        WEAR_SLOWDOWN_AT_100 = builder.comment("At 100%: part of the speed lost (instead of slowdownAt50)").defineInRange("slowdownAt100", 0.3, 0.0, 0.9);
         builder.pop();
 
         builder.comment("Energy (NeoForge Energy, FE): generators, battery, cable and what the stations use").push("energy");
@@ -920,6 +962,6 @@ public final class RebirthConfig {
                             ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects,
                             ModConfigSpec.IntValue upgradeSlots, ModConfigSpec.DoubleValue acidWearPerSecond,
                             ModConfigSpec.IntValue energyCapacity, ModConfigSpec.DoubleValue energyUseMultiplier,
-                            ModConfigSpec.DoubleValue coolingMultiplier) {
+                            ModConfigSpec.DoubleValue coolingMultiplier, ModConfigSpec.DoubleValue wearMultiplier) {
     }
 }

@@ -84,6 +84,7 @@ public final class BodyEvents {
                 BodyRules.tickSelfRepair(player, bodyClass);
                 BodyPower.tickSecond(player);
                 com.projectrebirth.bodies.power.BodyHeat.tickSecond(player);
+                com.projectrebirth.bodies.power.BodyWear.tickSecond(player);
             }
             if (!bodyClass.synthetic()) {
                 robotSteps(player);

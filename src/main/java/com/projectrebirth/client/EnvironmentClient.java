@@ -149,6 +149,11 @@ public final class EnvironmentClient {
             parts.add(Component.translatable("hud.projectrebirth.hazard.pollution"));
             colors.add(0xFFD4E157);
         }
+        if (last.dangerous(Hazard.DUST)) {
+            hazards.add(Hazard.DUST);
+            parts.add(Component.translatable("hud.projectrebirth.hazard.dust"));
+            colors.add(0xFFD7B377);
+        }
         if (last.dangerous(Hazard.ACID)) {
             hazards.add(Hazard.ACID);
             parts.add(Component.translatable("hud.projectrebirth.hazard.acid"));

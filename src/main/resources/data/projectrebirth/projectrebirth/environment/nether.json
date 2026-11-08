@@ -8,6 +8,7 @@
   "event_multipliers": {
     "acid_rain": 0,
     "toxic_storm": 0,
-    "radiation_burst": 0
+    "radiation_burst": 0,
+    "dust_storm": 0
   }
 }

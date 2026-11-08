@@ -65,6 +65,7 @@ public final class GuiAtlas {
             case POLLUTION -> 92;
             case RADIATION -> 102;
             case ACID -> 112;
+            case DUST -> 92; // placeholder: the polluted air mark until block H draws its own
         };
         blit(graphics, x, y, u, 34, 9, 9);
     }

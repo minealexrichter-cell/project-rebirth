@@ -161,6 +161,17 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue FLOODLIGHT_RANGE;
     public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
     public static final ModConfigSpec.IntValue EXTRA_BATTERY_CAPACITY;
+    public static final ModConfigSpec.DoubleValue ENVIRONMENT_ROOF_DUST;
+    public static final ModConfigSpec.DoubleValue HUMAN_DUST_SLOWDOWN;
+    public static final ModConfigSpec.DoubleValue HUMAN_DUST_COUGH_CHANCE;
+    public static final ModConfigSpec.DoubleValue HUMAN_TOXIN_PER_DUST;
+    public static final ModConfigSpec.DoubleValue PROTECTION_FILTER_DUST_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue HUD_DANGER_DUST;
+    public static final ModConfigSpec.DoubleValue MACHINE_BODY_DUST_WEAR;
+    public static final ModConfigSpec.DoubleValue MACHINE_BODY_DUST_HEAT;
+    public static final ModConfigSpec.DoubleValue MACHINE_ARMOR_DUST_WEAR_PER_SECOND;
+    public static final ModConfigSpec.DoubleValue CONTAMINATION_PER_DUST;
+    public static final ModConfigSpec.DoubleValue SOLAR_DUST_FACTOR;
     public static final ModConfigSpec.BooleanValue TEMP_ENABLED;
     public static final ModConfigSpec.DoubleValue TEMP_BIOME_SCALE;
     public static final ModConfigSpec.DoubleValue TEMP_BIOME_OFFSET;
@@ -491,6 +502,8 @@ public final class RebirthConfig {
                 .defineInRange("roofAcidMultiplier", 0.0, 0.0, 1.0);
         ENVIRONMENT_UNDERGROUND_DEPTH = builder.comment("Blocks below the surface where a place counts as underground")
                 .defineInRange("undergroundDepth", 16, 1, 512);
+        ENVIRONMENT_ROOF_DUST = builder.comment("Dust is multiplied by this under a roof (1.5.0); deep underground and in a sealed room there is none")
+                .defineInRange("roofDust", 0.3, 0.0, 1.0);
         ENVIRONMENT_UNDERGROUND_POLLUTION = builder.comment("Pollution is also multiplied by this underground")
                 .defineInRange("undergroundPollutionMultiplier", 0.5, 0.0, 1.0);
         ENVIRONMENT_AFTERMATH_SECONDS = builder.comment("Seconds a catastrophe takes to fade out after its active phase")
@@ -527,6 +540,11 @@ public final class RebirthConfig {
         HUMAN_SICKNESS_DAMAGE = builder.comment("Damage at the last stage of the dose or the toxic load").defineInRange("sicknessDamage", 1.0, 0.0, 1000.0);
         HUMAN_SICKNESS_DAMAGE_INTERVAL = builder.comment("Seconds between such damage").defineInRange("sicknessDamageInterval", 10, 1, 3600);
         HUMAN_NAUSEA_CHANCE = builder.comment("Chance per second of a fit of nausea").defineInRange("nauseaChance", 0.05, 0.0, 1.0);
+        HUMAN_DUST_SLOWDOWN = builder.comment("Part of the speed lost in dust that reaches the person above environment.hud.dangerDust (1.5.0)")
+                .defineInRange("dustSlowdown", 0.15, 0.0, 0.9);
+        HUMAN_DUST_COUGH_CHANCE = builder.comment("Chance per second per unit of dust reaching the person of a fit of coughing (a short stronger slowdown)")
+                .defineInRange("dustCoughChance", 0.02, 0.0, 1.0);
+        HUMAN_TOXIN_PER_DUST = builder.comment("Toxic load gained per second per unit of dust reaching the person").defineInRange("toxinPerDust", 0.004, 0.0, 100.0);
         HUMAN_ACID_DAMAGE = builder.comment("Damage from acid rain on an unprotected person, per acid strength").defineInRange("acidDamage", 0.5, 0.0, 1000.0);
         HUMAN_ACID_DAMAGE_INTERVAL = builder.comment("Seconds between such damage").defineInRange("acidDamageInterval", 3, 1, 3600);
         HUMAN_KEPT_ON_DEATH = builder.comment("Share of the dose and the toxic load kept after death").defineInRange("keptOnDeath", 0.0, 0.0, 1.0);
@@ -542,6 +560,8 @@ public final class RebirthConfig {
         PROTECTION_FILTER_LIFE = builder.comment("Life of one filter, in seconds of air of pollution 1").defineInRange("filterLife", 4800.0, 1.0, 1000000.0);
         PROTECTION_FILTER_SAFE_POLLUTION = builder.comment("Pollution up to which the air counts as safe and filters are not used: the ordinary background of the world")
                 .defineInRange("filterSafePollution", 1.0, 0.0, 1000.0);
+        PROTECTION_FILTER_DUST_MULTIPLIER = builder.comment("Dust clogs the filter this many times as fast as the same amount of polluted air (1.5.0)")
+                .defineInRange("filterDustMultiplier", 3.0, 0.0, 1000.0);
         PROTECTION_FILTER_USE = builder.comment("Filter used per second per unit of pollution").defineInRange("filterUsePerPollution", 1.0, 0.0, 1000.0);
         PROTECTION_ACID_WEAR = builder.comment("Durability a piece loses to acid rain").defineInRange("acidWear", 1, 0, 1000);
         PROTECTION_ACID_WEAR_INTERVAL = builder.comment("Seconds in acid rain between such losses").defineInRange("acidWearInterval", 10, 1, 3600);
@@ -595,6 +615,7 @@ public final class RebirthConfig {
         builder.comment("When the HUD marks a hazard as dangerous: above these values, after protection").push("hud");
         HUD_DANGER_POLLUTION = builder.comment("Polluted air").defineInRange("dangerPollution", 1.0, 0.0, 10000.0);
         HUD_DANGER_RADIATION = builder.comment("Radiation").defineInRange("dangerRadiation", 1.5, 0.0, 10000.0);
+        HUD_DANGER_DUST = builder.comment("Dust (1.5.0); also from this the person is slowed down and the solar panel loses power").defineInRange("dangerDust", 1.0, 0.0, 10000.0);
         HUD_DANGER_ACID = builder.comment("Acid").defineInRange("dangerAcid", 0.0, 0.0, 10000.0);
         builder.pop();
 
@@ -602,6 +623,12 @@ public final class RebirthConfig {
         MACHINE_ACID_WEAR_INTERVAL = builder.comment("Seconds between the acid wear of a body (the wear of these seconds comes at once)").defineInRange("bodyAcidWearInterval", 5, 1, 3600);
         MACHINE_PILOT_RADIATION_PER_PLATE = builder.comment("Share of radiation each armor plating keeps off the pilot, on top of pilotRadiationProtection").defineInRange("pilotRadiationPerPlate", 0.03, 0.0, 1.0);
         MACHINE_ARMOR_ACID_WEAR = builder.comment("Whether acid rain wears power armor").define("armorAcidWear", false);
+        MACHINE_BODY_DUST_WEAR = builder.comment("Wear (percent) dust adds per second per unit of dust to a body without a sealing module, before",
+                "bodies.<class>.wearMultiplier (1.5.0)").defineInRange("bodyDustWearPerSecond", 0.002, 0.0, 100.0);
+        MACHINE_BODY_DUST_HEAT = builder.comment("Heat dust adds per second per unit of dust to a controlled body without a sealing module: it clogs the cooling")
+                .defineInRange("bodyDustHeat", 0.05, 0.0, 100.0);
+        MACHINE_ARMOR_DUST_WEAR_PER_SECOND = builder.comment("Structural integrity dust takes from power armor per second per unit of dust; 0 = never (the default)")
+                .defineInRange("armorDustWearPerSecond", 0.0, 0.0, 1000.0);
         MACHINE_ARMOR_ACID_WEAR_PER_SECOND = builder.comment("Structural integrity acid takes from power armor per second per unit of acid, if armorAcidWear is on").defineInRange("armorAcidWearPerSecond", 0.1, 0.0, 1000.0);
         builder.pop();
 
@@ -645,6 +672,8 @@ public final class RebirthConfig {
         CONTAMINATION_PER_POLLUTION = builder.comment("Gained per second outside a sealed room per unit of polluted air above environment.protection.filterSafePollution")
                 .defineInRange("perPollution", 0.02, 0.0, 1000.0);
         CONTAMINATION_PER_RADIATION = builder.comment("Gained per second per unit of radiation above environment.hud.dangerRadiation (fallout)").defineInRange("perRadiation", 0.002, 0.0, 1000.0);
+        CONTAMINATION_PER_DUST = builder.comment("Gained per second per unit of dust: little, dust harms machines more than it contaminates (1.5.0)")
+                .defineInRange("perDust", 0.002, 0.0, 1000.0);
         CONTAMINATION_PER_ACID = builder.comment("Gained per second per unit of acid").defineInRange("perAcid", 0.1, 0.0, 1000.0);
         CONTAMINATION_SHED_SHARE = builder.comment("Share of it shed into the air of a sealed room per second").defineInRange("shedPerSecond", 0.02, 0.0, 1.0);
         CONTAMINATION_AIR_PER_UNIT = builder.comment("Pollution one unit of it brings into one block of air (spread over the room's volume)").defineInRange("airPollutionPerUnit", 20.0, 0.0, 1.0E6);
@@ -667,6 +696,8 @@ public final class RebirthConfig {
         defineEnvironmentEvent(builder, "acid_rain", Map.of(Hazard.POLLUTION, 2.0, Hazard.ACID, 1.0), 0.5, 1.5, 240, 480);
         defineEnvironmentEvent(builder, "toxic_storm", Map.of(Hazard.POLLUTION, 20.0), 0.5, 1.5, 180, 360);
         defineEnvironmentEvent(builder, "radiation_burst", Map.of(Hazard.RADIATION, 120.0), 0.5, 1.5, 120, 240);
+        // 1.5.0: stronger in deserts and badlands, weaker in forests (event_multipliers of the biome profiles)
+        defineEnvironmentEvent(builder, "dust_storm", Map.of(Hazard.DUST, 10.0, Hazard.POLLUTION, 1.0), 0.5, 1.5, 180, 420);
         builder.pop();
         builder.pop();
 
@@ -844,6 +875,9 @@ public final class RebirthConfig {
         COMBUSTION_CAPACITY = builder
                 .comment("Energy buffer of the combustion generator")
                 .defineInRange("combustionCapacity", 20000, 1, 100_000_000);
+        SOLAR_DUST_FACTOR = builder
+                .comment("A solar panel in a dust storm makes this part of its energy (1.5.0)")
+                .defineInRange("solarDustFactor", 0.25, 0.0, 1.0);
         SOLAR_ENERGY_PER_TICK = builder
                 .comment("Energy the solar panel makes per tick in daylight under the open sky (not in rain)")
                 .defineInRange("solarEnergyPerTick", 8, 1, 1_000_000);
@@ -926,6 +960,8 @@ public final class RebirthConfig {
                 case POLLUTION -> pollution.get().floatValue();
                 case ACID -> acid.get().floatValue();
                 case RADIATION -> radiation.get().floatValue();
+                // dust is kept off by the head piece's filter, like polluted air
+                case DUST -> pollution.get().floatValue();
             };
         }
     }

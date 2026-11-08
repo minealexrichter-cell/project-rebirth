@@ -27,7 +27,7 @@ public class EnvironmentHudGameTests {
         helper.assertTrue(HumanBody.dangerMask(1.0f, 1.0f, 0.0f) == 0, "The background of the overworld is no danger");
         float radiation = RebirthConfig.HUD_DANGER_RADIATION.get().floatValue() + 0.1f;
         float pollution = RebirthConfig.HUD_DANGER_POLLUTION.get().floatValue() + 0.1f;
-        int all = HumanBody.dangerMask(radiation, pollution, 0.5f);
+        int all = HumanBody.dangerMask(radiation, pollution, 0.5f, RebirthConfig.HUD_DANGER_DUST.get().floatValue() + 0.1f);
         EnvironmentStatusPayload payload = new EnvironmentStatusPayload(radiation, pollution, 0.5f, 0.0f, 0.0f, all, 0, 0.0f, 20.0f, 0.0f);
         for (Hazard hazard : Hazard.values()) {
             helper.assertTrue(payload.dangerous(hazard), "Marked: " + hazard);

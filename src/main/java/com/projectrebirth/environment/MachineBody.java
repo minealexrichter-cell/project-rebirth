@@ -28,8 +28,13 @@ public final class MachineBody {
         if (player.getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()) {
             return; // The cockpit is sealed.
         }
-        BodyRules.bodyClassOf(player).ifPresent(bodyClass ->
-                acidSecond(player, bodyClass, BodyGadgets.of(player), exposure.get(Hazard.ACID), player.level().getGameTime()));
+        BodyRules.bodyClassOf(player).ifPresent(bodyClass -> {
+            acidSecond(player, bodyClass, BodyGadgets.of(player), exposure.get(Hazard.ACID), player.level().getGameTime());
+            if (dustSecond(player, bodyClass, BodyGadgets.of(player), exposure.get(Hazard.DUST)) > 0.0f) {
+                // dust also clogs the cooling of a controlled body
+                com.projectrebirth.bodies.power.BodyHeat.add(player, exposure.get(Hazard.DUST) * RebirthConfig.MACHINE_BODY_DUST_HEAT.get());
+            }
+        });
     }
 
     /** One second of a body standing in the world, called by the body itself. */
@@ -40,6 +45,20 @@ public final class MachineBody {
         com.projectrebirth.shelter.Contamination.second(body);
         Exposure exposure = Environment.exposureAt(level, body.blockPosition());
         acidSecond(body, body.getBodyClass(), body.upgrades(), exposure.get(Hazard.ACID), level.getGameTime());
+        dustSecond(body, body.getBodyClass(), body.upgrades(), exposure.get(Hazard.DUST));
+    }
+
+    /**
+     * One second of dust on a body without a sealing module (1.5.0): wear, better bodies less. Public for tests.
+     *
+     * @return the wear (percent) added
+     */
+    public static float dustSecond(LivingEntity body, BodyClass bodyClass, InstalledUpgrades upgrades, float dust) {
+        if (dust <= 0.0f || sealedAgainst(body, upgrades, BodyGadgets.DUST)) {
+            return 0.0f;
+        }
+        return com.projectrebirth.bodies.power.BodyWear.add(body, (float) (dust * RebirthConfig.MACHINE_BODY_DUST_WEAR.get()
+                * com.projectrebirth.bodies.power.BodyWear.classMultiplier(bodyClass)));
     }
 
     /** Whether the upgrades of a body keep a hazard out (from the data of the upgrades, see protects_from). */
@@ -71,8 +90,17 @@ public final class MachineBody {
         if (Environment.isEnabled() && !armor.isWrecked()) {
             com.projectrebirth.shelter.Contamination.second(armor);
         }
-        if (!Environment.isEnabled() || !RebirthConfig.MACHINE_ARMOR_ACID_WEAR.get() || armor.isWrecked()
-                || !(armor.level() instanceof ServerLevel level)) {
+        if (!Environment.isEnabled() || armor.isWrecked() || !(armor.level() instanceof ServerLevel level)) {
+            return;
+        }
+        double dustWear = RebirthConfig.MACHINE_ARMOR_DUST_WEAR_PER_SECOND.get();
+        if (dustWear > 0.0) {
+            float dust = Environment.exposureAt(level, armor.blockPosition()).get(Hazard.DUST);
+            if (dust > 0.0f) {
+                armor.corrode((float) (dust * dustWear));
+            }
+        }
+        if (!RebirthConfig.MACHINE_ARMOR_ACID_WEAR.get()) {
             return;
         }
         float acid = Environment.exposureAt(level, armor.blockPosition()).get(Hazard.ACID);

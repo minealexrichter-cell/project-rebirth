@@ -1,0 +1,22 @@
+{
+  "icon": "minecraft:sand",
+  "x": -3,
+  "y": -1,
+  "parents": [
+    "catastrophes"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.dust_storm.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.dust_storm.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.dust_storm.p3"
+    }
+  ]
+}

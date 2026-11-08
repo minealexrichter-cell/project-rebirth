@@ -41,7 +41,8 @@ public final class Contamination {
         float radiation = Math.max(0.0f, around.get(Hazard.RADIATION) - RebirthConfig.HUD_DANGER_RADIATION.get().floatValue());
         return pollution * RebirthConfig.CONTAMINATION_PER_POLLUTION.get().floatValue()
                 + radiation * RebirthConfig.CONTAMINATION_PER_RADIATION.get().floatValue()
-                + around.get(Hazard.ACID) * RebirthConfig.CONTAMINATION_PER_ACID.get().floatValue();
+                + around.get(Hazard.ACID) * RebirthConfig.CONTAMINATION_PER_ACID.get().floatValue()
+                + around.get(Hazard.DUST) * RebirthConfig.CONTAMINATION_PER_DUST.get().floatValue();
     }
 
     /**

@@ -92,7 +92,7 @@ public final class Protection {
                 continue;
             }
             RebirthConfig.ProtectionStats stats = kit.stats();
-            if (hazard == Hazard.POLLUTION) {
+            if (hazard == Hazard.POLLUTION || hazard == Hazard.DUST) {
                 if (slot == EquipmentSlot.HEAD && filterLeft(stack) > 0.0f) {
                     total += stats.pollution().get().floatValue();
                 }

@@ -46,6 +46,8 @@ public final class HumanBody {
     private static final ResourceLocation TOXIN_WEAK_SPEED = ProjectRebirth.id("toxin_weak_speed");
     private static final ResourceLocation TOXIN_WEAK_ATTACK = ProjectRebirth.id("toxin_weak_attack");
     private static final ResourceLocation RADIATION_MAX_HEALTH = ProjectRebirth.id("radiation_max_health");
+    private static final ResourceLocation DUST_SLOW = ProjectRebirth.id("dust_slow");
+    private static final int COUGH_TICKS = 40;
     private static final int NAUSEA_TICKS = 140;
     /** A symptom icon lasts this long and is renewed before it ends; a player who gets better loses it at the next check. */
     private static final int SYMPTOM_TICKS = 100;
@@ -99,14 +101,18 @@ public final class HumanBody {
         float radiation = reaching(player, exposure, Hazard.RADIATION);
         float pollution = reaching(player, exposure, Hazard.POLLUTION);
         float acid = reaching(player, exposure, Hazard.ACID);
+        float dust = reaching(player, exposure, Hazard.DUST);
         if (!(player.getVehicle() instanceof PowerArmorEntity)) {
-            Protection.useFilter(player, exposure.get(Hazard.POLLUTION));
+            // dust clogs the filter faster than polluted air
+            Protection.useFilter(player, exposure.get(Hazard.POLLUTION)
+                    + exposure.get(Hazard.DUST) * RebirthConfig.PROTECTION_FILTER_DUST_MULTIPLIER.get().floatValue());
             if (exposure.get(Hazard.ACID) > 0.0f && everySeconds(player, RebirthConfig.PROTECTION_ACID_WEAR_INTERVAL.get())) {
                 Protection.wearByAcid(player);
             }
         }
-        setBiology(player, afterSecond(biology(player), radiation, pollution, acid));
+        setBiology(player, afterSecond(biology(player), radiation, pollution, acid, dust));
         applySymptoms(player);
+        dustSecond(player, dust);
         hurtBySymptoms(player, acid);
         if (player.getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked()) {
             Temperature.recoverSecond(player); // the cockpit keeps its own climate
@@ -123,8 +129,9 @@ public final class HumanBody {
             float radiation = reaching(player, exposure, Hazard.RADIATION);
             float pollution = reaching(player, exposure, Hazard.POLLUTION);
             float acid = reaching(player, exposure, Hazard.ACID);
+            float dust = reaching(player, exposure, Hazard.DUST);
             PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, pollution, acid, biology.dose(), biology.toxin(),
-                    dangerMask(radiation, pollution, acid),
+                    dangerMask(radiation, pollution, acid, dust),
                     com.projectrebirth.shelter.Shelters.stateAt(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())),
                     com.projectrebirth.shelter.Contamination.of(player),
                     TemperatureRegistry.enabled() ? Temperature.at(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())) : Float.NaN,
@@ -137,7 +144,14 @@ public final class HumanBody {
      * [environment.hud]). Bit {@code 1 << hazard.ordinal()}.
      */
     public static int dangerMask(float radiation, float pollution, float acid) {
+        return dangerMask(radiation, pollution, acid, 0.0f);
+    }
+
+    public static int dangerMask(float radiation, float pollution, float acid, float dust) {
         int mask = 0;
+        if (dust > RebirthConfig.HUD_DANGER_DUST.get()) {
+            mask |= 1 << Hazard.DUST.ordinal();
+        }
         if (radiation > RebirthConfig.HUD_DANGER_RADIATION.get()) {
             mask |= 1 << Hazard.RADIATION.ordinal();
         }
@@ -152,8 +166,14 @@ public final class HumanBody {
 
     /** The numbers of one second. */
     public static Biology afterSecond(Biology biology, float radiation, float pollution, float acid) {
+        return afterSecond(biology, radiation, pollution, acid, 0.0f);
+    }
+
+    /** The numbers of one second, with dust (1.5.0): a little toxic load. */
+    public static Biology afterSecond(Biology biology, float radiation, float pollution, float acid, float dust) {
         float doseGain = radiation * RebirthConfig.HUMAN_DOSE_PER_RADIATION.get().floatValue();
-        float toxinGain = pollution * RebirthConfig.HUMAN_TOXIN_PER_POLLUTION.get().floatValue() + acid * RebirthConfig.HUMAN_TOXIN_PER_ACID.get().floatValue();
+        float toxinGain = pollution * RebirthConfig.HUMAN_TOXIN_PER_POLLUTION.get().floatValue() + acid * RebirthConfig.HUMAN_TOXIN_PER_ACID.get().floatValue()
+                + dust * RebirthConfig.HUMAN_TOXIN_PER_DUST.get().floatValue();
         return new Biology(biology.dose() + doseGain - RebirthConfig.HUMAN_DOSE_CLEARANCE.get().floatValue(),
                 biology.toxin() + toxinGain - RebirthConfig.HUMAN_TOXIN_CLEARANCE.get().floatValue()).clamped();
     }
@@ -206,6 +226,30 @@ public final class HumanBody {
         }
     }
 
+    /**
+     * Dust in the lungs (1.5.0): slower while it reaches the person above the danger level, and now and then a fit of coughing,
+     * a short stronger slowdown. Public for tests.
+     */
+    public static void dustSecond(ServerPlayer player, float dust) {
+        boolean dusty = dust > RebirthConfig.HUD_DANGER_DUST.get();
+        setModifier(player, Attributes.MOVEMENT_SPEED, DUST_SLOW, dusty ? -RebirthConfig.HUMAN_DUST_SLOWDOWN.get() : 0.0,
+                AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+        if (dusty && player.getRandom().nextFloat() < dust * RebirthConfig.HUMAN_DUST_COUGH_CHANCE.get().floatValue()) {
+            cough(player);
+        }
+    }
+
+    /** A fit of coughing. Public for tests. */
+    public static void cough(ServerPlayer player) {
+        MobEffectInstance slow = new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, COUGH_TICKS, 1, true, false, false);
+        slow.getCures().clear();
+        player.addEffect(slow);
+        player.causeFoodExhaustion(0.5f);
+        // placeholder until the sounds of block H: a dry, low sneeze
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), net.minecraft.sounds.SoundEvents.PANDA_SNEEZE,
+                net.minecraft.sounds.SoundSource.PLAYERS, 0.6f, 0.55f);
+    }
+
     private static void showSymptom(ServerPlayer player, Holder<MobEffect> effect, int stage) {
         MobEffectInstance current = player.getEffect(effect);
         if (stage <= 0) {
@@ -233,6 +277,7 @@ public final class HumanBody {
         setModifier(player, Attributes.MOVEMENT_SPEED, TOXIN_WEAK_SPEED, 0.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(player, Attributes.ATTACK_DAMAGE, TOXIN_WEAK_ATTACK, 0.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(player, Attributes.MAX_HEALTH, RADIATION_MAX_HEALTH, 0.0, AttributeModifier.Operation.ADD_VALUE);
+        setModifier(player, Attributes.MOVEMENT_SPEED, DUST_SLOW, 0.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
     }
 
     private static void setModifier(Player player, Holder<Attribute> attribute, ResourceLocation id, double amount, AttributeModifier.Operation operation) {

@@ -624,6 +624,9 @@
   "message.projectrebirth.heater.status": "Heater: %s. Around it %s°C (works below %s°C), %s FE stored.",
   "message.projectrebirth.heater.on": "working",
   "message.projectrebirth.heater.off": "idle",
+  "message.projectrebirth.command.thermal": "Heat or cold stress of %s set to %s",
+  "environment.projectrebirth.event.dust_storm": "Dust storm",
+  "hud.projectrebirth.hazard.dust": "dust",
   "codex.projectrebirth.category.basics": "Basics",
   "codex.projectrebirth.entry.welcome": "The Rebirth Codex",
   "codex.projectrebirth.welcome.p1": "This book follows you through Project: Rebirth: from the first ores and machines to artificial bodies, power armor, factions and survival in a hostile world.\n\nEach tab on the left is a part of the mod. A map shows its entries; a line leads from what you need first to what follows.",
@@ -690,7 +693,7 @@
   "codex.projectrebirth.combustion_generator.p2": "Iron, a furnace, copper and redstone — the first energy of the game.",
   "codex.projectrebirth.combustion_generator.p3": "It stops burning while its store is full, so no fuel is wasted, and gives up to 200 FE per tick to its neighbours and cables. A hopper can bring fuel; an empty bucket after lava comes out.",
   "codex.projectrebirth.entry.solar_panel": "Solar Panel",
-  "codex.projectrebirth.solar_panel.p1": "8 FE per tick in daylight under the open sky; nothing at night and in rain.",
+  "codex.projectrebirth.solar_panel.p1": "8 FE per tick in daylight under the open sky; nothing at night and in rain, a quarter in a dust storm.",
   "codex.projectrebirth.solar_panel.p2": "Glass, aluminum, a circuit board and iron.",
   "codex.projectrebirth.solar_panel.p3": "A panel gives energy only downwards: put the cable or the machine under it. It is placed like stairs, its high edge away from you.",
   "codex.projectrebirth.entry.cable": "Energy Cable",
@@ -797,6 +800,10 @@
   "codex.projectrebirth.entry.catastrophes": "Catastrophes",
   "codex.projectrebirth.catastrophes.p1": "Catastrophes come by themselves, the first one no sooner than 40 minutes into a new world. Two minutes before, a message, a siren and a HUD line warn you.\n\nAcid rain: real rain; toxins and damage in the open, it wears gear and bodies without a sealing module.",
   "codex.projectrebirth.catastrophes.p2": "Toxic storm: a thick yellow-green fog, toxins come fast; a respirator and a roof help.\n\nRadiation burst: flashes in the sky and a fast dose. A roof does not save you; a heavy suit and armor do, and in a shelter it is half as strong.",
+  "codex.projectrebirth.entry.dust_storm": "Dust Storm",
+  "codex.projectrebirth.dust_storm.p1": "Since 1.5 a dust storm comes too: thick brown fog, about eight blocks of view, sand in the wind. It is strongest in deserts and badlands, weaker in forests and swamps. A roof weakens it; deep ground and a sealed shelter keep it out.",
+  "codex.projectrebirth.dust_storm.p2": "Without a respirator a person is slowed down, coughs now and then and gathers a little toxin. A respirator keeps the dust out, but its filter clogs three times as fast.\n\nA body without a sealing module wears and heats up. Solar panels give a quarter of their energy.",
+  "codex.projectrebirth.dust_storm.p3": "The pilot of a power armor is safe. A body with a sealing module does not notice the dust.",
   "codex.projectrebirth.entry.protection": "Protective Gear",
   "codex.projectrebirth.protection.p1": "The respirator keeps out polluted air while its filter lasts.",
   "codex.projectrebirth.protection.p3": "A filter is used only in dirty air. Right-click puts it in.",
@@ -846,6 +853,5 @@
   "codex.projectrebirth.backup_battery.p3": "Life support is the air filtration unit and the decontamination chamber. The cable feeds them first, and when that is not enough the backup steps in.",
   "codex.projectrebirth.entry.shelter_panel": "Shelter Control Panel",
   "codex.projectrebirth.shelter_panel.p1": "It shows the rooms and the reserve, and finds a leak.",
-  "codex.projectrebirth.shelter_panel.p3": "The panel gives a redstone signal by the danger: 0 all is well … 15 a leak. When a leak or a lack of energy lasts 10 seconds, the owner and their faction are warned; so too about cartridges and the reserve.\n\nThe HUD shows a \"Shelter\" line and the contamination on you.",
-  "message.projectrebirth.command.thermal": "Heat or cold stress of %s set to %s"
+  "codex.projectrebirth.shelter_panel.p3": "The panel gives a redstone signal by the danger: 0 all is well … 15 a leak. When a leak or a lack of energy lasts 10 seconds, the owner and their faction are warned; so too about cartridges and the reserve.\n\nThe HUD shows a \"Shelter\" line and the contamination on you."
 }

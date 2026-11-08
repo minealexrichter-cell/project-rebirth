@@ -48,6 +48,10 @@ public final class CatastropheClient {
             net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.ENTITY_EFFECT, 0xFF9CCC65);
     private static final net.minecraft.core.particles.ParticleOptions STORM_HAZE =
             new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.78f, 0.8f, 0.36f), 1.6f);
+    private static final net.minecraft.core.particles.ParticleOptions DUST_GRAIN =
+            new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.78f, 0.64f, 0.42f), 1.4f);
+    /** Fog end in a dust storm at full strength, in blocks: about 8 blocks of view. */
+    private static final float DUST_FOG_END = 9.0f;
     private static final net.minecraft.core.particles.ParticleOptions RADIATION_SPARK =
             new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.55f, 1.0f, 0.45f), 0.8f);
 
@@ -135,6 +139,12 @@ public final class CatastropheClient {
                 level.addParticle(STORM_HAZE, player.getX() + (RANDOM.nextDouble() - 0.5) * 20.0, player.getEyeY() + (RANDOM.nextDouble() - 0.4) * 8.0,
                         player.getZ() + (RANDOM.nextDouble() - 0.5) * 20.0, 0.0, 0.0, 0.0);
             }
+        } else if (is(Environment.DUST_STORM)) {
+            // grains driven by the wind, outdoors many, under a roof few
+            for (int i = 0; i < Math.round(8 * shown * many * open); i++) {
+                level.addParticle(DUST_GRAIN, player.getX() + (RANDOM.nextDouble() - 0.5) * 18.0, player.getEyeY() + (RANDOM.nextDouble() - 0.5) * 6.0,
+                        player.getZ() + (RANDOM.nextDouble() - 0.5) * 18.0, 0.25 + RANDOM.nextDouble() * 0.2, -0.02, 0.1);
+            }
         } else if (is(Environment.RADIATION_BURST) && open > 0.5f && RANDOM.nextFloat() < 0.5f * shown * many) {
             level.addParticle(RADIATION_SPARK, player.getX() + (RANDOM.nextDouble() - 0.5) * 12.0, player.getEyeY() + RANDOM.nextDouble() * 4.0,
                     player.getZ() + (RANDOM.nextDouble() - 0.5) * 12.0, 0.0, 0.0, 0.0);
@@ -197,6 +207,8 @@ public final class CatastropheClient {
             blend(event, 0.50f, 0.68f, 0.30f, 0.4f * shown * open);
         } else if (is(Environment.TOXIC_STORM)) {
             blend(event, 0.62f, 0.66f, 0.30f, 0.85f * shown);
+        } else if (is(Environment.DUST_STORM)) {
+            blend(event, 0.74f, 0.60f, 0.38f, 0.9f * shown * (0.4f + 0.6f * open));
         } else if (is(Environment.RADIATION_BURST)) {
             blend(event, 0.62f, 0.80f, 0.55f, 0.2f * shown * open);
             blend(event, 0.85f, 1.0f, 0.85f, 0.7f * flash * open);
@@ -205,11 +217,13 @@ public final class CatastropheClient {
 
     /** The toxic storm closes the view in, indoors less. */
     private static void onRenderFog(ViewportEvent.RenderFog event) {
-        if (!is(Environment.TOXIC_STORM) || shown <= 0.0f || event.getMode() != net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN) {
+        boolean dust = is(Environment.DUST_STORM);
+        if (!is(Environment.TOXIC_STORM) && !dust || shown <= 0.0f || event.getMode() != net.minecraft.client.renderer.FogRenderer.FogMode.FOG_TERRAIN) {
             return;
         }
         float strength = EnvironmentClient.inSealedRoom() ? 0.0f : shown * (0.4f + 0.6f * open);
-        float far = Mth.lerp(strength, event.getFarPlaneDistance(), Math.min(event.getFarPlaneDistance(), STORM_FOG_END / Math.max(0.2f, open)));
+        float end = dust ? DUST_FOG_END : STORM_FOG_END;
+        float far = Mth.lerp(strength, event.getFarPlaneDistance(), Math.min(event.getFarPlaneDistance(), end / Math.max(0.2f, open)));
         event.setFarPlaneDistance(far);
         event.setNearPlaneDistance(Math.min(event.getNearPlaneDistance(), far * 0.05f));
         event.setCanceled(true);

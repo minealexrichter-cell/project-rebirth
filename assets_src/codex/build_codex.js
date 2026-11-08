@@ -127,7 +127,7 @@ category('energy', P + 'battery', 'Energy', 'Энергия', [
             'Пока запас полон, он не жжёт топливо — ничего не пропадает — и отдаёт до 200 FE за тик соседям и в кабели. Топливо может подавать воронка; пустое ведро после лавы она забирает.')
     ]),
     entry('solar_panel', P + 'solar_panel', 2, 1, ['energy_basics'], 'Solar Panel', 'Солнечная панель', [
-        block(P + 'solar_panel', '8 FE per tick in daylight under the open sky; nothing at night and in rain.', '8 FE за тик днём под открытым небом; ночью и в дождь — ничего.'),
+        block(P + 'solar_panel', '8 FE per tick in daylight under the open sky; nothing at night and in rain, a quarter in a dust storm.', '8 FE за тик днём под открытым небом; ночью и в дождь — ничего, в пыльную бурю — четверть.'),
         recipe(P + 'solar_panel', 'Glass, aluminum, a circuit board and iron.', 'Стекло, алюминий, плата и железо.'),
         note('A panel gives energy only downwards: put the cable or the machine under it. It is placed like stairs, its high edge away from you.', 'Панель отдаёт энергию только вниз: кабель или машину ставьте под неё. Ставится как ступенька, высоким краем от вас.')
     ]),
@@ -335,6 +335,13 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
             'Катастрофы приходят сами, первая — не раньше чем через 40 минут нового мира. За две минуты предупреждают сообщение, сирена и строка в HUD.\n\nКислотный дождь: настоящий дождь; на открытом месте токсины и урон, изнашивает снаряжение и тела без модуля герметизации.'),
         text('Toxic storm: a thick yellow-green fog, toxins come fast; a respirator and a roof help.\n\nRadiation burst: flashes in the sky and a fast dose. A roof does not save you; a heavy suit and armor do, and in a shelter it is half as strong.',
             'Токсичный шторм: густой жёлто-зелёный туман, токсины набираются быстро; помогают респиратор и крыша.\n\nРадиационный выброс: вспышки в небе и быстрая доза. Крыша не спасает; защищают тяжёлый костюм и броня, в убежище радиация вдвое слабее.')
+    ]),
+    entry('dust_storm', 'minecraft:sand', -3, -1, ['catastrophes'], 'Dust Storm', 'Пыльная буря', [
+        text('Since 1.5 a dust storm comes too: thick brown fog, about eight blocks of view, sand in the wind. It is strongest in deserts and badlands, weaker in forests and swamps. A roof weakens it; deep ground and a sealed shelter keep it out.',
+            'С 1.5 приходит и пыльная буря: густой бурый туман, видно блоков на восемь, песок в ветре. Сильнее всего в пустынях и столовых горах, слабее в лесах и болотах. Крыша её ослабляет, глубина и герметичное убежище не пускают.'),
+        text('Without a respirator a person is slowed down, coughs now and then and gathers a little toxin. A respirator keeps the dust out, but its filter clogs three times as fast.\n\nA body without a sealing module wears and heats up. Solar panels give a quarter of their energy.',
+            'Без респиратора человек замедляется, иногда заходится кашлем и набирает немного токсинов. Респиратор не пускает пыль, но фильтр засоряется втрое быстрее.\n\nТело без модуля герметизации изнашивается и греется. Солнечные панели дают четверть энергии.'),
+        note('The pilot of a power armor is safe. A body with a sealing module does not notice the dust.', 'Пилот силовой брони в безопасности. Тело с модулем герметизации пыли не замечает.')
     ]),
     entry('protection', P + 'respirator', -1, 1, ['hostile_world'], 'Protective Gear', 'Защитное снаряжение', [
         item(P + 'respirator', 'The respirator keeps out polluted air while its filter lasts.', 'Респиратор не пускает грязный воздух, пока жив фильтр.'),

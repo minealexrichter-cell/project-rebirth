@@ -22,6 +22,8 @@ public class SolarPanelBlockEntity extends BlockEntity {
             () -> 0, () -> RebirthConfig.GENERATOR_OUTPUT.get(), this::setChanged);
     /** Checked once a second, not every tick. */
     private boolean producing;
+    /** Part of the energy made now: less in a dust storm (1.5.0). */
+    private float share = 1.0f;
 
     public SolarPanelBlockEntity(BlockPos pos, BlockState state) {
         super(TechBlockEntities.SOLAR_PANEL.get(), pos, state);
@@ -47,13 +49,30 @@ public class SolarPanelBlockEntity extends BlockEntity {
         return level.isDay() && level.canSeeSky(above) && !level.isRainingAt(above);
     }
 
+    /** Whether a dust storm darkens the sky above the panel. Public for tests. */
+    public boolean dusty(net.minecraft.server.level.ServerLevel server) {
+        return com.projectrebirth.environment.Environment.ordinaryExposureAt(server, worldPosition.above())
+                .get(com.projectrebirth.environment.Hazard.DUST) > RebirthConfig.HUD_DANGER_DUST.get();
+    }
+
+    public float share() {
+        return share;
+    }
+
     void serverTick() {
         if (level.getGameTime() % 20 == 0) {
             producing = seesSun();
+            share = level instanceof net.minecraft.server.level.ServerLevel server && dusty(server) ? RebirthConfig.SOLAR_DUST_FACTOR.get().floatValue() : 1.0f;
             TechSounds.setWorking(this, producing);
         }
         if (producing) {
-            energy.generate(RebirthConfig.SOLAR_ENERGY_PER_TICK.get());
+            // a share below one tick's worth comes as whole units now and then
+            float made = RebirthConfig.SOLAR_ENERGY_PER_TICK.get() * share;
+            int whole = (int) made;
+            if (level.getRandom().nextFloat() < made - whole) {
+                whole++;
+            }
+            energy.generate(whole);
         }
         EnergyUtil.push(level, worldPosition, energy, RebirthConfig.GENERATOR_OUTPUT.get(), OUTPUT_SIDES);
     }

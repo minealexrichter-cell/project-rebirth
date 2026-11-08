@@ -7,6 +7,7 @@
   },
   "event_multipliers": {
     "acid_rain": 0,
-    "radiation_burst": 1.5
+    "radiation_burst": 1.5,
+    "dust_storm": 1.6
   }
 }

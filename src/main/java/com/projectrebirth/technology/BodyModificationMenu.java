@@ -108,6 +108,11 @@ public class BodyModificationMenu extends AbstractContainerMenu {
         return total <= 0 ? 0.0f : Math.min(1.0f, data.get(BodyModificationBlockEntity.DATA_PROGRESS) / (float) total);
     }
 
+    /** Whether an electromagnetic storm holds the station back. */
+    public boolean emiPaused() {
+        return data.get(BodyModificationBlockEntity.DATA_EMI) != 0;
+    }
+
     public int energy() {
         return EnergyUtil.join(data.get(BodyModificationBlockEntity.DATA_ENERGY_LOW), data.get(BodyModificationBlockEntity.DATA_ENERGY_HIGH));
     }

@@ -1,0 +1,8 @@
+{
+  "items": "projectrebirth:emi_screen",
+  "kind": "emi_screen",
+  "armor_slots": [
+    "chest_front",
+    "chest_back"
+  ]
+}

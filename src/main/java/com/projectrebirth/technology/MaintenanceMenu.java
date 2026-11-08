@@ -57,6 +57,11 @@ public class MaintenanceMenu extends AbstractContainerMenu {
     }
 
     /** Progress of the current repair step from 0 to 1. */
+    /** Whether an electromagnetic storm holds the station back. */
+    public boolean emiPaused() {
+        return data.get(MaintenanceBlockEntity.DATA_EMI) != 0;
+    }
+
     public int energy() {
         return EnergyUtil.join(data.get(MaintenanceBlockEntity.DATA_ENERGY_LOW), data.get(MaintenanceBlockEntity.DATA_ENERGY_HIGH));
     }

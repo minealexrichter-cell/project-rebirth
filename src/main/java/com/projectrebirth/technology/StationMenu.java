@@ -100,6 +100,11 @@ public class StationMenu extends AbstractContainerMenu {
         return total <= 0 ? 0.0f : Math.min(1.0f, data.get(StationBlockEntity.DATA_PROGRESS) / (float) total);
     }
 
+    /** Whether an electromagnetic storm holds the station back. */
+    public boolean emiPaused() {
+        return data.get(StationBlockEntity.DATA_EMI) != 0;
+    }
+
     public int energy() {
         return EnergyUtil.join(data.get(StationBlockEntity.DATA_ENERGY_LOW), data.get(StationBlockEntity.DATA_ENERGY_HIGH));
     }

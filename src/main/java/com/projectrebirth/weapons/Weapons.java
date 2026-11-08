@@ -266,6 +266,10 @@ public final class Weapons {
     /** All pellets of a shot that hit the same target land as one hit; otherwise its moment of invulnerability would swallow the rest. */
     private static Shot shoot(ServerPlayer player, RebirthConfig.WeaponStats stats, WeaponState state) {
         double spread = (stats.spreadDegrees().get() + state.extraSpread) * (state.aiming ? stats.aimSpreadMultiplier().get() : 1.0);
+        if (com.projectrebirth.environment.Emi.disturbed(player)) {
+            // interference shakes the aim of a pilot (block E of 1.5.0): at most twice the spread
+            spread *= 1.0 + Math.min(1.0, com.projectrebirth.environment.Emi.level(player) * RebirthConfig.EMI_SPREAD.get());
+        }
         int pellets = stats.pellets().get();
         Map<Entity, Float> damageByTarget = new LinkedHashMap<>();
         List<WeaponShotPayload.Pellet> effects = new ArrayList<>(pellets);

@@ -158,7 +158,7 @@ public final class CatastropheClient {
             if (flashTicks == 0) {
                 flash = 0.0f;
             }
-        } else if (is(Environment.RADIATION_BURST) && shown > 0.0f && RANDOM.nextFloat() < 0.06f * shown) {
+        } else if ((is(Environment.RADIATION_BURST) || is(Environment.EMI_STORM)) && shown > 0.0f && RANDOM.nextFloat() < 0.06f * shown) {
             flashTicks = 2 + RANDOM.nextInt(4);
             flash = 0.4f + 0.6f * RANDOM.nextFloat();
         }
@@ -209,6 +209,11 @@ public final class CatastropheClient {
             blend(event, 0.62f, 0.66f, 0.30f, 0.85f * shown);
         } else if (is(Environment.DUST_STORM)) {
             blend(event, 0.74f, 0.60f, 0.38f, 0.9f * shown * (0.4f + 0.6f * open));
+        } else if (is(Environment.EMI_STORM)) {
+            // a slow swing between green and violet, and violet flashes
+            float swing = 0.5f + 0.5f * Mth.sin((System.currentTimeMillis() % 8000L) / 8000.0f * Mth.TWO_PI);
+            blend(event, Mth.lerp(swing, 0.35f, 0.62f), Mth.lerp(swing, 0.85f, 0.40f), Mth.lerp(swing, 0.55f, 0.90f), 0.35f * shown * open);
+            blend(event, 0.80f, 0.60f, 1.0f, 0.6f * flash * open);
         } else if (is(Environment.RADIATION_BURST)) {
             blend(event, 0.62f, 0.80f, 0.55f, 0.2f * shown * open);
             blend(event, 0.85f, 1.0f, 0.85f, 0.7f * flash * open);
@@ -236,11 +241,21 @@ public final class CatastropheClient {
 
     /** The flash of the sky also lights the screen a little, outdoors. */
     private static void renderFlash(GuiGraphics graphics, DeltaTracker deltaTracker) {
+        boolean emi = is(Environment.EMI_STORM);
+        if (emi && shown > 0.0f && open > 0.5f && !Minecraft.getInstance().options.hideGui) {
+            // the aurora of an electromagnetic storm: a glow over the upper half of the view, swinging between green and violet
+            float swing = 0.5f + 0.5f * Mth.sin((System.currentTimeMillis() % 8000L) / 8000.0f * Mth.TWO_PI);
+            int r = (int) Mth.lerp(swing, 0x40, 0xB0);
+            int g = (int) Mth.lerp(swing, 0xF0, 0x50);
+            int b = (int) Mth.lerp(swing, 0x90, 0xFF);
+            int alpha = (int) (150 * shown * open);
+            graphics.fillGradient(0, 0, graphics.guiWidth(), graphics.guiHeight() / 2, (alpha << 24) | (r << 16) | (g << 8) | b, (r << 16) | (g << 8) | b);
+        }
         if (flash <= 0.0f || open <= 0.5f) {
             return;
         }
         int alpha = (int) (60 * flash * shown * open);
-        graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), (alpha << 24) | 0xD8FFD0);
+        graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), (alpha << 24) | (emi ? 0xC8A0FF : 0xD8FFD0));
     }
 
     /** The type of the catastrophe and the rough time to it; exact time and intensity come with the weather station (1.6.0). */

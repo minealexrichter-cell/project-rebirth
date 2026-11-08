@@ -81,6 +81,7 @@ public final class HumanBody {
 
     /** One second in this environment. Public for tests (mock players do not tick). */
     public static void onSecond(ServerPlayer player, Exposure exposure) {
+        Emi.second(player, exposure);
         // The game mode as the server keeps it: creative and spectator players are left alone.
         if (!Environment.isEnabled() || !player.gameMode.isSurvival() || !player.isAlive()) {
             clearSymptoms(player);
@@ -131,7 +132,7 @@ public final class HumanBody {
             float acid = reaching(player, exposure, Hazard.ACID);
             float dust = reaching(player, exposure, Hazard.DUST);
             PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, pollution, acid, biology.dose(), biology.toxin(),
-                    dangerMask(radiation, pollution, acid, dust),
+                    dangerMask(radiation, pollution, acid, dust) | (Emi.disturbed(player) ? 1 << Hazard.EMI.ordinal() : 0),
                     com.projectrebirth.shelter.Shelters.stateAt(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())),
                     com.projectrebirth.shelter.Contamination.of(player),
                     TemperatureRegistry.enabled() ? Temperature.at(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())) : Float.NaN,

@@ -181,6 +181,9 @@ public class BodyModificationScreen extends AbstractContainerScreen<BodyModifica
             return Component.translatable("screen.projectrebirth.body_modification.empty");
         }
         if (menu.working()) {
+            if (menu.emiPaused()) {
+                return Component.translatable("screen.projectrebirth.station.emi");
+            }
             if (menu.energy() < BodyModificationBlockEntity.energyPerTick()) {
                 return Component.translatable("screen.projectrebirth.station.no_energy");
             }

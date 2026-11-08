@@ -37,7 +37,8 @@ public final class Environment {
     public static final String RADIATION_BURST = "radiation_burst";
     /** 1.5.0 */
     public static final String DUST_STORM = "dust_storm";
-    public static final List<String> EVENTS = List.of(ACID_RAIN, TOXIC_STORM, RADIATION_BURST, DUST_STORM);
+    public static final String EMI_STORM = "emi_storm";
+    public static final List<String> EVENTS = List.of(ACID_RAIN, TOXIC_STORM, RADIATION_BURST, DUST_STORM, EMI_STORM);
 
     /** What shelters a place: nothing above it, or deep ground. */
     public record Shelter(boolean underRoof, boolean underground) {
@@ -93,6 +94,7 @@ public final class Environment {
         if (shelter.underground()) {
             result.multiply(Hazard.POLLUTION, RebirthConfig.ENVIRONMENT_UNDERGROUND_POLLUTION.get().floatValue());
             result.multiply(Hazard.DUST, 0.0f);
+            result.multiply(Hazard.EMI, RebirthConfig.EMI_UNDERGROUND.get().floatValue());
         }
         return result.build();
     }

@@ -83,7 +83,7 @@ public final class BodyHud {
         float max = player.getMaxHealth();
         float fraction = max > 0 ? Mth.clamp(player.getHealth() / max, 0.0f, 1.0f) : 0.0f;
         int color = fraction > 0.5f ? 0xFF4FC3F7 : fraction > 0.25f ? 0xFFFFC107 : 0xFFE53935;
-        GuiAtlas.bar(graphics, x, y, WIDTH, HEIGHT, fraction, color);
+        GuiAtlas.bar(graphics, x, y, WIDTH, HEIGHT, Interference.jitter(fraction), color);
 
         int above = y;
         if (wear) {
@@ -124,6 +124,7 @@ public final class BodyHud {
         if (absorption > 0) {
             text += " +" + Mth.ceil(absorption);
         }
+        text = Interference.scramble(text);
         graphics.drawString(font, text, x + (WIDTH - font.width(text)) / 2, y + 1, 0xFFFFFF, true);
         graphics.pose().popPose();
     }

@@ -21,6 +21,8 @@ public final class RebirthConfig {
     private static final double[] DEFAULT_ACID_WEAR = {0.05, 0.04, 0.03, 0.02, 0.01};
     // basic body about 10% wear per game day of work, premium about 3%
     private static final double[] DEFAULT_WEAR = {1.0, 0.8, 0.6, 0.45, 0.3};
+    // 1.5.0 block E: better bodies are less sensitive to electromagnetic interference
+    private static final double[] DEFAULT_EMI = {1.0, 0.85, 0.7, 0.55, 0.4};
     // 1.5.0: the basic body lasts about one game day of ordinary work, the premium one about four
     private static final int[] DEFAULT_ENERGY_CAPACITY = {60_000, 80_000, 100_000, 130_000, 160_000};
     private static final double[] DEFAULT_ENERGY_USE = {1.0, 0.9, 0.8, 0.7, 0.65};
@@ -161,6 +163,17 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue FLOODLIGHT_RANGE;
     public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
     public static final ModConfigSpec.IntValue EXTRA_BATTERY_CAPACITY;
+    public static final ModConfigSpec.DoubleValue EMI_UNDERGROUND;
+    public static final ModConfigSpec.DoubleValue EMI_THRESHOLD;
+    public static final ModConfigSpec.DoubleValue EMI_SHIELD;
+    public static final ModConfigSpec.DoubleValue EMI_CHARGE;
+    public static final ModConfigSpec.DoubleValue EMI_FAULT_CHANCE;
+    public static final ModConfigSpec.DoubleValue EMI_FAULT_WEAR;
+    public static final ModConfigSpec.IntValue EMI_FAULT_TICKS;
+    public static final ModConfigSpec.DoubleValue EMI_JETPACK_DROPOUT;
+    public static final ModConfigSpec.DoubleValue EMI_FLOODLIGHT_FLICKER;
+    public static final ModConfigSpec.DoubleValue EMI_SPREAD;
+    public static final ModConfigSpec.DoubleValue EMI_STATION_FACTOR;
     public static final ModConfigSpec.DoubleValue ENVIRONMENT_ROOF_DUST;
     public static final ModConfigSpec.DoubleValue HUMAN_DUST_SLOWDOWN;
     public static final ModConfigSpec.DoubleValue HUMAN_DUST_COUGH_CHANCE;
@@ -435,6 +448,9 @@ public final class RebirthConfig {
             ModConfigSpec.DoubleValue wear = builder
                     .comment("Wear from work and overheating (see [body_wear]) is multiplied by this: better bodies wear more slowly")
                     .defineInRange("wearMultiplier", DEFAULT_WEAR[bodyClass.ordinal()], 0.0, 100.0);
+            ModConfigSpec.DoubleValue emi = builder
+                    .comment("Electromagnetic interference reaching the body is multiplied by this (see [environment.emi]): better bodies resist more")
+                    .defineInRange("emiSensitivity", DEFAULT_EMI[bodyClass.ordinal()], 0.0, 100.0);
             ModConfigSpec.IntValue upgradeSlots = builder
                     .comment("Upgrade slots of the body. If lowered, what is already installed stays, but nothing more fits")
                     .defineInRange("upgradeSlots", bodyClass.defaultUpgradeSlots(), 0, 16);
@@ -449,7 +465,7 @@ public final class RebirthConfig {
                     .defineInRange("coolingMultiplier", DEFAULT_COOLING[bodyClass.ordinal()], 0.0, 100.0);
             builder.pop();
             BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects,
-                    upgradeSlots, acidWear, energyCapacity, energyUse, cooling, wear));
+                    upgradeSlots, acidWear, energyCapacity, energyUse, cooling, wear, emi));
         }
         builder.pop();
 
@@ -612,6 +628,28 @@ public final class RebirthConfig {
         HEATER_CAPACITY = builder.comment("Energy a heater holds").defineInRange("heaterCapacity", 10_000, 1, 100_000_000);
         builder.pop();
 
+        builder.comment("Electromagnetic interference of an electromagnetic storm (1.5.0). People hardly notice it, apart from their devices;",
+                "it disturbs artificial bodies, power armor and the stations of the mod. Inside a sealed room there is none").push("emi");
+        EMI_UNDERGROUND = builder.comment("Interference is multiplied by this deep underground (environment.undergroundDepth)").defineInRange("underground", 0.3, 0.0, 1.0);
+        EMI_THRESHOLD = builder.comment("From this interference (after shielding and the body's class) it disturbs a body or an armor and the HUD marks it")
+                .defineInRange("threshold", 1.0, 0.0, 10000.0);
+        EMI_SHIELD = builder.comment("Interference is multiplied by this with the electronics shielding of a body or the EMI screen of an armor")
+                .defineInRange("shieldFactor", 0.1, 0.0, 1.0);
+        EMI_CHARGE = builder.comment("Extra charge (FE, before the class's energyUseMultiplier) a disturbed body uses per second per unit of interference")
+                .defineInRange("chargePerUnit", 2.0, 0.0, 10000.0);
+        EMI_FAULT_CHANCE = builder.comment("Chance per second per unit of interference of a short fault of a disturbed body (more at 75% wear)")
+                .defineInRange("faultChance", 0.01, 0.0, 1.0);
+        EMI_FAULT_WEAR = builder.comment("Wear (percent, before the class's wearMultiplier) each fault adds").defineInRange("faultWear", 0.5, 0.0, 100.0);
+        EMI_FAULT_TICKS = builder.comment("How long a fault slows the body down (it never takes control away)").defineInRange("faultTicks", 30, 1, 200);
+        EMI_JETPACK_DROPOUT = builder.comment("Chance per tick that a disturbed jetpack gives no thrust").defineInRange("jetpackDropout", 0.35, 0.0, 1.0);
+        EMI_FLOODLIGHT_FLICKER = builder.comment("Chance that a disturbed floodlight is dark at each of its updates").defineInRange("floodlightFlicker", 0.5, 0.0, 1.0);
+        EMI_SPREAD = builder.comment("A disturbed pilot's weapon spread grows by this part per unit of interference (at most twice the spread)")
+                .defineInRange("spreadPerUnit", 0.05, 0.0, 10.0);
+        EMI_STATION_FACTOR = builder.comment("How fast the stations of the mod work in an electromagnetic storm outside a sealed room: 0 = they stand still",
+                "(progress and materials are kept, no energy is used), 1 = as usual. Generators, batteries, cables, solar panels and life support never stop")
+                .defineInRange("stationFactor", 0.0, 0.0, 1.0);
+        builder.pop();
+
         builder.comment("When the HUD marks a hazard as dangerous: above these values, after protection").push("hud");
         HUD_DANGER_POLLUTION = builder.comment("Polluted air").defineInRange("dangerPollution", 1.0, 0.0, 10000.0);
         HUD_DANGER_RADIATION = builder.comment("Radiation").defineInRange("dangerRadiation", 1.5, 0.0, 10000.0);
@@ -698,6 +736,7 @@ public final class RebirthConfig {
         defineEnvironmentEvent(builder, "radiation_burst", Map.of(Hazard.RADIATION, 120.0), 0.5, 1.5, 120, 240);
         // 1.5.0: stronger in deserts and badlands, weaker in forests (event_multipliers of the biome profiles)
         defineEnvironmentEvent(builder, "dust_storm", Map.of(Hazard.DUST, 10.0, Hazard.POLLUTION, 1.0), 0.5, 1.5, 180, 420);
+        defineEnvironmentEvent(builder, "emi_storm", Map.of(Hazard.EMI, 10.0), 0.5, 1.5, 120, 300);
         builder.pop();
         builder.pop();
 
@@ -962,6 +1001,8 @@ public final class RebirthConfig {
                 case RADIATION -> radiation.get().floatValue();
                 // dust is kept off by the head piece's filter, like polluted air
                 case DUST -> pollution.get().floatValue();
+                // gear does nothing against interference: it is about electronics, not the body
+                case EMI -> 0.0f;
             };
         }
     }
@@ -1078,6 +1119,7 @@ public final class RebirthConfig {
                             ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects,
                             ModConfigSpec.IntValue upgradeSlots, ModConfigSpec.DoubleValue acidWearPerSecond,
                             ModConfigSpec.IntValue energyCapacity, ModConfigSpec.DoubleValue energyUseMultiplier,
-                            ModConfigSpec.DoubleValue coolingMultiplier, ModConfigSpec.DoubleValue wearMultiplier) {
+                            ModConfigSpec.DoubleValue coolingMultiplier, ModConfigSpec.DoubleValue wearMultiplier,
+                            ModConfigSpec.DoubleValue emiSensitivity) {
     }
 }

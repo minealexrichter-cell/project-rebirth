@@ -112,6 +112,9 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         if (!fits) {
             return Component.translatable("screen.projectrebirth.station.output_full");
         }
+        if (menu.emiPaused()) {
+            return Component.translatable("screen.projectrebirth.station.emi");
+        }
         if (menu.energy() < StationBlockEntity.energyPerTick()) {
             return Component.translatable("screen.projectrebirth.station.no_energy");
         }

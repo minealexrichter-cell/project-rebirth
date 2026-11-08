@@ -354,6 +354,18 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'heavy_suit_helmet'),
         recipe(P + 'heavy_suit')
     ]),
+    entry('emi_storm', P + 'emi_shielding', 3, 2, ['machines_environment'], 'Electromagnetic Storm', 'ЭМИ-буря', [
+        text('Since 1.5 an electromagnetic storm comes too: green and violet glows and flashes in the sky. People hardly feel it, but electronics do. Deep ground weakens it; only a sealed shelter keeps it out.',
+            'С 1.5 приходит и ЭМИ-буря: зелёно-фиолетовое сияние и всполохи в небе. Людям она почти не страшна, а электронике — да. Глубина её ослабляет, полностью защищает только герметичное убежище.'),
+        text('A body: its HUD flickers, the jetpack cuts out, self-repair stops, charge runs out faster, and now and then a short fault slows it down and wears it a little. Control stays. Better bodies resist more.\n\nArmor: its HUD flickers, the floodlight blinks, the aim shakes.',
+            'Тело: HUD мерцает, джетпак работает с перебоями, самовосстановление стоит, заряд тратится быстрее, иногда короткий сбой замедляет и немного изнашивает. Управление остаётся. Лучшие тела устойчивее.\n\nБроня: HUD мерцает, прожектор мигает, прицел дрожит.'),
+        note('Stations outside a sealed shelter stop while the storm lasts and go on afterwards; generators, batteries, cables and life support work on.',
+            'Станции вне герметичного убежища стоят, пока идёт буря, и продолжают после; генераторы, аккумуляторы, кабель и жизнеобеспечение работают.'),
+        item(P + 'emi_shielding', 'Electronics shielding: a gadget that keeps 90% of the interference off a body.', 'Экранирование электроники: гаджет, гасит 90% помех тела.'),
+        recipe(P + 'emi_shielding'),
+        item(P + 'emi_screen', 'EMI screen: an armor upgrade for the chest, front or back; 90% less interference.', 'ЭМИ-экран: улучшение брони на корпус спереди или сзади; помех на 90% меньше.'),
+        recipe(P + 'emi_screen')
+    ]),
     entry('temperature', 'minecraft:snowball', -1, 3, ['protection'], 'Temperature', 'Температура', [
         text('Since 1.5 places have a temperature: deserts, badlands and the Nether are hot, snowy lands and high mountains cold; nights, rain and height make it colder, a roof or deep ground evens it out, and fire, lava and furnaces warm it. A sealed shelter keeps 20°C.',
             'С 1.5 у места есть температура: в пустынях, столовых горах и Незере жарко, в снежных землях и высоко в горах холодно; ночь, дождь и высота охлаждают, крыша и глубина сглаживают, огонь, лава и печи греют. В герметичном убежище всегда 20°C.'),

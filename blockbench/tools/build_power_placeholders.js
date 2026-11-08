@@ -79,4 +79,12 @@ const drop = (core, rim) => (x, y) => {
 };
 image('mob_effect/heatstroke.png', drop('#ff7043', '#8d2a00'));
 image('mob_effect/hypothermia.png', drop('#81d4fa', '#1f4f7a'));
+// block E: electronics shielding (a copper mesh plate) and the EMI screen (a dark plate with a violet grid)
+const mesh = (rim, wire, fill) => (x, y) => {
+    if (x < 2 || x > 13 || y < 2 || y > 13) return [0, 0, 0, 0];
+    if (x === 2 || x === 13 || y === 2 || y === 13) return hex(rim);
+    return (x % 3 === 0 || y % 3 === 0) ? hex(wire) : hex(fill);
+};
+image('item/emi_shielding.png', mesh('#5a3a1e', '#d9894a', '#3a3f44'));
+image('item/emi_screen.png', mesh('#1f2326', '#a970ff', '#2e3338'));
 console.log('placeholders written');

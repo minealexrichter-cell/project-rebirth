@@ -44,6 +44,13 @@ public final class TemperatureRegistry {
     public static final Supplier<AttachmentType<Float>> THERMAL_STRESS = ATTACHMENTS.register("thermal_stress",
             () -> AttachmentType.builder(() -> 0.0f).serialize(Codec.FLOAT, stress -> stress != 0.0f).build());
 
+    /** Electromagnetic interference a player feels now (block E, see Emi); counted once a second, synced only to the player, not saved. */
+    public static final Supplier<AttachmentType<Float>> EMI_LEVEL = ATTACHMENTS.register("emi_level",
+            () -> AttachmentType.builder(() -> 0.0f)
+                    .sync((holder, to) -> holder == to && to.connection.hasChannel(net.neoforged.neoforge.network.payload.SyncAttachmentsPayload.TYPE),
+                            net.minecraft.network.codec.ByteBufCodecs.FLOAT)
+                    .build());
+
     public static final DeferredHolder<MobEffect, MobEffect> HEATSTROKE = EFFECTS.register("heatstroke", () -> new SymptomEffect(0xff7043));
     public static final DeferredHolder<MobEffect, MobEffect> HYPOTHERMIA = EFFECTS.register("hypothermia", () -> new SymptomEffect(0x81d4fa));
 

@@ -88,6 +88,7 @@ public final class ModCreativeTabs {
                 output.accept(UpgradeRegistry.JETPACK.get());
                 output.accept(UpgradeRegistry.EXTRA_BATTERY.get());
                 output.accept(UpgradeRegistry.COOLING_MODULE.get());
+                output.accept(UpgradeRegistry.EMI_SHIELDING.get());
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }
@@ -102,6 +103,7 @@ public final class ModCreativeTabs {
                 output.accept(UpgradeRegistry.ARMOR_TITANIUM_PLATING.get());
                 output.accept(UpgradeRegistry.COMPRESSED_AIR_MODULE.get());
                 output.accept(UpgradeRegistry.FLOODLIGHT.get());
+                output.accept(UpgradeRegistry.EMI_SCREEN.get());
                 output.accept(WeaponRegistry.ASSAULT_RIFLE.get());
                 output.accept(WeaponRegistry.BATTLE_RIFLE.get());
                 output.accept(WeaponRegistry.COMBAT_SHOTGUN.get());

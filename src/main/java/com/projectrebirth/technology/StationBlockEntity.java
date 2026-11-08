@@ -43,7 +43,9 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     public static final int DATA_ENERGY_HIGH = 4;
     public static final int DATA_CAPACITY_LOW = 5;
     public static final int DATA_CAPACITY_HIGH = 6;
-    public static final int DATA_COUNT = 7;
+    /** 1 while an electromagnetic storm holds the station back (block E of 1.5.0). */
+    public static final int DATA_EMI = 7;
+    public static final int DATA_COUNT = 8;
 
     private final ItemStackHandler items = new ItemStackHandler(INPUT_SLOTS + 1) {
         @Override
@@ -56,6 +58,9 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     @Nullable
     private ResourceLocation selected;
     private int progress;
+    /** How fast it may work now; checked once a second (block E of 1.5.0). */
+    private float emiFactor = 1.0f;
+    private boolean emiChecked;
     /** Takes energy from any side; nothing can be taken out. */
     private final ModEnergyStorage energy = new ModEnergyStorage(() -> RebirthConfig.STATION_ENERGY_CAPACITY.get(),
             () -> Integer.MAX_VALUE, () -> 0, this::setChanged);
@@ -71,6 +76,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
                 case DATA_ENERGY_HIGH -> EnergyUtil.high(energy.getEnergyStored());
                 case DATA_CAPACITY_LOW -> EnergyUtil.low(energy.getMaxEnergyStored());
                 case DATA_CAPACITY_HIGH -> EnergyUtil.high(energy.getMaxEnergyStored());
+                case DATA_EMI -> emiFactor < 1.0f ? 1 : 0;
                 default -> 0;
             };
         }
@@ -172,6 +178,15 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
             return;
         }
         FabricationRecipe recipe = holder.value();
+        if (level instanceof net.minecraft.server.level.ServerLevel server && (server.getGameTime() % 20 == 0 || !emiChecked)) {
+            emiChecked = true;
+            emiFactor = com.projectrebirth.environment.Emi.stationFactor(server, worldPosition);
+        }
+        if (emiFactor < 1.0f && level.getRandom().nextFloat() >= emiFactor) {
+            // an electromagnetic storm outside a shelter: wait, keeping progress and materials, using no energy
+            TechSounds.setWorking(this, false);
+            return;
+        }
         if (!energy.consume(energyPerTick())) {
             // Out of energy: wait, keeping the progress made so far.
             TechSounds.setWorking(this, false);

@@ -108,6 +108,9 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
         if (kind == Maintenance.Kind.NONE) {
             return Component.translatable("screen.projectrebirth.maintenance.empty");
         }
+        if (menu.emiPaused() && Maintenance.needsRepair(stack)) {
+            return Component.translatable("screen.projectrebirth.station.emi");
+        }
         if (!Maintenance.needsRepair(stack)) {
             return Component.translatable("screen.projectrebirth.maintenance.done");
         }

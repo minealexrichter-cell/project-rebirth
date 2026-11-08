@@ -250,7 +250,7 @@ public final class PowerArmorClient {
         graphics.drawString(font, label, x, y, 0xFFFFFF);
         int barX = x + labelWidth;
         float fraction = max > 0 ? Mth.clamp(value / max, 0.0f, 1.0f) : 0.0f;
-        GuiAtlas.bar(graphics, barX, y, BAR_WIDTH, 9, fraction, color);
-        graphics.drawString(font, Mth.ceil(value) + " / " + Mth.ceil(max), barX + BAR_WIDTH + 4, y, 0xFFFFFF);
+        GuiAtlas.bar(graphics, barX, y, BAR_WIDTH, 9, Interference.jitter(fraction), color);
+        graphics.drawString(font, Interference.scramble(Mth.ceil(value) + " / " + Mth.ceil(max)), barX + BAR_WIDTH + 4, y, 0xFFFFFF);
     }
 }

@@ -73,6 +73,11 @@ public class ShelterPanelScreen extends AbstractContainerScreen<ShelterPanelMenu
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
+        if (com.projectrebirth.client.Interference.active()) {
+            // an electromagnetic storm reaches the panel (block E of 1.5.0): a mark beside the title
+            Component noise = Component.translatable("screen.projectrebirth.panel.interference");
+            graphics.drawString(font, noise, imageWidth - 8 - font.width(noise), titleLabelY, 0xFF9C27B0, false);
+        }
         int danger = menu.get(ShelterControlPanelBlockEntity.DATA_DANGER);
         int y = 18;
         line(graphics, Component.translatable("screen.projectrebirth.panel.danger", danger,

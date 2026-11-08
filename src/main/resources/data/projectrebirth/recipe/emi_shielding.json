@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 60,
+  "time": 500,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 2
+    },
+    {
+      "tag": "c:ingots/silver",
+      "count": 4
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:emi_shielding",
+    "count": 1
+  }
+}

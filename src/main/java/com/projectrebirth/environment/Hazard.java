@@ -13,7 +13,9 @@ public enum Hazard implements StringRepresentable {
     /** Acid falling from the sky: a roof stops it. */
     ACID("acid"),
     /** Dust of a dust storm (1.5.0): a roof weakens it, deep ground and a sealed room keep it out; a filter keeps it out of the lungs. */
-    DUST("dust");
+    DUST("dust"),
+    /** Electromagnetic interference of an electromagnetic storm (1.5.0): deep ground weakens it, a sealed room keeps it out. */
+    EMI("emi");
 
     public static final Codec<Hazard> CODEC = StringRepresentable.fromEnum(Hazard::values);
 

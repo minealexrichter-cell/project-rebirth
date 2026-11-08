@@ -85,7 +85,7 @@ public final class EnvironmentClient {
         if (carriesDosimeter(player)) {
             int stage = HumanBody.doseStage(last.dose());
             bar(graphics, font, y, Component.translatable("hud.projectrebirth.human.dose"), last.dose() / RebirthConfig.HUMAN_DOSE_DAMAGE.get().floatValue(),
-                    stageColor(stage, 4), number(last.dose()) + stageText(stage));
+                    stageColor(stage, 4), Interference.scramble(number(last.dose())) + stageText(stage));
         } else {
             graphics.drawString(font, Component.translatable("hud.projectrebirth.human.dose"), 0, y, 0xFFFFFFFF);
             graphics.drawString(font, Component.translatable("hud.projectrebirth.human.no_dosimeter"), LABEL_WIDTH, y, GREY);
@@ -148,6 +148,11 @@ public final class EnvironmentClient {
             hazards.add(Hazard.POLLUTION);
             parts.add(Component.translatable("hud.projectrebirth.hazard.pollution"));
             colors.add(0xFFD4E157);
+        }
+        if (last.dangerous(Hazard.EMI)) {
+            hazards.add(Hazard.EMI);
+            parts.add(Component.translatable("hud.projectrebirth.hazard.emi"));
+            colors.add(0xFFCE93D8);
         }
         if (last.dangerous(Hazard.DUST)) {
             hazards.add(Hazard.DUST);

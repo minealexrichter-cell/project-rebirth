@@ -37,7 +37,9 @@ public final class JetpackClient {
         } else if (Jetpack.reserve(player) <= 0.0f) {
             waitingForRelease = true;
         }
-        if (wanted && !waitingForRelease) {
+        // a disturbed jetpack cuts out now and then (block E of 1.5.0)
+        if (wanted && !waitingForRelease && !(com.projectrebirth.environment.Emi.disturbed(player)
+                && player.getRandom().nextFloat() < RebirthConfig.EMI_JETPACK_DROPOUT.get())) {
             lift(player);
         }
     }

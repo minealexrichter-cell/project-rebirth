@@ -1,0 +1,40 @@
+{
+  "icon": "projectrebirth:emi_shielding",
+  "x": 3,
+  "y": 2,
+  "parents": [
+    "machines_environment"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.emi_storm.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.emi_storm.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.emi_storm.p3"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:emi_shielding",
+      "text": "codex.projectrebirth.emi_storm.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:emi_shielding"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:emi_screen",
+      "text": "codex.projectrebirth.emi_storm.p6"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:emi_screen"
+    }
+  ]
+}

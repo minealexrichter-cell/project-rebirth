@@ -27,7 +27,8 @@ public class EnvironmentHudGameTests {
         helper.assertTrue(HumanBody.dangerMask(1.0f, 1.0f, 0.0f) == 0, "The background of the overworld is no danger");
         float radiation = RebirthConfig.HUD_DANGER_RADIATION.get().floatValue() + 0.1f;
         float pollution = RebirthConfig.HUD_DANGER_POLLUTION.get().floatValue() + 0.1f;
-        int all = HumanBody.dangerMask(radiation, pollution, 0.5f, RebirthConfig.HUD_DANGER_DUST.get().floatValue() + 0.1f);
+        // interference is marked apart, by what the player feels (1.5.0)
+        int all = HumanBody.dangerMask(radiation, pollution, 0.5f, RebirthConfig.HUD_DANGER_DUST.get().floatValue() + 0.1f) | 1 << Hazard.EMI.ordinal();
         EnvironmentStatusPayload payload = new EnvironmentStatusPayload(radiation, pollution, 0.5f, 0.0f, 0.0f, all, 0, 0.0f, 20.0f, 0.0f);
         for (Hazard hazard : Hazard.values()) {
             helper.assertTrue(payload.dangerous(hazard), "Marked: " + hazard);

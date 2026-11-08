@@ -76,6 +76,8 @@ public final class Floodlight {
     public static BlockPos target(PowerArmorEntity armor) {
         Player pilot = armor.getPilot();
         if (pilot == null || !armor.isFloodlightOn() || !armor.isActive() || !RebirthConfig.FLOODLIGHT_ENABLED.get()
+                || pilot instanceof net.minecraft.world.entity.player.Player player && com.projectrebirth.environment.Emi.disturbed(player)
+                && armor.level().getRandom().nextFloat() < RebirthConfig.EMI_FLOODLIGHT_FLICKER.get()
                 || !ArmorUpgradeEffects.hasFloodlight(armor)) {
             return null;
         }

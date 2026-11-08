@@ -100,6 +100,7 @@ public final class Jetpack {
         int limit = RebirthConfig.JETPACK_MAX_HEIGHT.get();
         boolean flying = wantsThrust && used < capacity && inFlightConditions(player) && !BodyPower.isEmpty(player)
                 && !com.projectrebirth.bodies.power.BodyHeat.isThrottled(player)
+                && !(com.projectrebirth.environment.Emi.disturbed(player) && player.getRandom().nextFloat() < RebirthConfig.EMI_JETPACK_DROPOUT.get())
                 && heightAboveSurface(player.level(), player.position(), limit + (int) HEIGHT_TOLERANCE) <= limit + HEIGHT_TOLERANCE;
         if (flying) {
             player.setData(UpgradeRegistry.JETPACK_USED, Math.min(capacity, used + 1.0f));

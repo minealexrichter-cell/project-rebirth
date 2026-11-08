@@ -100,6 +100,10 @@ public final class BodyRules {
         if (entity instanceof Player player ? BodyPower.isEmpty(player) : entity instanceof ArtificialBodyEntity body && BodyPower.isEmpty(body)) {
             return;
         }
+        // an electromagnetic storm stops the self-repair of a disturbed body
+        if (entity instanceof Player player && com.projectrebirth.environment.Emi.disturbed(player)) {
+            return;
+        }
         double wearMultiplier = com.projectrebirth.bodies.power.BodyWear.selfRepairMultiplier(entity);
         if (wearMultiplier <= 0.0) {
             return;

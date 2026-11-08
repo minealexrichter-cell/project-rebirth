@@ -25,8 +25,9 @@ import net.neoforged.neoforge.common.NeoForge;
 
 /**
  * How a catastrophe looks and sounds. The server says which catastrophe it is and in which phase; everything here is only
- * show: green tinted air in acid rain with hissing, a thick yellow-green fog in a toxic storm, a flickering sky in a
- * radiation burst, and the clicks of a carried dosimeter.
+ * show: green tinted air and green rain in every biome in acid rain with hissing, a thick yellow-green fog in a toxic storm,
+ * a brownish filter and film grain in a radiation burst, a brown dust fog, a smooth violet-green glow in an EMI storm, and the
+ * clicks of a carried dosimeter.
  */
 public final class CatastropheClient {
     private static final int TICKS_PER_SECOND = 20;
@@ -41,8 +42,6 @@ public final class CatastropheClient {
     private static float shown;
     /** Outdoors 1, under a roof less. */
     private static float open = 1.0f;
-    private static float flash;
-    private static int flashTicks;
     private static final RandomSource RANDOM = RandomSource.create();
     private static final net.minecraft.core.particles.ParticleOptions ACID_PUFF =
             net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.ENTITY_EFFECT, 0xFF9CCC65);
@@ -52,14 +51,14 @@ public final class CatastropheClient {
             new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.78f, 0.64f, 0.42f), 1.4f);
     /** Fog end in a dust storm at full strength, in blocks: about 8 blocks of view. */
     private static final float DUST_FOG_END = 9.0f;
-    private static final net.minecraft.core.particles.ParticleOptions RADIATION_SPARK =
-            new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.55f, 1.0f, 0.45f), 0.8f);
-
     private CatastropheClient() {
     }
 
     static void register(IEventBus modEventBus) {
         modEventBus.addListener(CatastropheClient::registerGuiLayers);
+        // acid rain is drawn by the mod in every biome of the Overworld (vanilla shows snow or nothing in some)
+        modEventBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent event) ->
+                event.register(net.minecraft.world.level.dimension.BuiltinDimensionTypes.OVERWORLD_EFFECTS, new AcidRainEffects()));
         NeoForge.EVENT_BUS.addListener(CatastropheClient::onClientTick);
         NeoForge.EVENT_BUS.addListener(CatastropheClient::onFogColor);
         NeoForge.EVENT_BUS.addListener(CatastropheClient::onRenderFog);
@@ -110,7 +109,6 @@ public final class CatastropheClient {
         if (minecraft.isPaused()) {
             return;
         }
-        tickFlash();
         tickHiss(level, player);
         tickWind(minecraft);
         tickCrackle(level, player);
@@ -132,7 +130,7 @@ public final class CatastropheClient {
                 double x = player.getX() + (RANDOM.nextDouble() - 0.5) * 16.0;
                 double z = player.getZ() + (RANDOM.nextDouble() - 0.5) * 16.0;
                 BlockPos top = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(x, player.getY(), z));
-                if (Math.abs(top.getY() - player.getY()) < 10.0 && level.isRainingAt(top)) {
+                if (Math.abs(top.getY() - player.getY()) < 10.0 && level.isRaining()) {
                     level.addParticle(ACID_PUFF, x, top.getY() + 0.05, z, 0.0, 0.03, 0.0);
                 }
             }
@@ -147,26 +145,9 @@ public final class CatastropheClient {
                 level.addParticle(DUST_GRAIN, player.getX() + (RANDOM.nextDouble() - 0.5) * 18.0, player.getEyeY() + (RANDOM.nextDouble() - 0.5) * 6.0,
                         player.getZ() + (RANDOM.nextDouble() - 0.5) * 18.0, 0.25 + RANDOM.nextDouble() * 0.2, -0.02, 0.1);
             }
-        } else if (is(Environment.RADIATION_BURST) && open > 0.5f && RANDOM.nextFloat() < 0.5f * shown * many) {
-            level.addParticle(RADIATION_SPARK, player.getX() + (RANDOM.nextDouble() - 0.5) * 12.0, player.getEyeY() + RANDOM.nextDouble() * 4.0,
-                    player.getZ() + (RANDOM.nextDouble() - 0.5) * 12.0, 0.0, 0.0, 0.0);
         }
     }
 
-    /** The sky of a radiation burst flickers: short flashes at random. */
-    private static void tickFlash() {
-        if (flashTicks > 0) {
-            flashTicks--;
-            if (flashTicks == 0) {
-                flash = 0.0f;
-            }
-        } else if ((is(Environment.RADIATION_BURST) || is(Environment.EMI_STORM)) && shown > 0.0f && RANDOM.nextFloat() < 0.06f * shown) {
-            flashTicks = 2 + RANDOM.nextInt(4);
-            flash = 0.4f + 0.6f * RANDOM.nextFloat();
-        }
-    }
-
-    /** Acid hisses where it falls on something: only where it rains and the sky is open. */
     /** The loop of the dust storm wind, while it plays. */
     private static WindLoop wind;
 
@@ -221,6 +202,7 @@ public final class CatastropheClient {
         }
     }
 
+    /** Acid hisses where it falls on something open to the sky, in every biome: the mod draws the rain everywhere. */
     private static void tickHiss(ClientLevel level, LocalPlayer player) {
         if (!is(Environment.ACID_RAIN) || shown < 0.15f || RANDOM.nextFloat() >= 0.06f * shown) {
             return;
@@ -228,7 +210,7 @@ public final class CatastropheClient {
         double x = player.getX() + (RANDOM.nextDouble() - 0.5) * 10.0;
         double z = player.getZ() + (RANDOM.nextDouble() - 0.5) * 10.0;
         BlockPos top = level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, BlockPos.containing(x, player.getY(), z));
-        if (Math.abs(top.getY() - player.getY()) > 12.0 || !level.isRainingAt(top)) {
+        if (Math.abs(top.getY() - player.getY()) > 12.0 || !level.isRaining()) {
             return;
         }
         level.playLocalSound(x, top.getY(), z, ModSounds.ENVIRONMENT_ACID_HISS.get(), SoundSource.WEATHER,
@@ -256,7 +238,7 @@ public final class CatastropheClient {
     }
 
     private static void onFogColor(ViewportEvent.ComputeFogColor event) {
-        if (shown <= 0.0f && flash <= 0.0f) {
+        if (shown <= 0.0f) {
             return;
         }
         if (is(Environment.ACID_RAIN)) {
@@ -266,13 +248,12 @@ public final class CatastropheClient {
         } else if (is(Environment.DUST_STORM)) {
             blend(event, 0.74f, 0.60f, 0.38f, 0.9f * shown * (0.4f + 0.6f * open));
         } else if (is(Environment.EMI_STORM)) {
-            // a slow swing between green and violet, and violet flashes
-            float swing = 0.5f + 0.5f * Mth.sin((System.currentTimeMillis() % 8000L) / 8000.0f * Mth.TWO_PI);
-            blend(event, Mth.lerp(swing, 0.35f, 0.62f), Mth.lerp(swing, 0.85f, 0.40f), Mth.lerp(swing, 0.55f, 0.90f), 0.35f * shown * open);
-            blend(event, 0.80f, 0.60f, 1.0f, 0.6f * flash * open);
+            // a slow, smooth swing between violet and green
+            float swing = emiSwing();
+            blend(event, Mth.lerp(swing, 0.62f, 0.35f), Mth.lerp(swing, 0.40f, 0.85f), Mth.lerp(swing, 0.90f, 0.55f), 0.3f * shown * open);
         } else if (is(Environment.RADIATION_BURST)) {
-            blend(event, 0.62f, 0.80f, 0.55f, 0.2f * shown * open);
-            blend(event, 0.85f, 1.0f, 0.85f, 0.7f * flash * open);
+            // the air turns a dirty brown, as through a filter
+            blend(event, 0.55f, 0.45f, 0.30f, 0.3f * shown);
         }
     }
 
@@ -295,26 +276,45 @@ public final class CatastropheClient {
         event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ProjectRebirth.id("catastrophe_warning"), CatastropheClient::renderWarning);
     }
 
-    /** The flash of the sky also lights the screen a little, outdoors. */
-    private static void renderFlash(GuiGraphics graphics, DeltaTracker deltaTracker) {
-        boolean emi = is(Environment.EMI_STORM);
-        if (emi && shown > 0.0f && open > 0.5f && !Minecraft.getInstance().options.hideGui) {
-            // the aurora of an electromagnetic storm: a glow over the upper half of the view, swinging between green and violet
-            float swing = 0.5f + 0.5f * Mth.sin((System.currentTimeMillis() % 8000L) / 8000.0f * Mth.TWO_PI);
-            int r = (int) Mth.lerp(swing, 0x40, 0xB0);
-            int g = (int) Mth.lerp(swing, 0xF0, 0x50);
-            int b = (int) Mth.lerp(swing, 0x90, 0xFF);
-            int alpha = (int) (150 * shown * open);
-            graphics.fillGradient(0, 0, graphics.guiWidth(), graphics.guiHeight() / 2, (alpha << 24) | (r << 16) | (g << 8) | b, (r << 16) | (g << 8) | b);
-        }
-        if (flash <= 0.0f || open <= 0.5f) {
-            return;
-        }
-        int alpha = (int) (60 * flash * shown * open);
-        graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), (alpha << 24) | (emi ? 0xC8A0FF : 0xD8FFD0));
+    /** Whether acid rain is falling now, as the client sees it: then the mod draws the rain in every biome. */
+    static boolean acidRainFalling() {
+        return is(Environment.ACID_RAIN) && (state.phase() == EventPhase.ACTIVE || state.phase() == EventPhase.AFTERMATH);
     }
 
-    /** The type of the catastrophe and the rough time to it; exact time and intensity come with the weather station (1.6.0). */
+    /** Where the EMI glow is between violet (0) and green (1): a slow eased swing, one full cycle in EMI_CYCLE_MS. */
+    private static float emiSwing() {
+        float phase = (System.currentTimeMillis() % EMI_CYCLE_MS) / (float) EMI_CYCLE_MS;
+        float wave = 0.5f - 0.5f * Mth.cos(phase * Mth.TWO_PI);
+        // smoothstep: it rests a little at violet and at green and glides in between
+        return wave * wave * (3.0f - 2.0f * wave);
+    }
+
+    private static final long EMI_CYCLE_MS = 24000L;
+
+    /**
+     * Overlays of the catastrophes. An EMI storm: a glow over the upper half of the view outdoors, gliding between violet and
+     * green. A radiation burst: a brownish tint and a constant film grain over the whole view, stronger with the burst (indoors
+     * too, since a roof does not stop the radiation; half as strong in a sealed room).
+     */
+    private static void renderFlash(GuiGraphics graphics, DeltaTracker deltaTracker) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (shown <= 0.0f || minecraft.options.hideGui) {
+            return;
+        }
+        if (is(Environment.EMI_STORM) && open > 0.0f) {
+            float swing = emiSwing();
+            int r = (int) Mth.lerp(swing, 0xB0, 0x40);
+            int g = (int) Mth.lerp(swing, 0x50, 0xF0);
+            int b = (int) Mth.lerp(swing, 0xFF, 0x90);
+            int alpha = (int) (130 * shown * open);
+            int rgb = (r << 16) | (g << 8) | b;
+            graphics.fillGradient(0, 0, graphics.guiWidth(), graphics.guiHeight() / 2, (alpha << 24) | rgb, rgb);
+        } else if (is(Environment.RADIATION_BURST)) {
+            float strength = shown * (EnvironmentClient.inSealedRoom() ? 0.5f : 1.0f);
+            RadiationGrain.render(graphics, strength);
+        }
+    }
+
     /** The hazard a catastrophe brings, for its mark; null for an unknown one (from a newer config). */
     static com.projectrebirth.environment.Hazard hazardOf(String event) {
         return switch (event) {

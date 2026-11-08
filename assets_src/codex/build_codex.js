@@ -337,8 +337,8 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
     entry('catastrophes', 'minecraft:clock', -1, -1, ['hostile_world'], 'Catastrophes', 'Катастрофы', [
         text('Catastrophes come by themselves, the first one no sooner than 40 minutes into a new world. Two minutes before, a message, a siren and a HUD line warn you.\n\nAcid rain: real rain; toxins and damage in the open, it wears gear and bodies without a sealing module.',
             'Катастрофы приходят сами, первая — не раньше чем через 40 минут нового мира. За две минуты предупреждают сообщение, сирена и строка в HUD.\n\nКислотный дождь: настоящий дождь; на открытом месте токсины и урон, изнашивает снаряжение и тела без модуля герметизации.'),
-        text('Toxic storm: a thick yellow-green fog, toxins come fast; a respirator and a roof help.\n\nRadiation burst: flashes in the sky and a fast dose. A roof does not save you; a heavy suit and armor do, and in a shelter it is half as strong.',
-            'Токсичный шторм: густой жёлто-зелёный туман, токсины набираются быстро; помогают респиратор и крыша.\n\nРадиационный выброс: вспышки в небе и быстрая доза. Крыша не спасает; защищают тяжёлый костюм и броня, в убежище радиация вдвое слабее.')
+        text('Toxic storm: a thick yellow-green fog, toxins come fast; a respirator and a roof help.\n\nRadiation burst: the world turns brownish and grainy, more so the stronger it is, and the dose comes fast. A roof does not save you; a heavy suit and armor do, and in a shelter it is half as strong.',
+            'Токсичный шторм: густой жёлто-зелёный туман, токсины набираются быстро; помогают респиратор и крыша.\n\nРадиационный выброс: мир становится коричневатым и зернистым, тем сильнее, чем сильнее выброс, и доза растёт быстро. Крыша не спасает; защищают тяжёлый костюм и броня, в убежище радиация вдвое слабее.')
     ]),
     entry('dust_storm', 'minecraft:sand', -3, -1, ['catastrophes'], 'Dust Storm', 'Пыльная буря', [
         text('Since 1.5 a dust storm comes too: thick brown fog, about eight blocks of view, sand in the wind. It is strongest in deserts and badlands, weaker in forests and swamps. A roof weakens it; deep ground and a sealed shelter keep it out.',
@@ -359,8 +359,8 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'heavy_suit')
     ]),
     entry('emi_storm', P + 'emi_shielding', 3, 2, ['machines_environment'], 'Electromagnetic Storm', 'ЭМИ-буря', [
-        text('Since 1.5 an electromagnetic storm comes too: green and violet glows and flashes in the sky. People hardly feel it, but electronics do. Deep ground weakens it; only a sealed shelter keeps it out.',
-            'С 1.5 приходит и ЭМИ-буря: зелёно-фиолетовое сияние и всполохи в небе. Людям она почти не страшна, а электронике — да. Глубина её ослабляет, полностью защищает только герметичное убежище.'),
+        text('Since 1.5 an electromagnetic storm comes too: a glow in the sky that glides from violet to green and back. People hardly feel it, but electronics do. Deep ground weakens it; only a sealed shelter keeps it out.',
+            'С 1.5 приходит и ЭМИ-буря: сияние в небе, плавно переходящее от фиолетового к зелёному и обратно. Людям она почти не страшна, а электронике — да. Глубина её ослабляет, полностью защищает только герметичное убежище.'),
         text('A body: its HUD flickers, the jetpack cuts out, self-repair stops, charge runs out faster, and now and then a short fault slows it down and wears it a little. Control stays. Better bodies resist more.\n\nArmor: its HUD flickers, the floodlight blinks, the aim shakes.',
             'Тело: HUD мерцает, джетпак работает с перебоями, самовосстановление стоит, заряд тратится быстрее, иногда короткий сбой замедляет и немного изнашивает. Управление остаётся. Лучшие тела устойчивее.\n\nБроня: HUD мерцает, прожектор мигает, прицел дрожит.'),
         note('Stations outside a sealed shelter stop while the storm lasts and go on afterwards; generators, batteries, cables and life support work on.',

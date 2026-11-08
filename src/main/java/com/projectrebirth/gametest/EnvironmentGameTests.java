@@ -80,7 +80,8 @@ public class EnvironmentGameTests {
         EnvironmentProfile nether = Environment.profileFor(access, biome(helper, Biomes.NETHER_WASTES)).orElseThrow();
         helper.assertTrue(plains.background(Hazard.POLLUTION) > 0.0f && plains.background(Hazard.RADIATION) > 0.0f, "No safe biomes");
         helper.assertTrue(swamp.background(Hazard.POLLUTION) > plains.background(Hazard.POLLUTION), "Swamps have more toxins");
-        helper.assertTrue(desert.eventMultiplier(Environment.ACID_RAIN) == 0.0f, "No acid rain in a desert");
+        // since 1.5.0 (owner): acid rain falls in deserts and badlands too, and is drawn there by the mod
+        helper.assertTrue(desert.eventMultiplier(Environment.ACID_RAIN) > 0.0f, "Acid rain falls in a desert too");
         helper.assertTrue(desert.eventMultiplier(Environment.RADIATION_BURST) > 1.0f, "A burst is stronger in a desert");
         for (String event : Environment.EVENTS) {
             helper.assertTrue(nether.eventMultiplier(event) == 0.0f, "No " + event + " in the Nether");

@@ -5,6 +5,17 @@ import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -104,6 +115,77 @@ public class ArmorShellGameTests {
         armor.interact(player, InteractionHand.MAIN_HAND);
         helper.assertTrue(player.getVehicle() == armor, "A mobile armor (no opening model yet) takes the pilot at once");
         helper.assertTrue(armor.isShellClosed(), "and never opens");
+        helper.succeed();
+    }
+
+    /**
+     * Version 1.5.2: no two faces of the combat armor lie in one plane over each other, so no texture flickers. The upgrade
+     * parts are left out (one shows at a time), and so are the cuts at the knees and elbows (two halves of one cube).
+     */
+    @GameTest(template = TEMPLATE)
+    public static void theCombatModelHasNoFlickeringFaces(GameTestHelper helper) throws Exception {
+        JsonObject geometry;
+        try (InputStream in = ArmorShellGameTests.class.getResourceAsStream("/assets/projectrebirth/geo/entity/power_armor.geo.json")) {
+            geometry = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject()
+                    .getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject();
+        }
+        Map<String, String> joints = Map.of("right_shin", "right_leg", "left_shin", "left_leg", "right_forearm", "right_arm", "left_forearm", "left_arm");
+        List<String> bones = new ArrayList<>();
+        List<double[]> boxes = new ArrayList<>();
+        for (JsonElement element : geometry.getAsJsonArray("bones")) {
+            JsonObject bone = element.getAsJsonObject();
+            String name = bone.get("name").getAsString();
+            if (name.startsWith("slot_") || name.startsWith("upgrade_") || !bone.has("cubes")) {
+                continue;
+            }
+            for (JsonElement c : bone.getAsJsonArray("cubes")) {
+                JsonObject cube = c.getAsJsonObject();
+                if (cube.has("rotation")) {
+                    continue;
+                }
+                double[] box = new double[6];
+                for (int k = 0; k < 3; k++) {
+                    box[k] = cube.getAsJsonArray("origin").get(k).getAsDouble();
+                    box[k + 3] = box[k] + cube.getAsJsonArray("size").get(k).getAsDouble();
+                }
+                bones.add(name);
+                boxes.add(box);
+            }
+        }
+        List<String> found = new ArrayList<>();
+        for (int i = 0; i < boxes.size(); i++) {
+            for (int j = i + 1; j < boxes.size(); j++) {
+                double[] a = boxes.get(i), b = boxes.get(j);
+                boolean cut = bones.get(i).equals(joints.get(bones.get(j))) || bones.get(j).equals(joints.get(bones.get(i)));
+                for (int axis = 0; axis < 3; axis++) {
+                    int u = (axis + 1) % 3, v = (axis + 2) % 3;
+                    if (Math.min(a[u + 3], b[u + 3]) - Math.max(a[u], b[u]) <= 0.001 || Math.min(a[v + 3], b[v + 3]) - Math.max(a[v], b[v]) <= 0.001) {
+                        continue;
+                    }
+                    for (double pa : new double[] {a[axis], a[axis + 3]}) {
+                        for (double pb : new double[] {b[axis], b[axis + 3]}) {
+                            // a cube cut at a joint: its two halves meet in the joint plane, inside the cube
+                            boolean jointCut = cut && axis == 1 && Math.abs(pa - pb) < 0.001 && (pa == a[4] && pb == b[1] || pa == a[1] && pb == b[4]);
+                            if (Math.abs(pa - pb) < 0.001 && !jointCut) {
+                                found.add(bones.get(i) + " / " + bones.get(j) + " at " + "xyz".charAt(axis) + "=" + pa);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        helper.assertTrue(found.isEmpty(), found.size() + " faces lie over each other: " + found.subList(0, Math.min(5, found.size())));
+        // and its texture is painted (a texture saved before Blockbench had drawn it came out empty once)
+        try (InputStream in = ArmorShellGameTests.class.getResourceAsStream("/assets/projectrebirth/textures/entity/power_armor.png")) {
+            java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(in);
+            int painted = 0;
+            for (int x = 0; x < image.getWidth(); x++) {
+                for (int y = 0; y < image.getHeight(); y++) {
+                    painted += (image.getRGB(x, y) >>> 24) > 0 ? 1 : 0;
+                }
+            }
+            helper.assertTrue(painted > 2000, "The texture is painted: " + painted + " pixels");
+        }
         helper.succeed();
     }
 }

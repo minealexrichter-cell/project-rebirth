@@ -57,8 +57,8 @@ public class ArmorArmRenderer {
     /** Must match the arm boxes of geo/entity/&lt;item id&gt;.geo.json; small details out of the first-person view are left out. */
     private static Box[] boxes(ArmorVariant variant) {
         return switch (variant) {
-            case COMBAT -> new Box[] {Box.own(SHOULDER_U, 8, 7, 10, -4), Box.own(ARM_U, 5, 16, 6, 3), Box.own(FIST_U, 6, 4, 7, 19),
-                    Box.shared(140, 0, 9, 3, 11, -5), Box.shared(111, 14, 7, 7, 8, 12)};
+            case COMBAT -> new Box[] {Box.own(SHOULDER_U, 8, 7, 11, -4), Box.own(ARM_U, 5, 17, 6, 2), Box.own(FIST_U, 6, 5, 7, 18.5f),
+                    Box.shared(188, 0, 9, 2, 12, -5.6f), Box.shared(150, 16, 7, 7, 8, 11.2f)};
             case MOBILE -> new Box[] {Box.own(SHOULDER_U, 5, 5, 7, -3), Box.own(ARM_U, 4, 15, 5, 2), Box.own(FIST_U, 5, 4, 6, 17),
                     Box.shared(70, 19, 5, 5, 6, 11)};
             case WORKER -> new Box[] {Box.own(SHOULDER_U, 8, 8, 10, -4), Box.own(ARM_U, 6, 14, 7, 4), Box.own(FIST_U, 8, 5, 9, 18),

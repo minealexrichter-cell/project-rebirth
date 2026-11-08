@@ -88,6 +88,8 @@ public class ProjectRebirthClient {
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> ClientFactionCache.clear());
         PowerArmorClient.register(modEventBus);
         WeaponClient.register(modEventBus);
+        // the 3D models of the respirator and the protective suits
+        com.projectrebirth.client.render.GearModels.register(modEventBus);
         EnvironmentClient.register(modEventBus);
         CatastropheClient.register(modEventBus);
         BodyHud.register(modEventBus);

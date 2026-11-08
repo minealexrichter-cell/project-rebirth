@@ -66,6 +66,7 @@ public final class TemperatureRegistry {
                     .strength(3.0f, 6.0f)
                     .sound(SoundType.METAL)
                     .lightLevel(state -> state.getValue(TechSounds.WORKING) ? 10 : 0)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
     public static final DeferredItem<BlockItem> HEATER_ITEM = ITEMS.registerSimpleBlockItem(HEATER);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<HeaterBlockEntity>> HEATER_ENTITY =

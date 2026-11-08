@@ -50,6 +50,7 @@ public final class ShelterRegistry {
                     .mapColor(MapColor.METAL)
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
 
     public static final DeferredBlock<AirlockDoorBlock> AIRLOCK_DOOR = BLOCKS.registerBlock("airlock_door",
@@ -80,6 +81,7 @@ public final class ShelterRegistry {
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
                     .lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 7 : 0)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
 
     public static final DeferredBlock<DecontaminationChamberBlock> DECONTAMINATION_CHAMBER = BLOCKS.registerBlock("decontamination_chamber",
@@ -109,6 +111,7 @@ public final class ShelterRegistry {
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
                     .lightLevel(state -> 4)
+                    .noOcclusion()
                     .requiresCorrectToolForDrops());
 
     public static final DeferredItem<BlockItem> AIR_FILTRATION_UNIT_ITEM = ITEMS.registerSimpleBlockItem(AIR_FILTRATION_UNIT);

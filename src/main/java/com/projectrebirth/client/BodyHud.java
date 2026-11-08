@@ -3,6 +3,7 @@ package com.projectrebirth.client;
 import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.bodies.BodyGadgets;
 import com.projectrebirth.bodies.Jetpack;
+import com.projectrebirth.bodies.power.BodyPower;
 import com.projectrebirth.bodies.TransferService;
 
 import net.minecraft.client.DeltaTracker;
@@ -27,6 +28,7 @@ public final class BodyHud {
     private static final int HEIGHT = HudLayout.BAR_HEIGHT;
     private static final int THRUST_HEIGHT = 5;
     private static final int THRUST_COLOR = 0xFF7FE8FF;
+    private static final int CHARGE_HEIGHT = 4;
 
     private BodyHud() {
     }
@@ -63,7 +65,9 @@ public final class BodyHud {
         int height = Math.round(HEIGHT * scale);
         int bottom = graphics.guiHeight() - minecraft.gui.leftHeight + HEIGHT;
         boolean jetpack = Jetpack.equipped(player);
-        minecraft.gui.leftHeight += height + 1 + (jetpack ? Math.round((THRUST_HEIGHT + 1) * scale) : 0);
+        boolean charge = BodyPower.enabled();
+        minecraft.gui.leftHeight += height + 1 + (jetpack ? Math.round((THRUST_HEIGHT + 1) * scale) : 0)
+                + (charge ? Math.round((CHARGE_HEIGHT + 1) * scale) : 0);
         graphics.pose().pushPose();
         graphics.pose().translate(HudLayout.barX(graphics.guiWidth() / 2 - 91, graphics.guiWidth()),
                 HudLayout.barBottom(bottom, graphics.guiHeight()), 0.0f);
@@ -76,8 +80,17 @@ public final class BodyHud {
         int color = fraction > 0.5f ? 0xFF4FC3F7 : fraction > 0.25f ? 0xFFFFC107 : 0xFFE53935;
         GuiAtlas.bar(graphics, x, y, WIDTH, HEIGHT, fraction, color);
 
+        int above = y;
+        if (charge) {
+            // charge: yellow, orange when low, red and blinking in the emergency mode (1.5.0; the full HUD comes in block G)
+            BodyPower.State state = BodyPower.state(player);
+            int chargeColor = state == BodyPower.State.NORMAL ? 0xFFFFD54F : state == BodyPower.State.LOW ? 0xFFFF8F00
+                    : (player.tickCount / 10 % 2 == 0 ? 0xFFE53935 : 0xFF7F1D1D);
+            above -= CHARGE_HEIGHT + 1;
+            GuiAtlas.bar(graphics, x, above, WIDTH, CHARGE_HEIGHT, state == BodyPower.State.EMPTY ? 1.0f : BodyPower.fraction(player), chargeColor);
+        }
         if (jetpack) {
-            GuiAtlas.bar(graphics, x, y - THRUST_HEIGHT - 1, WIDTH, THRUST_HEIGHT, Jetpack.reserve(player), THRUST_COLOR);
+            GuiAtlas.bar(graphics, x, above - THRUST_HEIGHT - 1, WIDTH, THRUST_HEIGHT, Jetpack.reserve(player), THRUST_COLOR);
         }
         if (BodyGadgets.has(player.level().registryAccess(), BodyGadgets.of(player), BodyGadgets.SEALING)) {
             GuiAtlas.sealIcon(graphics, x + WIDTH + 1, y);

@@ -30,6 +30,7 @@
     "projectrebirth:backup_battery",
     "projectrebirth:decontamination_chamber",
     "projectrebirth:radiation_purge_station",
-    "projectrebirth:shelter_control_panel"
+    "projectrebirth:shelter_control_panel",
+    "projectrebirth:charging_pad"
   ]
 }

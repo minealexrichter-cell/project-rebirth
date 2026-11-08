@@ -16,6 +16,9 @@ public final class PlanTests {
     /** The tests of version 1.4.1 "Codex" (docs/PLAN_1.4.1.md). */
     public static final String CODEX = ProjectRebirth.MOD_ID + "_codex";
 
+    /** The tests of version 1.5.0 "Technical limits" (docs/PLAN_1.5.md). */
+    public static final String POWER = ProjectRebirth.MOD_ID + "_power";
+
     private PlanTests() {
     }
 }

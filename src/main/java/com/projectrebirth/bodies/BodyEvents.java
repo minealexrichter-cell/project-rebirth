@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.projectrebirth.upgrades.UpgradeRegistry;
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.bodies.power.BodyPower;
 import com.projectrebirth.core.ModSounds;
 
 import net.minecraft.network.chat.Component;
@@ -30,6 +31,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 public final class BodyEvents {
     /** Artificial bodies do not starve and do not regenerate from food (natural regeneration needs 18+). */
     private static final int ARTIFICIAL_FOOD_LEVEL = 17;
+    /** The game lets nobody start or keep running at 6 food or less. */
+    private static final int EMPTY_FOOD_LEVEL = 6;
     /** Distance at which a player in a robot body makes the next step sound. Not saved. */
     private static final Map<UUID, Float> NEXT_STEP = new HashMap<>();
 
@@ -74,10 +77,12 @@ public final class BodyEvents {
      */
     public static void tickControlledBody(ServerPlayer player) {
         TransferService.state(player).body().ifPresent(bodyClass -> {
-            player.getFoodData().setFoodLevel(ARTIFICIAL_FOOD_LEVEL);
+            // without charge the food level is just low enough that the game itself stops running (on the client too)
+            player.getFoodData().setFoodLevel(BodyPower.isEmpty(player) ? EMPTY_FOOD_LEVEL : ARTIFICIAL_FOOD_LEVEL);
             player.getFoodData().setSaturation(0.0f);
             if (player.tickCount % 20 == 0) {
                 BodyRules.tickSelfRepair(player, bodyClass);
+                BodyPower.tickSecond(player);
             }
             if (!bodyClass.synthetic()) {
                 robotSteps(player);
@@ -148,6 +153,12 @@ public final class BodyEvents {
             entity.stopUsingItem();
             if (entity instanceof Player player) {
                 player.displayClientMessage(Component.translatable("message.projectrebirth.repair_kit.interrupted"), true);
+            }
+        }
+        if (entity.isUsingItem() && entity.getUseItem().getItem() instanceof com.projectrebirth.bodies.power.BodyBatteryItem) {
+            entity.stopUsingItem();
+            if (entity instanceof Player player) {
+                player.displayClientMessage(Component.translatable("message.projectrebirth.body_battery.interrupted"), true);
             }
         }
     }

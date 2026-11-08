@@ -181,8 +181,8 @@ category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
     entry('body_life', P + 'repair_kit', -2, 2, ['basic_robot_body'], 'Life in a Body', 'Жизнь в теле', [
         text('Instead of hearts a body has an integrity bar; it has no hunger. Bodies of classes 1–4 neither eat nor drink, and potions do not work on them.\n\nBodies do not wear ordinary armor, elytra, pumpkins or heads. Their inventory is their own: in place of armor slots it has a panel with the class, integrity and gadget slots.',
             'Вместо сердец у тела полоса прочности, голода нет. Тела классов 1–4 не едят и не пьют, зелья на них не действуют.\n\nОбычную броню, элитры, тыкву и головы тела не носят. Инвентарь у тела свой: вместо слотов брони — панель с классом, прочностью и слотами гаджетов.'),
-        text('Synthetic bodies (classes 3–5) mend themselves a few seconds after damage.\n\nAn empty body stands like a solid thing: you can stand on it and nothing pushes it away.',
-            'Синтетические тела (классы 3–5) понемногу чинятся сами через несколько секунд после урона.\n\nПустое тело стоит как твёрдый предмет: на него можно встать, его ничто не сдвигает.'),
+        text('Synthetic bodies (classes 3–5) mend themselves a few seconds after damage, while they have charge; it costs charge.\n\nAn empty body stands like a solid thing: you can stand on it and nothing pushes it away. Since 1.5 every body runs on charge — see Body Charge.',
+            'Синтетические тела (классы 3–5) понемногу чинятся сами через несколько секунд после урона, пока есть заряд; на это уходит заряд.\n\nПустое тело стоит как твёрдый предмет: на него можно встать, его ничто не сдвигает. С 1.5 каждое тело работает на заряде — см. «Заряд тела».'),
         item(P + 'repair_kit', 'The repair kit mends 35% of integrity in 4 seconds; damage breaks the repair off.', 'Ремкомплект за 4 секунды чинит 35% прочности; урон прерывает ремонт.'),
         recipe(P + 'repair_kit'),
         note('A packed body is mended at the maintenance station: robots with iron, synthetics with synthetic fiber.', 'Упакованное тело чинит станция обслуживания: роботов — железом, синтетиков — синтетической тканью.')
@@ -202,7 +202,21 @@ category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
         recipe(P + 'sealing_module'),
         item(P + 'jetpack', 'The jetpack: hold jump in the air to rise up to 8 blocks above the ground under the body. 6 seconds of thrust, refilled only on the ground; with none left the body falls as usual.',
             'Джетпак: удерживайте прыжок в воздухе — тело поднимается до 8 блоков над землёй под собой. 6 секунд тяги, пополняется только на земле; без тяги тело падает как обычно.'),
-        recipe(P + 'jetpack')
+        recipe(P + 'jetpack'),
+        item(P + 'extra_battery', 'The extra battery adds 40 000 FE to the charge of a body and takes one slot.', 'Дополнительный аккумулятор добавляет телу 40 000 FE заряда и занимает один слот.'),
+        recipe(P + 'extra_battery')
+    ]),
+    entry('body_charge', P + 'body_battery', 0, 2, ['body_life'], 'Body Charge', 'Заряд тела', [
+        text('Since 1.5 every artificial body runs on charge (FE). Walking, running, blows, breaking blocks, self-repair and above all the jetpack spend it. An empty body standing in the world keeps its charge; it goes with the body when you enter it, leave it or pack it.',
+            'С 1.5 каждое искусственное тело работает на заряде (FE). Его тратят шаг, бег, удары, добыча, самовосстановление и сильнее всего джетпак. Пустое тело, стоящее в мире, заряд не тратит; заряд переходит вместе с телом, когда вы в него входите, выходите или упаковываете его.'),
+        text('A full basic body lasts about a game day of work, the premium one about four.\n\nBelow 20% the body warns and slows down. At 0% it is in emergency mode: slow walking, no running, jumping, jetpack or self-repair, slow mining. You keep control; Z always returns you home.',
+            'Полного базового тела хватает примерно на игровой день работы, премиального — на четыре.\n\nНиже 20% тело предупреждает и замедляется. На 0% — аварийный режим: медленный шаг, без бега, прыжков, джетпака и самовосстановления, добыча медленнее. Управление остаётся, Z всегда возвращает домой.'),
+        block(P + 'charging_pad', 'A body standing on the pad, empty or yours, is charged from the cable.', 'Тело на платформе, пустое или ваше, заряжается от кабеля.'),
+        recipe(P + 'charging_pad'),
+        item(P + 'body_battery', 'Hold right-click in a body: in 3 seconds it hands over its charge. Damage breaks it off.', 'Удерживайте ПКМ в теле: за 3 секунды он отдаст заряд. Урон прерывает.'),
+        recipe(P + 'body_battery'),
+        note('Charge the body battery in the pad: right-click the pad with it, right-click with an empty hand to take it back. Chargers of other mods work too.',
+            'Аккумулятор тела заряжается в платформе: ПКМ по ней с аккумулятором, ПКМ пустой рукой — забрать. Подходят и зарядники других модов.')
     ])
 ]);
 

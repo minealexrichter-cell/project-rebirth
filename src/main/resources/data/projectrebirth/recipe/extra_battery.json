@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 45,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 3
+    },
+    {
+      "tag": "c:ingots/lithium",
+      "count": 3
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/aluminum",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:extra_battery",
+    "count": 1
+  }
+}

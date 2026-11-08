@@ -67,6 +67,7 @@ public class ProjectRebirth {
         FactionBlocks.register(modEventBus);
         FactionSync.register(modEventBus);
         UpgradeRegistry.register(modEventBus);
+        com.projectrebirth.bodies.power.BodyPowerRegistry.register(modEventBus);
         WeaponRegistry.register(modEventBus);
         EnvironmentRegistry.register(modEventBus);
         com.projectrebirth.shelter.ShelterRegistry.register(modEventBus);

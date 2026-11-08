@@ -18,7 +18,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 /**
  * Operator commands for testing and administration:
- * /rebirth status [player], /rebirth return [player], /rebirth transfer [player] [capsule position].
+ * /rebirth status [player], /rebirth return [player], /rebirth transfer [player] [capsule position],
+ * /rebirth charge [player] [percent] (1.5.0).
  */
 public final class BodyCommands {
     private BodyCommands() {
@@ -39,7 +40,12 @@ public final class BodyCommands {
                         .then(Commands.argument("player", EntityArgument.player())
                                 .then(Commands.argument("capsule", BlockPosArgument.blockPos())
                                         .executes(ctx -> transfer(ctx, EntityArgument.getPlayer(ctx, "player"),
-                                                BlockPosArgument.getLoadedBlockPos(ctx, "capsule")))))));
+                                                BlockPosArgument.getLoadedBlockPos(ctx, "capsule"))))))
+                .then(Commands.literal("charge")
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .then(Commands.argument("percent", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 100))
+                                        .executes(ctx -> charge(ctx, EntityArgument.getPlayer(ctx, "player"),
+                                                com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "percent")))))));
     }
 
     private static int status(CommandContext<CommandSourceStack> ctx, ServerPlayer player) {
@@ -54,6 +60,18 @@ public final class BodyCommands {
                 .orElse(Component.translatable("message.projectrebirth.command.no_shell"));
         ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.command.status",
                 player.getDisplayName(), body, String.format(Locale.ROOT, "%.1f", player.getHealth()), String.format(Locale.ROOT, "%.1f", player.getMaxHealth()), shell), false);
+        return 1;
+    }
+
+    /** Sets the charge of the body a player controls (1.5.0), for tests and administration. */
+    private static int charge(CommandContext<CommandSourceStack> ctx, ServerPlayer player, int percent) {
+        if (!TransferService.isInArtificialBody(player)) {
+            ctx.getSource().sendFailure(Component.translatable("message.projectrebirth.transfer.not_in_body"));
+            return 0;
+        }
+        com.projectrebirth.bodies.power.BodyPower.setCharge(player, com.projectrebirth.bodies.power.BodyPower.capacity(player) * percent / 100.0f);
+        com.projectrebirth.bodies.power.BodyPower.applyLimits(player);
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.command.charge", player.getDisplayName(), percent), true);
         return 1;
     }
 

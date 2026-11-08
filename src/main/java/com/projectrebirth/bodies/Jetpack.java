@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.bodies.power.BodyPower;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.upgrades.UpgradeRegistry;
@@ -97,10 +98,11 @@ public final class Jetpack {
         float used = player.getData(UpgradeRegistry.JETPACK_USED);
         int capacity = capacityTicks();
         int limit = RebirthConfig.JETPACK_MAX_HEIGHT.get();
-        boolean flying = wantsThrust && used < capacity && inFlightConditions(player)
+        boolean flying = wantsThrust && used < capacity && inFlightConditions(player) && !BodyPower.isEmpty(player)
                 && heightAboveSurface(player.level(), player.position(), limit + (int) HEIGHT_TOLERANCE) <= limit + HEIGHT_TOLERANCE;
         if (flying) {
             player.setData(UpgradeRegistry.JETPACK_USED, Math.min(capacity, used + 1.0f));
+            BodyPower.spend(player, RebirthConfig.BODY_ENERGY_JETPACK.get() / 20.0);
             player.fallDistance = 0.0f;
             player.connection.aboveGroundTickCount = 0;
             // The server hears of a fall late: while it still counts as a flight, a falling body keeps its height.

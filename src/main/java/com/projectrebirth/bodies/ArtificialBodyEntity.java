@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.projectrebirth.bodies.power.BodyPower;
+import com.projectrebirth.bodies.power.BodyPowerRegistry;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.core.Parked;
@@ -66,6 +68,8 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
     @Nullable
     private UUID owner;
     private ListTag storedInventory = new ListTag();
+    /** Charge in FE; below 0 = not known yet (new, or from a world of 1.4.1), filled up when the body joins a level. */
+    private float charge = -1.0f;
     /** False only for a body that has never been in a level; saved so loaded bodies keep their damage. */
     private boolean statsInitialized;
 
@@ -128,6 +132,15 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         }
     }
 
+    /** Charge in FE (see {@link BodyPower}). */
+    public float charge() {
+        return charge < 0.0f ? BodyPower.capacity(this) : Math.min(charge, BodyPower.capacity(this));
+    }
+
+    public void setCharge(float charge) {
+        this.charge = Mth.clamp(charge, 0.0f, BodyPower.capacity(this));
+    }
+
     @Override
     public UpgradeLayout layout() {
         return new UpgradeLayout.Counted(RebirthConfig.bodyStats(bodyClass).upgradeSlots().get());
@@ -150,6 +163,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (!statsInitialized || getHealth() > getMaxHealth()) {
             setHealth(getMaxHealth());
         }
+        setCharge(charge());
         statsInitialized = true;
     }
 
@@ -170,8 +184,11 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (player.isShiftKeyDown()) {
             packUp(player);
         } else {
-            player.displayClientMessage(Component.translatable("message.projectrebirth.body.status",
-                    getDisplayName(), Mth.ceil(getHealth()), Mth.ceil(getMaxHealth())), true);
+            player.displayClientMessage(BodyPower.enabled()
+                    ? Component.translatable("message.projectrebirth.body.status_charge", getDisplayName(), Mth.ceil(getHealth()),
+                            Mth.ceil(getMaxHealth()), Math.round(charge() * 100.0f / BodyPower.capacity(this)))
+                    : Component.translatable("message.projectrebirth.body.status", getDisplayName(), Mth.ceil(getHealth()), Mth.ceil(getMaxHealth())),
+                    true);
             triggerAnim(MAIN_CONTROLLER, INTERACT_ANIMATION);
         }
         return InteractionResult.CONSUME;
@@ -196,6 +213,8 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (hasCustomName()) {
             stack.set(DataComponents.CUSTOM_NAME, getCustomName());
         }
+        // always written: a gadget installed later (an extra battery) must not fill the body for free
+        stack.set(BodyPowerRegistry.STORED_CHARGE.get(), charge());
         Upgrades.putOnStack(stack, upgrades());
         entityData.set(UPGRADES, InstalledUpgrades.EMPTY);
         if (owner != null) {
@@ -302,6 +321,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         Parked.holdRotation(this);
         if (!level().isClientSide && tickCount % 20 == 0) {
             BodyRules.tickSelfRepair(this, bodyClass);
+            BodyPower.tickStanding(this);
             com.projectrebirth.environment.MachineBody.tickStanding(this);
             BodyRegistry.get(getServer()).updateStanding(this);
         }
@@ -315,6 +335,9 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         }
         tag.put("BodyInventory", storedInventory);
         tag.putBoolean("StatsInitialized", statsInitialized);
+        if (charge >= 0.0f) {
+            tag.putFloat("Charge", charge);
+        }
         Upgrades.save(tag, registryAccess(), upgrades());
     }
 
@@ -323,6 +346,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         super.readAdditionalSaveData(tag);
         owner = tag.hasUUID("Owner") ? tag.getUUID("Owner") : null;
         storedInventory = tag.getList("BodyInventory", Tag.TAG_COMPOUND);
+        charge = tag.contains("Charge") ? tag.getFloat("Charge") : -1.0f;
         entityData.set(UPGRADES, Upgrades.load(tag, registryAccess()));
         // Bodies saved before this flag existed are already initialized.
         // Saves from before the flag existed already have health; a body summoned by command with extra data

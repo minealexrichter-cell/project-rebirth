@@ -3,6 +3,7 @@ package com.projectrebirth.bodies;
 import java.util.Optional;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.bodies.power.BodyPower;
 import com.projectrebirth.config.RebirthConfig;
 
 import net.minecraft.core.component.DataComponents;
@@ -95,9 +96,17 @@ public final class BodyRules {
         if (perSecond <= 0.0 || !entity.isAlive() || entity.getHealth() >= entity.getMaxHealth()) {
             return;
         }
+        // no self-repair without charge; a controlled body pays for it, a standing one only needs some charge left
+        if (entity instanceof Player player ? BodyPower.isEmpty(player) : entity instanceof ArtificialBodyEntity body && BodyPower.isEmpty(body)) {
+            return;
+        }
         long sinceDamage = entity.level().getGameTime() - entity.getData(BodyAttachments.LAST_DAMAGE);
         if (sinceDamage >= stats.selfRepairDelaySeconds().get() * 20L) {
+            float before = entity.getHealth();
             repair(entity, (float) perSecond);
+            if (entity instanceof Player player) {
+                BodyPower.spend(player, (entity.getHealth() - before) * RebirthConfig.BODY_ENERGY_SELF_REPAIR.get());
+            }
         }
     }
 }

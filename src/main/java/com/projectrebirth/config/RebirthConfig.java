@@ -18,6 +18,9 @@ public final class RebirthConfig {
     private static final Map<BodyClass, BodyStats> BODY_STATS = new EnumMap<>(BodyClass.class);
     /** From the worst body to the best. */
     private static final double[] DEFAULT_ACID_WEAR = {0.025, 0.02, 0.015, 0.01, 0.005};
+    // 1.5.0: the basic body lasts about one game day of ordinary work, the premium one about four
+    private static final int[] DEFAULT_ENERGY_CAPACITY = {60_000, 80_000, 100_000, 130_000, 160_000};
+    private static final double[] DEFAULT_ENERGY_USE = {1.0, 0.9, 0.8, 0.7, 0.65};
     private static final Map<ArmorVariant, ArmorStats> ARMOR_STATS = new EnumMap<>(ArmorVariant.class);
 
     public static final ModConfigSpec.IntValue TRANSFER_RADIUS;
@@ -152,6 +155,27 @@ public final class RebirthConfig {
     public static final ModConfigSpec.BooleanValue FLOODLIGHT_ENABLED;
     public static final ModConfigSpec.IntValue FLOODLIGHT_RANGE;
     public static final ModConfigSpec.DoubleValue JETPACK_THRUST_SECONDS;
+    public static final ModConfigSpec.IntValue EXTRA_BATTERY_CAPACITY;
+    public static final ModConfigSpec.BooleanValue BODY_ENERGY_ENABLED;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_IDLE;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_WALK;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_SPRINT;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_ATTACK;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_BLOCK;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_SELF_REPAIR;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_JETPACK;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_STANDING;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_LOW_SHARE;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_LOW_SLOWDOWN;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_EMPTY_SLOWDOWN;
+    public static final ModConfigSpec.DoubleValue BODY_ENERGY_EMPTY_BREAK_SPEED;
+    public static final ModConfigSpec.IntValue CHARGING_PAD_CAPACITY;
+    public static final ModConfigSpec.IntValue CHARGING_PAD_RECEIVE;
+    public static final ModConfigSpec.IntValue CHARGING_PAD_RATE;
+    public static final ModConfigSpec.BooleanValue CAPSULE_CHARGES;
+    public static final ModConfigSpec.IntValue BODY_BATTERY_CAPACITY;
+    public static final ModConfigSpec.IntValue BODY_BATTERY_RECEIVE;
+    public static final ModConfigSpec.DoubleValue BODY_BATTERY_USE_SECONDS;
     public static final ModConfigSpec.DoubleValue JETPACK_RECHARGE_SECONDS;
     public static final ModConfigSpec.DoubleValue JETPACK_RISE_SPEED;
     public static final ModConfigSpec.IntValue JETPACK_MAX_HEIGHT;
@@ -324,8 +348,15 @@ public final class RebirthConfig {
             ModConfigSpec.IntValue upgradeSlots = builder
                     .comment("Upgrade slots of the body. If lowered, what is already installed stays, but nothing more fits")
                     .defineInRange("upgradeSlots", bodyClass.defaultUpgradeSlots(), 0, 16);
+            ModConfigSpec.IntValue energyCapacity = builder
+                    .comment("Charge of a full body, in FE (since 1.5.0, see [body_energy])")
+                    .defineInRange("energyCapacity", DEFAULT_ENERGY_CAPACITY[bodyClass.ordinal()], 1, 100_000_000);
+            ModConfigSpec.DoubleValue energyUse = builder
+                    .comment("Everything the body spends of its charge is multiplied by this: better bodies are more economical")
+                    .defineInRange("energyUseMultiplier", DEFAULT_ENERGY_USE[bodyClass.ordinal()], 0.0, 100.0);
             builder.pop();
-            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects, upgradeSlots, acidWear));
+            BODY_STATS.put(bodyClass, new BodyStats(maxHealth, armor, speed, attack, selfRepair, selfRepairDelay, canConsume, immuneToEffects,
+                    upgradeSlots, acidWear, energyCapacity, energyUse));
         }
         builder.pop();
 
@@ -552,6 +583,9 @@ public final class RebirthConfig {
         definePlating(builder, "iron", 2.0, 0.0);
         definePlating(builder, "titanium", 3.0, 1.0);
         builder.pop();
+        EXTRA_BATTERY_CAPACITY = builder
+                .comment("Charge the extra battery gadget adds to a body, in FE")
+                .defineInRange("extraBatteryCapacity", 40_000, 0, 100_000_000);
         builder.comment("Jetpack: hold jump in the air").push("jetpack");
         JETPACK_THRUST_SECONDS = builder
                 .comment("Seconds of flight on a full reserve")
@@ -566,6 +600,36 @@ public final class RebirthConfig {
                 .comment("Highest flight, in blocks above the surface under the body")
                 .defineInRange("maxHeight", 8, 1, 256);
         builder.pop();
+        builder.pop();
+
+        builder.comment("Charge of artificial bodies (1.5.0). Off: bodies need no charge, as in 1.4.1.",
+                "Every amount below is multiplied by bodies.<class>.energyUseMultiplier").push("body_energy");
+        BODY_ENERGY_ENABLED = builder.comment("The whole system").define("enabled", true);
+        BODY_ENERGY_IDLE = builder.comment("FE per second a controlled body uses at all times").defineInRange("idlePerSecond", 10.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_WALK = builder.comment("FE per second more while it walks").defineInRange("walkPerSecond", 40.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_SPRINT = builder.comment("FE per second more while it runs (instead of walkPerSecond)").defineInRange("sprintPerSecond", 90.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_ATTACK = builder.comment("FE per blow").defineInRange("perAttack", 25.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_BLOCK = builder.comment("FE per block broken").defineInRange("perBlockBroken", 15.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_SELF_REPAIR = builder.comment("FE per point of integrity the body mends by itself").defineInRange("perSelfRepairPoint", 150.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_JETPACK = builder.comment("FE per second of jetpack thrust").defineInRange("jetpackPerSecond", 400.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_STANDING = builder.comment("FE per second an empty body standing in the world uses; 0 = it keeps its charge")
+                .defineInRange("standingPerSecond", 0.0, 0.0, 1_000_000.0);
+        BODY_ENERGY_LOW_SHARE = builder.comment("Below this part of the charge the body warns and slows down (0.2 = 20%)")
+                .defineInRange("lowShare", 0.2, 0.0, 1.0);
+        BODY_ENERGY_LOW_SLOWDOWN = builder.comment("Part of the speed lost on a low charge").defineInRange("lowSlowdown", 0.1, 0.0, 0.9);
+        BODY_ENERGY_EMPTY_SLOWDOWN = builder.comment("Part of the speed lost in the emergency mode (no charge): no running, jumping or jetpack either,",
+                "and no self-repair. The body stays under control and Z still returns to the human body")
+                .defineInRange("emptySlowdown", 0.5, 0.0, 0.9);
+        BODY_ENERGY_EMPTY_BREAK_SPEED = builder.comment("Breaking blocks is multiplied by this in the emergency mode")
+                .defineInRange("emptyBreakSpeed", 0.3, 0.0, 1.0);
+        CHARGING_PAD_CAPACITY = builder.comment("Energy a charging pad holds").defineInRange("padCapacity", 20_000, 1, 100_000_000);
+        CHARGING_PAD_RECEIVE = builder.comment("Energy a charging pad takes in per tick").defineInRange("padReceivePerTick", 400, 1, 100_000_000);
+        CHARGING_PAD_RATE = builder.comment("Charge a pad gives per tick to each body on it and to the battery in it").defineInRange("padChargePerTick", 200, 1, 100_000_000);
+        CAPSULE_CHARGES = builder.comment("Whether the transfer capsule charges the body that leaves from it on transfer (off by default)").define("capsuleCharges", false);
+        BODY_BATTERY_CAPACITY = builder.comment("Charge a portable body battery holds").defineInRange("batteryCapacity", 40_000, 1, 100_000_000);
+        BODY_BATTERY_RECEIVE = builder.comment("Charge a body battery takes in per tick (pad or chargers of other mods)").defineInRange("batteryReceivePerTick", 400, 1, 100_000_000);
+        BODY_BATTERY_USE_SECONDS = builder.comment("Seconds a body battery takes to hand its charge over; damage interrupts it")
+                .defineInRange("batteryUseSeconds", 3.0, 0.25, 60.0);
         builder.pop();
 
         builder.comment("Energy (NeoForge Energy, FE): generators, battery, cable and what the stations use").push("energy");
@@ -791,6 +855,7 @@ public final class RebirthConfig {
                             ModConfigSpec.DoubleValue speedMultiplier, ModConfigSpec.DoubleValue attackDamageBonus,
                             ModConfigSpec.DoubleValue selfRepairPerSecond, ModConfigSpec.IntValue selfRepairDelaySeconds,
                             ModConfigSpec.BooleanValue canConsume, ModConfigSpec.BooleanValue immuneToEffects,
-                            ModConfigSpec.IntValue upgradeSlots, ModConfigSpec.DoubleValue acidWearPerSecond) {
+                            ModConfigSpec.IntValue upgradeSlots, ModConfigSpec.DoubleValue acidWearPerSecond,
+                            ModConfigSpec.IntValue energyCapacity, ModConfigSpec.DoubleValue energyUseMultiplier) {
     }
 }

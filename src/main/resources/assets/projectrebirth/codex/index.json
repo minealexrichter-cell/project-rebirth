@@ -48,7 +48,8 @@
         "premium_synthetic_body",
         "body_life",
         "body_modification",
-        "gadgets"
+        "gadgets",
+        "body_charge"
       ]
     },
     {

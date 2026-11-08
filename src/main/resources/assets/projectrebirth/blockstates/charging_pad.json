@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "working=false": {
+      "model": "projectrebirth:block/charging_pad"
+    },
+    "working=true": {
+      "model": "projectrebirth:block/charging_pad_on"
+    }
+  }
+}

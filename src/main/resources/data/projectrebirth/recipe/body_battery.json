@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 96,
+  "time": 200,
+  "ingredients": [
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    },
+    {
+      "tag": "c:ingots/lithium",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/aluminum",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:body_battery",
+    "count": 1
+  }
+}

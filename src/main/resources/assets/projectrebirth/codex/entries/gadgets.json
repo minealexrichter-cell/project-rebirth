@@ -31,6 +31,15 @@
     {
       "type": "recipe",
       "value": "projectrebirth:jetpack"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:extra_battery",
+      "text": "codex.projectrebirth.gadgets.p7"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:extra_battery"
     }
   ]
 }

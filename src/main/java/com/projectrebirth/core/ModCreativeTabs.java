@@ -54,6 +54,8 @@ public final class ModCreativeTabs {
                 output.accept(TechItems.SYNTHETIC_FIBER.get());
                 output.accept(BodyItems.TRANSFER_CAPSULE.get());
                 output.accept(BodyItems.REPAIR_KIT.get());
+                output.accept(com.projectrebirth.bodies.power.BodyPowerRegistry.CHARGING_PAD_ITEM.get());
+                output.accept(com.projectrebirth.bodies.power.BodyPowerRegistry.BODY_BATTERY.get());
                 output.accept(EnvironmentRegistry.ANTIRADIN.get());
                 output.accept(EnvironmentRegistry.SORBENT.get());
                 output.accept(EnvironmentRegistry.RESPIRATOR.get());
@@ -82,6 +84,7 @@ public final class ModCreativeTabs {
                 output.accept(UpgradeRegistry.TITANIUM_PLATING.get());
                 output.accept(UpgradeRegistry.SEALING_MODULE.get());
                 output.accept(UpgradeRegistry.JETPACK.get());
+                output.accept(UpgradeRegistry.EXTRA_BATTERY.get());
                 for (BodyClass bodyClass : BodyClass.values()) {
                     output.accept(BodyItems.item(bodyClass));
                 }

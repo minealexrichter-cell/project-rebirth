@@ -10,6 +10,8 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.bodies.power.BodyPower;
+import com.projectrebirth.bodies.power.BodyPowerRegistry;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.core.ModSounds;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
@@ -124,6 +126,9 @@ public final class TransferService {
         }
 
         // 2. The consciousness moves into the artificial body.
+        if (RebirthConfig.CAPSULE_CHARGES.get()) {
+            target.get().setCharge(BodyPower.capacity(target.get()));
+        }
         enterBody(player, target.get());
         LAST_TRANSFER.put(player.getUUID(), now);
         level.playSound(null, capsuleLower, ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -222,6 +227,7 @@ public final class TransferService {
         float yaw = body.getYRot();
         ListTag inventory = body.getStoredInventory();
         InstalledUpgrades upgrades = body.upgrades();
+        float charge = body.charge();
         BodyRegistry.get(player.server).markControlled(player.getUUID(), body);
         body.setStoredInventory(new ListTag());
         body.setUpgrades(InstalledUpgrades.EMPTY);
@@ -236,6 +242,7 @@ public final class TransferService {
         BodyInventory.clearArmor(player);
         player.setData(UpgradeRegistry.CONTROLLED_BODY, upgrades);
         player.setData(UpgradeRegistry.JETPACK_USED, 0.0f);
+        player.setData(BodyPowerRegistry.CONTROLLED_CHARGE, charge);
         applyBodyModifiers(player, bodyClass);
         player.teleportTo(level, pos.x, pos.y, pos.z, yaw, player.getXRot());
         level.playSound(null, player.blockPosition(), ModSounds.TRANSFER_ENTER.get(), SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -277,7 +284,9 @@ public final class TransferService {
         body.setOwner(player.getUUID());
         body.setStoredInventory(InventoryUtil.takeInventory(player));
         body.setUpgrades(player.getData(UpgradeRegistry.CONTROLLED_BODY));
+        body.setCharge(BodyPower.charge(player));
         player.setData(UpgradeRegistry.CONTROLLED_BODY, InstalledUpgrades.EMPTY);
+        player.setData(BodyPowerRegistry.CONTROLLED_CHARGE, -1.0f);
         body.moveTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0.0f);
         body.setYHeadRot(player.getYRot());
         body.setYBodyRot(player.getYRot());
@@ -334,6 +343,7 @@ public final class TransferService {
             player.drop(upgrade.stack().copy(), true, false);
         }
         player.setData(UpgradeRegistry.CONTROLLED_BODY, InstalledUpgrades.EMPTY);
+        player.setData(BodyPowerRegistry.CONTROLLED_CHARGE, -1.0f);
         deathLevel.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
         boolean robot = state(player).body().map(bodyClass -> !bodyClass.synthetic()).orElse(false);
         deathLevel.playSound(null, player.blockPosition(), robot ? ModSounds.ROBOT_DESTROYED.get() : SoundEvents.PLAYER_DEATH,
@@ -429,9 +439,11 @@ public final class TransferService {
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());
         }
+        BodyPower.applyLimits(player);
     }
 
     public static void removeBodyModifiers(Player player) {
+        BodyPower.removeLimits(player);
         removeModifier(player, Attributes.MAX_HEALTH, HEALTH_MODIFIER);
         removeModifier(player, Attributes.ARMOR, ARMOR_MODIFIER);
         removeModifier(player, Attributes.MOVEMENT_SPEED, SPEED_MODIFIER);

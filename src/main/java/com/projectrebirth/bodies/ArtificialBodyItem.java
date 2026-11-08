@@ -2,6 +2,8 @@ package com.projectrebirth.bodies;
 
 import java.util.List;
 
+import com.projectrebirth.bodies.power.BodyPower;
+import com.projectrebirth.bodies.power.BodyPowerRegistry;
 import com.projectrebirth.upgrades.Upgrades;
 
 import net.minecraft.ChatFormatting;
@@ -65,7 +67,11 @@ public class ArtificialBodyItem extends Item {
             body.setOwner(player.getUUID());
         }
         Float storedIntegrity = stack.get(BodyComponents.STORED_INTEGRITY.get());
+        Float storedCharge = stack.get(BodyPowerRegistry.STORED_CHARGE.get());
         body.setUpgrades(Upgrades.ofStack(stack));
+        if (storedCharge != null) {
+            body.setCharge(storedCharge);
+        }
         level.addFreshEntity(body);
         // Max health comes from the config and is applied when the body joins the level.
         body.setHealth(storedIntegrity != null ? storedIntegrity : body.getMaxHealth());
@@ -80,6 +86,12 @@ public class ArtificialBodyItem extends Item {
         if (storedIntegrity != null) {
             tooltip.add(Component.translatable("tooltip.projectrebirth.body.damaged", Mth.ceil(storedIntegrity))
                     .withStyle(ChatFormatting.RED));
+        }
+        Float storedCharge = stack.get(BodyPowerRegistry.STORED_CHARGE.get());
+        if (storedCharge != null && BodyPower.enabled() && context.registries() instanceof net.minecraft.core.RegistryAccess access) {
+            float capacity = BodyPower.capacity(access, bodyClass, Upgrades.ofStack(stack));
+            tooltip.add(Component.translatable("tooltip.projectrebirth.body.charge", Math.round(Math.min(storedCharge, capacity) * 100.0f / capacity))
+                    .withStyle(ChatFormatting.YELLOW));
         }
         Upgrades.addTooltip(stack, tooltip);
         tooltip.add(Component.translatable("tooltip.projectrebirth.body.hint").withStyle(ChatFormatting.GRAY));

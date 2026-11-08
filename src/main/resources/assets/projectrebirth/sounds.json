@@ -375,5 +375,59 @@
         "volume": 0.8
       }
     ]
+  },
+  "power.dust_wind": {
+    "subtitle": "subtitles.projectrebirth.power.dust_wind",
+    "sounds": [
+      {
+        "name": "projectrebirth:power/dust_wind",
+        "volume": 0.8
+      }
+    ]
+  },
+  "power.emi_crackle": {
+    "subtitle": "subtitles.projectrebirth.power.emi_crackle",
+    "sounds": [
+      {
+        "name": "projectrebirth:power/emi_crackle",
+        "volume": 0.6
+      }
+    ]
+  },
+  "power.emi_fault": {
+    "subtitle": "subtitles.projectrebirth.power.emi_fault",
+    "sounds": [
+      {
+        "name": "projectrebirth:power/emi_fault",
+        "volume": 0.8
+      }
+    ]
+  },
+  "power.low_charge": {
+    "subtitle": "subtitles.projectrebirth.power.low_charge",
+    "sounds": [
+      {
+        "name": "projectrebirth:power/low_charge",
+        "volume": 0.7
+      }
+    ]
+  },
+  "power.overheat_alarm": {
+    "subtitle": "subtitles.projectrebirth.power.overheat_alarm",
+    "sounds": [
+      {
+        "name": "projectrebirth:power/overheat_alarm",
+        "volume": 0.8
+      }
+    ]
+  },
+  "power.charging_hum": {
+    "subtitle": "subtitles.projectrebirth.power.charging_hum",
+    "sounds": [
+      {
+        "name": "projectrebirth:power/charging_hum",
+        "volume": 0.6
+      }
+    ]
   }
 }

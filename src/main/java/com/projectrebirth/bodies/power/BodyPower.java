@@ -184,6 +184,10 @@ public final class BodyPower {
     }
 
     private static void announce(ServerPlayer player, State last, State now) {
+        if (now == State.EMPTY || now == State.LOW && last == State.NORMAL) {
+            // only the player in the body hears its warning
+            player.playNotifySound(com.projectrebirth.core.ModSounds.LOW_CHARGE.get(), net.minecraft.sounds.SoundSource.PLAYERS, 0.8f, now == State.EMPTY ? 0.8f : 1.0f);
+        }
         if (now == State.EMPTY) {
             player.displayClientMessage(Component.translatable("message.projectrebirth.body_power.empty").withStyle(ChatFormatting.RED), false);
         } else if (now == State.LOW && last == State.NORMAL) {

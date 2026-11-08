@@ -16,7 +16,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -108,7 +107,7 @@ public final class Emi {
             BodyWear.add(player, (float) (RebirthConfig.EMI_FAULT_WEAR.get() * BodyWear.classMultiplier(bodyClass)));
             player.displayClientMessage(Component.translatable("message.projectrebirth.emi.fault").withStyle(ChatFormatting.LIGHT_PURPLE), true);
             // placeholder until the sounds of block H
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.5f, 1.8f);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), com.projectrebirth.core.ModSounds.EMI_FAULT.get(), SoundSource.PLAYERS, 0.7f, 1.0f);
         });
     }
 

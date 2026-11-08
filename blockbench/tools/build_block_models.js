@@ -431,6 +431,39 @@
         };
     });
 
+    // Charging pad (1.5.0): a low plate (the collision shape is 3 px, set in ChargingPadBlock) with a lamp post at each corner
+    // that glows yellow while it charges.
+    [false, true].forEach(on => {
+        const sides = tex('side', [0, 13, 16, 16]);
+        const lamp = (x, z) => without(box([x, 3, z], [x + 2, 5, z + 2], 'gun', {up: on ? 'yellow' : 'dark'}, on ? GLOW : undefined), 'down');
+        MODELS['charging_pad' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('charging_pad', on, ['top', 'side'], ['top'], 'side'),
+            elements: [
+                box([0, 0, 0], [16, 3, 16], 'gun', {up: tex('top'), north: sides, south: sides, west: sides, east: sides}, on ? GLOW : undefined),
+                lamp(0, 0), lamp(14, 0), lamp(0, 14), lamp(14, 14)
+            ]
+        };
+    });
+
+    // Heater (1.5.0): a box with a glowing grille on every side, corner posts, a plinth and a top plate.
+    [false, true].forEach(on => {
+        const side = tex('side', [2, 2, 14, 14]);
+        MODELS['heater' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('heater', on, ['side', 'top'], ['side']),
+            elements: [
+                box([0, 0, 0], [16, 2, 16], 'mid', {up: 'gun'}),
+                without(box([2, 2, 2], [14, 14, 14], 'dark', {north: side, south: side, west: side, east: side}, on ? GLOW : undefined), 'up', 'down'),
+                without(box([0, 2, 0], [2, 14, 2], 'steel'), 'up', 'down'),
+                without(box([14, 2, 0], [16, 14, 2], 'steel'), 'up', 'down'),
+                without(box([0, 2, 14], [2, 14, 16], 'steel'), 'up', 'down'),
+                without(box([14, 2, 14], [16, 14, 16], 'steel'), 'up', 'down'),
+                box([0, 14, 0], [16, 16, 16], 'mid', {up: tex('top')})
+            ]
+        };
+    });
+
     // Shelter control panel: a console with a status screen, an antenna and an alarm lamp that glows red while it sounds.
     [false, true].forEach(on => {
         MODELS['shelter_control_panel' + (on ? '_on' : '')] = {
@@ -497,6 +530,8 @@
     });
     STATES.backup_battery = {variants: {'working=false': variant('backup_battery'), 'working=true': variant('backup_battery_on')}};
     STATES.radiation_purge_station = {variants: {'working=false': variant('radiation_purge_station'), 'working=true': variant('radiation_purge_station_on')}};
+    STATES.charging_pad = {variants: {'working=false': variant('charging_pad'), 'working=true': variant('charging_pad_on')}};
+    STATES.heater = {variants: {'working=false': variant('heater'), 'working=true': variant('heater_on')}};
     STATES.decontamination_chamber = {variants: {}};
     Object.entries(ROTATIONS).forEach(([facing, y]) => {
         ['lower', 'upper'].forEach(half => {

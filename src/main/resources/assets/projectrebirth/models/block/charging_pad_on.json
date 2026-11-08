@@ -3,7 +3,7 @@
   "textures": {
     "top": "projectrebirth:block/charging_pad_top_on",
     "side": "projectrebirth:block/charging_pad_side",
-    "bottom": "projectrebirth:block/machine_parts",
+    "parts": "projectrebirth:block/machine_parts",
     "particle": "projectrebirth:block/charging_pad_side"
   },
   "elements": [
@@ -37,15 +37,6 @@
             16
           ]
         },
-        "east": {
-          "texture": "#side",
-          "uv": [
-            0,
-            13,
-            16,
-            16
-          ]
-        },
         "west": {
           "texture": "#side",
           "uv": [
@@ -55,13 +46,284 @@
             16
           ]
         },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            0,
+            13,
+            16,
+            16
+          ]
+        },
         "up": {
-          "texture": "#top"
+          "texture": "#top",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
         },
         "down": {
-          "texture": "#bottom",
-          "cullface": "down"
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
         }
+      },
+      "neoforge_data": {
+        "block_light": 15
+      }
+    },
+    {
+      "from": [
+        0,
+        3,
+        0
+      ],
+      "to": [
+        2,
+        5,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            9,
+            15,
+            11
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15
+      }
+    },
+    {
+      "from": [
+        14,
+        3,
+        0
+      ],
+      "to": [
+        16,
+        5,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            9,
+            15,
+            11
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15
+      }
+    },
+    {
+      "from": [
+        0,
+        3,
+        14
+      ],
+      "to": [
+        2,
+        5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            9,
+            15,
+            11
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15
+      }
+    },
+    {
+      "from": [
+        14,
+        3,
+        14
+      ],
+      "to": [
+        16,
+        5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            9,
+            1,
+            11,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            9,
+            15,
+            11
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15
       }
     }
   ]

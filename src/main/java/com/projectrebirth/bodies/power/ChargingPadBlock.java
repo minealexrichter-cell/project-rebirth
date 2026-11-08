@@ -109,7 +109,8 @@ public class ChargingPadBlock extends BaseEntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide ? null : createTickerHelper(type, BodyPowerRegistry.CHARGING_PAD_ENTITY.get(),
+        // on the client: the hum while it charges
+        return level.isClientSide ? TechSounds.clientLoop(TechSounds.WORKING, com.projectrebirth.core.ModSounds.CHARGING_HUM.get()) : createTickerHelper(type, BodyPowerRegistry.CHARGING_PAD_ENTITY.get(),
                 (tickLevel, pos, tickState, pad) -> pad.serverTick());
     }
 }

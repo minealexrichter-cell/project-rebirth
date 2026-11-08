@@ -112,6 +112,8 @@ public final class CatastropheClient {
         }
         tickFlash();
         tickHiss(level, player);
+        tickWind(minecraft);
+        tickCrackle(level, player);
         tickClicks(level, player);
         tickParticles(level, player, minecraft);
     }
@@ -165,6 +167,60 @@ public final class CatastropheClient {
     }
 
     /** Acid hisses where it falls on something: only where it rains and the sky is open. */
+    /** The loop of the dust storm wind, while it plays. */
+    private static WindLoop wind;
+
+    /** The wind of a dust storm: one loop, as loud as the storm looks, quieter under a roof, silent in a sealed room. */
+    private static void tickWind(Minecraft minecraft) {
+        if (is(Environment.DUST_STORM) && shown > 0.05f && (wind == null || wind.isStopped())) {
+            wind = new WindLoop();
+            minecraft.getSoundManager().play(wind);
+        }
+    }
+
+    private static float windVolume() {
+        return is(Environment.DUST_STORM) ? shown * (0.25f + 0.75f * open) : 0.0f;
+    }
+
+    private static final class WindLoop extends net.minecraft.client.resources.sounds.AbstractTickableSoundInstance {
+        WindLoop() {
+            super(ModSounds.DUST_WIND.get(), SoundSource.WEATHER, RANDOM);
+            this.looping = true;
+            this.delay = 0;
+            this.volume = 0.0f;
+            this.relative = true;
+            this.attenuation = net.minecraft.client.resources.sounds.SoundInstance.Attenuation.NONE;
+        }
+
+        @Override
+        public boolean canStartSilent() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            volume = windVolume();
+            if (volume <= 0.0f) {
+                stop();
+            }
+        }
+    }
+
+    /**
+     * The crackle of an EMI storm: now and then near the player, more often when the player's own devices are disturbed
+     * (a body or an armor); not in a sealed room.
+     */
+    private static void tickCrackle(ClientLevel level, LocalPlayer player) {
+        if (!is(Environment.EMI_STORM) || shown < 0.15f || EnvironmentClient.inSealedRoom()) {
+            return;
+        }
+        float chance = (Interference.active() ? 0.05f : 0.015f) * shown;
+        if (RANDOM.nextFloat() < chance) {
+            level.playLocalSound(player.getX(), player.getEyeY(), player.getZ(), ModSounds.EMI_CRACKLE.get(), SoundSource.WEATHER,
+                    0.3f + 0.4f * shown, 0.8f + 0.4f * RANDOM.nextFloat(), false);
+        }
+    }
+
     private static void tickHiss(ClientLevel level, LocalPlayer player) {
         if (!is(Environment.ACID_RAIN) || shown < 0.15f || RANDOM.nextFloat() >= 0.06f * shown) {
             return;

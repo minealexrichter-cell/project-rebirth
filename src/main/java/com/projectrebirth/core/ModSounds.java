@@ -42,6 +42,13 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> AIRLOCK_HISS = register("shelter.airlock_hiss");
     public static final DeferredHolder<SoundEvent, SoundEvent> DECONTAMINATION_SHOWER = register("shelter.decontamination_shower");
     public static final DeferredHolder<SoundEvent, SoundEvent> LEAK_ALARM = register("shelter.leak_alarm");
+    // 1.5.0: technical limits
+    public static final DeferredHolder<SoundEvent, SoundEvent> DUST_WIND = register("power.dust_wind");
+    public static final DeferredHolder<SoundEvent, SoundEvent> EMI_CRACKLE = register("power.emi_crackle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> EMI_FAULT = register("power.emi_fault");
+    public static final DeferredHolder<SoundEvent, SoundEvent> LOW_CHARGE = register("power.low_charge");
+    public static final DeferredHolder<SoundEvent, SoundEvent> OVERHEAT_ALARM = register("power.overheat_alarm");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CHARGING_HUM = register("power.charging_hum");
 
     private ModSounds() {
     }

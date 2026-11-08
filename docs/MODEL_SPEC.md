@@ -117,6 +117,8 @@ root
 
 | Блок | Модель | Особенности |
 |---|---|---|
+| Зарядная платформа (1.5.0) | `charging_pad.json`, `charging_pad_on.json` | плита 3/16 (форма столкновения 3 px в `ChargingPadBlock`), фонари по углам до 5/16; `_on` — светится, кольцо контактов анимировано |
+| Обогреватель (1.5.0) | `heater.json`, `heater_on.json` | короб с решёткой на четырёх сторонах, стойки по углам; `_on` — решётка светится и мерцает |
 | Капсула переноса | `models/block/transfer_capsule_lower.json`, `_upper.json` | лицом на север; пол 2/16, низ крыши 34/16, верх 37,5/16: крыша заходит в третий блок; форма столкновения в `TransferCapsuleBlock` должна совпадать |
 | Цех электроники, сборочная станция, станция брони, станция обслуживания | `models/block/<id>.json`, `<id>_on.json` (работает) | все детали в пределах блока (0–16 по всем осям); лицо на север; блоки с `noOcclusion`; наложения граней запрещены, их проверяет `saveAll` |
 | Ядро фракции | `models/block/faction_core.json` | кристалл в открытой рамке, текстуры анимированы |
@@ -142,7 +144,7 @@ root
 `sealing_module`, `jetpack`, `compressed_air_module`, `floodlight`, `upgrade_mounting_tool`;
 с 1.5.0: `extra_battery`, `cooling_module`, `emi_shielding`, `emi_screen`, `thermal_liner`, `body_battery`.
 
-Блоки 1.5.0: `charging_pad` (зарядная площадка), `heater` (обогреватель) — пока значки и текстуры-заглушки (`build_power_placeholders.js`), замена в блоке H.
+Значки предметов 1.5.0 рисует `build_textures.js` (раздел «technical limits»).
 
 Оружие: `assault_rifle`, `battle_rifle`, `combat_shotgun`; патроны: `assault_rifle_ammo`, `battle_rifle_ammo`, `shotgun_shell`. Значки: `textures/item/<id>.png`, 16×16 (`build_textures.js`).
 

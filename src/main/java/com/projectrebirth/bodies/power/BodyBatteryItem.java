@@ -8,7 +8,6 @@ import com.projectrebirth.technology.energy.EnergyUtil;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -76,8 +75,8 @@ public class BodyBatteryItem extends Item {
 
     @Override
     public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remainingTicks) {
-        if (!level.isClientSide && remainingTicks % 10 == 0) {
-            level.playSound(null, entity.blockPosition(), SoundEvents.BEACON_AMBIENT, SoundSource.PLAYERS, 0.5f, 1.6f);
+        if (!level.isClientSide && remainingTicks % 30 == 0) {
+            level.playSound(null, entity.blockPosition(), com.projectrebirth.core.ModSounds.CHARGING_HUM.get(), SoundSource.PLAYERS, 0.5f, 1.3f);
         }
     }
 

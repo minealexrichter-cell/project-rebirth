@@ -2353,6 +2353,182 @@
         '....kSSSSSSk....',
         '....kkkkkkkk....'], {k: '#14181d', S: '#8c97a3', g: '#4d8ea6', G: '#c6eef8', w: YELLOW, y: '#f2c025', z: '#23262b'}));
 
+    // ---------------------------------------------------------------- technical limits (version 1.5.0)
+
+    const CHARGE_YELLOW = '#ffd54f', HEAT_ORANGE = '#ff7a1a';
+
+    /** Charging pad: a dark plate with hazard edges, a ring of brass contacts and a socket; the ring runs while it charges. */
+    function padTop(step) {
+        const p = new Painter(191);
+        p.bevel(0, 0, 16, 16, GUN, 0.03);
+        hazard(p, 0, 0, 16, 1);
+        hazard(p, 0, 15, 16, 1);
+        p.inset(2, 2, 12, 12, DARK, 0.02);
+        const ring = [[5, 2], [6, 2], [7, 2], [8, 2], [9, 2], [10, 2], [11, 3], [12, 4], [13, 5], [13, 6], [13, 7], [13, 8], [13, 9], [13, 10],
+            [12, 11], [11, 12], [10, 13], [9, 13], [8, 13], [7, 13], [6, 13], [5, 13], [4, 12], [3, 11], [2, 10], [2, 9], [2, 8], [2, 7],
+            [2, 6], [2, 5], [3, 4], [4, 3]];
+        ring.forEach(([x, y], i) => {
+            const lit = step === null ? false : (i + step * 4) % 8 < 3;
+            p.px(step === null ? '#8a6a1a' : lit ? '#fff3b0' : CHARGE_YELLOW, [x, y]);
+        });
+        p.bevel(5, 5, 6, 6, STEEL, 0.03);
+        p.inset(6, 6, 4, 4, '#14171b', 0.01);
+        p.grid(['.y..', 'yy..', '.yy.', '..y.'], {y: step === null ? '#5c5a4a' : CHARGE_YELLOW}, 6, 6);
+        return p;
+    }
+    block('charging_pad_top', () => padTop(null));
+    animated('charging_pad_top_on', 8, 2, i => padTop(i));
+    block('charging_pad_side', () => {
+        const p = new Painter(192);
+        p.noise(0, 0, 16, 16, GUN, 0.03);
+        p.rect(0, 11, 16, 1, STEEL);
+        hazard(p, 0, 12, 16, 4);
+        [3, 12].forEach(x => p.inset(x, 13, 2, 2, DARK, 0.01));
+        return p;
+    });
+
+    /** Heater: a steel box, an orange grille on every side that glows and shimmers while it heats. */
+    function heaterSide(glow) {
+        const p = casing(new Painter(193), HEAT_ORANGE);
+        p.inset(3, 3, 10, 10, '#14171b', 0.02);
+        for (let y = 4; y < 12; y += 2) {
+            const c = glow === null ? '#4a2a1a' : [HEAT_ORANGE, '#ffb347', '#ffd27a', '#ffb347'][(y / 2 + glow) % 4];
+            p.rect(4, y, 8, 1, c);
+        }
+        p.rect(4, 12, 8, 1, STEEL);
+        return p;
+    }
+    block('heater_side', () => heaterSide(null));
+    animated('heater_side_on', 4, 4, i => heaterSide(i));
+    block('heater_top', () => {
+        const p = casing(new Painter(194), HEAT_ORANGE);
+        p.inset(3, 3, 10, 10, DARK, 0.02);
+        for (let x = 4; x < 12; x += 2) {
+            p.rect(x, 4, 1, 8, '#2b3036');
+        }
+        p.bevel(11, 11, 2, 2, '#c83a30');
+        return p;
+    });
+
+    const POWER_PALETTE = {k: '#14181d', H: '#b9c2cc', s: '#6d7680', d: '#3a4149', b: '#20262e', y: CHARGE_YELLOW, Y: '#fff3b0',
+        o: '#e0a800', g: '#3fae5a', G: '#9be0a8', c: '#4fc3f7', C: '#c9f0ff', u: '#d9894a', U: '#f3c08a', n: '#5a3a1e', v: '#a970ff', V: '#dcc6ff',
+        t: '#c9a27a', T: '#e2c9a5', m: '#6d4c33', w: '#f2f6fa', r: '#ff5252'};
+    /** A battery: a steel case with terminals, a level window and a band in its own colour. */
+    function batteryIcon(band) {
+        return () => icon([
+            '................',
+            '.....kk..kk.....',
+            '.....kHk.kHk....',
+            '...kkkkkkkkkkk..',
+            '...kHHHHHHHHsk..',
+            '...kH' + band.repeat(7) + 'dk..',
+            '...kH' + band.repeat(7) + 'dk..',
+            '...kHskkkkkkdk..',
+            '...kHskYyyykdk..',
+            '...kHskyyyykdk..',
+            '...kHskyoookdk..',
+            '...kHskooookdk..',
+            '...kHskkkkkkdk..',
+            '...kssssssssdk..',
+            '...kkkkkkkkkkk..',
+            '................'], POWER_PALETTE);
+    }
+    item('body_battery', batteryIcon('o'));
+    item('extra_battery', batteryIcon('g'));
+    item('cooling_module', () => icon([
+        '................',
+        '..kkkkkkkkkkkk..',
+        '.kHsHsHsHsHsHsk.',
+        '.kHsHsHsHsHsHsk.',
+        '.kHsHskkkkHsHsk.',
+        '.kHsHkcCCckHsHk.',
+        '.kHsHkCccCkHsHk.',
+        '.kHsHkCccCkHsHk.',
+        '.kHsHkcCCckHsHk.',
+        '.kHsHskkkkHsHsk.',
+        '.kHsHsHsHsHsHsk.',
+        '.kddddddddddddk.',
+        '..kkkkkkkkkkkk..',
+        '...kk......kk...',
+        '................',
+        '................'], POWER_PALETTE));
+    item('thermal_liner', () => icon([
+        '................',
+        '..mmmmmmmmmmmm..',
+        '.mTtTtTtTtTtTtm.',
+        '.mtTtTtTtTtTtTm.',
+        '.mTtTtTtTtTtTtm.',
+        '.mmmmmmmmmmmmmm.',
+        '.mTtTtTtTtTtTtm.',
+        '.mtTtTtTtTtTtTm.',
+        '.mTtTtTtTtTtTtm.',
+        '.mmmmmmmmmmmmmm.',
+        '.mTtTtTtTtTtTtm.',
+        '.mtTtTtTtTtTtTm.',
+        '.mTtTtTtTtTtTtm.',
+        '..mmmmmmmmmmmm..',
+        '...w...w...w....',
+        '................'], POWER_PALETTE));
+    /** A plate with a grid over it: the copper mesh of the shielding, the violet grid of the EMI screen. */
+    function meshIcon(wire, light, rim) {
+        return () => icon([
+            '................',
+            '..kkkkkkkkkkkk..',
+            '.k' + rim + rim + rim + rim + rim + rim + rim + rim + rim + rim + rim + rim + 'k.',
+            '.k' + rim + light + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + rim + 'k.',
+            '.k' + rim + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + rim + rim + 'k.',
+            '.k' + rim + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + rim + 'k.',
+            '.k' + rim + 'd' + wire + 'd' + light + 'd' + wire + 'd' + wire + 'd' + rim + rim + 'k.',
+            '.k' + rim + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + rim + 'k.',
+            '.k' + rim + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + light + 'd' + rim + rim + 'k.',
+            '.k' + rim + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + rim + 'k.',
+            '.k' + rim + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + wire + 'd' + rim + rim + 'k.',
+            '.k' + rim + rim + rim + rim + rim + rim + rim + rim + rim + rim + rim + rim + 'k.',
+            '..kkkkkkkkkkkk..',
+            '....kk....kk....',
+            '................',
+            '................'], POWER_PALETTE);
+    }
+    item('emi_shielding', meshIcon('u', 'U', 'n'));
+    item('emi_screen', meshIcon('v', 'V', 's'));
+
+    // Symptoms of heat and cold: a sun burning on a body, a snowflake.
+    const THERMAL_PALETTE = {k: '#14181d', o: '#ff7043', O: '#ffd27a', r: '#b3361a', b: '#4fc3f7', B: '#e1f5fe', d: '#1f4f7a'};
+    TEXTURES['mob_effect/heatstroke'] = () => icon([
+        '................',
+        '.......kk.......',
+        '..kk..kOOk..kk..',
+        '..kOk..kk..kOk..',
+        '...kk.kkkk.kk...',
+        '.....kooook.....',
+        '.kk.kooOOook.kk.',
+        'kOOkkoOOOOokkOOk',
+        'kOOkkoOOOOokkOOk',
+        '.kk.kooOOook.kk.',
+        '.....kooook.....',
+        '...kk.krrk.kk...',
+        '..kOk..kk..kOk..',
+        '..kk..kOOk..kk..',
+        '.......kk.......',
+        '................'], THERMAL_PALETTE);
+    TEXTURES['mob_effect/hypothermia'] = () => icon([
+        '................',
+        '.......kk.......',
+        '...kk.kBBk.kk...',
+        '...kBkkbbkkBk...',
+        '....kBkbbkBk....',
+        '.kk..kbbbbk..kk.',
+        'kBBkkkbBBbkkkBBk',
+        'kbbbbbBBBBbbbbbk',
+        'kbbbbbBBBBbbbbbk',
+        'kBBkkkbBBbkkkBBk',
+        '.kk..kbbbbk..kk.',
+        '....kBkbbkBk....',
+        '...kBkkbbkkBk...',
+        '...kk.kBBk.kk...',
+        '.......kk.......',
+        '................'], THERMAL_PALETTE);
+
     // ---------------------------------------------------------------- output
 
     function savePng(canvas, path) {

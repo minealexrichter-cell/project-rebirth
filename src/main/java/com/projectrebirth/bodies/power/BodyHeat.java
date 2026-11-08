@@ -163,6 +163,24 @@ public final class BodyHeat {
             OVERHEATED.remove(player.getUUID());
         }
         applyLimits(player);
+        steam(player);
+    }
+
+    /**
+     * A throttled body lets off steam, an overheated one sparks as well; every player around sees it. Once a second, so the
+     * puffs come in short bursts.
+     */
+    private static void steam(ServerPlayer player) {
+        State state = state(player);
+        if (state.ordinal() < State.THROTTLED.ordinal() || !(player.level() instanceof net.minecraft.server.level.ServerLevel level)) {
+            return;
+        }
+        double y = player.getY() + player.getBbHeight() * 0.75;
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.WHITE_SMOKE, player.getX(), y, player.getZ(), 14, 0.3, 0.35, 0.3, 0.03);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, player.getX(), player.getY() + player.getBbHeight(), player.getZ(), 3, 0.2, 0.1, 0.2, 0.02);
+        if (state == State.OVERHEATED) {
+            level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, player.getX(), y, player.getZ(), 5, 0.3, 0.3, 0.3, 0.1);
+        }
     }
 
     /** Heat of a hot biome or a dimension where water boils. */
@@ -244,6 +262,10 @@ public final class BodyHeat {
                     case THROTTLED -> "throttled";
                     default -> "overheated";
                 };
+                if (state.ordinal() >= State.THROTTLED.ordinal()) {
+                    serverPlayer.playNotifySound(com.projectrebirth.core.ModSounds.OVERHEAT_ALARM.get(), net.minecraft.sounds.SoundSource.PLAYERS, 0.8f,
+                            state == State.OVERHEATED ? 0.85f : 1.0f);
+                }
                 serverPlayer.displayClientMessage(Component.translatable("message.projectrebirth.body_heat." + key)
                         .withStyle(state == State.WARM ? ChatFormatting.GOLD : ChatFormatting.RED), false);
             } else if (last != null && last.ordinal() >= State.THROTTLED.ordinal() && state.ordinal() < State.THROTTLED.ordinal()) {

@@ -28,7 +28,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 /**
  * Version 1.5.2: the combat armor opens before its pilot gets in and out. Get in: right click, the shell opens, the player
  * steps in, it closes. Get out: sneak, it opens, the pilot steps out in front, it closes. While it is not shut the armor
- * does not walk. The other variants still let their pilot in and out at once.
+ * does not walk. The mobile armor opens the same way (its chest plate and muzzle); the worker still lets its pilot in and out
+ * at once.
  */
 @GameTestHolder(ProjectRebirth.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -108,24 +109,45 @@ public class ArmorShellGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE)
-    public static void otherArmorsStillLetThePilotInAtOnce(GameTestHelper helper) {
+    @GameTest(template = TEMPLATE, timeoutTicks = 200)
+    public static void theMobileArmorOpensToo(GameTestHelper helper) {
         PowerArmorEntity armor = armor(helper, ArmorVariant.MOBILE);
         ServerPlayer player = playerBeside(helper, armor);
         armor.interact(player, InteractionHand.MAIN_HAND);
-        helper.assertTrue(player.getVehicle() == armor, "A mobile armor (no opening model yet) takes the pilot at once");
+        helper.assertTrue(armor.shellState() == PowerArmorEntity.SHELL_OPENING, "Right click opens the mobile armor");
+        helper.assertFalse(player.isPassenger(), "The player waits until it is open");
+        helper.runAtTickTime(WHOLE + 5, () -> {
+            helper.assertTrue(player.getVehicle() == armor, "In");
+            helper.assertTrue(armor.isShellClosed(), "and shut");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void otherArmorsStillLetThePilotInAtOnce(GameTestHelper helper) {
+        PowerArmorEntity armor = armor(helper, ArmorVariant.WORKER);
+        ServerPlayer player = playerBeside(helper, armor);
+        armor.interact(player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(player.getVehicle() == armor, "A worker armor (no opening model yet) takes the pilot at once");
         helper.assertTrue(armor.isShellClosed(), "and never opens");
         helper.succeed();
     }
 
     /**
-     * Version 1.5.2: no two faces of the combat armor lie in one plane over each other, so no texture flickers. The upgrade
-     * parts are left out (one shows at a time), and so are the cuts at the knees and elbows (two halves of one cube).
+     * Version 1.5.2: no two faces of the combat or the mobile armor lie in one plane over each other, so no texture flickers.
+     * The upgrade parts are left out (one shows at a time), and so are the cuts at the knees and elbows (two halves of one
+     * cube).
      */
     @GameTest(template = TEMPLATE)
-    public static void theCombatModelHasNoFlickeringFaces(GameTestHelper helper) throws Exception {
+    public static void theDetailedModelsHaveNoFlickeringFaces(GameTestHelper helper) throws Exception {
+        checkFaces(helper, "power_armor");
+        checkFaces(helper, "mobile_power_armor");
+        helper.succeed();
+    }
+
+    private static void checkFaces(GameTestHelper helper, String id) throws Exception {
         JsonObject geometry;
-        try (InputStream in = ArmorShellGameTests.class.getResourceAsStream("/assets/projectrebirth/geo/entity/power_armor.geo.json")) {
+        try (InputStream in = ArmorShellGameTests.class.getResourceAsStream("/assets/projectrebirth/geo/entity/" + id + ".geo.json")) {
             geometry = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject()
                     .getAsJsonArray("minecraft:geometry").get(0).getAsJsonObject();
         }
@@ -174,9 +196,9 @@ public class ArmorShellGameTests {
                 }
             }
         }
-        helper.assertTrue(found.isEmpty(), found.size() + " faces lie over each other: " + found.subList(0, Math.min(5, found.size())));
+        helper.assertTrue(found.isEmpty(), id + ": " + found.size() + " faces lie over each other: " + found.subList(0, Math.min(5, found.size())));
         // and its texture is painted (a texture saved before Blockbench had drawn it came out empty once)
-        try (InputStream in = ArmorShellGameTests.class.getResourceAsStream("/assets/projectrebirth/textures/entity/power_armor.png")) {
+        try (InputStream in = ArmorShellGameTests.class.getResourceAsStream("/assets/projectrebirth/textures/entity/" + id + ".png")) {
             java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(in);
             int painted = 0;
             for (int x = 0; x < image.getWidth(); x++) {
@@ -184,8 +206,7 @@ public class ArmorShellGameTests {
                     painted += (image.getRGB(x, y) >>> 24) > 0 ? 1 : 0;
                 }
             }
-            helper.assertTrue(painted > 2000, "The texture is painted: " + painted + " pixels");
+            helper.assertTrue(painted > 2000, id + ": the texture is painted: " + painted + " pixels");
         }
-        helper.succeed();
     }
 }

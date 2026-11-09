@@ -1140,67 +1140,305 @@
         };
     })();
 
-    // Mobile: the sprinter. Slim white and blue shell, narrow visor, swept fins, thrusters on the back and calves.
+    // Mobile (1.5.2, second design): a fast scout on raptor legs. Each leg has three bones: a thick thigh, a long shin that
+    // runs back from a forward knee, and a foot with two walking toes, a raised sickle claw and a heel spur. The body is carried
+    // leaning forward and balanced by a tail of two bones; the long helmet ends in a muzzle. The chest plate and the muzzle
+    // open for the pilot (chest_door, visor). Graphite and olive plates over a dark undersuit, small amber and red marks.
+    // Whole sizes, and parts sink into each other instead of touching face to face (noCoplanarFaces). The legs walk by
+    // inverse kinematics: the toes stay on the ground while the body moves over them.
     (function () {
-        const white = '#dde3ea', blue = '#1f7fe0', dark = '#1e2733', cyan = '#6df0ff', orange = '#ff8a24', grey = '#7d8996';
+        const plate = '#4d5249', light = '#868c7f', edge = '#676d62', dark = '#232628', deep = '#131516', olive = '#525836',
+            tan = '#77705c', amber = '#bf8420', red = '#c4391f', claw = '#34383a', steel = '#979d98';
+        const P = (o, s, paint, opts) => C(o, s, Object.assign({c: plate, n: 0.045}, paint), opts);
+        const U = (o, s, paint, opts) => C(o, s, Object.assign({c: dark, n: 0.05}, paint), opts);
+        const O = (o, s, paint, opts) => C(o, s, Object.assign({c: olive, n: 0.05}, paint), opts);
+        const hub = s => [[0, 0, s, s, deep], [1, 0, s - 2, 1, light], [1, s - 1, s - 2, 1, edge], [0, 1, 1, s - 2, light], [s - 1, 1, 1, s - 2, edge],
+            [Math.floor((s - 1) / 2), Math.floor((s - 1) / 2), s % 2 ? 1 : 2, s % 2 ? 1 : 2, amber]];
+        const grille = (x, y, w, h) => {
+            const ops = [[x, y, w, h, deep]];
+            for (let i = 0; i < h; i += 2) ops.push([x, y + i, w, 1, edge]);
+            return ops;
+        };
+        const DEG = 180 / Math.PI;
+        /**
+         * A part along a bone segment seen from the side, from p (the upper end) to q, as [y, z] points: x0 and w across, d
+         * deep, a whole length (plus extra). Tilted about x so that it lies along the segment; shift moves it off the line,
+         * positive toward the back of the segment.
+         */
+        const seg = (x0, w, d, p, q, paint, extra, shift) => {
+            const dy = q[0] - p[0], dz = q[1] - p[1], l = Math.hypot(dy, dz);
+            const n = shift ? [dz / l * shift, -dy / l * shift] : [0, 0];
+            const length = Math.round(l) + (extra || 0);
+            const my = (p[0] + q[0]) / 2 + n[0], mz = (p[1] + q[1]) / 2 + n[1];
+            const tilt = Math.round(Math.atan2(p[1] - q[1], p[0] - q[0]) * DEG * 10) / 10;
+            return C([x0, my - length / 2, mz - d / 2], [w, length, d], paint, {rot: [tilt, 0, 0], pivot: [x0 + w / 2, my, mz]});
+        };
+
+        // the joints of the right leg in the side view, [y, z]
+        const HIP = [18, 0], KNEE = [12.5, -3.5], ANKLE = [6.5, 3], BALL = [1, 0];
+
+        // ---------------------------------------------------------------- the legs (right; the left is mirrored)
+        const thigh = [
+            seg(-7, 5, 5, HIP, KNEE, {c: plate, n: 0.045, f: [[0, 0, 5, 1, light], [1, 2, 3, 4, shade(plate, 0.85)], [0, 8, 5, 1, dark]],
+                sd: [[0, 0, 5, 1, light], [1, 3, 3, 1, dark], [1, 5, 3, 1, dark]], k: [[0, 0, 5, 1, light], [1, 2, 3, 5, dark]]}, 2),
+            seg(-7.8, 1, 6, [19, 0.5], [13, -3], {c: olive, n: 0.05, sd: [[0, 0, 6, 1, shade(olive, 1.25)], [1, 2, 4, 3, shade(olive, 0.82)], [2, 3, 2, 1, tan]]}),
+            U([-7.4, 16, -2.5], [6, 4, 5], {sd: [[0, 0, 5, 1, edge]], f: [[0, 0, 6, 1, edge]]}),
+            U([-8.3, 16.5, -1.5], [1, 3, 3], {sd: hub(3), edge: false}),
+            seg(-5, 1, 1, [17, -2], [12.5, -4.8], {c: light, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false}, 0, -2.4)
+        ];
+        const shin = [
+            U([-6.5, 10.5, -5.5], [4, 4, 4], {sd: hub(4), f: [[0, 0, 4, 1, edge]]}),
+            P([-6, 10.8, -6.3], [3, 3, 1], {f: [[0, 0, 3, 1, light], [1, 1, 1, 1, amber]], edge: false}),
+            seg(-6, 3, 3, KNEE, ANKLE, {c: dark, n: 0.05, all: [[0, 3, 3, 1, deep], [0, 7, 3, 1, deep]]}, 1),
+            seg(-6.5, 4, 2, [11.5, -2.5], [7.5, 1.8], {c: plate, n: 0.045, k: [[0, 0, 4, 1, light], [1, 2, 2, 3, shade(plate, 0.82)]],
+                f: [[0, 0, 4, 1, light]], sd: [[0, 0, 2, 1, light]]}, 0, 1.8),
+            seg(-5, 1, 1, KNEE, ANKLE, {c: steel, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false}, -2, -1.9)
+        ];
+        const toeTip = (x, z) => C([x, 0.4, z - 0.9], [1, 2, 1], {c: claw, n: 0.03, all: [[0, 1, 1, 1, steel]], edge: false},
+            {rot: [32, 0, 0], pivot: [x + 0.5, 1.6, z - 0.4]});
+        const foot = [
+            U([-6, 5, 1.5], [3, 3, 3], {sd: hub(3), edge: false}),
+            seg(-6, 3, 3, ANKLE, BALL, {c: plate, n: 0.045, f: [[0, 0, 3, 1, light], [1, 2, 1, 3, shade(plate, 0.8)]], sd: [[0, 0, 3, 1, light]]}, 1),
+            seg(-5.5, 2, 1, ANKLE, BALL, {c: olive, n: 0.05, f: [[0, 0, 2, 1, shade(olive, 1.25)]]}, -1, -1.8),
+            U([-6.5, 0, -1.5], [4, 2, 3], {tp: [[1, 1, 2, 1, edge]], sd: [[0, 0, 3, 1, edge]]}),
+            P([-6.3, 0.3, -5.3], [1, 2, 4], {tp: [[0, 0, 1, 1, light]], all: [[0, 0, 4, 1, light]]}),
+            P([-5, 0.3, -6.3], [1, 2, 5], {tp: [[0, 0, 1, 1, light]], all: [[0, 0, 5, 1, light]]}),
+            toeTip(-6.3, -5.3), toeTip(-5, -6.3),
+            // the raised inner toe with the sickle claw
+            P([-3.7, 1.3, -3.3], [1, 2, 2], {all: [[0, 0, 2, 1, light]]}),
+            C([-3.7, 2.9, -3.7], [1, 4, 1], {c: claw, n: 0.03, all: [[0, 0, 1, 1, steel]], edge: false}, {rot: [-38, 0, 0], pivot: [-3.2, 3, -2.9]}),
+            U([-5, 0.5, 1.3], [2, 2, 2], {k: [[0, 0, 2, 1, edge]]})
+        ];
+        const legChain = [['leg', 'root', [HIP[0], HIP[1]], thigh], ['shin', 'leg', KNEE, shin], ['foot', 'shin', ANKLE, foot]];
+        const legBones = [];
+        for (const [name, parent, [y, z], cubes] of legChain) {
+            legBones.push({name: 'right_' + name, parent: parent === 'root' ? 'root' : 'right_' + parent, pivot: [-4.5, y, z], cubes});
+            legBones.push({name: 'left_' + name, parent: parent === 'root' ? 'root' : 'left_' + parent, pivot: [4.5, y, z], cubes: cubes.map(c => mirror(c))});
+        }
+
+        // ---------------------------------------------------------------- the torso and the chest plate
+        const sidePlate = P([-7.8, 22, -3], [1, 8, 7], {sd: [[0, 0, 7, 1, light], [1, 2, 5, 1, dark], [1, 4, 5, 1, dark], [1, 6, 5, 1, dark]]});
+        const skirt = P([-7.2, 16.3, -3.4], [1, 4, 7], {sd: [[0, 0, 7, 1, light], [1, 2, 5, 1, shade(plate, 0.8)]]});
+        const fin = y => P([-0.5, y, 6.6], [1, 4, 3], {sd: [[0, 0, 3, 1, light]], all: [[0, 0, 1, 1, light]]}, {rot: [35, 0, 0], pivot: [0, y, 7.3]});
+        const torso = [
+            U([-6, 15.8, -3.5], [12, 5, 8], {f: [[0, 0, 12, 1, edge], [4, 1, 4, 3, deep]], sd: [[0, 0, 8, 1, edge]], k: [[0, 0, 12, 1, edge]]}),
+            // the hull: its front face is the inside of the suit, seen when the chest plate is open
+            U([-7, 20.5, -4], [14, 11, 9], {f: [[0, 0, 14, 11, deep], [1, 1, 12, 1, dark], [2, 3, 2, 6, dark], [10, 3, 2, 6, dark],
+                [5, 3, 4, 4, '#1d2023'], [6, 4, 2, 2, red], [4, 9, 6, 1, tan]], k: [[0, 0, 14, 1, edge]], sd: [[0, 0, 9, 1, edge], [2, 2, 5, 6, shade(dark, 1.25)]]}),
+            P([-5, 21.5, 4.8], [10, 9, 3], {k: [[0, 0, 10, 1, light], ...grille(1, 2, 8, 5), [1, 8, 2, 1, amber], [7, 8, 2, 1, deep]], sd: [[0, 0, 3, 1, light]], tp: [[0, 0, 10, 1, light]]}),
+            sidePlate, mirror(sidePlate),
+            U([-5, 31.3, -3], [10, 2, 7], {all: [[0, 0, 10, 1, edge]]}),
+            skirt, mirror(skirt),
+            P([-5, 17, -4.3], [10, 3, 1], {f: [[0, 0, 10, 1, light], [1, 2, 8, 1, dark]]}),
+            fin(22.5), fin(25.5), fin(28.5)
+        ];
+        const rib = (y) => P([-4.5, y, -6.3], [3, 1, 1], {f: [[0, 0, 3, 1, light]], edge: false});
+        const door = [
+            P([-6, 21, -5.8], [12, 10, 2], {f: [[0, 0, 12, 1, light], [1, 6, 10, 1, shade(plate, 0.8)], [0, 9, 12, 1, dark]], k: [[0, 0, 12, 10, deep]],
+                sd: [[0, 0, 2, 1, light]]}),
+            P([-5, 26, -6.6], [10, 4, 1], {f: [[0, 0, 10, 1, light], [1, 1, 3, 2, shade(plate, 0.85)], [6, 1, 3, 2, shade(plate, 0.85)], [0, 3, 10, 1, dark]]}),
+            P([-0.5, 22.5, -6.7], [1, 8, 1], {f: [[0, 0, 1, 8, edge], [0, 0, 1, 1, light], [0, 6, 1, 1, red]], edge: false}),
+            rib(22.6), mirror(rib(22.6)), rib(24.4), mirror(rib(24.4))
+        ];
+
+        // ---------------------------------------------------------------- the head, the muzzle and the tail
+        const cheek = P([-3.8, 33.8, -3.5], [1, 3, 5], {sd: [[0, 0, 5, 1, light], [1, 2, 3, 1, dark]]});
+        const headFin = C([-3, 36.6, 1], [1, 2, 6], {c: plate, n: 0.045, sd: [[0, 0, 6, 1, light]], all: [[0, 0, 1, 1, light]]}, {rot: [-22, 0, 0], pivot: [-2.5, 37, 1]});
+        const head = [
+            U([-2.5, 31, -3.4], [5, 3, 5], {all: [[0, 1, 5, 1, deep]]}),
+            P([-3.5, 33.5, -4.5], [7, 5, 8], {tp: [[3, 0, 1, 8, dark]], sd: [[0, 0, 8, 1, light], [5, 2, 2, 2, deep]], k: [[0, 0, 7, 1, light], ...grille(1, 1, 5, 3)]}),
+            P([-0.5, 38.3, -3.9], [1, 1, 7], {tp: [[0, 0, 1, 7, light]], edge: false}),
+            cheek, mirror(cheek),
+            headFin, mirror(headFin)
+        ];
+        const eye = C([-2.8, 36, -8], [1, 1, 3], {c: red, n: 0.03, sd: [[0, 0, 3, 1, red], [0, 0, 1, 1, shade(red, 1.4)]], edge: false});
+        const muzzle = [
+            P([-2.5, 33.8, -10.3], [5, 4, 6], {f: [[0, 0, 5, 1, light], [0, 3, 5, 1, dark]], sd: [[0, 0, 6, 1, light], [1, 2, 4, 1, dark]], tp: [[2, 0, 1, 6, dark]],
+                k: [[0, 0, 5, 4, deep]]}),
+            P([-3, 37.3, -9.2], [6, 1, 5], {f: [[0, 0, 6, 1, light]], tp: [[0, 0, 6, 1, light]], edge: false}),
+            eye, mirror(eye),
+            U([-2, 33, -9.6], [4, 1, 5], {f: [[0, 0, 4, 1, edge]], sd: [[0, 0, 5, 1, edge], [1, 0, 1, 1, deep], [3, 0, 1, 1, deep]]}),
+            U([-1.5, 34.3, -10.6], [3, 2, 1], {f: [[0, 0, 3, 2, deep], [0, 0, 3, 1, edge]], edge: false}),
+            P([-0.5, 37.6, -10], [1, 1, 6], {tp: [[0, 0, 1, 6, light]], edge: false})
+        ];
+        const tail = [
+            U([-2.5, 17, 4.3], [5, 4, 8], {sd: [[0, 0, 8, 1, edge], [2, 2, 1, 1, deep], [5, 2, 1, 1, deep]], k: [[0, 0, 5, 1, edge]]}),
+            P([-2, 20.8, 5.5], [4, 1, 6], {tp: [[0, 0, 4, 1, light], [1, 2, 2, 3, shade(plate, 0.82)]], all: [[0, 0, 4, 1, light]]})
+        ];
+        const tailTip = [
+            U([-1.5, 17.5, 12.1], [3, 3, 7], {sd: [[0, 0, 7, 1, edge], [3, 1, 1, 1, deep]]}),
+            P([-0.5, 20.3, 15], [1, 3, 4], {sd: [[0, 0, 4, 1, light]]}),
+            P([-4, 18.5, 16], [8, 1, 3], {tp: [[0, 0, 8, 1, light], [0, 2, 1, 1, red], [7, 2, 1, 1, red]], all: [[0, 0, 8, 1, light]]}),
+            C([-0.5, 18, 18.9], [1, 1, 1], {c: red, n: 0.03, edge: false})
+        ];
+
+        // ---------------------------------------------------------------- the arms (right; the left is mirrored)
+        const armClaw = x => C([x, 5.5, -2.4], [1, 4, 1], {c: claw, n: 0.03, all: [[0, 0, 1, 1, steel]], edge: false}, {rot: [35, 0, 0], pivot: [x + 0.5, 9.3, -1.9]});
+        const arm = [
+            P([-12.5, 27, -3.5], [6, 6, 7], {f: [[0, 0, 6, 1, light], [0, 5, 6, 1, olive]], k: [[0, 0, 6, 1, light]],
+                sd: [[0, 0, 7, 1, light], [1, 2, 5, 1, edge], [1, 4, 5, 1, dark]], tp: [[1, 1, 4, 5, edge]]}, {uv: ARM_UV.shoulderR}),
+            U([-11.5, 13, -2], [4, 15, 4], {all: [[0, 4, 4, 1, deep], [0, 9, 4, 1, deep]]}, {uv: ARM_UV.armR}),
+            U([-12, 9, -2.5], [5, 5, 5], {f: [[0, 0, 5, 1, edge], [1, 2, 1, 2, edge], [3, 2, 1, 2, edge]], all: [[0, 0, 5, 1, edge]]}, {uv: ARM_UV.fistR}),
+            P([-12.8, 32.7, -3], [7, 1, 6], {tp: [[1, 1, 5, 4, edge]], all: [[0, 0, 7, 1, light]]}),
+            P([-12.1, 13.6, -3], [5, 5, 6], {f: [[0, 0, 5, 1, light], [2, 1, 1, 3, dark]], sd: [[0, 0, 6, 1, light], [1, 2, 4, 1, dark]], k: [[0, 0, 5, 1, light]],
+                bt: [[1, 1, 3, 4, dark]]}),
+            O([-12.2, 20, -2.6], [1, 6, 5], {sd: [[0, 0, 5, 1, shade(olive, 1.25)], [1, 2, 3, 2, shade(olive, 0.82)]]}),
+            armClaw(-11.7), armClaw(-10), armClaw(-8.3)
+        ];
+
+        // ---------------------------------------------------------------- walking on raptor legs
+        const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+        const L1 = dist(HIP, KNEE), L2 = dist(KNEE, ANKLE), L3 = dist(ANKLE, BALL);
+        /** The angle of a segment hanging from a to b, in radians: positive when b is in front (toward -z). */
+        const swing = (a, b) => Math.atan2(a[1] - b[1], a[0] - b[0]);
+        const REST = [swing(HIP, KNEE), swing(KNEE, ANKLE), swing(ANKLE, BALL)];
+        /**
+         * The thigh, shin and foot turns (degrees about x, as in the animation file: negative swings forward) that put the
+         * ball of the foot at ball, with the hip at height hipY over the root and the foot at the angle footAngle.
+         */
+        const legPose = (hipY, ball, footAngle) => {
+            const hip = [hipY, 0];
+            const ankle = [ball[0] + L3 * Math.cos(footAngle), ball[1] + L3 * Math.sin(footAngle)];
+            const reach = Math.min(dist(hip, ankle), L1 + L2 - 0.01);
+            const bend = Math.acos(Math.max(-1, Math.min(1, (L1 * L1 + reach * reach - L2 * L2) / (2 * L1 * reach))));
+            const thighAngle = swing(hip, ankle) + bend; // the knee bends forward
+            const knee = [hip[0] - L1 * Math.cos(thighAngle), hip[1] - L1 * Math.sin(thighAngle)];
+            const d = [thighAngle - REST[0], swing(knee, ankle) - REST[1], footAngle - REST[2]];
+            return [-d[0] * DEG, -(d[1] - d[0]) * DEG, -(d[2] - d[1]) * DEG].map(v => Math.round(v * 100) / 100);
+        };
+        const legsAt = (pose, side) => ({
+            [side + '_leg']: [pose[0], 0, 0], [side + '_shin']: [pose[1], 0, 0], [side + '_foot']: [pose[2], 0, 0]
+        });
+        const sampled = (length, samples, fn) => {
+            const bones = {};
+            for (let i = 0; i <= samples; i++) {
+                const t = (i % samples) / samples, time = (length * i / samples).toFixed(3);
+                for (const [bone, channels] of Object.entries(fn(t))) {
+                    bones[bone] = bones[bone] || {};
+                    for (const [channel, v] of Object.entries(channels)) {
+                        bones[bone][channel] = bones[bone][channel] || {};
+                        bones[bone][channel][time] = v.map(x => Math.round(x * 100) / 100);
+                    }
+                }
+            }
+            return bones;
+        };
+        /**
+         * The raptor walk. Phase 0: the right foot lands in front. In stance the ball of the foot slides back along the ground
+         * and the heel lifts at the end; in the swing the foot folds and comes forward high. The body dips after every
+         * footfall, the tail swings against the hips, the head stays level and still.
+         */
+        const raptorWalk = c => {
+            const footAt = t => {
+                const p = ((t % 1) + 1) % 1;
+                if (p < c.stance) {
+                    const k = p / c.stance, roll = k > 0.65 ? (k - 0.65) / 0.35 : 0;
+                    return [[BALL[0], -c.reach + (c.reach + c.push) * k], REST[2] - roll * roll * c.heel];
+                }
+                const k = (p - c.stance) / (1 - c.stance), e = (1 - Math.cos(Math.PI * k)) / 2;
+                return [[BALL[0] + c.lift * Math.sin(Math.PI * k), c.push - (c.push + c.reach) * e], REST[2] - c.heel * (1 - e) - c.fold * Math.sin(Math.PI * k)];
+            };
+            const drop = t => c.bob * (0.5 + 0.5 * Math.cos(4 * Math.PI * (t - 0.08)));
+            return {length: c.length, loop: 'loop', bones: sampled(c.length, 24, t => {
+                const [rb, ra] = footAt(t), [lb, la] = footAt(t + 0.5);
+                const hipY = HIP[0] - drop(t);
+                const sway = Math.cos(2 * Math.PI * t), pitch = c.pitch * Math.cos(4 * Math.PI * (t - 0.08));
+                const legs = Object.assign(legsAt(legPose(hipY, rb, ra), 'right'), legsAt(legPose(hipY, lb, la), 'left'));
+                const out = {root: {p: [0, -drop(t), 0]}};
+                for (const [bone, r] of Object.entries(legs)) out[bone] = {r};
+                return Object.assign(out, {
+                    torso: {r: [c.lean + pitch, c.twist * sway, c.roll * Math.sin(2 * Math.PI * t)]},
+                    head: {r: [-c.lean * 0.85 - pitch * 1.2, -c.twist * sway * 0.9, -c.roll * Math.sin(2 * Math.PI * t) * 0.8]},
+                    tail: {r: [c.tailLift - pitch * 1.5, -c.twist * 1.8 * sway, 0]},
+                    tail_tip: {r: [2 - pitch, -c.twist * 2.2 * Math.cos(2 * Math.PI * (t - 0.12)), 0]},
+                    right_arm: {r: [c.armX + c.arm * Math.cos(2 * Math.PI * (t + 0.5)), 0, c.armOut]},
+                    left_arm: {r: [c.armX + c.arm * Math.cos(2 * Math.PI * t), 0, -c.armOut]},
+                    right_forearm: {r: [c.elbow, 0, 0]},
+                    left_forearm: {r: [c.elbow, 0, 0]}
+                });
+            })};
+        };
+        // the pose the armor holds when not walking: leaning forward, arms drawn up, the tail out behind
+        const LEAN = 12, HEAD = -10, ARM = -20, ELBOW = -50, TAIL = 3;
+        const pose = {torso: [LEAN, 0, 0], head: [HEAD, 0, 0], tail: [TAIL, 0, 0], arms: [ARM, 0, 5], elbow: [ELBOW, 0, 0]};
+        /** A crouch: the hip down to hipY, the metatarsus laid back toward the ground. */
+        const crouch = (hipY, ballZ, footDeg) => legPose(hipY, [BALL[0], ballZ], footDeg / DEG);
+        const SIT = crouch(11.5, -1.5, 72);
+
         SPECS.mobile_power_armor = {
-            res: 128, seed: 707, wrecked: true,
-            joints: {knee: 9, elbow: 21},
+            res: 256, seed: 707, wrecked: true, noCoplanarFaces: true, cutMainOnly: true,
+            // the knee value places the leg upgrades on the thigh; the legs themselves are jointed by hand above
+            joints: {knee: 12, elbow: 19},
             armTable: 'mobile',
-            bones: armorBones({
-                legPivot: [-3.5, 17, 0], headPivot: [0, 33, 0], armPivot: [-9, 31, 0], hand: [-9.5, 13, 0],
-                armLeftUv: ARM_LEFT_UV,
-                leg: [
-                    C([-6, 3, -2.5], [5, 14, 5], {c: white, n: 0.03, all: [[0, 6, 5, 1, dark]], f: [[2, 7, 1, 7, blue]]}),
-                    C([-6.5, 0, -5], [6, 3, 7], {c: blue, n: 0.04, f: [[1, 1, 4, 1, cyan]], tp: [[1, 0, 4, 3, white]]}),
-                    C([-6, 5, 2.5], [5, 7, 2], {c: dark, n: 0.04, k: [[1, 1, 3, 2, orange], [1, 4, 3, 2, cyan]], sd: [[0, 0, 2, 2, blue]]}),
-                    C([-6.5, 12, -3], [6, 5, 6], {c: blue, n: 0.04, f: [[1, 1, 4, 1, white]]})
-                ],
-                torso: [
-                    C([-5, 17, -3], [10, 4, 6], {c: dark, n: 0.04, f: [...vents(1, 1, 8, 2, grey)]}),
-                    C([-7, 21, -4], [14, 12, 8], {c: white, n: 0.03,
-                        f: [[0, 8, 14, 4, blue], [6, 8, 2, 4, dark], [0, 0, 14, 1, shade(white, 0.85)]],
-                        k: [[2, 2, 10, 8, dark]], sd: [[1, 7, 6, 2, blue]], tp: [[2, 1, 10, 6, shade(white, 0.85)]]}),
-                    C([-4, 26, -5], [8, 6, 1], {c: blue, n: 0.04, f: [[1, 1, 6, 1, cyan], [2, 3, 4, 1, cyan]]}),
-                    C([-7, 22, 4], [3, 10, 3], {c: dark, n: 0.04, sd: [[0, 0, 3, 2, blue]], k: [[1, 8, 1, 1, orange]]}),
-                    mirror(C([-7, 22, 4], [3, 10, 3], {c: dark, n: 0.04, sd: [[0, 0, 3, 2, blue]], k: [[1, 8, 1, 1, orange]]})),
-                    C([-7, 19, 4.5], [3, 3, 2], {c: orange, n: 0.05, edge: false}),
-                    mirror(C([-7, 19, 4.5], [3, 3, 2], {c: orange, n: 0.05, edge: false})),
-                    C([-13, 26, 4.5], [6, 7, 1], {c: blue, n: 0.04, f: [[1, 1, 4, 1, cyan]], k: [[1, 1, 4, 1, cyan]]}, {rot: [0, 0, -18], pivot: [-7, 29, 5]}),
-                    mirror(C([-13, 26, 4.5], [6, 7, 1], {c: blue, n: 0.04, f: [[1, 1, 4, 1, cyan]], k: [[1, 1, 4, 1, cyan]]}, {rot: [0, 0, -18], pivot: [-7, 29, 5]}))
-                ],
-                head: [
-                    C([-3.5, 33, -4], [7, 5, 8], {c: white, n: 0.03,
-                        f: [[0, 1, 7, 2, dark], [1, 1, 5, 1, cyan], [3, 3, 1, 2, blue]],
-                        sd: [[0, 1, 4, 2, dark], [4, 3, 4, 2, blue]], tp: [[3, 0, 1, 8, blue]], k: [[1, 1, 5, 2, blue]]}),
-                    C([-0.5, 38, -2], [1, 2, 7], {c: blue, n: 0.04, edge: false}, {rot: [-10, 0, 0], pivot: [0, 38, 0]})
-                ],
-                arm: [
-                    C([-12, 29, -3.5], [5, 5, 7], {c: blue, n: 0.04, f: [[1, 1, 3, 1, cyan]], sd: [[1, 1, 5, 2, white]]}, {uv: ARM_UV.shoulderR}),
-                    C([-11.5, 14, -2.5], [4, 15, 5], {c: white, n: 0.03, all: [[0, 7, 5, 1, dark]]}, {uv: ARM_UV.armR}),
-                    C([-12, 10, -3], [5, 4, 6], {c: dark, n: 0.05, all: [[0, 0, 6, 1, blue]], f: [[1, 1, 1, 2, grey], [3, 1, 1, 2, grey]]}, {uv: ARM_UV.fistR}),
-                    C([-12, 15, -3], [5, 5, 6], {c: blue, n: 0.04, sd: [[1, 2, 4, 1, cyan]]})
-                ]
-            }),
-            animations: armorAnimations({
-                idle: {length: 2.8, bob: -0.45, arm: -4, armZ: 3, sway: 0.6, ease: 'easeInOutSine'},
-                // A light run: leaning forward, heels kicking high, arms bent and pumping.
-                walk: {length: 0.5, stride: 44, knee: [8, 22, 30, 105, 45], arm: 38, armLag: 0.02, armOut: 5, elbow: [62, 34], bob: 0.8, roll: 1, lean: 13, twist: 9},
-                // A slash with the right hand: from up and out on the right, across the body and down to the left.
-                // The left arm only pulls back to balance. In the file a positive Y turn moves the right side back.
-                // The wind-up is slower than the cut, so that the cut reads as the fastest part.
-                attack: flowing(0.7, {
-                    right_arm: {r: {'0.000': [0, 0, 0], '0.220': [-120, 38, 10], '0.380': [-58, -52, -6], '0.460': [-50, -60, -6], '0.700': [0, 0, 0]}},
-                    right_forearm: {r: {'0.000': [0, 0, 0], '0.220': [-42, 0, 0], '0.360': [-6, 0, 0], '0.460': [-18, 0, 0], '0.700': [0, 0, 0]}},
-                    left_arm: {r: {'0.000': [0, 0, 0], '0.220': [-16, 0, -8], '0.400': [24, 0, -12], '0.700': [0, 0, 0]}},
-                    left_forearm: {r: {'0.000': [0, 0, 0], '0.220': [-50, 0, 0], '0.400': [-38, 0, 0], '0.700': [0, 0, 0]}},
-                    torso: {r: {'0.000': [0, 0, 0], '0.220': [-3, 20, 2], '0.390': [10, -28, -3], '0.480': [8, -28, -3], '0.700': [0, 0, 0]},
-                        p: {'0.000': [0, 0, 0], '0.390': [0, -0.6, -0.8], '0.700': [0, 0, 0]}},
-                    head: {r: {'0.000': [0, 0, 0], '0.220': [0, -11, 0], '0.400': [-5, 16, 0], '0.700': [0, 0, 0]}}
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                ...legBones,
+                {name: 'torso', parent: 'root', pivot: [0, 16, 0], cubes: torso},
+                {name: 'chest_door', parent: 'torso', pivot: [0, 21, -5.8], cubes: door},
+                {name: 'tail', parent: 'torso', pivot: [0, 19, 4.5], cubes: tail},
+                {name: 'tail_tip', parent: 'tail', pivot: [0, 19, 12], cubes: tailTip},
+                {name: 'head', parent: 'torso', pivot: [0, 31.5, -1], cubes: head},
+                {name: 'visor', parent: 'head', pivot: [0, 38.5, -4.5], cubes: muzzle},
+                ...limbs('arm', 'torso', [-9, 30, 0], arm, ARM_LEFT_UV),
+                {name: 'right_hand', parent: 'right_arm', pivot: [-9.5, 9, 0], cubes: []},
+                {name: 'left_hand', parent: 'left_arm', pivot: [9.5, 9, 0], cubes: []}
+            ],
+            animations: Object.assign({
+                // Standing: the body breathes, the tail sways slowly, the head looks about in short quick turns, like a bird's.
+                'animation.power_armor.idle': {length: 4, loop: 'loop', bones: {
+                    torso: {r: {'0.000': pose.torso, '1.000': [LEAN + 1.2, 0, 0], '2.000': pose.torso, '3.000': [LEAN + 1.2, 0, 0], '4.000': pose.torso}},
+                    head: {r: {'0.000': pose.head, '0.700': pose.head, '0.800': [HEAD - 4, -24, 0], '1.700': [HEAD - 4, -24, 0], '1.800': [HEAD + 3, 10, 0],
+                        '2.700': [HEAD + 3, 10, 0], '2.800': [HEAD, 0, 0], '4.000': pose.head}},
+                    tail: {r: {'0.000': [TAIL, 0, 0], '1.000': [TAIL + 1, 7, 0], '2.000': [TAIL, 0, 0], '3.000': [TAIL + 1, -7, 0], '4.000': [TAIL, 0, 0]}},
+                    tail_tip: {r: {'0.000': [0, -3, 0], '1.300': [1, 9, 0], '2.300': [0, 3, 0], '3.300': [1, -9, 0], '4.000': [0, -3, 0]}},
+                    right_arm: {r: {'0.000': pose.arms, '2.000': [ARM - 3, 0, 6], '4.000': pose.arms}},
+                    left_arm: {r: {'0.000': [ARM, 0, -5], '2.000': [ARM - 3, 0, -6], '4.000': [ARM, 0, -5]}},
+                    right_forearm: {r: {'0.000': pose.elbow, '4.000': pose.elbow}},
+                    left_forearm: {r: {'0.000': pose.elbow, '4.000': pose.elbow}}
+                }},
+                // Quick, springy steps with the body low and forward.
+                'animation.power_armor.walk': raptorWalk({length: 0.62, stance: 0.56, reach: 5.5, push: 4.5, lift: 3.5, heel: 0.5, fold: 0.55,
+                    bob: 0.9, lean: 16, pitch: 1.6, twist: 4, roll: 2, tailLift: 4, armX: -24, arm: 7, armOut: 5, elbow: -55}),
+                // A lunging slash: the body rears back and winds up, then drives forward and down while the right claws rake
+                // across; the tail whips to the other side to balance.
+                'animation.power_armor.attack': flowing(0.65, {
+                    torso: {r: {'0.000': pose.torso, '0.200': [2, 18, 0], '0.360': [30, -16, 0], '0.450': [28, -14, 0], '0.650': pose.torso},
+                        p: {'0.000': [0, 0, 0], '0.200': [0, 0.3, 0.8], '0.360': [0, -0.8, -1.6], '0.450': [0, -0.8, -1.4], '0.650': [0, 0, 0]}},
+                    head: {r: {'0.000': pose.head, '0.200': [-2, -14, 0], '0.360': [-20, 14, 0], '0.450': [-18, 12, 0], '0.650': pose.head}},
+                    right_arm: {r: {'0.000': pose.arms, '0.200': [-140, 30, 12], '0.360': [-40, -40, -4], '0.450': [-36, -44, -4], '0.650': pose.arms}},
+                    right_forearm: {r: {'0.000': pose.elbow, '0.200': [-40, 0, 0], '0.360': [-8, 0, 0], '0.450': [-14, 0, 0], '0.650': pose.elbow}},
+                    left_arm: {r: {'0.000': [ARM, 0, -5], '0.200': [-30, 0, -12], '0.360': [-68, 10, -4], '0.650': [ARM, 0, -5]}},
+                    left_forearm: {r: {'0.000': pose.elbow, '0.200': [-70, 0, 0], '0.360': [-30, 0, 0], '0.650': pose.elbow}},
+                    tail: {r: {'0.000': [TAIL, 0, 0], '0.200': [TAIL - 2, -12, 0], '0.360': [TAIL + 8, 20, 0], '0.650': [TAIL, 0, 0]}},
+                    tail_tip: {r: {'0.000': [0, 0, 0], '0.250': [0, -16, 0], '0.420': [5, 24, 0], '0.650': [0, 0, 0]}}
                 }),
-                shutdown: SLUMP(16, 1.2, 12, 'easeInOutSine'),
-                wrecked: COLLAPSE(26, -12, 8, 3.5)
-            })
+                // Power off: it sinks onto its folded legs, the body tips forward, the tail settles to the ground, the arms hang.
+                'animation.power_armor.shutdown': {length: 1.5, loop: 'hold', ease: 'easeInOutSine', bones: Object.assign({
+                    root: {p: {'0.000': [0, 0, 0], '1.200': [0, -(HIP[0] - 11.5), 0], '1.500': [0, -(HIP[0] - 11.5) + 0.2, 0]}},
+                    torso: {r: {'0.000': pose.torso, '1.200': [30, 0, 0], '1.500': [28, 0, 0]}},
+                    head: {r: {'0.000': pose.head, '1.500': [8, 0, 0]}},
+                    tail: {r: {'0.000': [TAIL, 0, 0], '1.200': [-42, 0, 0], '1.500': [-40, 0, 0]}},
+                    tail_tip: {r: {'0.000': [0, 0, 0], '1.500': [8, 0, 0]}},
+                    right_arm: {r: {'0.000': pose.arms, '1.500': [-30, 0, 8]}},
+                    left_arm: {r: {'0.000': [ARM, 0, -5], '1.500': [-30, 0, -8]}},
+                    right_forearm: {r: {'0.000': pose.elbow, '1.500': [-10, 0, 0]}},
+                    left_forearm: {r: {'0.000': pose.elbow, '1.500': [-10, 0, 0]}}
+                }, ...['right', 'left'].map(side => Object.fromEntries(Object.entries(legsAt(SIT, side))
+                    .map(([bone, r]) => [bone, {r: {'0.000': [0, 0, 0], '1.200': r, '1.500': r}}]))))},
+                // Wrecked: the legs give way, it drops and rolls onto its side, head and tail limp.
+                'animation.power_armor.wrecked': {length: 1, loop: 'hold', ease: 'easeOutBounce', bones: Object.assign({
+                    root: {p: {'0.000': [0, 0, 0], '1.000': [0, -(HIP[0] - 11.5) - 1, 0]}},
+                    torso: {r: {'0.000': pose.torso, '1.000': [26, 10, 34]}},
+                    head: {r: {'0.000': pose.head, '1.000': [20, -18, -20]}},
+                    tail: {r: {'0.000': [TAIL, 0, 0], '1.000': [-38, 18, -10]}},
+                    tail_tip: {r: {'0.000': [0, 0, 0], '1.000': [10, 14, 0]}},
+                    right_arm: {r: {'0.000': pose.arms, '1.000': [-8, 6, 30]}},
+                    left_arm: {r: {'0.000': [ARM, 0, -5], '1.000': [-50, -6, -10]}},
+                    right_forearm: {r: {'0.000': pose.elbow, '1.000': [-6, 0, 0]}},
+                    left_forearm: {r: {'0.000': pose.elbow, '1.000': [-30, 0, 0]}}
+                }, ...['right', 'left'].map((side, i) => Object.fromEntries(Object.entries(legsAt(crouch(10.5, i ? -3.5 : 1, i ? 60 : 80), side))
+                    .map(([bone, r]) => [bone, {r: {'0.000': [0, 0, 0], '1.000': [r[0], 0, i ? -10 : 12]}}]))))}
+            }, hatchAnimations({chest_door: [CHEST_OPEN, 0, 0], visor: [VISOR_OPEN, 0, 0]}))
         };
     })();
 
@@ -1294,6 +1532,11 @@
                 continue;
             }
             const [name, joint] = limb;
+            // a limb whose lower bone the spec already has (the digitigrade legs of 1.5.2) is built by hand: no cut
+            if (spec.bones.some(b => b.name === name)) {
+                out.push(bone);
+                continue;
+            }
             const upper = [], lower = [];
             // with cutMainOnly (1.5.2) only the biggest cube across the joint is cut; the others go whole to the side of their
             // middle, so that no two cut faces lie in one plane and flicker when the joint bends

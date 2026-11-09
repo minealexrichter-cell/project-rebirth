@@ -1524,6 +1524,8 @@
     // the saw spins. Whole sizes; no two faces in one plane (noCoplanarFaces). The cab does not lean or roll much in the
     // animations, because the pilot sits still in it.
     (function () {
+        // the front window of the cab lifts up and forward
+        const CAB_OPEN = -100;
         const yellow = '#d6a21e', yl = '#efc24a', yd = '#a47614', grey = '#5a5c5f', light = '#8a8d90', edge = '#6f7275', dark = '#37383b',
             deep = '#1c1d1f', amber = '#e0a020', lamp = '#9fe8ff', red = '#c4391f', frame = '#c9eef0', streak = '#e6fbfc', steel = '#a9adb0';
         const Y = (o, s, paint, opts) => C(o, s, Object.assign({c: yellow, n: 0.05}, paint), opts);
@@ -1574,8 +1576,6 @@
                 f: [[0, 0, 17, 1, yl], ...hazard(0, 1, 17, 1, yellow, deep, 2)]}),
             frontPost, mirror(frontPost), rearPost, mirror(rearPost),
             Y([-6.5, 17.5, -10.1], [13, 3, 2], {f: [[0, 0, 13, 1, yl], ...hazard(0, 1, 13, 2, yellow, deep, 2)], tp: [[0, 0, 13, 2, yd]]}),
-            Y([-6.5, 35.9, -10], [13, 3, 2], {f: [[0, 0, 13, 1, yl], [0, 2, 13, 1, yd], [5, 1, 3, 1, lamp]], bt: [[0, 0, 13, 2, yd]]}),
-            C([-7, 20.3, -9.6], [14, 16, 1], pane(14, 16, 'f', 'k')),
             sidePanel, mirror(sidePanel), sideGlass, mirror(sideGlass), sideBar, mirror(sideBar),
             // under the cab, the hips; on the back the engine with a ladder, the exhausts and a valve
             G([-6, 13.5, -4], [12, 3, 8], {f: [[0, 0, 12, 1, light], [4, 1, 4, 1, deep]], all: [[0, 2, 12, 1, dark]]}),
@@ -1592,9 +1592,18 @@
             G([-4, 18.1, -1], [8, 1, 5], {tp: [[0, 0, 8, 5, dark], [1, 1, 6, 3, deep]]}),
             G([-3.5, 19, 3.3], [7, 9, 1], {f: [[0, 0, 7, 9, dark], [1, 1, 5, 7, deep]]}),
             lever, mirror(lever),
-            // the grab handle on the roof
+            // the hinges of the front window and the grab handle on the roof
+            G([-6, 38.4, -10.8], [2, 1, 2], {edge: false, all: [[0, 0, 2, 1, light]]}), G([4, 38.4, -10.8], [2, 1, 2], {edge: false, all: [[0, 0, 2, 1, light]]}),
             handlePost, mirror(handlePost),
             Y([-5.5, 42.6, -4.4], [11, 1, 1], {edge: false, all: [[0, 0, 11, 1, yl]]})
+        ];
+        // the front window: the glass in its top bar, hinged under the front edge of the roof; it lifts up and forward to let
+        // the pilot in and out (1.5.2), with two grab handles on the bar
+        const window = [
+            Y([-6.5, 35.9, -10], [13, 3, 2], {f: [[0, 0, 13, 1, yl], [0, 2, 13, 1, yd], [5, 1, 3, 1, lamp]], bt: [[0, 0, 13, 2, yd]]}),
+            C([-7, 20.3, -9.6], [14, 16, 1], pane(14, 16, 'f', 'k')),
+            G([-5.5, 36.2, -10.8], [1, 2, 1], {edge: false, all: [[0, 0, 1, 1, light]]}),
+            G([4.5, 36.2, -10.8], [1, 2, 1], {edge: false, all: [[0, 0, 1, 1, light]]})
         ];
         const head = [
             G([-2, 40.8, 1.5], [4, 2, 3], {f: [[0, 0, 4, 2, deep], [1, 0, 2, 1, lamp]], tp: [[0, 0, 4, 1, light]]})
@@ -1687,6 +1696,7 @@
                 {name: 'root', pivot: [0, 0, 0], cubes: []},
                 ...limbs('leg', 'root', [-5, 17, 0], leg),
                 {name: 'torso', parent: 'root', pivot: [0, 17, 0], cubes: torso},
+                {name: 'chest_door', parent: 'torso', pivot: [0, 38.9, -10], cubes: window},
                 {name: 'head', parent: 'torso', pivot: [0, 41, 0], cubes: head},
                 {name: 'right_arm', parent: 'torso', pivot: [-11.5, 35, 0], cubes: armCommon},
                 {name: 'left_arm', parent: 'torso', pivot: [11.5, 35, 0], cubes: leftArm},
@@ -1720,7 +1730,7 @@
                     right_shin: {r: {'0.000': [0, 0, 0], '1.000': [26, 0, 0]}},
                     left_shin: {r: {'0.000': [0, 0, 0], '1.000': [14, 0, 0]}}
                 }}
-            }), {
+            }), hatchAnimations({chest_door: [CAB_OPEN, 0, 0]}), {
                 // mining: the jackhammer without the raise, again and again while the pilot breaks a block
                 'animation.power_armor.mine': jackhammer(0.45, 0, 3, true)
             })
@@ -2063,7 +2073,8 @@
         const hull = torso.cubes.reduce((best, c) => (c.s[0] * c.s[1] > best.s[0] * best.s[1] ? c : best));
         // an armor with a chest hatch carries its chest upgrades on the hatch, so they open with it
         const door = bone('chest_door');
-        const chest = door ? {parent: 'chest_door', pivot: door.pivot} : {parent: 'torso', pivot: torso.pivot};
+        // (the worker of 1.5.2 keeps them on the sill of its cab: its door is the window)
+        const chest = door && !spec.slotFrame ? {parent: 'chest_door', pivot: door.pivot} : {parent: 'torso', pivot: torso.pivot};
         // a thin part on top (an antenna) does not count: the lamp stands on the helmet itself, sunk 0.2 into it
         const crown = spec.noCoplanarFaces ? head.cubes.filter(c => c.s[0] >= 2 && c.s[2] >= 2) : head.cubes;
         const front = spec.slotFrame ? spec.slotFrame.front : minOf(door ? door.cubes : torso.cubes, 2), back = maxOf(torso.cubes, 2),

@@ -34,11 +34,11 @@ public enum ArmorVariant {
     }
 
     /**
-     * Whether the armor visibly opens to let its pilot in and out (1.5.2). The combat and mobile armors have models with the
-     * moving parts (chest plate and visor); the worker has a glass cab instead.
+     * Whether the armor visibly opens to let its pilot in and out (1.5.2): the combat and mobile armors open their chest
+     * plate and visor, the worker lifts the front window of its cab.
      */
     public boolean opensShell() {
-        return this == COMBAT || this == MOBILE;
+        return true;
     }
 
     /**

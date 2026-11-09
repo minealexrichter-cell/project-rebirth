@@ -1,6 +1,7 @@
 package com.projectrebirth.gametest;
 
 import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.powerarmor.PowerArmorRegistry;
@@ -28,8 +29,8 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 /**
  * Version 1.5.2: the combat armor opens before its pilot gets in and out. Get in: right click, the shell opens, the player
  * steps in, it closes. Get out: sneak, it opens, the pilot steps out in front, it closes. While it is not shut the armor
- * does not walk. The mobile armor opens the same way (its chest plate and muzzle); the worker still lets its pilot in and out
- * at once.
+ * does not walk. The mobile armor opens the same way (its chest plate and muzzle), the worker lifts the front window of its
+ * cab. With the opening switched off in the config, the pilot gets in and out at once.
  */
 @GameTestHolder(ProjectRebirth.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -111,10 +112,19 @@ public class ArmorShellGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 200)
     public static void theMobileArmorOpensToo(GameTestHelper helper) {
-        PowerArmorEntity armor = armor(helper, ArmorVariant.MOBILE);
+        opensAndTakesThePilot(helper, ArmorVariant.MOBILE);
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 200)
+    public static void theWorkerCabOpensToo(GameTestHelper helper) {
+        opensAndTakesThePilot(helper, ArmorVariant.WORKER);
+    }
+
+    private static void opensAndTakesThePilot(GameTestHelper helper, ArmorVariant variant) {
+        PowerArmorEntity armor = armor(helper, variant);
         ServerPlayer player = playerBeside(helper, armor);
         armor.interact(player, InteractionHand.MAIN_HAND);
-        helper.assertTrue(armor.shellState() == PowerArmorEntity.SHELL_OPENING, "Right click opens the mobile armor");
+        helper.assertTrue(armor.shellState() == PowerArmorEntity.SHELL_OPENING, "Right click opens the " + variant.id() + " armor");
         helper.assertFalse(player.isPassenger(), "The player waits until it is open");
         helper.runAtTickTime(WHOLE + 5, () -> {
             helper.assertTrue(player.getVehicle() == armor, "In");
@@ -124,12 +134,18 @@ public class ArmorShellGameTests {
     }
 
     @GameTest(template = TEMPLATE)
-    public static void otherArmorsStillLetThePilotInAtOnce(GameTestHelper helper) {
-        PowerArmorEntity armor = armor(helper, ArmorVariant.WORKER);
-        ServerPlayer player = playerBeside(helper, armor);
-        armor.interact(player, InteractionHand.MAIN_HAND);
-        helper.assertTrue(player.getVehicle() == armor, "A worker armor (no opening model yet) takes the pilot at once");
-        helper.assertTrue(armor.isShellClosed(), "and never opens");
+    public static void withTheOpeningOffThePilotGetsInAtOnce(GameTestHelper helper) {
+        boolean before = RebirthConfig.ARMOR_OPENING_SHELL.get();
+        RebirthConfig.ARMOR_OPENING_SHELL.set(false);
+        try {
+            PowerArmorEntity armor = armor(helper, ArmorVariant.WORKER);
+            ServerPlayer player = playerBeside(helper, armor);
+            armor.interact(player, InteractionHand.MAIN_HAND);
+            helper.assertTrue(player.getVehicle() == armor, "With the opening switched off the armor takes the pilot at once");
+            helper.assertTrue(armor.isShellClosed(), "and never opens");
+        } finally {
+            RebirthConfig.ARMOR_OPENING_SHELL.set(before);
+        }
         helper.succeed();
     }
 
@@ -154,8 +170,7 @@ public class ArmorShellGameTests {
     public static void theWorkerPilotSitsInTheCab(GameTestHelper helper) {
         PowerArmorEntity armor = armor(helper, ArmorVariant.WORKER);
         ServerPlayer pilot = playerBeside(helper, armor);
-        armor.interact(pilot, InteractionHand.MAIN_HAND);
-        helper.assertTrue(pilot.getVehicle() == armor, "The worker takes the pilot at once (no opening shell)");
+        helper.assertTrue(pilot.startRiding(armor, true), "The pilot gets in");
         helper.assertTrue(armor.shouldRiderSit(), "The pilot sits in the cab");
         helper.runAtTickTime(3, () -> {
             double eyes = pilot.getEyeY() - armor.getY();

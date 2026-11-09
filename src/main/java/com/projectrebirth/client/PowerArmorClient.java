@@ -104,11 +104,19 @@ public final class PowerArmorClient {
         event.setCanceled(true);
     }
 
-    /** Every attack of the pilot, even into the air, makes the armor punch for everyone to see. */
+    /**
+     * Every attack of the pilot, even into the air, makes the armor punch for everyone to see. The worker hitting a block
+     * starts its mining loop instead (1.5.2): a strike on top of it would lower the arms and raise them again.
+     */
     private static void onAttackKey(InputEvent.InteractionKeyMappingTriggered event) {
-        Player player = Minecraft.getInstance().player;
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
         if (event.isAttack() && player != null && player.getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
-            PacketDistributor.sendToServer(ArmorSwingPayload.INSTANCE);
+            boolean mines = armor.getVariant() == ArmorVariant.WORKER && minecraft.hitResult != null
+                    && minecraft.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK;
+            if (!mines) {
+                PacketDistributor.sendToServer(ArmorSwingPayload.INSTANCE);
+            }
         }
     }
 

@@ -78,9 +78,10 @@ public final class PowerArmorEvents {
             } else {
                 armor.playAttackAnimation();
             }
-        } else if (action == PlayerInteractEvent.LeftClickBlock.Action.STOP || action == PlayerInteractEvent.LeftClickBlock.Action.ABORT) {
-            armor.setMining(false);
         }
+        // a broken block (STOP) or a move to the next one (ABORT) does not stop the loop: while the pilot keeps the button
+        // down it goes on to the next block, and between two blocks the arms would drop and rise again. It stops a moment
+        // after the pilot stops swinging (PowerArmorEntity.tickMining).
     }
 
     /** Removes stale pilot bonuses if the player logged in outside an armor (e.g. it was destroyed meanwhile). */

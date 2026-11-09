@@ -196,10 +196,16 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         return entityData.get(MINING);
     }
 
-    /** Server: the pilot starts or stops breaking a block. Only the worker shows it. */
+    /**
+     * Server: the pilot starts or stops breaking a block. Only the worker shows it. Starting cuts a strike short, so that the
+     * arms go straight on hammering instead of dropping first.
+     */
     public void setMining(boolean mining) {
         if (mining) {
             lastMiningTick = tickCount;
+            if (!isMining() && getVariant() == ArmorVariant.WORKER) {
+                stopTriggeredAnim(ACTION_CONTROLLER, ATTACK_ANIMATION);
+            }
         }
         if (isMining() != mining && (!mining || getVariant() == ArmorVariant.WORKER)) {
             entityData.set(MINING, mining);
@@ -743,6 +749,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         // The mobile armor's slash is one flowing movement: frequent clicks must not cut it off and jerk the arm back.
         // The worker's jackhammer is a series of blows (1.5.2) and must not start over either.
         int minTicks = getVariant() == ArmorVariant.MOBILE || getVariant() == ArmorVariant.WORKER ? 14 : 8;
+        // while the worker mines, its loop is already hammering
+        if (isMining()) {
+            return;
+        }
         if (tickCount - lastAttackAnimationTick < minTicks && lastAttackAnimationTick != 0) {
             return;
         }

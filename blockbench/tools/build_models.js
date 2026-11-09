@@ -107,9 +107,14 @@
         ctx.rect(x, y, w, h);
         ctx.clip();
         const base = (p.faces && p.faces[face]) || p.c;
-        ctx.fillStyle = base;
-        ctx.fillRect(x, y, w, h);
-        const noise = p.n === undefined ? 0.05 : p.n;
+        // clear glass (1.5.2): the face is left transparent and only its marks are drawn
+        if (p.clear) {
+            ctx.clearRect(x, y, w, h);
+        } else {
+            ctx.fillStyle = base;
+            ctx.fillRect(x, y, w, h);
+        }
+        const noise = p.clear ? 0 : (p.n === undefined ? 0.05 : p.n);
         if (noise > 0) {
             for (let i = 0; i < w; i++) {
                 for (let j = 0; j < h; j++) {
@@ -119,7 +124,7 @@
                 }
             }
         }
-        if (p.edge !== false && w >= 3 && h >= 3) {
+        if (p.edge !== false && !p.clear && w >= 3 && h >= 3) {
             const dark = shade(base, 0.72);
             ctx.fillStyle = dark;
             ctx.fillRect(x, y + h - 1, w, 1);
@@ -922,6 +927,52 @@
         };
     }
 
+    /**
+     * Gears and valve wheels for the detailed armors (1.5.2), in the given colours (edge, light, dark, deep, amber). Both
+     * stand a tenth off the centre given, so that their edges never meet the edges of the hub under them.
+     */
+    function detailKit({edge, light, dark, deep, amber}) {
+        /**
+         * A box standing out of a face: axis 0 (x) or 2 (z) is the way the face looks, face its plane, dir -1 or +1 the way
+         * out; u (the other horizontal axis) and v (y) span it; a from aLo to aHi outward. turn: degrees about the axis.
+         */
+        const outBox = (axis, face, dir, uLo, uHi, vLo, vHi, aLo, aHi, paint, turn) => {
+            const u = axis === 0 ? 2 : 0;
+            const lo = [0, 0, 0], hi = [0, 0, 0];
+            lo[u] = uLo; hi[u] = uHi; lo[1] = vLo; hi[1] = vHi;
+            lo[axis] = Math.min(face + dir * aLo, face + dir * aHi); hi[axis] = Math.max(face + dir * aLo, face + dir * aHi);
+            const size = [0, 1, 2].map(k => Math.round((hi[k] - lo[k]) * 1000) / 1000);
+            if (!turn) return C(lo, size, paint);
+            const rot = axis === 0 ? [turn, 0, 0] : [0, 0, turn];
+            return C(lo, size, paint, {rot, pivot: [0, 1, 2].map(k => (lo[k] + hi[k]) / 2)});
+        };
+        /** A gear on a face: a toothed disc (a square and the same square turned 45 degrees) with an amber hub cap. */
+        const gear = (axis, face, dir, cu0, cv0, s) => {
+            // a tenth off the centre, so that its edges never meet the edges of the hub under it
+            const cu = cu0 + 0.1, cv = cv0 + 0.1;
+            const look = axis === 0 ? 'sd' : (dir < 0 ? 'f' : 'k');
+            const disc = {c: edge, n: 0.04, edge: false, all: [[0, 0, s, 1, light]], [look]: [[0, 0, s, s, edge], [1, 1, s - 2, s - 2, dark],
+                [Math.floor((s - 1) / 2), Math.floor((s - 1) / 2), s % 2 ? 1 : 2, s % 2 ? 1 : 2, deep]]};
+            const teeth = {c: shade(edge, 0.85), n: 0.04, edge: false, all: [[0, 0, s, 1, shade(light, 0.9)]]};
+            return [
+                outBox(axis, face, dir, cu - s / 2, cu + s / 2, cv - s / 2, cv + s / 2, -0.25, 0.75, disc),
+                outBox(axis, face, dir, cu - s / 2, cu + s / 2, cv - s / 2, cv + s / 2, -0.35, 0.65, teeth, 45),
+                outBox(axis, face, dir, cu - 0.5, cu + 0.5, cv - 0.5, cv + 0.5, 0.5, 1.5, {c: amber, n: 0.04, edge: false, all: [[0, 0, 1, 1, shade(amber, 1.25)]]})
+            ];
+        };
+        /** A cross-shaped valve wheel standing out of a hub of size s: two steel spokes and an amber cap. */
+        const valve = (axis, face, dir, cu0, cv0, s) => {
+            const cu = cu0 + 0.1, cv = cv0 + 0.1;
+            const l = s + 1, spoke = {c: light, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false};
+            return [
+                outBox(axis, face, dir, cu - 0.5, cu + 0.5, cv - l / 2, cv + l / 2, -0.15, 0.85, spoke),
+                outBox(axis, face, dir, cu - l / 2, cu + l / 2, cv - 0.5, cv + 0.5, -0.3, 0.7, spoke),
+                outBox(axis, face, dir, cu - 1, cu + 1, cv - 1, cv + 1, 0.45, 1.45, {c: amber, n: 0.04, all: [[0, 0, 2, 1, shade(amber, 1.25)]], edge: false})
+            ];
+        };
+        return {outBox, gear, valve};
+    }
+
     // Combat (1.5.2, second design): a heavy front-opening suit after the owner's references. Every size is whole, so one
     // texture pixel is one model pixel; parts sink into each other instead of touching face to face, so nothing flickers
     // (checked: noCoplanarFaces). Plates stand out over a dark undersuit; the chest, knees, shoulders and helmet have
@@ -1174,44 +1225,7 @@
             return C([x0, my - length / 2, mz - d / 2], [w, length, d], paint, {rot: [tilt, 0, 0], pivot: [x0 + w / 2, my, mz]});
         };
 
-        /**
-         * A box standing out of a face: axis 0 (x) or 2 (z) is the way the face looks, face its plane, dir -1 or +1 the way
-         * out; u (the other horizontal axis) and v (y) span it; a from aLo to aHi outward. turn: degrees about the axis.
-         */
-        const outBox = (axis, face, dir, uLo, uHi, vLo, vHi, aLo, aHi, paint, turn) => {
-            const u = axis === 0 ? 2 : 0;
-            const lo = [0, 0, 0], hi = [0, 0, 0];
-            lo[u] = uLo; hi[u] = uHi; lo[1] = vLo; hi[1] = vHi;
-            lo[axis] = Math.min(face + dir * aLo, face + dir * aHi); hi[axis] = Math.max(face + dir * aLo, face + dir * aHi);
-            const size = [0, 1, 2].map(k => Math.round((hi[k] - lo[k]) * 1000) / 1000);
-            if (!turn) return C(lo, size, paint);
-            const rot = axis === 0 ? [turn, 0, 0] : [0, 0, turn];
-            return C(lo, size, paint, {rot, pivot: [0, 1, 2].map(k => (lo[k] + hi[k]) / 2)});
-        };
-        /** A gear on a face: a toothed disc (a square and the same square turned 45 degrees) with an amber hub cap. */
-        const gear = (axis, face, dir, cu0, cv0, s) => {
-            // a tenth off the centre, so that its edges never meet the edges of the hub under it
-            const cu = cu0 + 0.1, cv = cv0 + 0.1;
-            const look = axis === 0 ? 'sd' : (dir < 0 ? 'f' : 'k');
-            const disc = {c: edge, n: 0.04, edge: false, all: [[0, 0, s, 1, light]], [look]: [[0, 0, s, s, edge], [1, 1, s - 2, s - 2, dark],
-                [Math.floor((s - 1) / 2), Math.floor((s - 1) / 2), s % 2 ? 1 : 2, s % 2 ? 1 : 2, deep]]};
-            const teeth = {c: shade(edge, 0.85), n: 0.04, edge: false, all: [[0, 0, s, 1, shade(light, 0.9)]]};
-            return [
-                outBox(axis, face, dir, cu - s / 2, cu + s / 2, cv - s / 2, cv + s / 2, -0.25, 0.75, disc),
-                outBox(axis, face, dir, cu - s / 2, cu + s / 2, cv - s / 2, cv + s / 2, -0.35, 0.65, teeth, 45),
-                outBox(axis, face, dir, cu - 0.5, cu + 0.5, cv - 0.5, cv + 0.5, 0.5, 1.5, {c: amber, n: 0.04, edge: false, all: [[0, 0, 1, 1, shade(amber, 1.25)]]})
-            ];
-        };
-        /** A cross-shaped valve wheel standing out of a hub of size s: two steel spokes and an amber cap. */
-        const valve = (axis, face, dir, cu0, cv0, s) => {
-            const cu = cu0 + 0.1, cv = cv0 + 0.1;
-            const l = s + 1, spoke = {c: light, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false};
-            return [
-                outBox(axis, face, dir, cu - 0.5, cu + 0.5, cv - l / 2, cv + l / 2, -0.15, 0.85, spoke),
-                outBox(axis, face, dir, cu - l / 2, cu + l / 2, cv - 0.5, cv + 0.5, -0.3, 0.7, spoke),
-                outBox(axis, face, dir, cu - 1, cu + 1, cv - 1, cv + 1, 0.45, 1.45, {c: amber, n: 0.04, all: [[0, 0, 2, 1, shade(amber, 1.25)]], edge: false})
-            ];
-        };
+        const {gear, valve} = detailKit({edge, light, dark, deep, amber});
 
         // the joints of the right leg in the side view, [y, z]
         const HIP = [18, 0], KNEE = [12.5, -3.5], ANKLE = [6.5, 3], BALL = [1, 0];
@@ -1503,63 +1517,216 @@
         };
     })();
 
-    // Worker: the walking excavator. Hazard yellow, a big glass cab in the chest, work lamps, roll bars, huge clamp hands.
+    // Worker (1.5.2, second design): a walking excavator after the owner's concept art. The torso is a glass cab: the pilot
+    // sits in it and is seen through the glass, which is clear in the texture apart from a pale frame and two light streaks.
+    // Hazard-yellow plates over grey machinery, cyan work lamps; a circular saw on the right forearm (bone right_saw), a
+    // clamp on the left fist. Strikes and mining are a jackhammer: the arms thrust at the target in quick short blows while
+    // the saw spins. Whole sizes; no two faces in one plane (noCoplanarFaces). The cab does not lean or roll much in the
+    // animations, because the pilot sits still in it.
     (function () {
-        const yellow = '#e8b420', orange = '#d9701c', dark = '#2a2b2e', steel = '#7c8187', glass = '#7fc8d8', lamp = '#fff2b0';
-        const bar = {c: dark, n: 0.05, edge: false};
+        const yellow = '#d6a21e', yl = '#efc24a', yd = '#a47614', grey = '#5a5c5f', light = '#8a8d90', edge = '#6f7275', dark = '#37383b',
+            deep = '#1c1d1f', amber = '#e0a020', lamp = '#9fe8ff', red = '#c4391f', frame = '#c9eef0', streak = '#e6fbfc', steel = '#a9adb0';
+        const Y = (o, s, paint, opts) => C(o, s, Object.assign({c: yellow, n: 0.05}, paint), opts);
+        const G = (o, s, paint, opts) => C(o, s, Object.assign({c: grey, n: 0.05}, paint), opts);
+        const {gear, valve} = detailKit({edge, light, dark, deep, amber});
+        const hub = s => [[0, 0, s, s, deep], [1, 0, s - 2, 1, light], [1, s - 1, s - 2, 1, edge], [0, 1, 1, s - 2, light], [s - 1, 1, 1, s - 2, edge],
+            [Math.floor((s - 1) / 2), Math.floor((s - 1) / 2), s % 2 ? 1 : 2, s % 2 ? 1 : 2, amber]];
+        const bolts = (w, h) => [[1, 1, 1, 1, yd], [w - 2, 1, 1, 1, yd], [1, h - 2, 1, 1, yd], [w - 2, h - 2, 1, 1, yd]];
+        /** Clear glass: a pale frame line round the pane; the rest stays transparent. */
+        const rim = (w, h) => [[0, 0, w, 1, frame], [0, h - 1, w, 1, frame], [0, 0, 1, h, frame], [w - 1, 0, 1, h, frame]];
+        /** Two short light streaks in the upper corner, on the outer face only (on every face they read as noise), clear of the pilot's face. */
+        const streaks = (w, h) => [0, 1, 2].flatMap(i => [[w - 3 - i, 1 + i, 1, 1, streak], [w - 3 - i, 4 + i, 1, 1, streak]]);
+        const pane = (w, h, outer, inner) => ({c: frame, clear: true, edge: false, all: [[0, 0, 1, h, frame]],
+            [outer]: outer ? [...rim(w, h), ...(outer === 'f' ? streaks(w, h) : [])] : [], [inner]: rim(w, h)});
+
+        // ---------------------------------------------------------------- the legs (right; the left is mirrored)
+        const leg = [
+            G([-7.9, 2, -3], [6, 15, 6], {all: [[0, 4, 6, 1, dark], [0, 9, 6, 1, dark]]}),
+            Y([-8.6, 9.8, -3.8], [7, 6, 7], {f: [[0, 0, 7, 1, yl], [1, 2, 5, 2, yd], ...bolts(7, 6)], sd: [[0, 0, 7, 1, yl], [1, 2, 5, 1, yd]], k: [[0, 0, 7, 1, yl]],
+                tp: [[0, 0, 7, 1, yl]]}),
+            G([-7.5, 6.2, -4.6], [5, 3, 2], {f: [[0, 0, 5, 1, light], [2, 1, 1, 1, amber]]}),
+            Y([-8.6, 2.6, -3.6], [7, 4, 7], {f: [[0, 0, 7, 1, yl], ...hazard(0, 2, 7, 2, yellow, deep, 1)], sd: [[0, 0, 7, 1, yl], [2, 1, 3, 2, dark]], k: [[0, 0, 7, 1, yl]]}),
+            G([-8.8, 0, -6], [8, 3, 10], {tp: [[1, 1, 6, 8, dark]], f: [[0, 0, 8, 1, light]], sd: [[0, 0, 10, 1, light], [2, 1, 1, 1, deep], [7, 1, 1, 1, deep]]}),
+            G([-8.5, 0.2, -7.6], [3, 2, 2], {f: [[0, 0, 3, 1, light]], tp: [[0, 0, 3, 2, light]]}),
+            G([-4.6, 0.2, -7.6], [3, 2, 2], {f: [[0, 0, 3, 1, light]], tp: [[0, 0, 3, 2, light]]}),
+            G([-7, 0.3, 3.6], [4, 2, 2], {k: [[0, 0, 4, 1, light]]}),
+            C([-5.5, 4, 2.8], [1, 9, 1], {c: light, n: 0.03, edge: false, k: [[0, 0, 1, 9, edge]]}),
+            ...gear(0, -8.6, -1, 0, 12.8, 4)
+        ];
+
+        // ---------------------------------------------------------------- the cab
+        const frontPost = Y([-8.2, 17.7, -10.2], [2, 22, 2], {f: [[0, 0, 2, 1, yl], [0, 10, 2, 1, yd]], sd: [[0, 0, 2, 1, yl]]});
+        const rearPost = Y([-8.2, 17.7, 2.4], [2, 22, 2], {sd: [[0, 0, 2, 1, yl]], k: [[0, 0, 2, 1, yl]]});
+        const sidePanel = Y([-8.4, 17.5, -8.4], [1, 6, 11], {sd: [[0, 0, 11, 1, yl], ...hazard(0, 4, 11, 2, yellow, deep, 2)]});
+        const sideGlass = C([-7.9, 23.3, -8.3], [1, 13, 11], Object.assign(pane(11, 13, 'r', 'l'), {sd: rim(11, 13)}));
+        const sideBar = Y([-8.4, 35.8, -8.4], [1, 3, 11], {sd: [[0, 0, 11, 1, yl], [0, 2, 11, 1, yd]]});
+        const marker = C([-6, 18.2, -10.6], [1, 1, 1], {c: red, n: 0.03, edge: false});
+        const lever = G([-5.5, 17.8, -6], [1, 5, 1], {tp: [[0, 0, 1, 1, red]], edge: false});
+        const pipe = G([-5, 33, 6.6], [2, 8, 2], {tp: [[0, 0, 2, 2, deep]], all: [[0, 0, 2, 1, light], [0, 4, 2, 1, dark]]});
+        const handlePost = G([-5, 40.8, -4], [1, 2, 1], {edge: false});
+        const rail = G([-4, 20, 9.6], [1, 16, 1], {edge: false, k: [[0, 0, 1, 16, light]]});
+        const torso = [
+            // the back wall: inside a dark panel with gauges, outside yellow
+            Y([-7.5, 17.8, 4.2], [15, 22, 2], {f: [[0, 0, 15, 22, dark], [2, 2, 11, 5, deep], [3, 3, 2, 2, lamp], [7, 3, 2, 2, amber], [10, 3, 2, 2, red],
+                [1, 9, 13, 1, edge]], k: [[0, 0, 15, 1, yl], [0, 21, 15, 1, yd]]}),
+            G([-8, 16, -10], [16, 2, 16], {tp: [[0, 0, 16, 16, dark], ...[1, 4, 7, 10, 13].map(x => [x, 1, 1, 14, edge])], f: [[0, 0, 16, 1, light]]}),
+            Y([-8.5, 39, -10.5], [17, 2, 17], {tp: [[0, 0, 17, 1, yl], [1, 1, 15, 15, yd], [2, 2, 13, 13, yellow]], bt: [[0, 0, 17, 17, dark], [6, 6, 5, 5, lamp]],
+                f: [[0, 0, 17, 1, yl], ...hazard(0, 1, 17, 1, yellow, deep, 2)]}),
+            frontPost, mirror(frontPost), rearPost, mirror(rearPost),
+            Y([-6.5, 17.5, -10.1], [13, 3, 2], {f: [[0, 0, 13, 1, yl], ...hazard(0, 1, 13, 2, yellow, deep, 2)], tp: [[0, 0, 13, 2, yd]]}),
+            Y([-6.5, 35.9, -10], [13, 3, 2], {f: [[0, 0, 13, 1, yl], [0, 2, 13, 1, yd], [5, 1, 3, 1, lamp]], bt: [[0, 0, 13, 2, yd]]}),
+            C([-7, 20.3, -9.6], [14, 16, 1], pane(14, 16, 'f', 'k')),
+            sidePanel, mirror(sidePanel), sideGlass, mirror(sideGlass), sideBar, mirror(sideBar),
+            // under the cab, the hips; on the back the engine with a ladder, the exhausts and a valve
+            G([-6, 13.5, -4], [12, 3, 8], {f: [[0, 0, 12, 1, light], [4, 1, 4, 1, deep]], all: [[0, 2, 12, 1, dark]]}),
+            Y([-6, 21, 5.8], [12, 14, 4], {k: [[0, 0, 12, 1, yl], [3, 2, 6, 3, deep], [4, 3, 4, 1, lamp], ...vents(2, 8, 8, 3, yd)], sd: [[0, 0, 4, 1, yl], ...bolts(4, 14)],
+                tp: [[0, 0, 12, 1, yl]]}),
+            rail, mirror(rail),
+            ...[22, 25, 28, 31].map(y => G([-3.5, y, 9.7], [7, 1, 1], {edge: false, all: [[0, 0, 7, 1, light]]})),
+            pipe, mirror(pipe),
+            ...gear(0, -6, -1, 7.8, 28, 4), ...gear(0, -6, -1, 7.8, 28, 4).map(c => mirror(c)),
+            G([-1.5, 35.5, 5.8], [3, 3, 1], {k: hub(3), edge: false}),
+            ...valve(2, 6.8, 1, 0, 37, 3),
+            marker, mirror(marker),
+            // inside: the seat and two control levers
+            G([-4, 18.1, -1], [8, 1, 5], {tp: [[0, 0, 8, 5, dark], [1, 1, 6, 3, deep]]}),
+            G([-3.5, 19, 3.3], [7, 9, 1], {f: [[0, 0, 7, 9, dark], [1, 1, 5, 7, deep]]}),
+            lever, mirror(lever),
+            // the grab handle on the roof
+            handlePost, mirror(handlePost),
+            Y([-5.5, 42.6, -4.4], [11, 1, 1], {edge: false, all: [[0, 0, 11, 1, yl]]})
+        ];
+        const head = [
+            G([-2, 40.8, 1.5], [4, 2, 3], {f: [[0, 0, 4, 2, deep], [1, 0, 2, 1, lamp]], tp: [[0, 0, 4, 1, light]]})
+        ];
+
+        // ---------------------------------------------------------------- the arms
+        const armCommon = [
+            Y([-16.8, 31, -5], [9, 9, 10], {f: [[0, 0, 9, 1, yl], [1, 6, 7, 2, yd], ...bolts(9, 9)], k: [[0, 0, 9, 1, yl], ...bolts(9, 9)],
+                sd: [[0, 0, 10, 1, yl], ...hazard(0, 7, 10, 2, yellow, deep, 2)], tp: [[0, 0, 9, 10, yl], [1, 1, 7, 8, yellow]]}, {uv: ARM_UV.shoulderR}),
+            G([-14, 20, -3], [6, 16, 6], {all: [[0, 3, 6, 1, dark], [0, 7, 6, 1, dark], [0, 12, 6, 1, dark]]}, {uv: ARM_UV.armR}),
+            G([-15, 11.8, -4], [8, 6, 8], {f: [[0, 0, 8, 1, light], [1, 2, 2, 3, dark], [5, 2, 2, 3, dark]], all: [[0, 0, 8, 1, light]], bt: [[1, 1, 6, 6, dark]]},
+                {uv: ARM_UV.fistR}),
+            Y([-15.3, 17.6, -4.4], [8, 6, 9], {f: [[0, 0, 8, 1, yl], [1, 2, 6, 1, yd], [1, 4, 6, 1, yd]], sd: [[0, 0, 9, 1, yl], ...bolts(9, 6)], k: [[0, 0, 8, 1, yl]],
+                tp: [[0, 0, 8, 9, yl]]}),
+            G([-14.5, 23.2, -3.5], [7, 3, 7], {all: [[0, 0, 7, 1, light], [0, 2, 7, 1, dark]]}),
+            G([-17.6, 33.5, -2], [1, 4, 4], {sd: [[0, 0, 4, 4, deep], [1, 1, 2, 2, lamp]], edge: false}),
+            C([-12, 22, 2.8], [1, 8, 1], {c: light, n: 0.03, edge: false, k: [[0, 0, 1, 9, edge]]}),
+            ...gear(2, -5, -1, -12.3, 35, 4)
+        ];
+        const leftArm = armCommon.map((c, i) => mirror(c, ARM_LEFT_UV[i]));
+        // the clamp of the left fist: two jaws with teeth facing each other
+        leftArm.push(
+            G([8.5, 8, -3], [2, 4, 6], {f: [[0, 0, 2, 1, light]], sd: [[0, 0, 6, 1, light]]}),
+            G([12.5, 8, -3], [2, 4, 6], {f: [[0, 0, 2, 1, light]], sd: [[0, 0, 6, 1, light]]}),
+            G([10.3, 8.2, -2.5], [1, 1, 5], {edge: false, all: [[0, 0, 1, 1, steel]]}),
+            G([11.7, 8.2, -2.5], [1, 1, 5], {edge: false, all: [[0, 0, 1, 1, steel]]})
+        );
+        // the circular saw on the outer side of the right forearm: four squares turned by 22.5 degrees make a toothed blade
+        const SAW = [-17, 14.5, -1];
+        const blade = (turn, x0) => C([x0, SAW[1] - 4, SAW[2] - 4], [1, 8, 8], {c: steel, n: 0.03, edge: false,
+            sd: [[0, 0, 8, 8, '#9a9ea2'], [2, 2, 4, 4, '#6c7074'], [3, 3, 2, 2, deep], [0, 0, 1, 1, '#d6d9db'], [7, 7, 1, 1, '#d6d9db']], all: [[0, 0, 1, 1, '#d6d9db']]},
+            turn ? {rot: [turn, 0, 0], pivot: [x0 + 0.5, SAW[1], SAW[2]]} : undefined);
+        const saw = [
+            blade(0, -17.5), blade(22.5, -17.45), blade(45, -17.55), blade(67.5, -17.4),
+            G([-18.6, 13.5, -2], [4, 2, 2], {all: [[0, 0, 4, 1, light]], edge: false}),
+            C([-19.4, 14, -1.5], [1, 1, 1], {c: amber, n: 0.03, edge: false})
+        ];
+
+        // ---------------------------------------------------------------- the jackhammer
+        /**
+         * Both arms aimed at the target, hammering in quick short blows: each blow drives the forearms forward and
+         * straightens them a little, then they spring back; the cab shakes, the saw spins. raise: time to bring the arms up
+         * (0 for the mining loop, which starts aimed); blows: how many in the given time.
+         */
+        const jackhammer = (length, raise, blows, loop) => {
+            const bones = {right_arm: {r: {}, p: {}}, left_arm: {r: {}, p: {}}, right_forearm: {r: {}}, left_forearm: {r: {}}, torso: {p: {}, r: {}},
+                head: {r: {}}, right_saw: {r: {}}};
+            const AIM = [-62, 6, 4], ELBOW = -30;
+            const key = (bone, ch, time, v) => { bones[bone][ch][time.toFixed(3)] = v.map(x => Math.round(x * 100) / 100); };
+            const both = (time, aim, push, elbow, jolt) => {
+                key('right_arm', 'r', time, aim);
+                key('left_arm', 'r', time, [aim[0], -aim[1], -aim[2]]);
+                key('right_arm', 'p', time, [0, 0, push]);
+                key('left_arm', 'p', time, [0, 0, push]);
+                key('right_forearm', 'r', time, [elbow, 0, 0]);
+                key('left_forearm', 'r', time, [elbow, 0, 0]);
+                key('torso', 'p', time, [0, jolt, 0]);
+                key('torso', 'r', time, [jolt * 2, 0, 0]);
+                key('head', 'r', time, [-jolt * 6, 0, 0]);
+            };
+            const end = loop ? length : length - 0.15;
+            if (!loop) {
+                both(0, [0, 0, 0], 0, 0, 0);
+            }
+            both(raise, AIM, 0, ELBOW, 0);
+            const step = (end - raise) / blows;
+            for (let i = 0; i < blows; i++) {
+                const t0 = raise + i * step;
+                both(t0 + step * 0.3, [AIM[0] - 3, AIM[1], AIM[2]], -2.2, ELBOW + 12, -0.35);
+                both(t0 + step * 0.65, [AIM[0] + 1, AIM[1], AIM[2]], 0.4, ELBOW - 4, 0.2);
+                both(t0 + step, AIM, 0, ELBOW, 0);
+            }
+            if (!loop) {
+                both(length, [0, 0, 0], 0, 0, 0);
+            }
+            // the saw spins all the while, three turns a second
+            const turns = Math.round(length * 3);
+            key('right_saw', 'r', 0, [0, 0, 0]);
+            key('right_saw', 'r', length, [-360 * Math.max(1, turns), 0, 0]);
+            return {length, loop: loop ? 'loop' : 'once', bones};
+        };
+
         SPECS.worker_power_armor = {
-            res: 128, seed: 808, wrecked: true,
-            joints: {knee: 8, elbow: 20},
+            res: 256, seed: 808, wrecked: true, noCoplanarFaces: true, cutMainOnly: true,
+            joints: {knee: 8, elbow: 24},
             armTable: 'worker',
-            bones: armorBones({
-                legPivot: [-4.5, 15, 0], headPivot: [0, 34, 0], armPivot: [-12, 31, 0], hand: [-12.5, 11, 0],
-                armLeftUv: ARM_LEFT_UV,
-                leg: [
-                    C([-8, 3, -4], [7, 12, 8], {c: yellow, all: [[0, 4, 8, 1, dark], ...hazard(0, 7, 8, 2, yellow, dark, 2)]}),
-                    C([-8.5, 0, -6], [8, 3, 11], {c: dark, n: 0.07, f: [[0, 0, 8, 1, steel], [1, 2, 6, 1, steel]], sd: [[0, 2, 11, 1, steel]], tp: [[1, 1, 6, 9, steel]]}),
-                    C([-8.5, 11, -4.5], [8, 4, 9], {c: orange, sd: [[1, 1, 7, 1, dark]]})
-                ],
-                torso: [
-                    C([-8, 15, -4.5], [16, 5, 9], {c: dark, n: 0.06, f: [...hazard(0, 3, 16, 2, yellow, dark, 2)], sd: [[1, 1, 7, 1, steel]]}),
-                    C([-9, 20, -5], [18, 14, 10], {c: yellow,
-                        f: [[2, 1, 14, 9, dark], [3, 2, 12, 7, glass], [4, 3, 3, 1, '#d4f2f8'], [4, 4, 1, 2, '#d4f2f8'], [1, 11, 16, 2, orange], [7, 11, 4, 2, dark]],
-                        k: [[3, 2, 12, 10, orange]], sd: [[2, 2, 6, 5, glass], [0, 9, 10, 2, orange]], tp: [[2, 2, 14, 6, steel]]}),
-                    C([-6, 21, 5], [12, 12, 4], {c: orange, k: [[1, 1, 10, 3, dark], ...vents(2, 5, 8, 3, dark)], sd: [[1, 1, 2, 5, dark]]}),
-                    C([3, 31, 6], [2, 8, 2], {c: steel, n: 0.05, tp: [[0, 0, 2, 2, dark]], edge: false})
-                ],
-                head: [
-                    C([-5, 34, -4], [10, 3, 8], {c: yellow, f: [[1, 1, 2, 1, lamp], [4, 1, 2, 1, lamp], [7, 1, 2, 1, lamp]], k: [...hazard(0, 0, 10, 3, yellow, dark, 2)], tp: [[1, 1, 8, 6, steel]]}),
-                    C([-6, 37, -5], [12, 1, 1], bar),
-                    C([-6, 34, -5], [1, 3, 1], bar),
-                    C([5, 34, -5], [1, 3, 1], bar),
-                    C([-5, 37, -4], [10, 1, 8], {c: dark, n: 0.05, tp: [[0, 0, 10, 8, steel]], edge: false})
-                ],
-                arm: [
-                    C([-16, 27, -5], [8, 8, 10], {c: orange, f: [[1, 1, 6, 2, lamp], [1, 3, 6, 1, dark]], sd: [[1, 1, 8, 2, dark], ...hazard(0, 5, 10, 2, yellow, dark, 2)]}, {uv: ARM_UV.shoulderR}),
-                    C([-15, 13, -3.5], [6, 14, 7], {c: yellow, all: [[0, 3, 7, 1, dark], [0, 9, 7, 1, dark]]}, {uv: ARM_UV.armR}),
-                    C([-16, 8, -4.5], [8, 5, 9], {c: dark, n: 0.07, all: [[0, 0, 9, 1, steel]], f: [[1, 1, 1, 3, steel], [3, 1, 2, 3, steel], [6, 1, 1, 3, steel]], bt: [[3, 1, 2, 7, steel]]}, {uv: ARM_UV.fistR}),
-                    C([-15.5, 35, -2], [3, 2, 4], {c: dark, n: 0.05, f: [[0, 0, 3, 2, lamp]], edge: false}),
-                    C([-16, 13, -4], [8, 5, 8], {c: orange, sd: [[1, 1, 6, 1, dark]]})
-                ]
-            }),
-            animations: armorAnimations({
+            // the chest upgrades sit low on the sill, below the window (the pilot must stay in sight)
+            slotFrame: {hullY: 15.5, front: -10},
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                ...limbs('leg', 'root', [-5, 17, 0], leg),
+                {name: 'torso', parent: 'root', pivot: [0, 17, 0], cubes: torso},
+                {name: 'head', parent: 'torso', pivot: [0, 41, 0], cubes: head},
+                {name: 'right_arm', parent: 'torso', pivot: [-11.5, 35, 0], cubes: armCommon},
+                {name: 'left_arm', parent: 'torso', pivot: [11.5, 35, 0], cubes: leftArm},
+                {name: 'right_saw', parent: 'right_arm', pivot: SAW, cubes: saw, followsForearm: true},
+                {name: 'right_hand', parent: 'right_arm', pivot: [-11, 14.8, 0], cubes: []},
+                {name: 'left_hand', parent: 'left_arm', pivot: [11, 14.8, 0], cubes: []}
+            ],
+            animations: Object.assign(armorAnimations({
                 idle: {length: 5, bob: -0.3, arm: -2, armZ: 1.5},
-                // A slow waddle from foot to foot: wide stance, short steps, the heavy hands hang and barely swing.
-                walk: {length: 1.35, stride: 15, knee: [3, 8, 6, 32, 10], arm: 7, armLag: 0.1, armOut: 4, elbow: [6, 6], bob: 1.1, roll: 4.5, lean: 1, twist: 2, splay: 3},
-                // A two-handed slam: a slow lift over the head, a fast drop, a pause in the low pose, a heavy recovery.
-                attack: {length: 1, loop: 'once', ease: 'easeInOutQuad', bones: {
-                    right_arm: {r: {'0.000': [0, 0, 0], '0.400': [-165, 0, -8], '0.540': [-58, 0, -4], '0.680': [-55, 0, -4], '1.000': [0, 0, 0]}},
-                    left_arm: {r: {'0.000': [0, 0, 0], '0.400': [-165, 0, 8], '0.540': [-58, 0, 4], '0.680': [-55, 0, 4], '1.000': [0, 0, 0]}},
-                    right_forearm: {r: {'0.000': [0, 0, 0], '0.400': [-45, 0, 0], '0.540': [-6, 0, 0], '1.000': [0, 0, 0]}},
-                    left_forearm: {r: {'0.000': [0, 0, 0], '0.400': [-45, 0, 0], '0.540': [-6, 0, 0], '1.000': [0, 0, 0]}},
-                    torso: {r: {'0.000': [0, 0, 0], '0.400': [-13, 0, 0], '0.540': [24, 0, 0], '0.680': [22, 0, 0], '1.000': [0, 0, 0]},
-                        p: {'0.000': [0, 0, 0], '0.400': [0, 0.8, 0], '0.540': [0, -2.2, -1], '0.680': [0, -2, -1], '1.000': [0, 0, 0]}},
-                    head: {r: {'0.000': [0, 0, 0], '0.400': [8, 0, 0], '0.540': [-14, 0, 0], '1.000': [0, 0, 0]}}
+                // A slow, heavy walk with little sway: the cab with its pilot stays nearly level.
+                walk: {length: 1.35, stride: 15, knee: [3, 8, 6, 32, 10], arm: 7, armLag: 0.1, armOut: 4, elbow: [6, 6], bob: 0.6, roll: 1.2, lean: 0, twist: 1.5, splay: 3},
+                attack: jackhammer(0.75, 0.15, 4, false),
+                // Power off: the arms drop, the cab settles a little, the roof sensor droops.
+                shutdown: {length: 1.5, loop: 'hold', ease: 'easeInOutSine', bones: {
+                    torso: {p: {'0.000': [0, 0, 0], '1.200': [0, -1.6, 0], '1.500': [0, -1.4, 0]}},
+                    head: {r: {'0.000': [0, 0, 0], '1.500': [24, 0, 0]}},
+                    right_arm: {r: {'0.000': [0, 0, 0], '1.200': [6, 0, 5], '1.500': [5, 0, 5]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '1.200': [6, 0, -5], '1.500': [5, 0, -5]}},
+                    right_leg: {r: {'0.000': [0, 0, 0], '1.500': [-6, 0, 0]}},
+                    left_leg: {r: {'0.000': [0, 0, 0], '1.500': [-6, 0, 0]}},
+                    right_shin: {r: {'0.000': [0, 0, 0], '1.500': [10, 0, 0]}},
+                    left_shin: {r: {'0.000': [0, 0, 0], '1.500': [10, 0, 0]}}
                 }},
-                shutdown: SLUMP(12, 2.5, 8),
-                wrecked: COLLAPSE(20, 4, 12, 4)
+                wrecked: {length: 1, loop: 'hold', ease: 'easeOutBounce', bones: {
+                    torso: {r: {'0.000': [0, 0, 0], '1.000': [5, 3, 6]}, p: {'0.000': [0, 0, 0], '1.000': [0, -3, 0]}},
+                    head: {r: {'0.000': [0, 0, 0], '1.000': [30, -10, 10]}},
+                    right_arm: {r: {'0.000': [0, 0, 0], '1.000': [-6, 8, 16]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '1.000': [-20, -6, -20]}},
+                    right_leg: {r: {'0.000': [0, 0, 0], '1.000': [-18, 4, 4]}},
+                    left_leg: {r: {'0.000': [0, 0, 0], '1.000': [-8, -4, -4]}},
+                    right_shin: {r: {'0.000': [0, 0, 0], '1.000': [26, 0, 0]}},
+                    left_shin: {r: {'0.000': [0, 0, 0], '1.000': [14, 0, 0]}}
+                }}
+            }), {
+                // mining: the jackhammer without the raise, again and again while the pilot breaks a block
+                'animation.power_armor.mine': jackhammer(0.45, 0, 3, true)
             })
         };
+        // the idle saw turns slowly
+        SPECS.worker_power_armor.animations['animation.power_armor.idle'].bones.right_saw = {r: {'0.000': [0, 0, 0], '5.000': [-90, 0, 0]}};
     })();
 
     // ------------------------------------------------------------------ Blockbench project
@@ -1588,7 +1755,7 @@
         for (const bone of spec.bones) {
             const limb = limbs[bone.name];
             if (!limb) {
-                out.push(bone.name.endsWith('_hand')
+                out.push(bone.name.endsWith('_hand') || bone.followsForearm
                     ? Object.assign({}, bone, {parent: bone.parent.replace('_arm', '_forearm')}) : bone);
                 continue;
             }
@@ -1899,7 +2066,10 @@
         const chest = door ? {parent: 'chest_door', pivot: door.pivot} : {parent: 'torso', pivot: torso.pivot};
         // a thin part on top (an antenna) does not count: the lamp stands on the helmet itself, sunk 0.2 into it
         const crown = spec.noCoplanarFaces ? head.cubes.filter(c => c.s[0] >= 2 && c.s[2] >= 2) : head.cubes;
-        const front = minOf(door ? door.cubes : torso.cubes, 2), back = maxOf(torso.cubes, 2), top = maxOf(crown, 1) - (spec.noCoplanarFaces ? 0.2 : 0);
+        const front = spec.slotFrame ? spec.slotFrame.front : minOf(door ? door.cubes : torso.cubes, 2), back = maxOf(torso.cubes, 2),
+            top = maxOf(crown, 1) - (spec.noCoplanarFaces ? 0.2 : 0);
+        // the worker (1.5.2) is a glass cab: its upgrades sit low on the sill and the back, not on the window
+        const hullY = spec.slotFrame ? spec.slotFrame.hullY : hull.o[1];
         const shoulder = arm.cubes[0], upper = arm.cubes[1];
         const elbow = spec.joints.elbow, knee = spec.joints.knee;
         const lowLeg = leg.cubes.filter(c => c.o[1] + c.s[1] > knee);
@@ -1911,9 +2081,9 @@
         const part = (name, parent, pivot, cubes) => ({name, parent, pivot, cubes});
         spec.bones.push(
             part('slot_head_floodlight', 'head', head.pivot, [C([-1.5, top, -2.5], [3, 2, 3], LAMP)]),
-            part('slot_chest_plating', chest.parent, chest.pivot, [C([-5, hull.o[1] + 3, front - 1], [10, 8, 1], PLATE)]),
-            part('slot_chest_floodlight', chest.parent, chest.pivot, [C([-1.5, hull.o[1] + 8, front - 1.5], [3, 3, 1.5], LAMP)]),
-            part('slot_back_air', 'torso', torso.pivot, [C([-2.5, hull.o[1] + 2, back], [5, 8, 3], TANK)]),
+            part('slot_chest_plating', chest.parent, chest.pivot, [C([-5, hullY + 3, front - 1], [10, 8, 1], PLATE)]),
+            part('slot_chest_floodlight', chest.parent, chest.pivot, [C([-1.5, hullY + 8, front - 1.5], [3, 3, 1.5], LAMP)]),
+            part('slot_back_air', 'torso', torso.pivot, [C([-2.5, hullY + 2, back], [5, 8, 3], TANK)]),
             // The mount of the banner: its pole stands on the back, and the banner rises 14 pixels above the armor.
             part('slot_back_banner', 'torso', [0, top + 14 - 32 * 2 / 3, back], []),
             part('slot_right_arm_plating', 'right_arm', arm.pivot, [armPlate]),
@@ -1930,8 +2100,8 @@
             f: [[1, 0, 1, 2, '#a970ff'], [4, 0, 1, 2, '#a970ff'], [7, 0, 1, 2, '#a970ff']],
             k: [[1, 0, 1, 2, '#a970ff'], [4, 0, 1, 2, '#a970ff'], [7, 0, 1, 2, '#a970ff']]};
         spec.bones.push(
-            part('slot_chest_emi', chest.parent, chest.pivot, [C([-4.5, hull.o[1] + 0.5, front - 1], [9, 2.5, 1], screen, {late: true})]),
-            part('slot_back_emi', 'torso', torso.pivot, [C([-4.5, hull.o[1] + 10.5, back], [9, 2, 1], screen, {late: true})])
+            part('slot_chest_emi', chest.parent, chest.pivot, [C([-4.5, hullY + 0.5, front - 1], [9, 2.5, 1], screen, {late: true})]),
+            part('slot_back_emi', 'torso', torso.pivot, [C([-4.5, hullY + 10.5, back], [9, 2, 1], screen, {late: true})])
         );
     }
 

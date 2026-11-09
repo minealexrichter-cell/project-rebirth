@@ -74,6 +74,8 @@ public final class PowerArmorClient {
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::blockAbilityKey);
         // Runs before the possessed-body renderer so that a pilot is hidden in any body.
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, PowerArmorClient::hidePilot);
+        NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, PowerArmorClient::shrinkCabPilot);
+        NeoForge.EVENT_BUS.addListener(PowerArmorClient::restoreCabPilot);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::hideVehicleHearts);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::renderArmorHands);
         NeoForge.EVENT_BUS.addListener(PowerArmorClient::onAttackKey);
@@ -133,9 +135,31 @@ public final class PowerArmorClient {
     }
 
     private static void hidePilot(RenderPlayerEvent.Pre event) {
-        // the pilot is seen only in a wreck or while the shell stands open (1.5.2)
-        if (event.getEntity().getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked() && armor.isShellClosed()) {
+        // the pilot is seen only in a wreck, while the shell stands open, or always in the worker's glass cab (1.5.2)
+        if (event.getEntity().getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked() && armor.isShellClosed()
+                && !armor.getVariant().hasCab()) {
             event.setCanceled(true);
+        }
+    }
+
+    /** A seated player is drawn this much smaller in the worker's cab, so that the whole pilot fits behind the glass. */
+    private static final float CAB_PILOT_SCALE = 0.8f;
+
+    private static boolean inCab(RenderPlayerEvent event) {
+        return event.getEntity().getVehicle() instanceof PowerArmorEntity armor && armor.getVariant().hasCab();
+    }
+
+    /** Runs last, so that a cancelled render (which gets no Post event) never leaves the pose pushed. */
+    private static void shrinkCabPilot(RenderPlayerEvent.Pre event) {
+        if (inCab(event)) {
+            event.getPoseStack().pushPose();
+            event.getPoseStack().scale(CAB_PILOT_SCALE, CAB_PILOT_SCALE, CAB_PILOT_SCALE);
+        }
+    }
+
+    private static void restoreCabPilot(RenderPlayerEvent.Post event) {
+        if (inCab(event)) {
+            event.getPoseStack().popPose();
         }
     }
 

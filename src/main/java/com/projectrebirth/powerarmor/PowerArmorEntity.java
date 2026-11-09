@@ -98,6 +98,13 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private static final EntityDataAccessor<Long> WEAPON_RELOAD_END = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.LONG);
     /** The shell that opens to let the pilot in and out (1.5.2): one of the SHELL_ states. */
     private static final EntityDataAccessor<Byte> SHELL = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BYTE);
+    /** The worker is breaking a block (1.5.2): its arms hammer like a jackhammer for everybody to see. */
+    private static final EntityDataAccessor<Boolean> MINING = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
+    /** Without a swing of the pilot for this long, the mining stops (a creative break sends no "stopped"). */
+    private static final int MINING_GRACE_TICKS = 10;
+    /** The pilot's seat in the cab, over the armor's feet, in blocks: up, and back from the middle. See PowerArmorClient.CAB_PILOT_SCALE. */
+    public static final double CAB_SEAT_HEIGHT = 1.1875;
+    public static final double CAB_SEAT_BACK = 0.075;
     public static final byte SHELL_CLOSED = 0;
     public static final byte SHELL_OPENING = 1;
     public static final byte SHELL_OPEN = 2;
@@ -124,6 +131,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     public static Predicate<Entity> isLocalPlayer = entity -> false;
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.power_armor.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.power_armor.walk");
+    private static final RawAnimation MINE = RawAnimation.begin().thenLoop("animation.power_armor.mine");
     private static final RawAnimation SHUTDOWN = RawAnimation.begin().thenPlayAndHold("animation.power_armor.shutdown");
     private static final RawAnimation WRECKED = RawAnimation.begin().thenPlayAndHold("animation.power_armor.wrecked");
     private static final RawAnimation SHELL_OPEN_ANIMATION = RawAnimation.begin().thenPlayAndHold("animation.power_armor.open");
@@ -145,6 +153,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     /** 0..1 jump strength requested by the pilot (charged with the jump key), applied when on the ground. */
     private float pendingJump;
     private int lastAttackAnimationTick;
+    private int lastMiningTick;
     /** Server only: ticks left in the current shell state, and what happens when it is open. Not saved: a loaded armor is shut. */
     private int shellTicks;
     @Nullable
@@ -180,6 +189,36 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         builder.define(AIMING_WEAPON, false);
         builder.define(WEAPON_RELOAD_END, 0L);
         builder.define(SHELL, SHELL_CLOSED);
+        builder.define(MINING, false);
+    }
+
+    public boolean isMining() {
+        return entityData.get(MINING);
+    }
+
+    /** Server: the pilot starts or stops breaking a block. Only the worker shows it. */
+    public void setMining(boolean mining) {
+        if (mining) {
+            lastMiningTick = tickCount;
+        }
+        if (isMining() != mining && (!mining || getVariant() == ArmorVariant.WORKER)) {
+            entityData.set(MINING, mining);
+        }
+    }
+
+    private void tickMining(Player pilot) {
+        if (!isMining()) {
+            return;
+        }
+        if (pilot == null || !isActive()) {
+            setMining(false);
+            return;
+        }
+        if (pilot.swinging) {
+            lastMiningTick = tickCount;
+        } else if (tickCount - lastMiningTick > MINING_GRACE_TICKS) {
+            setMining(false);
+        }
     }
 
     // ---------------------------------------------------------------- state
@@ -325,10 +364,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         }
     }
 
-    /** The pilot stands in the shell rather than sitting: seen only while it is open. */
+    /** The pilot stands in the shell rather than sitting: seen only while it is open. In the worker's cab the pilot sits. */
     @Override
     public boolean shouldRiderSit() {
-        return false;
+        return getVariant().hasCab();
     }
 
     /** A shut-down armor keeps its pilot inside unless the armor itself is letting them out. */
@@ -585,6 +624,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         }
         tickHatch(pilot);
         tickShell();
+        tickMining(pilot);
         if (tickCount % 20 == 0) {
             MachineBody.tickArmor(this);
         }
@@ -701,7 +741,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
      */
     public void playAttackAnimation() {
         // The mobile armor's slash is one flowing movement: frequent clicks must not cut it off and jerk the arm back.
-        int minTicks = getVariant() == ArmorVariant.MOBILE ? 14 : 8;
+        // The worker's jackhammer is a series of blows (1.5.2) and must not start over either.
+        int minTicks = getVariant() == ArmorVariant.MOBILE || getVariant() == ArmorVariant.WORKER ? 14 : 8;
         if (tickCount - lastAttackAnimationTick < minTicks && lastAttackAnimationTick != 0) {
             return;
         }
@@ -737,6 +778,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float partialTick) {
+        if (getVariant().hasCab()) {
+            // the worker's pilot sits on the seat of the glass cab, a little back from the middle (1.5.2)
+            return new Vec3(0.0, CAB_SEAT_HEIGHT, -CAB_SEAT_BACK).yRot(-getYRot() * Mth.DEG_TO_RAD);
+        }
         // Players ride 0.6 below the attachment point; this puts the pilot's feet above the armor's feet
         // (never inside the floor) and the eyes at the cockpit visor.
         return new Vec3(0.0, 0.9, 0.0);
@@ -1099,6 +1144,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             case SHELL_CLOSING -> state.setAndContinue(SHELL_CLOSE_ANIMATION);
             default -> PlayState.STOP;
         }));
+        // The worker's jackhammer while its pilot breaks a block (1.5.2); over the walk and the stance.
+        controllers.add(new AnimationController<>(this, "work", 3,
+                state -> isMining() && isActive() && getVariant() == ArmorVariant.WORKER ? state.setAndContinue(MINE) : PlayState.STOP));
         // Plays only when triggered; its arm and torso keyframes override the main animation for that moment.
         controllers.add(new AnimationController<>(this, ACTION_CONTROLLER, 2, state -> PlayState.STOP)
                 .triggerableAnim(ATTACK_ANIMATION, ATTACK));

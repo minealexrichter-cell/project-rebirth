@@ -55,10 +55,10 @@ public class GadgetModelGameTests {
         for (BodyClass bodyClass : BodyClass.values()) {
             check(helper, bodyClass.id(), BODY_PARTS, 64);
         }
-        // the combat and mobile armors have the detailed models of 1.5.2 on 256 textures (their first-person arms read that size too)
-        check(helper, "power_armor", ARMOR_PARTS, 256);
-        check(helper, "mobile_power_armor", ARMOR_PARTS, 256);
-        check(helper, "worker_power_armor", ARMOR_PARTS, 128);
+        // all three armors have the detailed models of 1.5.2 on 256 textures (their first-person arms read that size too)
+        for (String armor : List.of("power_armor", "mobile_power_armor", "worker_power_armor")) {
+            check(helper, armor, ARMOR_PARTS, 256);
+        }
         helper.succeed();
     }
 }

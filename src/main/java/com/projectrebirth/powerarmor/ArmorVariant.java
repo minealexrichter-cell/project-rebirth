@@ -33,15 +33,23 @@ public enum ArmorVariant {
         this.defaultSafeFall = defaultSafeFall;
     }
 
-    /** Used in the config, in saves and in translation keys. */
     /**
      * Whether the armor visibly opens to let its pilot in and out (1.5.2). The combat and mobile armors have models with the
-     * moving parts (chest plate and visor); the worker will get its own, and then only this needs to change.
+     * moving parts (chest plate and visor); the worker has a glass cab instead.
      */
     public boolean opensShell() {
         return this == COMBAT || this == MOBILE;
     }
 
+    /**
+     * Whether the pilot sits in a glass cab and stays in sight (1.5.2): the worker. The pilot is drawn smaller there (see
+     * PowerArmorClient) so that a seated player fits the cab.
+     */
+    public boolean hasCab() {
+        return this == WORKER;
+    }
+
+    /** Used in the config, in saves and in translation keys. */
     public String id() {
         return id;
     }

@@ -61,14 +61,14 @@ public class ArmorArmRenderer {
                     Box.shared(188, 0, 9, 2, 12, -5.6f), Box.shared(150, 16, 7, 7, 8, 11.2f)};
             case MOBILE -> new Box[] {Box.own(SHOULDER_U, 6, 6, 7, -3), Box.own(ARM_U, 4, 15, 4, 2), Box.own(FIST_U, 5, 5, 5, 16),
                     Box.shared(224, 0, 5, 5, 6, 11.3f), Box.shared(60, 13, 7, 1, 6, -3.7f)};
-            case WORKER -> new Box[] {Box.own(SHOULDER_U, 8, 8, 10, -4), Box.own(ARM_U, 6, 14, 7, 4), Box.own(FIST_U, 8, 5, 9, 18),
-                    Box.shared(32, 34, 8, 5, 8, 13)};
+            case WORKER -> new Box[] {Box.own(SHOULDER_U, 9, 9, 10, -5), Box.own(ARM_U, 6, 16, 6, -1), Box.own(FIST_U, 8, 6, 8, 17.2f),
+                    Box.shared(222, 17, 8, 6, 9, 11.4f), Box.shared(36, 32, 7, 3, 7, 8.8f)};
         };
     }
 
-    /** Size of the variant's texture: the combat and mobile armors have the detailed 256 models of 1.5.2, the worker 128. */
+    /** Size of the variant's texture: all three armors have the detailed 256 models of 1.5.2. */
     private static int textureSize(ArmorVariant variant) {
-        return variant == ArmorVariant.WORKER ? 128 : 256;
+        return 256;
     }
 
     /** The arm plate's texture area, fixed like the arm boxes (see ARM_UV in blockbench/tools/build_models.js). */
@@ -83,7 +83,7 @@ public class ArmorArmRenderer {
         return switch (variant) {
             case COMBAT -> new PlateSize(5, 6, 6, 4);
             case MOBILE -> new PlateSize(4, 4, 6, 4);
-            case WORKER -> new PlateSize(6, 7, 5, 5);
+            case WORKER -> new PlateSize(6, 6, 5, 5);
         };
     }
 

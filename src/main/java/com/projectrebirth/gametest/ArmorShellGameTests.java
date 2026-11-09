@@ -142,7 +142,43 @@ public class ArmorShellGameTests {
     public static void theDetailedModelsHaveNoFlickeringFaces(GameTestHelper helper) throws Exception {
         checkFaces(helper, "power_armor");
         checkFaces(helper, "mobile_power_armor");
+        checkFaces(helper, "worker_power_armor");
         helper.succeed();
+    }
+
+    /**
+     * Version 1.5.2: the worker's pilot sits in its glass cab and can be seen (the client draws a seated pilot there); the
+     * eyes are high in the cab, under its roof.
+     */
+    @GameTest(template = TEMPLATE)
+    public static void theWorkerPilotSitsInTheCab(GameTestHelper helper) {
+        PowerArmorEntity armor = armor(helper, ArmorVariant.WORKER);
+        ServerPlayer pilot = playerBeside(helper, armor);
+        armor.interact(pilot, InteractionHand.MAIN_HAND);
+        helper.assertTrue(pilot.getVehicle() == armor, "The worker takes the pilot at once (no opening shell)");
+        helper.assertTrue(armor.shouldRiderSit(), "The pilot sits in the cab");
+        helper.runAtTickTime(3, () -> {
+            double eyes = pilot.getEyeY() - armor.getY();
+            helper.assertTrue(eyes > 2.0 && eyes < 2.45, "The eyes are high in the cab: " + eyes);
+            helper.succeed();
+        });
+    }
+
+    /** Version 1.5.2: the worker hammers while its pilot breaks a block, and stops when the pilot stops swinging. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 100)
+    public static void theWorkerJackhammerRunsWhileMining(GameTestHelper helper) {
+        PowerArmorEntity armor = armor(helper, ArmorVariant.WORKER);
+        ServerPlayer pilot = playerBeside(helper, armor);
+        helper.assertTrue(pilot.startRiding(armor, true), "The pilot gets in");
+        armor.setMining(true);
+        helper.assertTrue(armor.isMining(), "Breaking a block starts the jackhammer");
+        PowerArmorEntity combat = armor(helper, ArmorVariant.COMBAT);
+        combat.setMining(true);
+        helper.assertFalse(combat.isMining(), "Only the worker has one");
+        helper.runAtTickTime(30, () -> {
+            helper.assertFalse(armor.isMining(), "No swing for a while: it stops");
+            helper.succeed();
+        });
     }
 
     private static void checkFaces(GameTestHelper helper, String id) throws Exception {

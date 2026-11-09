@@ -65,11 +65,21 @@ public final class PowerArmorEvents {
         }
     }
 
+    /** The armor punches when its pilot starts hitting a block; the worker hammers on while the block is being broken (1.5.2). */
     @SubscribeEvent
     static void onHitBlock(PlayerInteractEvent.LeftClickBlock event) {
-        if (!event.getLevel().isClientSide() && event.getAction() == PlayerInteractEvent.LeftClickBlock.Action.START
-                && event.getEntity().getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
-            armor.playAttackAnimation();
+        if (event.getLevel().isClientSide() || !(event.getEntity().getVehicle() instanceof PowerArmorEntity armor)) {
+            return;
+        }
+        PlayerInteractEvent.LeftClickBlock.Action action = event.getAction();
+        if (action == PlayerInteractEvent.LeftClickBlock.Action.START && armor.isActive()) {
+            if (armor.getVariant() == ArmorVariant.WORKER) {
+                armor.setMining(true);
+            } else {
+                armor.playAttackAnimation();
+            }
+        } else if (action == PlayerInteractEvent.LeftClickBlock.Action.STOP || action == PlayerInteractEvent.LeftClickBlock.Action.ABORT) {
+            armor.setMining(false);
         }
     }
 

@@ -238,7 +238,9 @@ public class ArmorArmRenderer {
     /** Ticks of one mining cycle, in which each arm strikes once (the arms take turns); the worker hammers faster. */
     private static final float COMBAT_MINING_CYCLE = 14.0f;
     private static final float MOBILE_MINING_CYCLE = 12.0f;
-    private static final float WORKER_BLOW = 3.0f;
+    private static final float WORKER_BLOW = 6.0f;
+    /** Blows of the worker's jackhammer in one strike; few and soft enough to read as a heavy push, not a shake. */
+    private static final int WORKER_STRIKE_BLOWS = 2;
 
     /**
      * One arm in a strike (1.5.2), by variant; strike: 0..1 over the time until the next strike is ready (a sword's
@@ -266,11 +268,18 @@ public class ArmorArmRenderer {
                     : track(strike, rest(0.0f), key(0.3f, f * 0.06f, -0.04f, 0.14f, 12.0f, 0.0f, f * 8.0f),
                         key(0.7f, f * 0.02f, 0.0f, 0.04f, 4.0f, 0.0f, f * 2.0f), rest(1.0f));
             case WORKER -> {
-                Motion aim = track(strike, rest(0.0f), new Key(0.15f, workerAim(f)), new Key(0.85f, workerAim(f)), rest(1.0f));
-                float hammer = strike > 0.15f && strike < 0.85f ? blow(((strike - 0.15f) / 0.7f * 4.0f) % 1.0f) : 0.0f;
-                yield aim.plus(new Motion(0.0f, 0.0f, -0.18f * hammer, -6.0f * hammer, 0.0f, 0.0f));
+                // up to the crosshair, two heavy pushes, back; the pushes fade in and out with the aim, so nothing jumps
+                Motion aim = track(strike, rest(0.0f), new Key(0.2f, workerAim(f)), new Key(0.8f, workerAim(f)), rest(1.0f));
+                float window = Mth.clamp((strike - 0.2f) / 0.6f, 0.0f, 1.0f);
+                float hammer = blow(window * WORKER_STRIKE_BLOWS % 1.0f) * Mth.sin(window * Mth.PI);
+                yield aim.plus(workerPush(hammer));
             }
         };
+    }
+
+    /** One push of the jackhammer, 0..1: the arms drive in a little and the fists rise as they recoil. */
+    private static Motion workerPush(float k) {
+        return new Motion(0.0f, 0.02f * k, -0.12f * k, -3.0f * k, 0.0f, 0.0f);
     }
 
     private static Motion workerAim(float f) {
@@ -296,7 +305,7 @@ public class ArmorArmRenderer {
             }
             case WORKER -> {
                 float hammer = blow((time / WORKER_BLOW) % 1.0f);
-                yield workerAim(f).plus(new Motion(0.0f, 0.01f * Mth.sin(time * 5.0f), -0.18f * hammer, -6.0f * hammer, 0.0f, 0.0f));
+                yield workerAim(f).plus(workerPush(hammer));
             }
         };
     }

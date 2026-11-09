@@ -150,23 +150,31 @@ public final class PowerArmorClient {
         }
     }
 
-    /** A seated player is drawn this much smaller in the worker's cab, so that the whole pilot fits behind the glass. */
+    /**
+     * The pilot is drawn a little smaller inside the armor (1.5.2), so that the whole player fits: seated in the worker's cab
+     * behind the glass, standing in the hollow trunk of the combat and mobile armors (seen while the shell is open).
+     */
     private static final float CAB_PILOT_SCALE = 0.8f;
+    private static final float TRUNK_PILOT_SCALE = 0.85f;
 
-    private static boolean inCab(RenderPlayerEvent event) {
-        return event.getEntity().getVehicle() instanceof PowerArmorEntity armor && armor.getVariant().hasCab();
+    private static float pilotScale(RenderPlayerEvent event) {
+        if (!(event.getEntity().getVehicle() instanceof PowerArmorEntity armor)) {
+            return 1.0f;
+        }
+        return armor.getVariant().hasCab() ? CAB_PILOT_SCALE : TRUNK_PILOT_SCALE;
     }
 
     /** Runs last, so that a cancelled render (which gets no Post event) never leaves the pose pushed. */
     private static void shrinkCabPilot(RenderPlayerEvent.Pre event) {
-        if (inCab(event)) {
+        float scale = pilotScale(event);
+        if (scale != 1.0f) {
             event.getPoseStack().pushPose();
-            event.getPoseStack().scale(CAB_PILOT_SCALE, CAB_PILOT_SCALE, CAB_PILOT_SCALE);
+            event.getPoseStack().scale(scale, scale, scale);
         }
     }
 
     private static void restoreCabPilot(RenderPlayerEvent.Post event) {
-        if (inCab(event)) {
+        if (pilotScale(event) != 1.0f) {
             event.getPoseStack().popPose();
         }
     }

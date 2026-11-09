@@ -973,6 +973,29 @@
         return {outBox, gear, valve};
     }
 
+    /**
+     * The hollow trunk of a suit the pilot stands in (1.5.2): a back wall, two side walls, and inside a padded back with two
+     * harness straps, shoulder pads and a grip on each side wall. x: the outer half-width, y0 and h: bottom and height, z0:
+     * the front, back: the inner face of the back wall. Seen when the chest plate is open; the pilot stands in it.
+     */
+    function hollowTrunk({x, y0, h, z0, back, colors: {dark, deep, edge, light, glow, pad}}) {
+        const w = 2 * x;
+        const padded = [[0, 0, w, h, pad], [1, 1, w - 2, 1, dark], [Math.floor(w / 2) - 1, h - 4, 2, 1, glow]];
+        for (let i = 2; i < h - 2; i += 2) padded.push([2, i, w - 4, 1, shade(pad, 0.82)]);
+        const side = C([-x - 0.3, y0 - 0.1, z0 - 0.3], [1, h, Math.round(back - z0 + 1)], {c: dark, n: 0.05, sd: [[0, 0, Math.round(back - z0 + 1), 1, edge],
+            [1, 2, Math.round(back - z0 - 1), h - 4, pad], [2, Math.floor(h / 2), 2, 1, glow]]});
+        const strap = C([-x + 3, y0 + 1.5, back - 0.6], [1, h - 3, 1], {c: '#3b3428', n: 0.06, edge: false, f: [[0, 0, 1, 1, light], [0, Math.floor(h / 2), 1, 1, light]]});
+        const shoulderPad = C([-x + 2, y0 + h - 4.5, back - 0.45], [4, 2, 1], {c: shade(pad, 1.15), n: 0.05, f: [[0, 0, 4, 1, shade(pad, 1.35)]]});
+        const grip = C([-x + 0.6, y0 + Math.floor(h / 2), z0 + 2], [1, 1, 3], {c: light, n: 0.03, edge: false, all: [[0, 0, 3, 1, edge]]});
+        return [
+            C([-x, y0, back], [w, h, 1], {c: dark, n: 0.05, f: padded, k: [[0, 0, w, 1, edge]], sd: [[0, 0, 1, 1, edge]]}),
+            side, mirror(side),
+            strap, mirror(strap),
+            shoulderPad, mirror(shoulderPad),
+            grip, mirror(grip)
+        ];
+    }
+
     // Combat (1.5.2, second design): a heavy front-opening suit after the owner's references. Every size is whole, so one
     // texture pixel is one model pixel; parts sink into each other instead of touching face to face, so nothing flickers
     // (checked: noCoplanarFaces). Plates stand out over a dark undersuit; the chest, knees, shoulders and helmet have
@@ -1045,10 +1068,8 @@
 
         // ---------------------------------------------------------------- the torso
         const torso = [
-            // the hull: its front face is the inside of the suit, seen when the chest plate is open
-            U([-8, 18, -4], [16, 15, 9], {f: [[0, 0, 16, 15, deep], [1, 1, 14, 1, dark], [2, 3, 2, 10, dark], [12, 3, 2, 10, dark],
-                [5, 3, 6, 6, '#1d2023'], [6, 4, 4, 4, '#262a2f'], [7, 5, 2, 2, glow], [4, 11, 8, 1, dark], [5, 13, 6, 1, rust]],
-                k: [[0, 0, 16, 1, edge]], sd: [[0, 0, 9, 1, edge], [2, 3, 5, 6, shade(dark, 1.25)]]}),
+            // the hollow trunk the pilot stands in, seen when the chest plate is open (1.5.2)
+            ...hollowTrunk({x: 8, y0: 18, h: 15, z0: -4, back: 4, colors: {dark, deep, edge, light, glow, pad: '#2f3329'}}),
             P([-7, 15, -3.5], [14, 4, 7], {f: [...grille(1, 1, 12, 2)], k: [...grille(1, 1, 12, 2)], sd: [[0, 0, 7, 1, light]]}),
             P([-5, 15.5, -4.3], [10, 3, 1], {f: [[0, 0, 10, 1, light], [4, 1, 2, 1, amber], [1, 2, 8, 1, dark]]}),
             U([-6, 18.7, -4.6], [12, 1, 1], {f: [[0, 0, 12, 1, edge]], edge: false}),
@@ -1276,9 +1297,9 @@
         const skirt = P([-7.2, 16.3, -3.4], [1, 4, 7], {sd: [[0, 0, 7, 1, light], [1, 2, 5, 1, shade(plate, 0.8)]]});
         const torso = [
             U([-6, 15.8, -3.5], [12, 5, 8], {f: [[0, 0, 12, 1, edge], [4, 1, 4, 3, deep]], sd: [[0, 0, 8, 1, edge]], k: [[0, 0, 12, 1, edge]]}),
-            // the hull: its front face is the inside of the suit, seen when the chest plate is open
-            U([-7, 20.5, -4], [14, 11, 9], {f: [[0, 0, 14, 11, deep], [1, 1, 12, 1, dark], [2, 3, 2, 6, dark], [10, 3, 2, 6, dark],
-                [5, 3, 4, 4, '#1d2023'], [6, 4, 2, 2, red], [4, 9, 6, 1, tan]], k: [[0, 0, 14, 1, edge]], sd: [[0, 0, 9, 1, edge], [2, 2, 5, 6, shade(dark, 1.25)]]}),
+            // the hollow trunk the pilot stands in, seen when the chest plate is open (1.5.2), with a roof under the collar
+            ...hollowTrunk({x: 7, y0: 20.5, h: 11, z0: -4, back: 4.2, colors: {dark, deep, edge, light, glow: red, pad: '#2c2f27'}}),
+            U([-6, 31.2, -4.2], [12, 1, 8], {bt: [[0, 0, 12, 8, deep], [5, 3, 2, 2, red]], edge: false}),
             P([-5, 21.5, 4.8], [10, 9, 3], {k: [[0, 0, 10, 1, light], ...grille(1, 2, 8, 5), [1, 8, 2, 1, amber], [7, 8, 2, 1, deep]], sd: [[0, 0, 3, 1, light]], tp: [[0, 0, 10, 1, light]]}),
             sidePlate, mirror(sidePlate),
             U([-5, 31.3, -3], [10, 2, 7], {all: [[0, 0, 10, 1, edge]]}),
@@ -1439,6 +1460,17 @@
         /** A crouch: the hip down to hipY, the metatarsus laid back toward the ground. */
         const crouch = (hipY, ballZ, footDeg) => legPose(hipY, [BALL[0], ballZ], footDeg / DEG);
         const SIT = crouch(11.5, -1.5, 72);
+        /**
+         * The body leans in its stance; while the shell is open it straightens up (and the head with it), so that the pilot
+         * standing upright inside fits the trunk; it leans again as the shell closes.
+         */
+        const uprightWhileOpen = (hatch, lean) => {
+            for (const [bone, x] of Object.entries(lean)) {
+                hatch['animation.power_armor.open'].bones[bone] = {r: {'0.000': [x, 0, 0], '0.600': [0, 0, 0], '1.200': [0, 0, 0]}};
+                hatch['animation.power_armor.close'].bones[bone] = {r: {'0.000': [0, 0, 0], '0.400': [0, 0, 0], '1.000': [x, 0, 0]}};
+            }
+            return hatch;
+        };
 
         SPECS.mobile_power_armor = {
             res: 256, seed: 707, wrecked: true, noCoplanarFaces: true, cutMainOnly: true,
@@ -1513,7 +1545,7 @@
                     left_forearm: {r: {'0.000': pose.elbow, '1.000': [-30, 0, 0]}}
                 }, ...['right', 'left'].map((side, i) => Object.fromEntries(Object.entries(legsAt(crouch(10.5, i ? -3.5 : 1, i ? 60 : 80), side))
                     .map(([bone, r]) => [bone, {r: {'0.000': [0, 0, 0], '1.000': [r[0], 0, i ? -10 : 12]}}]))))}
-            }, hatchAnimations({chest_door: [CHEST_OPEN, 0, 0], visor: [VISOR_OPEN, 0, 0]}))
+            }, uprightWhileOpen(hatchAnimations({chest_door: [CHEST_OPEN, 0, 0], visor: [VISOR_OPEN, 0, 0]}), {torso: LEAN, head: HEAD}))
         };
     })();
 

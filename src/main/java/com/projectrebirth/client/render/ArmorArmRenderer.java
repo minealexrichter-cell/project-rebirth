@@ -58,9 +58,9 @@ public class ArmorArmRenderer {
     private static Box[] boxes(ArmorVariant variant) {
         return switch (variant) {
             case COMBAT -> new Box[] {Box.own(SHOULDER_U, 8, 7, 11, -4), Box.own(ARM_U, 5, 17, 6, 2), Box.own(FIST_U, 6, 5, 7, 18.5f),
-                    Box.shared(188, 0, 9, 2, 12, -5.6f), Box.shared(150, 16, 7, 7, 8, 11.2f)};
+                    Box.shared(138, 0, 9, 2, 12, -5.6f), Box.shared(20, 12, 7, 7, 8, 11.2f)};
             case MOBILE -> new Box[] {Box.own(SHOULDER_U, 6, 6, 7, -3), Box.own(ARM_U, 4, 15, 4, 2), Box.own(FIST_U, 5, 5, 5, 16),
-                    Box.shared(224, 0, 5, 5, 6, 11.3f), Box.shared(60, 13, 7, 1, 6, -3.7f)};
+                    Box.shared(214, 9, 5, 5, 6, 11.3f), Box.shared(0, 13, 7, 1, 6, -3.7f)};
             case WORKER -> new Box[] {Box.own(SHOULDER_U, 9, 9, 10, -5), Box.own(ARM_U, 6, 16, 6, -1), Box.own(FIST_U, 8, 6, 8, 17.2f),
                     Box.shared(222, 17, 8, 6, 9, 11.4f), Box.shared(36, 32, 7, 3, 7, 8.8f)};
         };

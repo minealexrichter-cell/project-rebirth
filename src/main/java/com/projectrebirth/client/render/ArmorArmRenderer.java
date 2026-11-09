@@ -155,23 +155,96 @@ public class ArmorArmRenderer {
         poseStack.popPose();
     }
 
+    /** Where an arm moves in a strike: an offset in the view (blocks) and turns (degrees) about its own placement. */
+    private record Motion(float x, float y, float z, float pitch, float yaw, float roll) {
+        static final Motion REST = new Motion(0, 0, 0, 0, 0, 0);
+
+        Motion scaled(float k) {
+            return new Motion(x * k, y * k, z * k, pitch * k, yaw * k, roll * k);
+        }
+    }
+
+    /** 0 to 1 fast, then back to 0 slower: one blow over a phase 0..1. */
+    private static float pulse(float phase, float out) {
+        if (phase <= 0.0f || phase >= 1.0f) {
+            return 0.0f;
+        }
+        return phase < out ? phase / out : Mth.cos((phase - out) / (1.0f - out) * Mth.HALF_PI);
+    }
+
+    /** Ticks of one mining blow of the combat and mobile armors; the two arms take turns. */
+    private static final float MINING_CYCLE = 8.0f;
+
+    /**
+     * The strike of one arm, by variant (1.5.2). Combat: a straight cross of the lead arm while the other guards; mining is
+     * left and right punches in turn. Mobile: the lead arm's claws rake across the view from up outside to down inside;
+     * mining is short rakes in turn. Worker: both arms aim at the crosshair and hammer in quick short blows, like a
+     * jackhammer, all the time it mines. f: +1 for the right arm, -1 for the left; lead: the arm of the pilot's main hand;
+     * swing: the vanilla swing progress; time: ticks with the partial tick.
+     */
+    private static Motion motion(ArmorVariant variant, float f, boolean lead, float swing, boolean mining, float time) {
+        switch (variant) {
+            case COMBAT -> {
+                if (mining) {
+                    float phase = (time % MINING_CYCLE) / MINING_CYCLE;
+                    float k = pulse(lead ? phase * 2.0f : phase * 2.0f - 1.0f, 0.3f);
+                    return new Motion(f * -0.2f, 0.3f, -0.5f, -24.0f, f * 6.0f, 0.0f).scaled(k);
+                }
+                float k = pulse(swing, 0.25f);
+                return lead ? new Motion(f * -0.32f, 0.32f, -0.7f, -26.0f, f * 10.0f, 0.0f).scaled(k)
+                        : new Motion(f * -0.08f, 0.12f, 0.1f, 12.0f, f * -6.0f, 0.0f).scaled(k);
+            }
+            case MOBILE -> {
+                if (mining) {
+                    float phase = (time % MINING_CYCLE) / MINING_CYCLE;
+                    float p = lead ? phase * 2.0f : phase * 2.0f - 1.0f;
+                    return rake(f, p).scaled(0.85f);
+                }
+                return lead ? rake(f, swing) : new Motion(f * 0.05f, -0.05f, 0.12f, 10.0f, 0.0f, 0.0f).scaled(pulse(swing, 0.3f));
+            }
+            case WORKER -> {
+                // aim at the crosshair; in a single strike rise, hammer four times, come back; while mining stay aimed
+                float aim = mining ? 1.0f : swing < 0.15f ? swing / 0.15f : swing > 0.85f ? (1.0f - swing) / 0.15f : 1.0f;
+                float blows = mining ? Math.abs(Mth.sin(time * Mth.PI / 2.5f)) : Math.abs(Mth.sin((swing - 0.15f) / 0.7f * 4.0f * Mth.PI));
+                if (!mining && (swing < 0.15f || swing > 0.85f)) {
+                    blows = 0.0f;
+                }
+                float jolt = 0.012f * Mth.sin(time * 5.0f);
+                return new Motion(f * -0.2f * aim, (0.32f + jolt) * aim, (-0.3f - 0.2f * blows) * aim, (-24.0f - 6.0f * blows) * aim, f * 12.0f * aim, 0.0f);
+            }
+        }
+        return Motion.REST;
+    }
+
+    /** The mobile armor's claw rake over a phase 0..1: up and out, a fast cut down and across, back. */
+    private static Motion rake(float f, float phase) {
+        if (phase <= 0.0f || phase >= 1.0f) {
+            return Motion.REST;
+        }
+        float raise = Math.min(1.0f, phase / 0.25f);
+        float sweep = Mth.clamp((phase - 0.25f) / 0.3f, 0.0f, 1.0f);
+        float back = Mth.clamp((phase - 0.55f) / 0.45f, 0.0f, 1.0f);
+        float w = raise * (1.0f - back);
+        return new Motion(f * (0.02f - 0.6f * sweep) * w, (0.85f - 0.55f * sweep) * w, -0.45f * w, -30.0f * w, f * 10.0f * w, f * (35.0f - 85.0f * sweep) * w);
+    }
+
     /**
      * Resting pose is the vanilla first-person arm pose (ItemInHandRenderer#renderPlayerArm without swing).
-     * The vanilla swing would sweep the long armor arm off the bottom of the screen, so a punch is drawn instead:
-     * the arm is thrust forward, up and towards the crosshair, then pulled back.
-     * {@code plateColor}: the colour of the plate on this arm, 0 for none.
+     * The vanilla swing would sweep the long armor arm off the bottom of the screen, so each armor draws its own strike
+     * and mining (see motion). {@code plateColor}: the colour of the plate on this arm, 0 for none.
      */
     public void render(PoseStack poseStack, MultiBufferSource buffers, int packedLight, float equipProgress, float swingProgress,
-                       HumanoidArm side, ArmorVariant variant, int plateColor) {
+                       HumanoidArm side, boolean lead, boolean mining, float time, ArmorVariant variant, int plateColor) {
         boolean right = side != HumanoidArm.LEFT;
         float f = right ? 1.0f : -1.0f;
-        // Fast thrust out, slower pull back.
-        float punch = swingProgress < 0.3f ? swingProgress / 0.3f : Mth.cos((swingProgress - 0.3f) / 0.7f * Mth.HALF_PI);
+        Motion m = motion(variant, f, lead, swingProgress, mining, time);
         poseStack.pushPose();
-        poseStack.translate(f * -0.22f * punch, 0.18f * punch, -0.55f * punch);
+        poseStack.translate(m.x(), m.y(), m.z());
         poseStack.translate(f * 0.64f, -0.6f + equipProgress * -0.6f, -0.72f);
         poseStack.mulPose(Axis.YP.rotationDegrees(f * 45.0f));
-        poseStack.mulPose(Axis.XP.rotationDegrees(-25.0f * punch));
+        poseStack.mulPose(Axis.XP.rotationDegrees(m.pitch()));
+        poseStack.mulPose(Axis.YP.rotationDegrees(m.yaw()));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(m.roll()));
         poseStack.translate(f * -1.0f, 3.6f, 3.5f);
         poseStack.mulPose(Axis.ZP.rotationDegrees(f * 120.0f));
         poseStack.mulPose(Axis.XP.rotationDegrees(200.0f));

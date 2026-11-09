@@ -84,7 +84,7 @@ public final class PowerArmorClient {
 
     /**
      * In first person the pilot sees the armor's arms instead of their own. A hand holding an item shows only
-     * the item (vanilla view). Both empty armor arms strike together whenever the pilot swings.
+     * the item (vanilla view). The empty armor arms strike and mine each in their armor's own way (1.5.2, ArmorArmRenderer).
      */
     private static void renderArmorHands(RenderHandEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -97,10 +97,13 @@ public final class PowerArmorClient {
             armorArmRenderer = new ArmorArmRenderer();
         }
         HumanoidArm side = event.getHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
-        // The player's swing (of either hand), not only this hand's: both armor arms punch at once.
+        // The player's swing (of either hand), not only this hand's: both armor arms move.
         float swing = player.getAttackAnim(event.getPartialTick());
+        boolean mining = minecraft.gameMode != null && minecraft.gameMode.isDestroying();
+        float time = player.tickCount + event.getPartialTick();
         armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
-                event.getEquipProgress(), swing, side, armor.getVariant(), armorPlateColor(armor, side == HumanoidArm.RIGHT));
+                event.getEquipProgress(), swing, side, side == player.getMainArm(), mining, time, armor.getVariant(),
+                armorPlateColor(armor, side == HumanoidArm.RIGHT));
         event.setCanceled(true);
     }
 

@@ -97,15 +97,18 @@ public final class PowerArmorClient {
             armorArmRenderer = new ArmorArmRenderer();
         }
         HumanoidArm side = event.getHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
-        // The player's swing (of either hand), not only this hand's: both armor arms move.
-        float swing = player.getAttackAnim(event.getPartialTick());
+        // The strike runs over the whole time until the next one is ready (a sword's cooldown), for both arms.
         boolean mining = minecraft.gameMode != null && minecraft.gameMode.isDestroying();
         float time = player.tickCount + event.getPartialTick();
+        float strike = (time - strikeStart) / Math.max(1.0f, player.getCurrentItemAttackStrengthDelay());
         armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
-                event.getEquipProgress(), swing, side, side == player.getMainArm(), mining, time, armor.getVariant(),
+                strike, side, side == player.getMainArm(), mining, time, armor.getVariant(),
                 armorPlateColor(armor, side == HumanoidArm.RIGHT));
         event.setCanceled(true);
     }
+
+    /** When the pilot's current first-person strike began, in ticks (1.5.2). */
+    private static float strikeStart = -1000.0f;
 
     /**
      * Every attack of the pilot, even into the air, makes the armor punch for everyone to see. The worker hitting a block
@@ -115,8 +118,20 @@ public final class PowerArmorClient {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (event.isAttack() && player != null && player.getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
-            boolean mines = armor.getVariant() == ArmorVariant.WORKER && minecraft.hitResult != null
-                    && minecraft.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK;
+            boolean onBlock = minecraft.hitResult != null && minecraft.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK;
+            // 1.5.2: the empty armored hands strike as often as a sword; a click before they are ready does nothing (breaking
+            // blocks is not held back)
+            if (!onBlock && !PowerArmorEntity.strikeReady(player)) {
+                event.setCanceled(true);
+                event.setSwingHand(false);
+                return;
+            }
+            // the first-person strike starts on every accepted click, on a block too: while the block is being broken it
+            // gives way to the mining movement
+            if (ArmorAbility.isBareHand(player.getMainHandItem())) {
+                strikeStart = player.tickCount + minecraft.getTimer().getGameTimeDeltaPartialTick(false);
+            }
+            boolean mines = armor.getVariant() == ArmorVariant.WORKER && onBlock;
             if (!mines) {
                 PacketDistributor.sendToServer(ArmorSwingPayload.INSTANCE);
             }

@@ -118,6 +118,8 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
 
     private static final ResourceLocation PILOT_ATTACK_MODIFIER = ProjectRebirth.id("power_armor_attack");
     private static final ResourceLocation PILOT_KNOCKBACK_MODIFIER = ProjectRebirth.id("power_armor_knockback");
+    /** The strike speed of the pilot's empty armored hands (1.5.2), set to the configured value while the hands are empty. */
+    private static final ResourceLocation PILOT_STRIKE_SPEED_MODIFIER = ProjectRebirth.id("power_armor_strike_speed");
     private static final ResourceLocation PILOT_ENTITY_REACH_MODIFIER = ProjectRebirth.id("power_armor_entity_reach");
     private static final ResourceLocation PILOT_BLOCK_REACH_MODIFIER = ProjectRebirth.id("power_armor_block_reach");
     public static final String ACTION_CONTROLLER = "action";
@@ -631,6 +633,9 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         tickHatch(pilot);
         tickShell();
         tickMining(pilot);
+        if (pilot != null) {
+            updateStrikeSpeed(pilot);
+        }
         if (tickCount % 20 == 0) {
             MachineBody.tickArmor(this);
         }
@@ -823,6 +828,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (!level().isClientSide && passenger instanceof Player player) {
             level().playSound(null, blockPosition(), ModSounds.ARMOR_ENTER.get(), SoundSource.NEUTRAL, 1.0f, 1.0f);
             setPilotBonuses(player, getVariant());
+            updateStrikeSpeed(player);
         }
     }
 
@@ -849,7 +855,37 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
                 RebirthConfig.ARMOR_PILOT_ENTITY_REACH_BONUS.get());
         setBonus(player, Attributes.BLOCK_INTERACTION_RANGE, PILOT_BLOCK_REACH_MODIFIER, enabled,
                 RebirthConfig.ARMOR_PILOT_BLOCK_REACH_BONUS.get());
+        if (!enabled) {
+            setBonus(player, Attributes.ATTACK_SPEED, PILOT_STRIKE_SPEED_MODIFIER, false, 0.0);
+        }
     }
+
+    /**
+     * 1.5.2: the empty armored hands strike as often as a sword (config pilotAttackSpeed), so clicks cannot be spammed; the
+     * crosshair shows the cooldown as for a sword. With an item in the hand the item's own speed counts, and the change is
+     * taken off (it would add to the item's own slowing). Changes the attribute only when the state changes.
+     */
+    public void updateStrikeSpeed(Player pilot) {
+        AttributeInstance speed = pilot.getAttribute(Attributes.ATTACK_SPEED);
+        if (speed == null) {
+            return;
+        }
+        boolean bare = isActive() && ArmorAbility.isBareHand(pilot.getMainHandItem());
+        double wanted = bare ? RebirthConfig.ARMOR_PILOT_ATTACK_SPEED.get() - speed.getBaseValue() : 0.0;
+        AttributeModifier current = speed.getModifier(PILOT_STRIKE_SPEED_MODIFIER);
+        double now = current == null ? 0.0 : current.amount();
+        if (Math.abs(now - wanted) > 1.0e-6) {
+            setBonus(pilot, Attributes.ATTACK_SPEED, PILOT_STRIKE_SPEED_MODIFIER, wanted != 0.0, wanted);
+        }
+    }
+
+    /** Whether the pilot's next strike is ready (1.5.2): the empty armored hands wait as long as a sword does. */
+    public static boolean strikeReady(Player pilot) {
+        return !ArmorAbility.isBareHand(pilot.getMainHandItem()) || pilot.getAttackStrengthScale(0.5f) >= STRIKE_READY;
+    }
+
+    /** How charged a strike must be to land; a little below full, for the time a packet takes. */
+    public static final float STRIKE_READY = 0.9f;
 
     private static void setBonus(Player player, Holder<Attribute> attribute, ResourceLocation id, boolean enabled, double value) {
         AttributeInstance instance = player.getAttribute(attribute);

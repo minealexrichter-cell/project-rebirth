@@ -155,92 +155,183 @@ public class ArmorArmRenderer {
         poseStack.popPose();
     }
 
-    /** Where an arm moves in a strike: an offset in the view (blocks) and turns (degrees) about its own placement. */
+    /** Where an arm is in a strike: an offset in the view (blocks) and turns (degrees) about its own placement. */
     private record Motion(float x, float y, float z, float pitch, float yaw, float roll) {
         static final Motion REST = new Motion(0, 0, 0, 0, 0, 0);
+
+        float get(int i) {
+            return switch (i) {
+                case 0 -> x;
+                case 1 -> y;
+                case 2 -> z;
+                case 3 -> pitch;
+                case 4 -> yaw;
+                default -> roll;
+            };
+        }
+
+        static Motion of(float[] v) {
+            return new Motion(v[0], v[1], v[2], v[3], v[4], v[5]);
+        }
 
         Motion scaled(float k) {
             return new Motion(x * k, y * k, z * k, pitch * k, yaw * k, roll * k);
         }
+
+        Motion plus(Motion o) {
+            return new Motion(x + o.x, y + o.y, z + o.z, pitch + o.pitch, yaw + o.yaw, roll + o.roll);
+        }
     }
 
-    /** 0 to 1 fast, then back to 0 slower: one blow over a phase 0..1. */
-    private static float pulse(float phase, float out) {
-        if (phase <= 0.0f || phase >= 1.0f) {
+    /** A pose at a moment of a strike, 0..1. */
+    private record Key(float t, Motion m) {
+    }
+
+    private static Key key(float t, float x, float y, float z, float pitch, float yaw, float roll) {
+        return new Key(t, new Motion(x, y, z, pitch, yaw, roll));
+    }
+
+    private static Key rest(float t) {
+        return new Key(t, Motion.REST);
+    }
+
+    /**
+     * The pose at moment t (0..1) of a movement through the keys, smooth through every key (a cubic curve whose slope at a
+     * key follows its neighbours, and is still at the first and the last): the arm keeps its speed through the poses
+     * instead of stopping at each, and rests only at the ends.
+     */
+    private static Motion track(float t, Key... keys) {
+        if (t <= keys[0].t()) {
+            return keys[0].m();
+        }
+        if (t >= keys[keys.length - 1].t()) {
+            return keys[keys.length - 1].m();
+        }
+        int i = 0;
+        while (t > keys[i + 1].t()) {
+            i++;
+        }
+        Key k0 = keys[i], k1 = keys[i + 1];
+        float h = k1.t() - k0.t(), s = (t - k0.t()) / h;
+        float h00 = 2 * s * s * s - 3 * s * s + 1, h10 = s * s * s - 2 * s * s + s, h01 = -2 * s * s * s + 3 * s * s, h11 = s * s * s - s * s;
+        float[] v = new float[6];
+        for (int c = 0; c < 6; c++) {
+            float m0 = slope(keys, i, c), m1 = slope(keys, i + 1, c);
+            v[c] = h00 * k0.m().get(c) + h10 * h * m0 + h01 * k1.m().get(c) + h11 * h * m1;
+        }
+        return Motion.of(v);
+    }
+
+    private static float slope(Key[] keys, int i, int c) {
+        if (i == 0 || i == keys.length - 1) {
             return 0.0f;
         }
-        return phase < out ? phase / out : Mth.cos((phase - out) / (1.0f - out) * Mth.HALF_PI);
+        return (keys[i + 1].m().get(c) - keys[i - 1].m().get(c)) / (keys[i + 1].t() - keys[i - 1].t());
     }
 
-    /** Ticks of one mining blow of the combat and mobile armors; the two arms take turns. */
-    private static final float MINING_CYCLE = 8.0f;
+    /** A smooth bump 0 -> 1 -> 0 over a phase 0..1: one hammer blow. */
+    private static float blow(float phase) {
+        float s = Mth.sin(phase * Mth.PI);
+        return s * s;
+    }
+
+    /** Ticks of one mining cycle, in which each arm strikes once (the arms take turns); the worker hammers faster. */
+    private static final float COMBAT_MINING_CYCLE = 14.0f;
+    private static final float MOBILE_MINING_CYCLE = 12.0f;
+    private static final float WORKER_BLOW = 3.0f;
 
     /**
-     * The strike of one arm, by variant (1.5.2). Combat: a straight cross of the lead arm while the other guards; mining is
-     * left and right punches in turn. Mobile: the lead arm's claws rake across the view from up outside to down inside;
-     * mining is short rakes in turn. Worker: both arms aim at the crosshair and hammer in quick short blows, like a
-     * jackhammer, all the time it mines. f: +1 for the right arm, -1 for the left; lead: the arm of the pilot's main hand;
-     * swing: the vanilla swing progress; time: ticks with the partial tick.
+     * One arm in a strike (1.5.2), by variant; strike: 0..1 over the time until the next strike is ready (a sword's
+     * cooldown), or below 0 when there is none. Combat: the lead arm draws back a little and drives a straight cross at
+     * the crosshair while the other arm comes up to guard. Mobile: the lead arm rises up and out, the claws cut down and
+     * across the view and follow through, the other arm pulls back. Worker: both arms come up to the crosshair and hammer
+     * four quick blows, like a jackhammer. f: +1 for the right arm, -1 for the left; lead: the arm of the main hand.
      */
-    private static Motion motion(ArmorVariant variant, float f, boolean lead, float swing, boolean mining, float time) {
-        switch (variant) {
-            case COMBAT -> {
-                if (mining) {
-                    float phase = (time % MINING_CYCLE) / MINING_CYCLE;
-                    float k = pulse(lead ? phase * 2.0f : phase * 2.0f - 1.0f, 0.3f);
-                    return new Motion(f * -0.2f, 0.3f, -0.5f, -24.0f, f * 6.0f, 0.0f).scaled(k);
-                }
-                float k = pulse(swing, 0.25f);
-                return lead ? new Motion(f * -0.32f, 0.32f, -0.7f, -26.0f, f * 10.0f, 0.0f).scaled(k)
-                        : new Motion(f * -0.08f, 0.12f, 0.1f, 12.0f, f * -6.0f, 0.0f).scaled(k);
-            }
-            case MOBILE -> {
-                if (mining) {
-                    float phase = (time % MINING_CYCLE) / MINING_CYCLE;
-                    float p = lead ? phase * 2.0f : phase * 2.0f - 1.0f;
-                    return rake(f, p).scaled(0.85f);
-                }
-                return lead ? rake(f, swing) : new Motion(f * 0.05f, -0.05f, 0.12f, 10.0f, 0.0f, 0.0f).scaled(pulse(swing, 0.3f));
-            }
-            case WORKER -> {
-                // aim at the crosshair; in a single strike rise, hammer four times, come back; while mining stay aimed
-                float aim = mining ? 1.0f : swing < 0.15f ? swing / 0.15f : swing > 0.85f ? (1.0f - swing) / 0.15f : 1.0f;
-                float blows = mining ? Math.abs(Mth.sin(time * Mth.PI / 2.5f)) : Math.abs(Mth.sin((swing - 0.15f) / 0.7f * 4.0f * Mth.PI));
-                if (!mining && (swing < 0.15f || swing > 0.85f)) {
-                    blows = 0.0f;
-                }
-                float jolt = 0.012f * Mth.sin(time * 5.0f);
-                return new Motion(f * -0.2f * aim, (0.32f + jolt) * aim, (-0.3f - 0.2f * blows) * aim, (-24.0f - 6.0f * blows) * aim, f * 12.0f * aim, 0.0f);
-            }
-        }
-        return Motion.REST;
-    }
-
-    /** The mobile armor's claw rake over a phase 0..1: up and out, a fast cut down and across, back. */
-    private static Motion rake(float f, float phase) {
-        if (phase <= 0.0f || phase >= 1.0f) {
+    private static Motion strike(ArmorVariant variant, float f, boolean lead, float strike) {
+        if (strike < 0.0f || strike > 1.0f) {
             return Motion.REST;
         }
-        float raise = Math.min(1.0f, phase / 0.25f);
-        float sweep = Mth.clamp((phase - 0.25f) / 0.3f, 0.0f, 1.0f);
-        float back = Mth.clamp((phase - 0.55f) / 0.45f, 0.0f, 1.0f);
-        float w = raise * (1.0f - back);
-        return new Motion(f * (0.02f - 0.6f * sweep) * w, (0.85f - 0.55f * sweep) * w, -0.45f * w, -30.0f * w, f * 10.0f * w, f * (35.0f - 85.0f * sweep) * w);
+        return switch (variant) {
+            case COMBAT -> lead
+                    ? track(strike, rest(0.0f), key(0.1f, f * 0.06f, -0.06f, 0.14f, 10.0f, f * -5.0f, f * 4.0f),
+                        key(0.28f, f * -0.3f, 0.3f, -0.72f, -26.0f, f * 11.0f, f * -8.0f), key(0.42f, f * -0.27f, 0.28f, -0.64f, -24.0f, f * 9.0f, f * -6.0f),
+                        key(0.75f, f * -0.05f, 0.05f, -0.1f, -4.0f, f * 2.0f, 0.0f), rest(1.0f))
+                    : track(strike, rest(0.0f), key(0.28f, f * -0.07f, 0.1f, 0.12f, 12.0f, f * -6.0f, f * -4.0f),
+                        key(0.6f, f * -0.03f, 0.04f, 0.05f, 5.0f, f * -2.0f, 0.0f), rest(1.0f));
+            case MOBILE -> lead
+                    ? track(strike, rest(0.0f), key(0.22f, f * 0.12f, 0.7f, -0.15f, -30.0f, f * 14.0f, f * 45.0f),
+                        key(0.34f, 0.0f, 0.6f, -0.35f, -30.0f, f * 8.0f, f * 25.0f), key(0.46f, f * -0.3f, 0.38f, -0.5f, -22.0f, 0.0f, f * -15.0f),
+                        key(0.56f, f * -0.55f, 0.12f, -0.35f, -8.0f, f * -8.0f, f * -50.0f), key(0.78f, f * -0.15f, 0.02f, -0.08f, -2.0f, f * -2.0f, f * -10.0f),
+                        rest(1.0f))
+                    : track(strike, rest(0.0f), key(0.3f, f * 0.06f, -0.04f, 0.14f, 12.0f, 0.0f, f * 8.0f),
+                        key(0.7f, f * 0.02f, 0.0f, 0.04f, 4.0f, 0.0f, f * 2.0f), rest(1.0f));
+            case WORKER -> {
+                Motion aim = track(strike, rest(0.0f), new Key(0.15f, workerAim(f)), new Key(0.85f, workerAim(f)), rest(1.0f));
+                float hammer = strike > 0.15f && strike < 0.85f ? blow(((strike - 0.15f) / 0.7f * 4.0f) % 1.0f) : 0.0f;
+                yield aim.plus(new Motion(0.0f, 0.0f, -0.18f * hammer, -6.0f * hammer, 0.0f, 0.0f));
+            }
+        };
+    }
+
+    private static Motion workerAim(float f) {
+        return new Motion(f * -0.2f, 0.32f, -0.3f, -24.0f, f * 12.0f, 0.0f);
     }
 
     /**
-     * Resting pose is the vanilla first-person arm pose (ItemInHandRenderer#renderPlayerArm without swing).
-     * The vanilla swing would sweep the long armor arm off the bottom of the screen, so each armor draws its own strike
-     * and mining (see motion). {@code plateColor}: the colour of the plate on this arm, 0 for none.
+     * One arm while mining (1.5.2): combat and mobile strike in turn (the lead arm in the first half of each cycle), the
+     * worker keeps both arms at the crosshair and hammers. time: ticks with the partial tick.
      */
-    public void render(PoseStack poseStack, MultiBufferSource buffers, int packedLight, float equipProgress, float swingProgress,
+    private static Motion mining(ArmorVariant variant, float f, boolean lead, float time) {
+        return switch (variant) {
+            case COMBAT -> {
+                float phase = ((time / COMBAT_MINING_CYCLE) + (lead ? 0.0f : 0.5f)) % 1.0f;
+                yield track(phase, rest(0.0f), key(0.12f, f * 0.03f, -0.03f, 0.08f, 6.0f, 0.0f, 0.0f),
+                        key(0.28f, f * -0.22f, 0.28f, -0.55f, -24.0f, f * 7.0f, f * -5.0f), rest(0.5f), rest(1.0f));
+            }
+            case MOBILE -> {
+                float phase = ((time / MOBILE_MINING_CYCLE) + (lead ? 0.0f : 0.5f)) % 1.0f;
+                yield track(phase, rest(0.0f), key(0.18f, f * 0.08f, 0.5f, -0.15f, -24.0f, f * 10.0f, f * 35.0f),
+                        key(0.32f, f * -0.3f, 0.25f, -0.4f, -16.0f, 0.0f, f * -20.0f), key(0.42f, f * -0.42f, 0.08f, -0.25f, -6.0f, f * -6.0f, f * -40.0f),
+                        rest(0.6f), rest(1.0f));
+            }
+            case WORKER -> {
+                float hammer = blow((time / WORKER_BLOW) % 1.0f);
+                yield workerAim(f).plus(new Motion(0.0f, 0.01f * Mth.sin(time * 5.0f), -0.18f * hammer, -6.0f * hammer, 0.0f, 0.0f));
+            }
+        };
+    }
+
+    /** How far the arms are into the mining movement, 0..1; eased in and out so that starting and stopping are smooth. */
+    private float miningBlend;
+    private float lastFrameTime = Float.NaN;
+
+    private float miningBlend(boolean mining, float time) {
+        if (!Float.isNaN(lastFrameTime) && time != lastFrameTime) {
+            float step = Mth.clamp(Math.abs(time - lastFrameTime) / 4.0f, 0.0f, 1.0f);
+            miningBlend = Mth.clamp(miningBlend + (mining ? step : -step), 0.0f, 1.0f);
+        }
+        lastFrameTime = time;
+        return miningBlend * miningBlend * (3.0f - 2.0f * miningBlend);
+    }
+
+    /**
+     * Resting pose is the vanilla first-person arm pose (ItemInHandRenderer#renderPlayerArm without swing or the dip after a
+     * strike). The vanilla swing would sweep the long armor arm off the bottom of the screen, so each armor draws its own
+     * strike and mining (see strike, mining). strike: 0..1 through the current strike, below 0 for none.
+     * {@code plateColor}: the colour of the plate on this arm, 0 for none.
+     */
+    public void render(PoseStack poseStack, MultiBufferSource buffers, int packedLight, float strike,
                        HumanoidArm side, boolean lead, boolean mining, float time, ArmorVariant variant, int plateColor) {
         boolean right = side != HumanoidArm.LEFT;
         float f = right ? 1.0f : -1.0f;
-        Motion m = motion(variant, f, lead, swingProgress, mining, time);
+        float blend = miningBlend(mining, time);
+        Motion m = strike(variant, f, lead, strike).scaled(1.0f - blend);
+        if (blend > 0.0f) {
+            m = m.plus(mining(variant, f, lead, time).scaled(blend));
+        }
         poseStack.pushPose();
         poseStack.translate(m.x(), m.y(), m.z());
-        poseStack.translate(f * 0.64f, -0.6f + equipProgress * -0.6f, -0.72f);
+        poseStack.translate(f * 0.64f, -0.6f, -0.72f);
         poseStack.mulPose(Axis.YP.rotationDegrees(f * 45.0f));
         poseStack.mulPose(Axis.XP.rotationDegrees(m.pitch()));
         poseStack.mulPose(Axis.YP.rotationDegrees(m.yaw()));

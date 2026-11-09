@@ -50,6 +50,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_STRUCTURAL_PER_INGOT;
     public static final ModConfigSpec.DoubleValue ARMOR_REPAIR_CRITICAL_PER_PLATE;
     public static final ModConfigSpec.DoubleValue ARMOR_PILOT_KNOCKBACK_BONUS;
+    public static final ModConfigSpec.DoubleValue ARMOR_PILOT_ATTACK_SPEED;
     public static final ModConfigSpec.DoubleValue ARMOR_PILOT_ENTITY_REACH_BONUS;
     public static final ModConfigSpec.DoubleValue ARMOR_PILOT_BLOCK_REACH_BONUS;
     public static final ModConfigSpec.IntValue ARMOR_DISMANTLE_IRON;
@@ -371,6 +372,9 @@ public final class RebirthConfig {
         ARMOR_PILOT_KNOCKBACK_BONUS = builder
                 .comment("Extra melee knockback of the pilot while in the armor")
                 .defineInRange("pilotAttackKnockbackBonus", 1.0, 0.0, 10.0);
+        ARMOR_PILOT_ATTACK_SPEED = builder
+                .comment("Strikes per second of the pilot's empty armored hands (1.5.2): like a sword (1.6). A click before the next strike is ready does nothing")
+                .defineInRange("pilotAttackSpeed", 1.6, 0.1, 20.0);
         ARMOR_PILOT_ENTITY_REACH_BONUS = builder
                 .comment("Extra reach in blocks for hitting and using entities while in the armor (a player reaches 3)")
                 .defineInRange("pilotEntityReachBonus", 2.0, 0.0, 16.0);

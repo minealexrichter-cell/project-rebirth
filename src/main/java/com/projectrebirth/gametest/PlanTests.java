@@ -19,6 +19,9 @@ public final class PlanTests {
     /** The tests of version 1.5.0 "Technical limits" (docs/PLAN_1.5.md). */
     public static final String POWER = ProjectRebirth.MOD_ID + "_power";
 
+    /** The tests of the power armor strikes of 1.5.2 (the cooldown of the empty armored hands). */
+    public static final String ARMOR = ProjectRebirth.MOD_ID + "_armor";
+
     private PlanTests() {
     }
 }

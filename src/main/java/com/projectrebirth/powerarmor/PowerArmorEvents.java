@@ -57,10 +57,17 @@ public final class PowerArmorEvents {
         }
     }
 
-    /** The armor punches when its pilot attacks an entity or starts hitting a block. */
+    /**
+     * The armor punches when its pilot attacks an entity. 1.5.2: a strike before the hands are ready again (as long as a
+     * sword's cooldown) does not land; the client does not even send it, this stops a client that would.
+     */
     @SubscribeEvent
     static void onAttack(AttackEntityEvent event) {
         if (!event.getEntity().level().isClientSide && event.getEntity().getVehicle() instanceof PowerArmorEntity armor && armor.isActive()) {
+            if (!PowerArmorEntity.strikeReady(event.getEntity())) {
+                event.setCanceled(true);
+                return;
+            }
             armor.playAttackAnimation();
         }
     }

@@ -60,7 +60,7 @@ public class ArmorArmRenderer {
             case COMBAT -> new Box[] {Box.own(SHOULDER_U, 8, 7, 11, -4), Box.own(ARM_U, 5, 17, 6, 2), Box.own(FIST_U, 6, 5, 7, 18.5f),
                     Box.shared(188, 0, 9, 2, 12, -5.6f), Box.shared(150, 16, 7, 7, 8, 11.2f)};
             case MOBILE -> new Box[] {Box.own(SHOULDER_U, 6, 6, 7, -3), Box.own(ARM_U, 4, 15, 4, 2), Box.own(FIST_U, 5, 5, 5, 16),
-                    Box.shared(196, 9, 5, 5, 6, 11.4f), Box.shared(82, 13, 7, 1, 6, -3.7f)};
+                    Box.shared(224, 0, 5, 5, 6, 11.3f), Box.shared(60, 13, 7, 1, 6, -3.7f)};
             case WORKER -> new Box[] {Box.own(SHOULDER_U, 8, 8, 10, -4), Box.own(ARM_U, 6, 14, 7, 4), Box.own(FIST_U, 8, 5, 9, 18),
                     Box.shared(32, 34, 8, 5, 8, 13)};
         };

@@ -1174,30 +1174,71 @@
             return C([x0, my - length / 2, mz - d / 2], [w, length, d], paint, {rot: [tilt, 0, 0], pivot: [x0 + w / 2, my, mz]});
         };
 
+        /**
+         * A box standing out of a face: axis 0 (x) or 2 (z) is the way the face looks, face its plane, dir -1 or +1 the way
+         * out; u (the other horizontal axis) and v (y) span it; a from aLo to aHi outward. turn: degrees about the axis.
+         */
+        const outBox = (axis, face, dir, uLo, uHi, vLo, vHi, aLo, aHi, paint, turn) => {
+            const u = axis === 0 ? 2 : 0;
+            const lo = [0, 0, 0], hi = [0, 0, 0];
+            lo[u] = uLo; hi[u] = uHi; lo[1] = vLo; hi[1] = vHi;
+            lo[axis] = Math.min(face + dir * aLo, face + dir * aHi); hi[axis] = Math.max(face + dir * aLo, face + dir * aHi);
+            const size = [0, 1, 2].map(k => Math.round((hi[k] - lo[k]) * 1000) / 1000);
+            if (!turn) return C(lo, size, paint);
+            const rot = axis === 0 ? [turn, 0, 0] : [0, 0, turn];
+            return C(lo, size, paint, {rot, pivot: [0, 1, 2].map(k => (lo[k] + hi[k]) / 2)});
+        };
+        /** A gear on a face: a toothed disc (a square and the same square turned 45 degrees) with an amber hub cap. */
+        const gear = (axis, face, dir, cu0, cv0, s) => {
+            // a tenth off the centre, so that its edges never meet the edges of the hub under it
+            const cu = cu0 + 0.1, cv = cv0 + 0.1;
+            const look = axis === 0 ? 'sd' : (dir < 0 ? 'f' : 'k');
+            const disc = {c: edge, n: 0.04, edge: false, all: [[0, 0, s, 1, light]], [look]: [[0, 0, s, s, edge], [1, 1, s - 2, s - 2, dark],
+                [Math.floor((s - 1) / 2), Math.floor((s - 1) / 2), s % 2 ? 1 : 2, s % 2 ? 1 : 2, deep]]};
+            const teeth = {c: shade(edge, 0.85), n: 0.04, edge: false, all: [[0, 0, s, 1, shade(light, 0.9)]]};
+            return [
+                outBox(axis, face, dir, cu - s / 2, cu + s / 2, cv - s / 2, cv + s / 2, -0.25, 0.75, disc),
+                outBox(axis, face, dir, cu - s / 2, cu + s / 2, cv - s / 2, cv + s / 2, -0.35, 0.65, teeth, 45),
+                outBox(axis, face, dir, cu - 0.5, cu + 0.5, cv - 0.5, cv + 0.5, 0.5, 1.5, {c: amber, n: 0.04, edge: false, all: [[0, 0, 1, 1, shade(amber, 1.25)]]})
+            ];
+        };
+        /** A cross-shaped valve wheel standing out of a hub of size s: two steel spokes and an amber cap. */
+        const valve = (axis, face, dir, cu0, cv0, s) => {
+            const cu = cu0 + 0.1, cv = cv0 + 0.1;
+            const l = s + 1, spoke = {c: light, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false};
+            return [
+                outBox(axis, face, dir, cu - 0.5, cu + 0.5, cv - l / 2, cv + l / 2, -0.15, 0.85, spoke),
+                outBox(axis, face, dir, cu - l / 2, cu + l / 2, cv - 0.5, cv + 0.5, -0.3, 0.7, spoke),
+                outBox(axis, face, dir, cu - 1, cu + 1, cv - 1, cv + 1, 0.45, 1.45, {c: amber, n: 0.04, all: [[0, 0, 2, 1, shade(amber, 1.25)]], edge: false})
+            ];
+        };
+
         // the joints of the right leg in the side view, [y, z]
         const HIP = [18, 0], KNEE = [12.5, -3.5], ANKLE = [6.5, 3], BALL = [1, 0];
 
         // ---------------------------------------------------------------- the legs (right; the left is mirrored)
         const thigh = [
-            seg(-7, 5, 5, HIP, KNEE, {c: plate, n: 0.045, f: [[0, 0, 5, 1, light], [1, 2, 3, 4, shade(plate, 0.85)], [0, 8, 5, 1, dark]],
+            seg(-6.9, 5, 5, HIP, KNEE, {c: plate, n: 0.045, f: [[0, 0, 5, 1, light], [1, 2, 3, 4, shade(plate, 0.85)], [0, 8, 5, 1, dark]],
                 sd: [[0, 0, 5, 1, light], [1, 3, 3, 1, dark], [1, 5, 3, 1, dark]], k: [[0, 0, 5, 1, light], [1, 2, 3, 5, dark]]}, 2),
             seg(-7.8, 1, 6, [19, 0.5], [13, -3], {c: olive, n: 0.05, sd: [[0, 0, 6, 1, shade(olive, 1.25)], [1, 2, 4, 3, shade(olive, 0.82)], [2, 3, 2, 1, tan]]}),
             U([-7.4, 16, -2.5], [6, 4, 5], {sd: [[0, 0, 5, 1, edge]], f: [[0, 0, 6, 1, edge]]}),
-            U([-8.3, 16.5, -1.5], [1, 3, 3], {sd: hub(3), edge: false}),
-            seg(-5, 1, 1, [17, -2], [12.5, -4.8], {c: light, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false}, 0, -2.4)
+            ...gear(0, -7.8, -1, 0, 18, 4),
+            seg(-4.8, 1, 1, [17, -2], [12.5, -4.8], {c: light, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false}, 0, -2.4)
         ];
         const shin = [
-            U([-6.5, 10.5, -5.5], [4, 4, 4], {sd: hub(4), f: [[0, 0, 4, 1, edge]]}),
+            U([-6.6, 10.5, -5.5], [4, 4, 4], {sd: hub(4), f: [[0, 0, 4, 1, edge]]}),
+            ...valve(0, -6.6, -1, -3.5, 12.5, 4),
             P([-6, 10.8, -6.3], [3, 3, 1], {f: [[0, 0, 3, 1, light], [1, 1, 1, 1, amber]], edge: false}),
-            seg(-6, 3, 3, KNEE, ANKLE, {c: dark, n: 0.05, all: [[0, 3, 3, 1, deep], [0, 7, 3, 1, deep]]}, 1),
+            seg(-5.9, 3, 3, KNEE, ANKLE, {c: dark, n: 0.05, all: [[0, 3, 3, 1, deep], [0, 7, 3, 1, deep]]}, 1),
             seg(-6.5, 4, 2, [11.5, -2.5], [7.5, 1.8], {c: plate, n: 0.045, k: [[0, 0, 4, 1, light], [1, 2, 2, 3, shade(plate, 0.82)]],
                 f: [[0, 0, 4, 1, light]], sd: [[0, 0, 2, 1, light]]}, 0, 1.8),
             seg(-5, 1, 1, KNEE, ANKLE, {c: steel, n: 0.03, all: [[0, 0, 1, 1, edge]], edge: false}, -2, -1.9)
         ];
-        const toeTip = (x, z) => C([x, 0.4, z - 0.9], [1, 2, 1], {c: claw, n: 0.03, all: [[0, 1, 1, 1, steel]], edge: false},
-            {rot: [32, 0, 0], pivot: [x + 0.5, 1.6, z - 0.4]});
+        const toeTip = (x, z) => C([x + 0.15, 0.4, z - 0.9], [1, 2, 1], {c: claw, n: 0.03, all: [[0, 1, 1, 1, steel]], edge: false},
+            {rot: [32, 0, 0], pivot: [x + 0.65, 1.6, z - 0.4]});
         const foot = [
-            U([-6, 5, 1.5], [3, 3, 3], {sd: hub(3), edge: false}),
+            U([-6.2, 5, 1.5], [3, 3, 3], {sd: hub(3), edge: false}),
+            ...gear(0, -6.2, -1, 3, 6.5, 3),
             seg(-6, 3, 3, ANKLE, BALL, {c: plate, n: 0.045, f: [[0, 0, 3, 1, light], [1, 2, 1, 3, shade(plate, 0.8)]], sd: [[0, 0, 3, 1, light]]}, 1),
             seg(-5.5, 2, 1, ANKLE, BALL, {c: olive, n: 0.05, f: [[0, 0, 2, 1, shade(olive, 1.25)]]}, -1, -1.8),
             U([-6.5, 0, -1.5], [4, 2, 3], {tp: [[1, 1, 2, 1, edge]], sd: [[0, 0, 3, 1, edge]]}),
@@ -1206,8 +1247,8 @@
             toeTip(-6.3, -5.3), toeTip(-5, -6.3),
             // the raised inner toe with the sickle claw
             P([-3.7, 1.3, -3.3], [1, 2, 2], {all: [[0, 0, 2, 1, light]]}),
-            C([-3.7, 2.9, -3.7], [1, 4, 1], {c: claw, n: 0.03, all: [[0, 0, 1, 1, steel]], edge: false}, {rot: [-38, 0, 0], pivot: [-3.2, 3, -2.9]}),
-            U([-5, 0.5, 1.3], [2, 2, 2], {k: [[0, 0, 2, 1, edge]]})
+            C([-3.55, 2.9, -3.7], [1, 4, 1], {c: claw, n: 0.03, all: [[0, 0, 1, 1, steel]], edge: false}, {rot: [-38, 0, 0], pivot: [-3.05, 3, -2.9]}),
+            U([-5.1, 0.5, 1.3], [2, 2, 2], {k: [[0, 0, 2, 1, edge]]})
         ];
         const legChain = [['leg', 'root', [HIP[0], HIP[1]], thigh], ['shin', 'leg', KNEE, shin], ['foot', 'shin', ANKLE, foot]];
         const legBones = [];
@@ -1219,7 +1260,6 @@
         // ---------------------------------------------------------------- the torso and the chest plate
         const sidePlate = P([-7.8, 22, -3], [1, 8, 7], {sd: [[0, 0, 7, 1, light], [1, 2, 5, 1, dark], [1, 4, 5, 1, dark], [1, 6, 5, 1, dark]]});
         const skirt = P([-7.2, 16.3, -3.4], [1, 4, 7], {sd: [[0, 0, 7, 1, light], [1, 2, 5, 1, shade(plate, 0.8)]]});
-        const fin = y => P([-0.5, y, 6.6], [1, 4, 3], {sd: [[0, 0, 3, 1, light]], all: [[0, 0, 1, 1, light]]}, {rot: [35, 0, 0], pivot: [0, y, 7.3]});
         const torso = [
             U([-6, 15.8, -3.5], [12, 5, 8], {f: [[0, 0, 12, 1, edge], [4, 1, 4, 3, deep]], sd: [[0, 0, 8, 1, edge]], k: [[0, 0, 12, 1, edge]]}),
             // the hull: its front face is the inside of the suit, seen when the chest plate is open
@@ -1230,15 +1270,19 @@
             U([-5, 31.3, -3], [10, 2, 7], {all: [[0, 0, 10, 1, edge]]}),
             skirt, mirror(skirt),
             P([-5, 17, -4.3], [10, 3, 1], {f: [[0, 0, 10, 1, light], [1, 2, 8, 1, dark]]}),
-            fin(22.5), fin(25.5), fin(28.5)
+            U([-1.5, 24.5, 7.6], [3, 3, 1], {k: hub(3), edge: false}),
+            ...valve(2, 8.6, 1, 0, 26, 3),
+            ...gear(2, 7.8, 1, -3.4, 28.5, 3), ...gear(2, 7.8, 1, -3.4, 28.5, 3).map(c => mirror(c)),
+            ...gear(0, -7.8, -1, 0.5, 26, 4), ...gear(0, -7.8, -1, 0.5, 26, 4).map(c => mirror(c))
         ];
-        const rib = (y) => P([-4.5, y, -6.3], [3, 1, 1], {f: [[0, 0, 3, 1, light]], edge: false});
+        const doorHub = U([-5, 22.3, -6.3], [3, 3, 1], {f: hub(3), edge: false});
         const door = [
             P([-6, 21, -5.8], [12, 10, 2], {f: [[0, 0, 12, 1, light], [1, 6, 10, 1, shade(plate, 0.8)], [0, 9, 12, 1, dark]], k: [[0, 0, 12, 10, deep]],
                 sd: [[0, 0, 2, 1, light]]}),
             P([-5, 26, -6.6], [10, 4, 1], {f: [[0, 0, 10, 1, light], [1, 1, 3, 2, shade(plate, 0.85)], [6, 1, 3, 2, shade(plate, 0.85)], [0, 3, 10, 1, dark]]}),
             P([-0.5, 22.5, -6.7], [1, 8, 1], {f: [[0, 0, 1, 8, edge], [0, 0, 1, 1, light], [0, 6, 1, 1, red]], edge: false}),
-            rib(22.6), mirror(rib(22.6)), rib(24.4), mirror(rib(24.4))
+            doorHub, mirror(doorHub),
+            ...valve(2, -6.3, -1, -3.5, 23.8, 3), ...valve(2, -6.3, -1, -3.5, 23.8, 3).map(c => mirror(c))
         ];
 
         // ---------------------------------------------------------------- the head, the muzzle and the tail
@@ -1249,7 +1293,8 @@
             P([-3.5, 33.5, -4.5], [7, 5, 8], {tp: [[3, 0, 1, 8, dark]], sd: [[0, 0, 8, 1, light], [5, 2, 2, 2, deep]], k: [[0, 0, 7, 1, light], ...grille(1, 1, 5, 3)]}),
             P([-0.5, 38.3, -3.9], [1, 1, 7], {tp: [[0, 0, 1, 7, light]], edge: false}),
             cheek, mirror(cheek),
-            headFin, mirror(headFin)
+            headFin, mirror(headFin),
+            ...gear(0, -3.5, -1, 2, 36, 3), ...gear(0, -3.5, -1, 2, 36, 3).map(c => mirror(c))
         ];
         const eye = C([-2.8, 36, -8], [1, 1, 3], {c: red, n: 0.03, sd: [[0, 0, 3, 1, red], [0, 0, 1, 1, shade(red, 1.4)]], edge: false});
         const muzzle = [
@@ -1261,15 +1306,29 @@
             U([-1.5, 34.3, -10.6], [3, 2, 1], {f: [[0, 0, 3, 2, deep], [0, 0, 3, 1, edge]], edge: false}),
             P([-0.5, 37.6, -10], [1, 1, 6], {tp: [[0, 0, 1, 6, light]], edge: false})
         ];
+        // the curve of the tail in the side view, [y, z]: down a little from the hips, then sweeping up
+        const T0 = [19, 4.5], T1 = [17.6, 10], T2 = [18.2, 15.2], T3 = [20.6, 19.4], T4 = [24.2, 21.8];
+        const tailSeg = (w, d, p, q, extra) => seg(-w / 2, w, d, p, q, {c: dark, n: 0.05, all: [[0, 0, w, 1, edge], [0, 2, w, 1, deep]], sd: [[0, 0, d, 1, edge]]}, extra);
+        const tailPlate = (w, p, q, shift) => seg(-w / 2, w, 1, p, q, {c: plate, n: 0.045, all: [[0, 0, w, 1, light]], sd: [[0, 0, 1, 1, light]],
+            f: [[0, 0, w, 1, light], [Math.floor(w / 2), 1, 1, 3, shade(plate, 0.8)]], k: [[0, 0, w, 1, light], [Math.floor(w / 2), 1, 1, 3, shade(plate, 0.8)]]}, 0, shift);
+        const tailJoint = (w, at) => U([-w / 2, at[0] - 1.5, at[1] - 1.5], [w, 3, 3], {sd: hub(3), all: [[0, 0, w, 1, edge]]});
         const tail = [
-            U([-2.5, 17, 4.3], [5, 4, 8], {sd: [[0, 0, 8, 1, edge], [2, 2, 1, 1, deep], [5, 2, 1, 1, deep]], k: [[0, 0, 5, 1, edge]]}),
-            P([-2, 20.8, 5.5], [4, 1, 6], {tp: [[0, 0, 4, 1, light], [1, 2, 2, 3, shade(plate, 0.82)]], all: [[0, 0, 4, 1, light]]})
+            tailSeg(5, 4, T0, T1, 2),
+            tailPlate(3, T0, T1, 2.2),
+            tailJoint(6, T1), ...gear(0, -3, -1, T1[1], T1[0], 3), ...gear(0, -3, -1, T1[1], T1[0], 3).map(c => mirror(c)),
+            tailSeg(4, 3, T1, T2, 1),
+            tailPlate(2, T1, T2, 1.8)
         ];
         const tailTip = [
-            U([-1.5, 17.5, 12.1], [3, 3, 7], {sd: [[0, 0, 7, 1, edge], [3, 1, 1, 1, deep]]}),
-            P([-0.5, 20.3, 15], [1, 3, 4], {sd: [[0, 0, 4, 1, light]]}),
-            P([-4, 18.5, 16], [8, 1, 3], {tp: [[0, 0, 8, 1, light], [0, 2, 1, 1, red], [7, 2, 1, 1, red]], all: [[0, 0, 8, 1, light]]}),
-            C([-0.5, 18, 18.9], [1, 1, 1], {c: red, n: 0.03, edge: false})
+            tailJoint(5, T2), ...gear(0, -2.5, -1, T2[1], T2[0], 3), ...gear(0, -2.5, -1, T2[1], T2[0], 3).map(c => mirror(c)),
+            tailSeg(3, 3, T2, T3, 1),
+            seg(-0.5, 1, 1, T2, T3, {c: plate, n: 0.045, all: [[0, 0, 1, 1, light]], edge: false}, 0, 1.9),
+            tailSeg(2, 2, T3, T4, 1),
+            // the end: a flat blade across the tip, a fin on top and a red lamp
+            seg(-3, 6, 1, [T3[0] + 1.2, T3[1] + 0.9], [T4[0] + 0.6, T4[1] + 0.4], {c: plate, n: 0.045, all: [[0, 0, 6, 1, light], [0, 1, 1, 1, red], [5, 1, 1, 1, red]],
+                edge: false}),
+            seg(-0.4, 1, 2, [T3[0] + 0.5, T3[1] + 0.2], T4, {c: plate, n: 0.045, all: [[0, 0, 2, 1, light]], edge: false}, 0, 1.6),
+            seg(-0.6, 1, 1, T4, [T4[0] + 1.6, T4[1] + 0.9], {c: red, n: 0.03, edge: false}, 0)
         ];
 
         // ---------------------------------------------------------------- the arms (right; the left is mirrored)
@@ -1280,10 +1339,12 @@
             U([-11.5, 13, -2], [4, 15, 4], {all: [[0, 4, 4, 1, deep], [0, 9, 4, 1, deep]]}, {uv: ARM_UV.armR}),
             U([-12, 9, -2.5], [5, 5, 5], {f: [[0, 0, 5, 1, edge], [1, 2, 1, 2, edge], [3, 2, 1, 2, edge]], all: [[0, 0, 5, 1, edge]]}, {uv: ARM_UV.fistR}),
             P([-12.8, 32.7, -3], [7, 1, 6], {tp: [[1, 1, 5, 4, edge]], all: [[0, 0, 7, 1, light]]}),
-            P([-12.1, 13.6, -3], [5, 5, 6], {f: [[0, 0, 5, 1, light], [2, 1, 1, 3, dark]], sd: [[0, 0, 6, 1, light], [1, 2, 4, 1, dark]], k: [[0, 0, 5, 1, light]],
+            P([-12.1, 13.7, -3], [5, 5, 6], {f: [[0, 0, 5, 1, light], [2, 1, 1, 3, dark]], sd: [[0, 0, 6, 1, light], [1, 2, 4, 1, dark]], k: [[0, 0, 5, 1, light]],
                 bt: [[1, 1, 3, 4, dark]]}),
             O([-12.2, 20, -2.6], [1, 6, 5], {sd: [[0, 0, 5, 1, shade(olive, 1.25)], [1, 2, 3, 2, shade(olive, 0.82)]]}),
-            armClaw(-11.7), armClaw(-10), armClaw(-8.3)
+            armClaw(-11.7), armClaw(-10), armClaw(-8.3),
+            ...gear(0, -12.5, -1, 0, 30, 4),
+            ...gear(0, -12.1, -1, 0, 16, 3)
         ];
 
         // ---------------------------------------------------------------- walking on raptor legs
@@ -1359,7 +1420,7 @@
             })};
         };
         // the pose the armor holds when not walking: leaning forward, arms drawn up, the tail out behind
-        const LEAN = 12, HEAD = -10, ARM = -20, ELBOW = -50, TAIL = 3;
+        const LEAN = 12, HEAD = -10, ARM = -20, ELBOW = -50, TAIL = -10;
         const pose = {torso: [LEAN, 0, 0], head: [HEAD, 0, 0], tail: [TAIL, 0, 0], arms: [ARM, 0, 5], elbow: [ELBOW, 0, 0]};
         /** A crouch: the hip down to hipY, the metatarsus laid back toward the ground. */
         const crouch = (hipY, ballZ, footDeg) => legPose(hipY, [BALL[0], ballZ], footDeg / DEG);
@@ -1376,7 +1437,7 @@
                 {name: 'torso', parent: 'root', pivot: [0, 16, 0], cubes: torso},
                 {name: 'chest_door', parent: 'torso', pivot: [0, 21, -5.8], cubes: door},
                 {name: 'tail', parent: 'torso', pivot: [0, 19, 4.5], cubes: tail},
-                {name: 'tail_tip', parent: 'tail', pivot: [0, 19, 12], cubes: tailTip},
+                {name: 'tail_tip', parent: 'tail', pivot: [0, T2[0], T2[1]], cubes: tailTip},
                 {name: 'head', parent: 'torso', pivot: [0, 31.5, -1], cubes: head},
                 {name: 'visor', parent: 'head', pivot: [0, 38.5, -4.5], cubes: muzzle},
                 ...limbs('arm', 'torso', [-9, 30, 0], arm, ARM_LEFT_UV),
@@ -1398,7 +1459,7 @@
                 }},
                 // Quick, springy steps with the body low and forward.
                 'animation.power_armor.walk': raptorWalk({length: 0.62, stance: 0.56, reach: 5.5, push: 4.5, lift: 3.5, heel: 0.5, fold: 0.55,
-                    bob: 0.9, lean: 16, pitch: 1.6, twist: 4, roll: 2, tailLift: 4, armX: -24, arm: 7, armOut: 5, elbow: -55}),
+                    bob: 0.9, lean: 16, pitch: 1.6, twist: 4, roll: 2, tailLift: -12, armX: -24, arm: 7, armOut: 5, elbow: -55}),
                 // A lunging slash: the body rears back and winds up, then drives forward and down while the right claws rake
                 // across; the tail whips to the other side to balance.
                 'animation.power_armor.attack': flowing(0.65, {
@@ -1609,38 +1670,82 @@
     /**
      * Faces of two cubes that lie in the same plane and overlap: the game cannot tell which one is in front, and the texture
      * flickers there (1.5.2). Parts must sink into each other or keep apart instead of touching face to face. The upgrade
-     * parts are left out (they show one at a time) and so are turned cubes (their planes are not along the axes).
+     * parts are left out (they show one at a time). Cubes turned about one axis are checked too (their faces are worked out
+     * in space; a turn about x keeps the two side faces in planes along the axes); cubes turned about two or three axes are
+     * left out. Overlap is judged by the faces' bounding rectangles in their plane, so it may report a near miss.
      */
     function coplanarFaces(spec) {
-        const cubes = [];
+        const faces = [];
+        const DEG = Math.PI / 180;
         for (const bone of spec.bones) {
             if (/^(slot_|upgrade_|jetpack_)/.test(bone.name)) {
                 continue;
             }
             bone.cubes.forEach((c, i) => {
-                if (!c.rot) {
-                    cubes.push({name: bone.name + '#' + i, lo: c.o, hi: [0, 1, 2].map(k => c.o[k] + c.s[k])});
+                const r = c.rot || [0, 0, 0];
+                const axes = [0, 1, 2].filter(k => Math.abs(r[k]) > 1e-6);
+                if (axes.length > 1) {
+                    return;
+                }
+                // geo coordinates have x mirrored against Blockbench's, which turns the y and z rotations the other way
+                const turn = axes.length ? axes[0] : -1;
+                const angle = turn < 0 ? 0 : (turn === 0 ? r[0] : -r[turn]) * DEG;
+                const pv = c.pivot || [0, 0, 0];
+                const move = q => {
+                    if (turn < 0) return q;
+                    const [a, b] = [0, 1, 2].filter(k => k !== turn);
+                    const x = q[a] - pv[a], y = q[b] - pv[b];
+                    const out = q.slice();
+                    // a right-handed turn about the axis; for y the pair is (x, z) and the sense flips
+                    const s = turn === 1 ? -Math.sin(angle) : Math.sin(angle), co = Math.cos(angle);
+                    out[a] = pv[a] + x * co - y * s;
+                    out[b] = pv[b] + x * s + y * co;
+                    return out;
+                };
+                const lo = c.o, hi = [0, 1, 2].map(k => c.o[k] + c.s[k]);
+                for (let axis = 0; axis < 3; axis++) {
+                    const [u, v] = [0, 1, 2].filter(k => k !== axis);
+                    for (const side of [lo[axis], hi[axis]]) {
+                        const corners = [[lo[u], lo[v]], [hi[u], lo[v]], [hi[u], hi[v]], [lo[u], hi[v]]].map(([a, b]) => {
+                            const q = [0, 0, 0];
+                            q[axis] = side; q[u] = a; q[v] = b;
+                            return move(q);
+                        });
+                        const e1 = [0, 1, 2].map(k => corners[1][k] - corners[0][k]), e2 = [0, 1, 2].map(k => corners[3][k] - corners[0][k]);
+                        let n = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+                        const len = Math.hypot(...n);
+                        if (len < 1e-9) continue;
+                        n = n.map(x => x / len);
+                        // the normal made to point into the positive half, so that both sides of a plane compare equal
+                        const lead = [0, 1, 2].find(k => Math.abs(n[k]) > 1e-6);
+                        if (n[lead] < 0) n = n.map(x => -x);
+                        faces.push({name: bone.name + '#' + i, n, d: n[0] * corners[0][0] + n[1] * corners[0][1] + n[2] * corners[0][2], corners});
+                    }
                 }
             });
         }
         const out = [];
         const EPS = 0.001;
-        for (let i = 0; i < cubes.length; i++) {
-            for (let j = i + 1; j < cubes.length; j++) {
-                const a = cubes[i], b = cubes[j];
-                for (let axis = 0; axis < 3; axis++) {
-                    const [u, v] = [0, 1, 2].filter(k => k !== axis);
-                    const overlap = k => Math.min(a.hi[k], b.hi[k]) - Math.max(a.lo[k], b.lo[k]);
-                    if (overlap(u) <= EPS || overlap(v) <= EPS) {
-                        continue;
-                    }
-                    for (const pa of [a.lo[axis], a.hi[axis]]) {
-                        for (const pb of [b.lo[axis], b.hi[axis]]) {
-                            if (Math.abs(pa - pb) < EPS) {
-                                out.push(a.name + ' / ' + b.name + ' at ' + 'xyz'[axis] + '=' + pa);
-                            }
-                        }
-                    }
+        for (let i = 0; i < faces.length; i++) {
+            for (let j = i + 1; j < faces.length; j++) {
+                const a = faces[i], b = faces[j];
+                if (a.name === b.name || Math.abs(a.d - b.d) > EPS || Math.abs(a.n[0] * b.n[0] + a.n[1] * b.n[1] + a.n[2] * b.n[2]) < 1 - 1e-6) {
+                    continue;
+                }
+                // a basis in the plane, and the bounding rectangles of both faces in it
+                const ref = Math.abs(a.n[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0];
+                let e = [a.n[1] * ref[2] - a.n[2] * ref[1], a.n[2] * ref[0] - a.n[0] * ref[2], a.n[0] * ref[1] - a.n[1] * ref[0]];
+                const el = Math.hypot(...e);
+                e = e.map(x => x / el);
+                const f = [a.n[1] * e[2] - a.n[2] * e[1], a.n[2] * e[0] - a.n[0] * e[2], a.n[0] * e[1] - a.n[1] * e[0]];
+                const box = face => {
+                    const us = face.corners.map(q => q[0] * e[0] + q[1] * e[1] + q[2] * e[2]), vs = face.corners.map(q => q[0] * f[0] + q[1] * f[1] + q[2] * f[2]);
+                    return [Math.min(...us), Math.max(...us), Math.min(...vs), Math.max(...vs)];
+                };
+                const A = box(a), B = box(b);
+                if (Math.min(A[1], B[1]) - Math.max(A[0], B[0]) > EPS && Math.min(A[3], B[3]) - Math.max(A[2], B[2]) > EPS) {
+                    const axis = [0, 1, 2].find(k => Math.abs(a.n[k]) > 0.999);
+                    out.push(a.name + ' / ' + b.name + ' at ' + (axis === undefined ? 'tilted plane d=' + a.d.toFixed(2) : 'xyz'[axis] + '=' + (Math.round(a.d * 1000) / 1000)));
                 }
             }
         }

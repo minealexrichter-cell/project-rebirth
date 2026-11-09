@@ -151,30 +151,40 @@ public final class PowerArmorClient {
     }
 
     /**
-     * The pilot is drawn a little smaller inside the armor (1.5.2), so that the whole player fits: seated in the worker's cab
-     * behind the glass, standing in the hollow trunk of the combat and mobile armors (seen while the shell is open).
+     * How the pilot is drawn inside the armor (1.5.2), so that the whole player fits it: a little smaller, and in the combat
+     * and mobile armors raised so that the head is in the hollow helmet and the body in the hollow trunk (seen while the
+     * shell is open); seated in the worker's cab behind the glass. Only the picture: the hitbox and the camera stay.
+     * lift: in model pixels, from where the rider would stand; must match the helmets in blockbench/tools/build_models.js.
      */
-    private static final float CAB_PILOT_SCALE = 0.8f;
-    private static final float TRUNK_PILOT_SCALE = 0.85f;
+    private record PilotPose(float scale, float lift) {
+    }
 
-    private static float pilotScale(RenderPlayerEvent event) {
-        if (!(event.getEntity().getVehicle() instanceof PowerArmorEntity armor)) {
-            return 1.0f;
-        }
-        return armor.getVariant().hasCab() ? CAB_PILOT_SCALE : TRUNK_PILOT_SCALE;
+    private static PilotPose pilotPose(ArmorVariant variant) {
+        return switch (variant) {
+            // the head 35..41.8 in the helmet 34.8..42.8
+            case COMBAT -> new PilotPose(0.85f, 9.8f);
+            // the head 33.5..39.5 in the taller helmet 33.4..40.6
+            case MOBILE -> new PilotPose(0.75f, 10.7f);
+            case WORKER -> new PilotPose(0.8f, 0.0f);
+        };
+    }
+
+    private static PilotPose pilotPose(RenderPlayerEvent event) {
+        return event.getEntity().getVehicle() instanceof PowerArmorEntity armor ? pilotPose(armor.getVariant()) : null;
     }
 
     /** Runs last, so that a cancelled render (which gets no Post event) never leaves the pose pushed. */
     private static void shrinkCabPilot(RenderPlayerEvent.Pre event) {
-        float scale = pilotScale(event);
-        if (scale != 1.0f) {
+        PilotPose pose = pilotPose(event);
+        if (pose != null) {
             event.getPoseStack().pushPose();
-            event.getPoseStack().scale(scale, scale, scale);
+            event.getPoseStack().translate(0.0f, pose.lift() / 16.0f, 0.0f);
+            event.getPoseStack().scale(pose.scale(), pose.scale(), pose.scale());
         }
     }
 
     private static void restoreCabPilot(RenderPlayerEvent.Post event) {
-        if (pilotScale(event) != 1.0f) {
+        if (pilotPose(event) != null) {
             event.getPoseStack().popPose();
         }
     }

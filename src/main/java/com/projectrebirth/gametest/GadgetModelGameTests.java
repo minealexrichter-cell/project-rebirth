@@ -50,6 +50,24 @@ public class GadgetModelGameTests {
         helper.assertTrue(width == textureSize, id + " keeps its texture size " + textureSize + ", got " + width);
     }
 
+    private static boolean armHasUv(String id, int u, int v) throws Exception {
+        for (JsonElement element : geometry(id).getAsJsonArray("bones")) {
+            JsonObject bone = element.getAsJsonObject();
+            String name = bone.get("name").getAsString();
+            if (!name.equals("right_arm") && !name.equals("right_forearm") || !bone.has("cubes")) {
+                continue;
+            }
+            for (JsonElement c : bone.getAsJsonArray("cubes")) {
+                JsonObject cube = c.getAsJsonObject();
+                if (cube.has("uv") && cube.get("uv").isJsonArray() && cube.getAsJsonArray("uv").get(0).getAsInt() == u
+                        && cube.getAsJsonArray("uv").get(1).getAsInt() == v) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @GameTest(template = "floor_5x5")
     public static void everyModelHasTheNewParts(GameTestHelper helper) throws Exception {
         for (BodyClass bodyClass : BodyClass.values()) {
@@ -58,6 +76,8 @@ public class GadgetModelGameTests {
         // all three armors have the detailed models of 1.5.2 on 256 textures (their first-person arms read that size too)
         for (String armor : List.of("power_armor", "mobile_power_armor", "worker_power_armor")) {
             check(helper, armor, ARMOR_PARTS, 256);
+            // 1.5.2: the shoulder cap and the forearm plate keep the texture places the first-person arm reads (ArmorArmRenderer)
+            helper.assertTrue(armHasUv(armor, 140, 100) && armHasUv(armor, 190, 100), armor + ": the arm plates are at their fixed texture places");
         }
         helper.succeed();
     }

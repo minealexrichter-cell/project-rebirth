@@ -786,7 +786,9 @@
     }
 
     /** Uv areas of the three arm cubes that the first-person arm also draws; see ArmorArmRenderer. */
-    const ARM_UV = {shoulderR: [0, 100], armR: [40, 100], fistR: [70, 100], shoulderL: [0, 70], armL: [40, 70], fistL: [70, 70], plate: [110, 100]};
+    // cap and guard (1.5.2): the shoulder cap and the forearm plate the first-person arm also draws, shared by both arms
+    const ARM_UV = {shoulderR: [0, 100], armR: [40, 100], fistR: [70, 100], shoulderL: [0, 70], armL: [40, 70], fistL: [70, 70], plate: [110, 100],
+        cap: [140, 100], guard: [190, 100]};
     const ARM_LEFT_UV = {0: ARM_UV.shoulderL, 1: ARM_UV.armL, 2: ARM_UV.fistL};
 
     /** A value on a closed curve: smooth between the [phase, value] points; phase 0..1 wraps around. */
@@ -1118,8 +1120,12 @@
 
         // ---------------------------------------------------------------- the helmet and its visor (lifts)
         const head = [
-            P([-5, 34.8, -5], [10, 8, 10], {f: [[0, 0, 10, 8, deep]], tp: [[4, 0, 2, 10, olive], [0, 0, 10, 1, light]],
-                sd: [[0, 0, 10, 1, light], ...grille(6, 2, 3, 4), [0, 7, 10, 1, dark]], k: [[0, 0, 10, 1, light], ...grille(2, 2, 6, 4), [0, 7, 10, 1, dark]]}),
+            // the helmet is hollow (1.5.2): the pilot's head is in it, seen when the visor lifts
+            P([-5, 34.8, 4.1], [10, 8, 1], {f: [[0, 0, 10, 8, '#2f3329'], [1, 1, 8, 1, dark], [2, 3, 6, 1, shade('#2f3329', 0.82)], [2, 5, 6, 1, shade('#2f3329', 0.82)]],
+                k: [[0, 0, 10, 1, light], ...grille(2, 2, 6, 4), [0, 7, 10, 1, dark]]}),
+            P([-5.1, 34.7, -5.3], [1, 8, 10], {sd: [[0, 0, 10, 1, light], ...grille(6, 2, 3, 4), [0, 7, 10, 1, dark]]}),
+            mirror(P([-5.1, 34.7, -5.3], [1, 8, 10], {sd: [[0, 0, 10, 1, light], ...grille(6, 2, 3, 4), [0, 7, 10, 1, dark]]})),
+            P([-4.4, 42, -5.1], [9, 1, 10], {tp: [[4, 0, 1, 10, olive], [0, 0, 9, 1, light]], bt: [[0, 0, 9, 10, '#2f3329']], all: [[0, 0, 9, 1, light]]}),
             C([-1, 42.5, -4.2], [2, 1, 9], {c: olive, n: 0.05, tp: [[0, 0, 2, 1, shade(olive, 1.3)]]}),
             at(sideHub, [-5.6, 36, -2]),
             mirror(at(sideHub, [-5.6, 36, -2])),
@@ -1160,9 +1166,9 @@
                 sd: [[0, 0, 11, 1, light], [1, 2, 9, 1, edge], [1, 5, 9, 1, dark], ...rivets(11, 7)], tp: [[1, 1, 6, 9, edge]]}, {uv: ARM_UV.shoulderR}),
             U([-14, 12, -3], [5, 17, 6], {all: [[0, 4, 6, 1, deep], [0, 8, 6, 1, deep], [0, 13, 6, 1, deep]]}, {uv: ARM_UV.armR}),
             U([-14.5, 7.5, -3.5], [6, 5, 7], {f: [[0, 0, 6, 1, edge], [1, 2, 1, 2, edge], [3, 2, 1, 2, edge], [5, 2, 1, 2, edge]], all: [[0, 0, 6, 1, edge]]}, {uv: ARM_UV.fistR}),
-            P([-17, 34.6, -6], [9, 2, 12], {tp: [[1, 1, 7, 10, edge], [4, 1, 1, 10, dark]], sd: [[0, 0, 12, 1, light]], f: [[0, 0, 9, 1, light]], k: [[0, 0, 9, 1, light]]}),
+            P([-17, 34.6, -6], [9, 2, 12], {tp: [[1, 1, 7, 10, edge], [4, 1, 1, 10, dark]], sd: [[0, 0, 12, 1, light]], f: [[0, 0, 9, 1, light]], k: [[0, 0, 9, 1, light]]}, {uv: ARM_UV.cap}),
             P([-15.2, 12.8, -4], [7, 7, 8], {f: [[0, 0, 7, 1, light], [3, 1, 1, 5, dark], [1, 5, 2, 1, rust]], sd: [[0, 0, 8, 1, light], [1, 2, 6, 1, dark], [1, 4, 6, 1, dark]],
-                bt: [[1, 1, 5, 6, dark]], k: [[0, 0, 7, 1, light]]}),
+                bt: [[1, 1, 5, 6, dark]], k: [[0, 0, 7, 1, light]]}, {uv: ARM_UV.guard}),
             U([-14.5, 19.5, -3.5], [6, 2, 7], {all: [[0, 0, 6, 1, edge]]}),
             C([-14.6, 22, -2.5], [1, 5, 5], {c: olive, n: 0.05, sd: [[1, 1, 3, 3, shade(olive, 0.8)], [0, 0, 5, 1, shade(olive, 1.25)]]}),
             U([-14.5, 29.5, -6.2], [4, 4, 1], {f: hub(4), edge: false}),
@@ -1321,23 +1327,29 @@
         ];
 
         // ---------------------------------------------------------------- the head, the muzzle and the tail
-        const cheek = P([-3.8, 33.8, -3.5], [1, 3, 5], {sd: [[0, 0, 5, 1, light], [1, 2, 3, 1, dark]]});
-        const headFin = C([-3, 36.6, 1], [1, 2, 6], {c: plate, n: 0.045, sd: [[0, 0, 6, 1, light]], all: [[0, 0, 1, 1, light]]}, {rot: [-22, 0, 0], pivot: [-2.5, 37, 1]});
+        const cheek = P([-4.7, 33.8, -3.5], [1, 3, 5], {sd: [[0, 0, 5, 1, light], [1, 2, 3, 1, dark]]});
+        const headSide = P([-4.1, 33.4, -4.7], [1, 7, 8], {sd: [[0, 0, 8, 1, light], [5, 2, 2, 2, deep], [0, 6, 8, 1, dark]]});
+        const headFin = C([-4.2, 38.6, 1], [1, 2, 6], {c: plate, n: 0.045, sd: [[0, 0, 6, 1, light]], all: [[0, 0, 1, 1, light]]}, {rot: [-22, 0, 0], pivot: [-3.7, 39, 1]});
         const head = [
-            U([-2.5, 31, -3.4], [5, 3, 5], {all: [[0, 1, 5, 1, deep]]}),
-            P([-3.5, 33.5, -4.5], [7, 5, 8], {tp: [[3, 0, 1, 8, dark]], sd: [[0, 0, 8, 1, light], [5, 2, 2, 2, deep]], k: [[0, 0, 7, 1, light], ...grille(1, 1, 5, 3)]}),
-            P([-0.5, 38.3, -3.9], [1, 1, 7], {tp: [[0, 0, 1, 7, light]], edge: false}),
+            U([-2.5, 31, -3.4], [5, 2, 5], {all: [[0, 1, 5, 1, deep]]}),
+            // the helmet is hollow (1.5.2): the pilot's head is in it, seen when the faceplate with the muzzle lifts
+            P([-4, 33.5, 2.5], [8, 7, 1], {f: [[0, 0, 8, 7, '#2c2f27'], [1, 1, 6, 1, dark], [2, 3, 4, 1, shade('#2c2f27', 0.82)]], k: [[0, 0, 8, 1, light], ...grille(1, 2, 6, 3)]}),
+            headSide, mirror(headSide),
+            P([-3.5, 39.6, -4.4], [7, 1, 8], {tp: [[3, 0, 1, 8, dark]], bt: [[0, 0, 7, 8, '#2c2f27']], all: [[0, 0, 7, 1, light]]}),
+            P([-0.5, 40.4, -3.9], [1, 1, 7], {tp: [[0, 0, 1, 7, light]], edge: false}),
             cheek, mirror(cheek),
             headFin, mirror(headFin),
-            ...gear(0, -3.5, -1, 2, 36, 3), ...gear(0, -3.5, -1, 2, 36, 3).map(c => mirror(c))
+            ...gear(0, -4.1, -1, 1.5, 37, 3), ...gear(0, -4.1, -1, 1.5, 37, 3).map(c => mirror(c))
         ];
         const eye = C([-2.8, 36, -8], [1, 1, 3], {c: red, n: 0.03, sd: [[0, 0, 3, 1, red], [0, 0, 1, 1, shade(red, 1.4)]], edge: false});
         const muzzle = [
+            // the faceplate over the whole front of the helmet; the muzzle stands out of it
+            P([-4, 33.3, -5.6], [8, 7, 1], {f: [[0, 0, 8, 1, light], ...vents(1, 1, 6, 2, dark), [0, 6, 8, 1, dark]], k: [[0, 0, 8, 7, deep]], sd: [[0, 0, 1, 7, light]]}),
             P([-2.5, 33.8, -10.3], [5, 4, 6], {f: [[0, 0, 5, 1, light], [0, 3, 5, 1, dark]], sd: [[0, 0, 6, 1, light], [1, 2, 4, 1, dark]], tp: [[2, 0, 1, 6, dark]],
                 k: [[0, 0, 5, 4, deep]]}),
             P([-3, 37.3, -9.2], [6, 1, 5], {f: [[0, 0, 6, 1, light]], tp: [[0, 0, 6, 1, light]], edge: false}),
             eye, mirror(eye),
-            U([-2, 33, -9.6], [4, 1, 5], {f: [[0, 0, 4, 1, edge]], sd: [[0, 0, 5, 1, edge], [1, 0, 1, 1, deep], [3, 0, 1, 1, deep]]}),
+            U([-2, 33, -9.7], [4, 1, 5], {f: [[0, 0, 4, 1, edge]], sd: [[0, 0, 5, 1, edge], [1, 0, 1, 1, deep], [3, 0, 1, 1, deep]]}),
             U([-1.5, 34.3, -10.6], [3, 2, 1], {f: [[0, 0, 3, 2, deep], [0, 0, 3, 1, edge]], edge: false}),
             P([-0.5, 37.6, -10], [1, 1, 6], {tp: [[0, 0, 1, 6, light]], edge: false})
         ];
@@ -1373,9 +1385,9 @@
                 sd: [[0, 0, 7, 1, light], [1, 2, 5, 1, edge], [1, 4, 5, 1, dark]], tp: [[1, 1, 4, 5, edge]]}, {uv: ARM_UV.shoulderR}),
             U([-11.5, 13, -2], [4, 15, 4], {all: [[0, 4, 4, 1, deep], [0, 9, 4, 1, deep]]}, {uv: ARM_UV.armR}),
             U([-12, 9, -2.5], [5, 5, 5], {f: [[0, 0, 5, 1, edge], [1, 2, 1, 2, edge], [3, 2, 1, 2, edge]], all: [[0, 0, 5, 1, edge]]}, {uv: ARM_UV.fistR}),
-            P([-12.8, 32.7, -3], [7, 1, 6], {tp: [[1, 1, 5, 4, edge]], all: [[0, 0, 7, 1, light]]}),
+            P([-12.8, 32.7, -3], [7, 1, 6], {tp: [[1, 1, 5, 4, edge]], all: [[0, 0, 7, 1, light]]}, {uv: ARM_UV.cap}),
             P([-12.1, 13.7, -3], [5, 5, 6], {f: [[0, 0, 5, 1, light], [2, 1, 1, 3, dark]], sd: [[0, 0, 6, 1, light], [1, 2, 4, 1, dark]], k: [[0, 0, 5, 1, light]],
-                bt: [[1, 1, 3, 4, dark]]}),
+                bt: [[1, 1, 3, 4, dark]]}, {uv: ARM_UV.guard}),
             O([-12.2, 20, -2.6], [1, 6, 5], {sd: [[0, 0, 5, 1, shade(olive, 1.25)], [1, 2, 3, 2, shade(olive, 0.82)]]}),
             armClaw(-11.7), armClaw(-10), armClaw(-8.3),
             ...gear(0, -12.5, -1, 0, 30, 4),
@@ -1485,7 +1497,7 @@
                 {name: 'tail', parent: 'torso', pivot: [0, 19, 4.5], cubes: tail},
                 {name: 'tail_tip', parent: 'tail', pivot: [0, T2[0], T2[1]], cubes: tailTip},
                 {name: 'head', parent: 'torso', pivot: [0, 31.5, -1], cubes: head},
-                {name: 'visor', parent: 'head', pivot: [0, 38.5, -4.5], cubes: muzzle},
+                {name: 'visor', parent: 'head', pivot: [0, 40.4, -5.6], cubes: muzzle},
                 ...limbs('arm', 'torso', [-9, 30, 0], arm, ARM_LEFT_UV),
                 {name: 'right_hand', parent: 'right_arm', pivot: [-9.5, 9, 0], cubes: []},
                 {name: 'left_hand', parent: 'left_arm', pivot: [9.5, 9, 0], cubes: []}
@@ -1649,8 +1661,8 @@
             G([-15, 11.8, -4], [8, 6, 8], {f: [[0, 0, 8, 1, light], [1, 2, 2, 3, dark], [5, 2, 2, 3, dark]], all: [[0, 0, 8, 1, light]], bt: [[1, 1, 6, 6, dark]]},
                 {uv: ARM_UV.fistR}),
             Y([-15.3, 17.6, -4.4], [8, 6, 9], {f: [[0, 0, 8, 1, yl], [1, 2, 6, 1, yd], [1, 4, 6, 1, yd]], sd: [[0, 0, 9, 1, yl], ...bolts(9, 6)], k: [[0, 0, 8, 1, yl]],
-                tp: [[0, 0, 8, 9, yl]]}),
-            G([-14.5, 23.2, -3.5], [7, 3, 7], {all: [[0, 0, 7, 1, light], [0, 2, 7, 1, dark]]}),
+                tp: [[0, 0, 8, 9, yl]]}, {uv: ARM_UV.guard}),
+            G([-14.5, 23.2, -3.5], [7, 3, 7], {all: [[0, 0, 7, 1, light], [0, 2, 7, 1, dark]]}, {uv: ARM_UV.cap}),
             G([-17.6, 33.5, -2], [1, 4, 4], {sd: [[0, 0, 4, 4, deep], [1, 1, 2, 2, lamp]], edge: false}),
             C([-12, 22, 2.8], [1, 8, 1], {c: light, n: 0.03, edge: false, k: [[0, 0, 1, 9, edge]]}),
             ...gear(2, -5, -1, -12.3, 35, 4)

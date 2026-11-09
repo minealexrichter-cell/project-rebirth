@@ -98,13 +98,29 @@ public final class PowerArmorClient {
         }
         HumanoidArm side = event.getHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
         // The strike runs over the whole time until the next one is ready (a sword's cooldown), for both arms.
-        boolean mining = minecraft.gameMode != null && minecraft.gameMode.isDestroying();
         float time = player.tickCount + event.getPartialTick();
+        boolean mining = miningNow(minecraft, time);
         float strike = (time - strikeStart) / Math.max(1.0f, player.getCurrentItemAttackStrengthDelay());
         armorArmRenderer.render(event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight(),
                 strike, side, side == player.getMainArm(), mining, time, armor.getVariant(),
                 armorPlateColor(armor, side == HumanoidArm.RIGHT));
         event.setCanceled(true);
+    }
+
+    /**
+     * Ticks the mining movement lasts after the game stops breaking (1.5.2): between two blocks it pauses for a few ticks,
+     * and without this the arms would sink and a new strike would start each time a block breaks.
+     */
+    private static final float MINING_GRACE_TICKS = 10.0f;
+    private static float lastMiningTime = -1000.0f;
+
+    /** Whether the pilot is breaking blocks now or was a moment ago (see MINING_GRACE_TICKS). */
+    private static boolean miningNow(Minecraft minecraft, float time) {
+        if (minecraft.gameMode != null && minecraft.gameMode.isDestroying()) {
+            lastMiningTime = time;
+            return true;
+        }
+        return time >= lastMiningTime && time - lastMiningTime < MINING_GRACE_TICKS;
     }
 
     /** When the pilot's current first-person strike began, in ticks (1.5.2). */
@@ -128,7 +144,8 @@ public final class PowerArmorClient {
             }
             // the first-person strike starts on every accepted click, on a block too: while the block is being broken it
             // gives way to the mining movement
-            if (ArmorAbility.isBareHand(player.getMainHandItem())) {
+            // (holding the button on a block fires this every tick: the strike starts only with the first click)
+            if (ArmorAbility.isBareHand(player.getMainHandItem()) && !miningNow(minecraft, player.tickCount)) {
                 strikeStart = player.tickCount + minecraft.getTimer().getGameTimeDeltaPartialTick(false);
             }
             boolean mines = armor.getVariant() == ArmorVariant.WORKER && onBlock;

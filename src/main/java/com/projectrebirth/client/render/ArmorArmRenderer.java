@@ -238,7 +238,9 @@ public class ArmorArmRenderer {
     /** Ticks of one mining cycle, in which each arm strikes once (the arms take turns); the worker hammers faster. */
     private static final float COMBAT_MINING_CYCLE = 14.0f;
     private static final float MOBILE_MINING_CYCLE = 12.0f;
-    private static final float WORKER_BLOW = 6.0f;
+    private static final float WORKER_BLOW = 8.0f;
+    /** How much of a full push each mining blow makes: breaking a block is a steady hum, not a shake. */
+    private static final float WORKER_MINING_PUSH = 0.3f;
     /** Blows of the worker's jackhammer in one strike; few and soft enough to read as a heavy push, not a shake. */
     private static final int WORKER_STRIKE_BLOWS = 2;
 
@@ -305,7 +307,7 @@ public class ArmorArmRenderer {
             }
             case WORKER -> {
                 float hammer = blow((time / WORKER_BLOW) % 1.0f);
-                yield workerAim(f).plus(workerPush(hammer));
+                yield workerAim(f).plus(workerPush(hammer * WORKER_MINING_PUSH));
             }
         };
     }

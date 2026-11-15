@@ -25,6 +25,16 @@ public final class Exposure {
         return true;
     }
 
+    /** The same with more of one hazard (what is carried or stands near, after the roof and the ground have had their say). */
+    public Exposure plus(Hazard hazard, float amount) {
+        if (amount <= 0.0f) {
+            return this;
+        }
+        float[] copy = values.clone();
+        copy[hazard.ordinal()] += amount;
+        return new Exposure(copy);
+    }
+
     public static Builder builder() {
         return new Builder();
     }

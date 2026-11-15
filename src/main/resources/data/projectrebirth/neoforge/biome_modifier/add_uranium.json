@@ -1,0 +1,8 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "projectrebirth:ore_uranium"
+  ],
+  "step": "underground_ores"
+}

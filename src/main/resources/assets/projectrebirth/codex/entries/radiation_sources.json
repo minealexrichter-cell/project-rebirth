@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:radioactive_debris",
+  "x": -4,
+  "y": -3,
+  "parents": [
+    "contaminated_zones"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:radioactive_debris",
+      "text": "codex.projectrebirth.radiation_sources.p1"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:leaking_waste_barrel",
+      "text": "codex.projectrebirth.radiation_sources.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.radiation_sources.p3"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.radiation_sources.p4"
+    }
+  ]
+}

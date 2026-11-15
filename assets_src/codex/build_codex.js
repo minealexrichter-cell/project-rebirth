@@ -54,7 +54,8 @@ category('technology', P + 'electronics_fabricator', 'Technology', 'Технол
             'В мире пять новых руд, в камне и в глубинном сланце:\n\nОлово — часто, от y −16 до 112.\nАлюминий — часто, от 0 до 112.\nСеребро — от −64 до 32.\nЛитий — редко, от −48 до 16.\nТитан — реже всего и глубже всего, от −80 до 0.\n\nДобытая руда даёт сырой металл; печь или плавильная печь делают из него слиток.'),
         block(P + 'tin_ore', 'Tin ore: needed for bronze from the very start.', 'Оловянная руда: нужна для бронзы с самого начала.'),
         block(P + 'deepslate_titanium_ore', 'Deepslate titanium ore: for the armor workstation, armor and the best bodies.', 'Титановая руда в глубинном сланце: для станции брони, брони и лучших тел.'),
-        recipe(P + 'titanium_ingot_from_blasting', 'A blast furnace smelts raw metal twice as fast.', 'Плавильная печь плавит сырой металл вдвое быстрее.')
+        recipe(P + 'titanium_ingot_from_blasting', 'A blast furnace smelts raw metal twice as fast.', 'Плавильная печь плавит сырой металл вдвое быстрее.'),
+        note('A sixth, radioactive ore, uranium, lies even deeper: see the entry Uranium in the Hostile Environment tab.', 'Шестая, радиоактивная руда — уран — лежит ещё глубже: смотрите запись «Уран» во вкладке «Враждебная среда».')
     ]),
     entry('bronze', P + 'bronze_ingot', -2, 0, ['ores'], 'Bronze', 'Бронза', [
         recipe(P + 'bronze_ingot', 'Three copper ingots and one tin ingot give four of bronze.', 'Три медных слитка и один оловянный дают четыре бронзовых.'),
@@ -130,6 +131,13 @@ category('energy', P + 'battery', 'Energy', 'Энергия', [
         block(P + 'solar_panel', '8 FE per tick in daylight under the open sky; nothing at night and in rain, a quarter in a dust storm.', '8 FE за тик днём под открытым небом; ночью и в дождь — ничего, в пыльную бурю — четверть.'),
         recipe(P + 'solar_panel', 'Glass, aluminum, a circuit board and iron.', 'Стекло, алюминий, плата и железо.'),
         note('A panel gives energy only downwards: put the cable or the machine under it. It is placed like stairs, its high edge away from you.', 'Панель отдаёт энергию только вниз: кабель или машину ставьте под неё. Ставится как ступенька, высоким краем от вас.')
+    ]),
+    entry('radioisotope_generator', P + 'radioisotope_generator', -2, 3, ['combustion_generator'], 'Radioisotope Generator', 'Радиоизотопный генератор', [
+        block(P + 'radioisotope_generator', 'Makes 24 FE per tick all the time, with no fuel and in any weather; holds 40 000 FE. It gives energy to its neighbours and cables, and a comparator reads its charge.',
+            'Вырабатывает 24 FE за тик всегда, без топлива и в любую погоду; хранит 40 000 FE. Отдаёт энергию соседям и в кабели, компаратор читает заряд.'),
+        recipe(P + 'radioisotope_generator', 'Titanium, uranium, processors and a power cell: a late machine.', 'Титан, уран, процессоры и энергоячейка: поздняя машина.'),
+        note('It radiates around itself, 3 units next to it and up to 6 blocks. Put it behind walls, away from where you live and work: each solid block halves it.',
+            'Он фонит вокруг: 3 единицы вплотную, до 6 блоков. Поставьте его за стенами, подальше от жилья и работы: каждый сплошной блок ослабляет излучение вдвое.')
     ]),
     entry('cable', P + 'cable', 0, 2, ['energy_basics'], 'Energy Cable', 'Энергокабель', [
         item(P + 'cable', 'Joins generators, batteries and machines, of this mod and of others. A cable network can be up to 4096 cables long.', 'Соединяет генераторы, аккумуляторы и машины — этого мода и других. Сеть кабеля — до 4096 кусков.'),
@@ -397,6 +405,22 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'thermal_liner'),
         block(P + 'heater', 'Warms everything within 6 blocks by 20°C while it is cold around.', 'Пока вокруг холодно, греет всё в 6 блоках на 20°C.'),
         recipe(P + 'heater', 'It runs on energy from the cable.', 'Работает от энергии из кабеля.')
+    ]),
+    entry('radiation_sources', P + 'radioactive_debris', -4, -3, ['contaminated_zones'], 'Sources', 'Источники', [
+        block(P + 'radioactive_debris', 'Radioactive debris: radiation up to 10 blocks around, strongest next to it (8 units), weaker with distance.', 'Радиоактивные обломки: радиация до 10 блоков вокруг, сильнее всего вплотную (8 единиц), с расстоянием слабее.'),
+        block(P + 'leaking_waste_barrel', 'A leaking waste barrel pollutes the air up to 7 blocks around (5 units next to it) and drips.', 'Протекающая бочка с отходами отравляет воздух до 7 блоков вокруг (5 единиц вплотную) и капает.'),
+        text('Sources add to the background where you stand, so the dosimeter, the HUD, the contamination on you, bodies and armor all count them. Each full solid block between you and a source halves it: a wall, rock or the wall of a shelter is a good shield.',
+            'Источники добавляются к фону там, где вы стоите, поэтому дозиметр, HUD, загрязнение на вас, тела и броня учитывают их сами. Каждый целый сплошной блок между вами и источником ослабляет его вдвое: стена, камень или стена убежища — хорошая защита.'),
+        note('They are found in abandoned places and cannot be carried away: they drop nothing when broken. Breaking one is the way to clear the place.',
+            'Их находят в заброшенных местах, унести их нельзя: при разрушении ничего не выпадает. Разрушить источник — способ очистить место.')
+    ]),
+    entry('uranium', P + 'uranium_ingot', -2, -3, ['radiation_sources'], 'Uranium', 'Уран', [
+        text('Uranium ore lies rarely and deep, from y −64 to −16, in small veins, in stone and in deepslate. It needs an iron pickaxe and radiates a little around itself (up to 3 blocks).',
+            'Урановая руда лежит редко и глубоко, от y −64 до −16, небольшими жилами, в камне и в глубинном сланце. Её добывают железной киркой; она слегка фонит вокруг (до 3 блоков).'),
+        block(P + 'deepslate_uranium_ore', 'A furnace or a blast furnace makes an ingot of the ore or of the raw uranium.', 'Печь или плавильная печь делает слиток из руды или из сырого урана.'),
+        recipe(P + 'uranium_ingot_from_blasting'),
+        note('Raw uranium and ingots radiate in the inventory: 0.03 units for each item, up to 4. A hazmat or heavy suit lessens it as it lessens any radiation. Keep the stock in chests.',
+            'Сырой уран и слитки фонят в инвентаре: по 0,03 единицы за предмет, не больше 4. Химкостюм или тяжёлый костюм ослабляют это, как любую радиацию. Храните запас в сундуках.')
     ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),

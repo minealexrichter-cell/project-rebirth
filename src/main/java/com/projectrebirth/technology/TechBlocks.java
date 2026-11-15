@@ -7,6 +7,7 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.technology.energy.BatteryBlock;
 import com.projectrebirth.technology.energy.CableBlock;
 import com.projectrebirth.technology.energy.CombustionGeneratorBlock;
+import com.projectrebirth.technology.energy.RadioisotopeGeneratorBlock;
 import com.projectrebirth.technology.energy.SolarPanelBlock;
 
 import net.minecraft.world.level.block.Block;
@@ -55,6 +56,17 @@ public final class TechBlocks {
                     .strength(3.5f, 6.0f)
                     .sound(SoundType.METAL)
                     .lightLevel(state -> state.getValue(CombustionGeneratorBlock.LIT) ? 13 : 0)
+                    .noOcclusion()
+                    .requiresCorrectToolForDrops());
+
+    /** Late: energy without fuel, and it radiates (1.6.0). */
+    public static final DeferredBlock<RadioisotopeGeneratorBlock> RADIOISOTOPE_GENERATOR = BLOCKS.registerBlock("radioisotope_generator",
+            RadioisotopeGeneratorBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL)
+                    .strength(4.0f, 8.0f)
+                    .sound(SoundType.METAL)
+                    .lightLevel(state -> state.getValue(TechSounds.WORKING) ? 4 : 0)
                     .noOcclusion()
                     .requiresCorrectToolForDrops());
 

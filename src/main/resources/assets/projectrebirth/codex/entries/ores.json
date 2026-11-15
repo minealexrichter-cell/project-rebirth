@@ -21,6 +21,10 @@
       "type": "recipe",
       "value": "projectrebirth:titanium_ingot_from_blasting",
       "text": "codex.projectrebirth.ores.p4"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.ores.p5"
     }
   ]
 }

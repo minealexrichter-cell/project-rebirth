@@ -10,6 +10,8 @@
     "projectrebirth:lithium_ore",
     "projectrebirth:deepslate_lithium_ore",
     "projectrebirth:titanium_ore",
-    "projectrebirth:deepslate_titanium_ore"
+    "projectrebirth:deepslate_titanium_ore",
+    "projectrebirth:uranium_ore",
+    "projectrebirth:deepslate_uranium_ore"
   ]
 }

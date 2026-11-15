@@ -14,7 +14,9 @@ public enum Metal {
     /** Energy cells. */
     LITHIUM("lithium"),
     /** Armor plates and high-end body frames. */
-    TITANIUM("titanium");
+    TITANIUM("titanium"),
+    /** Radioactive (1.6.0): radiates in the ground and in an inventory; the radioisotope generator. */
+    URANIUM("uranium");
 
     private final String id;
 

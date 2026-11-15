@@ -173,7 +173,8 @@ public final class EnvironmentCommands {
                 .map(key -> key.location().getPath()).orElse("-");
         Environment.Shelter shelter = Environment.shelterAt(level, pos);
         com.projectrebirth.shelter.Room room = com.projectrebirth.shelter.Shelters.sealedRoomAt(level, pos);
-        Exposure exposure = Environment.exposureAt(level, pos);
+        // what the player gets here, with the uranium they carry (1.6.0), as the HUD shows it
+        Exposure exposure = Environment.exposureAt(level, pos).plus(Hazard.RADIATION, RadiationSources.carriedBy(player));
         Component phase = Component.translatable("environment.projectrebirth.phase." + state.phase().id());
         Component event = state.event() == null ? Component.literal("-") : eventName(state.event());
         source.sendSuccess(() -> Component.translatable("message.projectrebirth.environment.status_world", level.dimension().location().toString(),

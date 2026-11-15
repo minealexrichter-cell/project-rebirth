@@ -32,6 +32,7 @@
         "energy_basics",
         "combustion_generator",
         "solar_panel",
+        "radioisotope_generator",
         "cable",
         "battery"
       ]
@@ -88,6 +89,8 @@
         "emi_storm",
         "temperature",
         "thermal_gear",
+        "radiation_sources",
+        "uranium",
         "dosimeter",
         "medicine",
         "machines_environment"

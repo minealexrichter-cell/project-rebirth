@@ -1,0 +1,368 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "side": "projectrebirth:block/leaking_waste_barrel_side",
+    "top": "projectrebirth:block/leaking_waste_barrel_top",
+    "parts": "projectrebirth:block/machine_parts",
+    "particle": "projectrebirth:block/leaking_waste_barrel_side"
+  },
+  "elements": [
+    {
+      "from": [
+        2.5,
+        1,
+        2.5
+      ],
+      "to": [
+        13.5,
+        15,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#side",
+          "uv": [
+            2,
+            0,
+            14,
+            16
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        1,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        15,
+        2
+      ],
+      "to": [
+        14,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "up": {
+          "texture": "#top",
+          "uv": [
+            2,
+            2,
+            14,
+            14
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            1,
+            15,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        3.5,
+        2
+      ],
+      "to": [
+        14,
+        5,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        10.5,
+        2
+      ],
+      "to": [
+        14,
+        12,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            13,
+            5,
+            15,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "from": [
+        9.5,
+        5,
+        13.5
+      ],
+      "to": [
+        12.5,
+        10.5,
+        13.9
+      ],
+      "faces": {
+        "north": {
+          "texture": "#parts",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ]
+        },
+        "south": {
+          "texture": "#parts",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ]
+        },
+        "west": {
+          "texture": "#parts",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ]
+        },
+        "east": {
+          "texture": "#parts",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ]
+        },
+        "up": {
+          "texture": "#parts",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ]
+        },
+        "down": {
+          "texture": "#parts",
+          "uv": [
+            5,
+            9,
+            7,
+            11
+          ]
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15
+      }
+    }
+  ]
+}

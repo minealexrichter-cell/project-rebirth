@@ -1,0 +1,24 @@
+{
+  "icon": "projectrebirth:radioisotope_generator",
+  "x": -2,
+  "y": 3,
+  "parents": [
+    "combustion_generator"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:radioisotope_generator",
+      "text": "codex.projectrebirth.radioisotope_generator.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:radioisotope_generator",
+      "text": "codex.projectrebirth.radioisotope_generator.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.radioisotope_generator.p3"
+    }
+  ]
+}

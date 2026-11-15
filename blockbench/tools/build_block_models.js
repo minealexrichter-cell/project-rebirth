@@ -477,6 +477,46 @@
         };
     });
 
+    // ---------------------------------------------------------------- uranium and radiation sources (1.6.0)
+
+    // Radioisotope generator: the machine body, a shielded core with an emitter cap and cooling fins on the top plate.
+    [false, true].forEach(on => {
+        MODELS['radioisotope_generator' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: textures('radioisotope_generator', on, ['front', 'side', 'top']),
+            elements: [...machine('yellow'), ...screen(on, 'hazard'),
+                // Core drum with a lit cap, a cooling fin on each side, a terminal block behind.
+                box([5, 14, 5], [11, 15.5, 11], 'gun', {up: 'steel'}),
+                box([6, 15.5, 6], [10, 16, 10], on ? 'yellow' : 'olive', undefined, on ? GLOW : undefined),
+                box([3, 14, 4], [4, 15.5, 12], 'steel'),
+                box([12, 14, 4], [13, 15.5, 12], 'steel'),
+                box([5, 14, 12], [11, 15, 14], 'dark', {up: 'rubber'}),
+                box([7, 15, 12.5], [9, 15.5, 13.5], on ? 'green' : 'mid', undefined, on ? GLOW : undefined)
+            ]
+        };
+    });
+
+    // Leaking waste barrel: stays inside [2,0,2]-[14,16,14], which is also its collision shape.
+    (() => {
+        const side = tex('side', [2, 0, 14, 16]);
+        const lid = tex('top', [2, 2, 14, 14]);
+        MODELS.leaking_waste_barrel = {
+            parent: 'minecraft:block/block',
+            textures: {side: 'projectrebirth:block/leaking_waste_barrel_side', top: 'projectrebirth:block/leaking_waste_barrel_top',
+                parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/leaking_waste_barrel_side'},
+            elements: [
+                // Body, slightly narrower than the rims and bands.
+                without(box([2.5, 1, 2.5], [13.5, 15, 13.5], 'rust', {north: side, south: side, west: side, east: side}), 'up', 'down'),
+                box([2, 0, 2], [14, 1, 14], 'dark', {down: 'dark'}),
+                box([2, 15, 2], [14, 16, 14], 'rust', {up: lid, down: 'dark'}),
+                without(box([2, 3.5, 2], [14, 5, 14], 'rust'), 'up', 'down'),
+                without(box([2, 10.5, 2], [14, 12, 14], 'rust'), 'up', 'down'),
+                // Toxic seep running down the front.
+                box([9.5, 5, 13.5], [12.5, 10.5, 13.9], 'green', {north: 'green', south: 'green', west: 'green', east: 'green', up: 'green', down: 'green'}, GLOW)
+            ]
+        };
+    })();
+
     // ---------------------------------------------------------------- block states
 
     const ROTATIONS = {north: 0, east: 90, south: 180, west: 270};
@@ -541,6 +581,15 @@
             });
         });
     });
+
+    STATES.radioisotope_generator = {variants: {}};
+    Object.entries(ROTATIONS).forEach(([facing, y]) => {
+        [false, true].forEach(working => {
+            STATES.radioisotope_generator.variants['facing=' + facing + ',working=' + working] =
+                variant('radioisotope_generator' + (working ? '_on' : ''), rotation(y));
+        });
+    });
+    STATES.leaking_waste_barrel = {variants: {'': variant('leaking_waste_barrel')}};
 
     // ---------------------------------------------------------------- output
 

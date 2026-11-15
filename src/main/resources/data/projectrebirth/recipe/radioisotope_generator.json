@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "TUT",
+    "CPC",
+    "TUT"
+  ],
+  "key": {
+    "T": {
+      "item": "projectrebirth:titanium_ingot"
+    },
+    "U": {
+      "item": "projectrebirth:uranium_ingot"
+    },
+    "C": {
+      "item": "projectrebirth:processor"
+    },
+    "P": {
+      "item": "projectrebirth:power_cell"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:radioisotope_generator",
+    "count": 1
+  }
+}

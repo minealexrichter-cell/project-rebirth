@@ -208,6 +208,24 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ZONES_MAX_PER_CHUNK;
     public static final ModConfigSpec.DoubleValue ZONES_FORGET_BELOW;
     public static final ModConfigSpec.DoubleValue ZONES_MARK_THRESHOLD;
+    public static final ModConfigSpec.BooleanValue SOURCES_ENABLED;
+    public static final ModConfigSpec.DoubleValue SOURCES_WALL_FACTOR;
+    public static final ModConfigSpec.DoubleValue DEBRIS_RADIATION;
+    public static final ModConfigSpec.IntValue DEBRIS_RANGE;
+    public static final ModConfigSpec.DoubleValue BARREL_TOXIN;
+    public static final ModConfigSpec.IntValue BARREL_RANGE;
+    public static final ModConfigSpec.BooleanValue URANIUM_ORE_RADIATES;
+    public static final ModConfigSpec.DoubleValue URANIUM_ORE_RADIATION;
+    public static final ModConfigSpec.IntValue URANIUM_ORE_RANGE;
+    public static final ModConfigSpec.DoubleValue URANIUM_ORE_MAX;
+    public static final ModConfigSpec.BooleanValue URANIUM_ITEMS_RADIATE;
+    public static final ModConfigSpec.DoubleValue URANIUM_ITEM_RADIATION;
+    public static final ModConfigSpec.DoubleValue URANIUM_ITEMS_MAX;
+    public static final ModConfigSpec.BooleanValue ISOTOPE_RADIATES;
+    public static final ModConfigSpec.DoubleValue ISOTOPE_RADIATION;
+    public static final ModConfigSpec.IntValue ISOTOPE_RANGE;
+    public static final ModConfigSpec.IntValue ISOTOPE_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue ISOTOPE_CAPACITY;
     public static final ModConfigSpec.DoubleValue SOLAR_DUST_FACTOR;
     public static final ModConfigSpec.BooleanValue TEMP_ENABLED;
     public static final ModConfigSpec.DoubleValue TEMP_BIOME_SCALE;
@@ -648,6 +666,30 @@ public final class RebirthConfig {
                 .defineInRange("markThreshold", 0.5, 0.0, 1000.0);
         builder.pop();
 
+        builder.comment("Sources of radiation and toxins (1.6.0): the radioactive debris, the leaking waste barrel, uranium ore, uranium items in the inventory",
+                "and the radioisotope generator. Their strength falls off linearly to nothing at the range; each full solid block on the line",
+                "between a source and the person lessens it. Units are those of the hazards (radiation, polluted air). Off: no effect, as in 1.5.2.",
+                "The uranium ore in the world can be switched off by a data pack (override neoforge/biome_modifier/add_uranium.json with type neoforge:none)").push("sources");
+        SOURCES_ENABLED = builder.comment("The block sources (debris, barrel, generator) and uranium (also needs environment.enabled)").define("enabled", true);
+        SOURCES_WALL_FACTOR = builder.comment("Each full solid block between a source and a person multiplies the strength by this (0 = one block stops it)")
+                .defineInRange("wallFactor", 0.5, 0.0, 1.0);
+        DEBRIS_RADIATION = builder.comment("Radiation of radioactive debris right next to it").defineInRange("debrisRadiation", 8.0, 0.0, 10000.0);
+        DEBRIS_RANGE = builder.comment("Reach of radioactive debris in blocks").defineInRange("debrisRange", 10, 1, 48);
+        BARREL_TOXIN = builder.comment("Polluted air right next to a leaking waste barrel").defineInRange("barrelToxin", 5.0, 0.0, 10000.0);
+        BARREL_RANGE = builder.comment("Reach of a leaking waste barrel in blocks").defineInRange("barrelRange", 7, 1, 48);
+        URANIUM_ORE_RADIATES = builder.comment("Whether uranium ore radiates nearby (weak, short range, no block entity)").define("uraniumOreRadiates", true);
+        URANIUM_ORE_RADIATION = builder.comment("Radiation of one uranium ore block right next to it").defineInRange("uraniumOreRadiation", 1.0, 0.0, 10000.0);
+        URANIUM_ORE_RANGE = builder.comment("Reach of uranium ore in blocks (a cube around the person is looked through once a second, so at most 3)")
+                .defineInRange("uraniumOreRange", 3, 0, 3);
+        URANIUM_ORE_MAX = builder.comment("Most radiation all the ore around one place adds up to").defineInRange("uraniumOreMax", 2.5, 0.0, 10000.0);
+        URANIUM_ITEMS_RADIATE = builder.comment("Whether raw uranium and uranium ingots (item tag projectrebirth:radioactive) radiate in a person's inventory").define("uraniumItemsRadiate", true);
+        URANIUM_ITEM_RADIATION = builder.comment("Radiation each such item adds to the person who carries it").defineInRange("uraniumItemRadiation", 0.03, 0.0, 10000.0);
+        URANIUM_ITEMS_MAX = builder.comment("Most radiation the carried items add up to").defineInRange("uraniumItemsMax", 4.0, 0.0, 10000.0);
+        ISOTOPE_RADIATES = builder.comment("Whether the radioisotope generator radiates around itself").define("generatorRadiates", true);
+        ISOTOPE_RADIATION = builder.comment("Radiation of the radioisotope generator right next to it").defineInRange("generatorRadiation", 3.0, 0.0, 10000.0);
+        ISOTOPE_RANGE = builder.comment("Reach of the radioisotope generator in blocks").defineInRange("generatorRange", 6, 1, 48);
+        builder.pop();
+
         builder.comment("Temperature (1.5.0): the temperature of a place in degrees Celsius, and the heat or cold stress of a human body,",
                 "from -100 (cold) to 100 (heat). Off: no temperature, as in 1.4.1. Artificial bodies do not feel cold; heat goes into",
                 "their own overheating ([body_heat]). The pilot of a power armor is protected").push("temperature");
@@ -985,6 +1027,12 @@ public final class RebirthConfig {
         SOLAR_CAPACITY = builder
                 .comment("Energy buffer of the solar panel")
                 .defineInRange("solarCapacity", 4000, 1, 100_000_000);
+        ISOTOPE_ENERGY_PER_TICK = builder
+                .comment("Energy the radioisotope generator makes per tick, always, without fuel (1.6.0)")
+                .defineInRange("isotopeEnergyPerTick", 24, 1, 1_000_000);
+        ISOTOPE_CAPACITY = builder
+                .comment("Energy buffer of the radioisotope generator")
+                .defineInRange("isotopeCapacity", 40000, 1, 100_000_000);
         BATTERY_CAPACITY = builder
                 .comment("Energy the battery stores")
                 .defineInRange("batteryCapacity", 500000, 1, 1_000_000_000);

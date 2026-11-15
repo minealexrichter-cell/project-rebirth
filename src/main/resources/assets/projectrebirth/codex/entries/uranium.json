@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:uranium_ingot",
+  "x": -2,
+  "y": -3,
+  "parents": [
+    "radiation_sources"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.uranium.p1"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:deepslate_uranium_ore",
+      "text": "codex.projectrebirth.uranium.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:uranium_ingot_from_blasting"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.uranium.p4"
+    }
+  ]
+}

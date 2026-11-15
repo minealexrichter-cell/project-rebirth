@@ -94,16 +94,21 @@ public final class MachineBody {
             return;
         }
         double dustWear = RebirthConfig.MACHINE_ARMOR_DUST_WEAR_PER_SECOND.get();
+        boolean acidWear = RebirthConfig.MACHINE_ARMOR_ACID_WEAR.get();
+        if (dustWear <= 0.0 && !acidWear) {
+            return;
+        }
+        Exposure exposure = Environment.exposureAt(level, armor.blockPosition());
         if (dustWear > 0.0) {
-            float dust = Environment.exposureAt(level, armor.blockPosition()).get(Hazard.DUST);
+            float dust = exposure.get(Hazard.DUST);
             if (dust > 0.0f) {
                 armor.corrode((float) (dust * dustWear));
             }
         }
-        if (!RebirthConfig.MACHINE_ARMOR_ACID_WEAR.get()) {
+        if (!acidWear) {
             return;
         }
-        float acid = Environment.exposureAt(level, armor.blockPosition()).get(Hazard.ACID);
+        float acid = exposure.get(Hazard.ACID);
         if (acid > 0.0f) {
             armor.corrode(acid * RebirthConfig.MACHINE_ARMOR_ACID_WEAR_PER_SECOND.get().floatValue());
         }

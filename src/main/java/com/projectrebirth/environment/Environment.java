@@ -118,14 +118,19 @@ public final class Environment {
         if (!isEnabled()) {
             return Exposure.NONE;
         }
-        return profileFor(level.registryAccess(), level.getBiome(pos))
+        Exposure air = profileFor(level.registryAccess(), level.getBiome(pos))
                 .map(profile -> compute(profile, EnvironmentState.get(level), shelterAt(level, pos), ContaminationZones.readingAt(level, pos)))
                 .orElse(Exposure.NONE);
+        // 1.6.0: source blocks and uranium ore near the place; a roof does not weaken them, the walls between do (counted there)
+        ContaminationMap.Reading sources = RadiationSources.readingAt(level, pos);
+        return air.plus(Hazard.RADIATION, sources.radiation()).plus(Hazard.POLLUTION, sources.toxin());
     }
 
     /** The second of one player. Public for tests (mock players do not tick). */
     public static void updatePlayer(ServerPlayer player) {
-        player.setData(EnvironmentRegistry.LAST_EXPOSURE, exposureAt(player.serverLevel(), BlockPos.containing(player.getEyePosition())));
+        Exposure here = exposureAt(player.serverLevel(), BlockPos.containing(player.getEyePosition()));
+        // uranium in the inventory goes with the person, through any wall of a shelter (1.6.0)
+        player.setData(EnvironmentRegistry.LAST_EXPOSURE, here.plus(Hazard.RADIATION, RadiationSources.carriedBy(player)));
     }
 
     public static Exposure lastExposure(ServerPlayer player) {

@@ -233,7 +233,24 @@
             'dood.......doosd',
             '.dd.........ddd.',
             '................',
-            '................']}
+            '................']},
+        uranium: {c: {h: '#d2e85a', o: '#8fb326', d: '#3d5a14', s: '#f0ff8c'}, rows: [
+            '................',
+            '..d.......dd....',
+            '.dhd.....dhod...',
+            '.dosd....doosd..',
+            '..dd......dd....',
+            '......dd........',
+            '.....dhod....d..',
+            '.....dosod..dhd.',
+            '......ddd...dod.',
+            '.dd..........d..',
+            'dhod.....dd.....',
+            'dood....dhod....',
+            '.dsd....dosod...',
+            '..d......ddd.dd.',
+            '.........d..dhod',
+            '.............dd.']}
     };
 
     Object.entries(ORES).forEach(([id, ore]) => {
@@ -988,6 +1005,7 @@
         silver: ['#ffffff', '#e6f0fa', '#bccfe2', '#8499b0', '#3f4d5e'],
         lithium: ['#fde3f3', '#eaa6d6', '#c974b8', '#8e4b8b', '#4b2550'],
         titanium: ['#c5dfec', '#86adc4', '#5b8199', '#395668', '#1c2c37'],
+        uranium: ['#e6f2a0', '#b9d24a', '#8ba52c', '#58701a', '#2a380c'],
         bronze: ['#ffe2a8', '#e6ab5c', '#bc7d36', '#865223', '#4a2b11']
     };
 
@@ -2431,6 +2449,98 @@
         '................'], THERMAL_PALETTE);
 
     // ---------------------------------------------------------------- output
+
+    // ---------------------------------------------------------------- uranium and radiation sources (1.6.0)
+
+    const RAD = '#b5d62a', RAD_GLOW = '#e4ff5c';
+
+    // Radioactive debris: dark rubble with a green glow in the cracks.
+    block('radioactive_debris', () => {
+        const p = new Painter(601);
+        p.noise(0, 0, 16, 16, '#2b2e2a', 0.12);
+        [[0, 1, 5, 4], [6, 0, 6, 3], [11, 3, 5, 5], [2, 6, 5, 4], [8, 7, 4, 4], [0, 11, 6, 5], [7, 12, 5, 4], [12, 10, 4, 5]].forEach(([x, y, w, h], i) => {
+            p.bevel(x, y, w, h, i % 3 === 0 ? '#4a4d48' : i % 3 === 1 ? '#3a3a37' : '#55463a', 0.09);
+        });
+        // The glow: cracks and specks, a darker green halo around the bright core.
+        [[5, 3], [6, 3], [5, 7], [11, 6], [12, 7], [5, 12], [6, 11], [2, 15], [11, 13], [10, 14], [15, 8], [3, 4]].forEach(([x, y]) => p.px('#3f8a24', [x, y]));
+        [[5, 4], [5, 5], [6, 5], [11, 7], [11, 8], [5, 13], [6, 12], [12, 14], [3, 5], [8, 9], [14, 8]].forEach(([x, y]) => p.px('#7dff3a', [x, y]));
+        [[5, 5], [11, 8], [6, 12]].forEach(([x, y]) => p.px('#d8ff9a', [x, y]));
+        return p;
+    });
+
+    // Leaking waste barrel: rust, two bands, a hazard sign and a toxic stain running down from a crack.
+    // The model shows columns 2..13 of the side and 2..13 of the lid.
+    const LEAK = '#9bd424', LEAK_DARK = '#4f7a16';
+    block('leaking_waste_barrel_side', () => {
+        const p = new Painter(611);
+        p.noise(0, 0, 16, 16, '#8b4a2b', 0.07);
+        [2, 3, 12, 13].forEach(x => p.rect(x, 0, 1, 16, shade('#8b4a2b', x < 8 ? 0.82 : 0.74)));
+        [[3, 4], [10, 11]].forEach(([a, b]) => p.rect(0, a, 16, 1, '#7a4a30').rect(0, b, 16, 1, '#3d2216'));
+        p.rect(0, 0, 16, 1, '#3d2216').rect(0, 15, 16, 1, '#3d2216');
+        // Rust streaks and a few flaked patches.
+        [[4, 6], [9, 7], [6, 12], [12, 1]].forEach(([x, y]) => p.rect(x, y, 1, 2, '#5e2f1a'));
+        [[3, 8], [8, 13], [7, 2]].forEach(([x, y]) => p.px('#b06a3a', [x, y]));
+        // Hazard sign.
+        p.grid(['kkkkkk', 'kybbyk', 'kbbbbk', 'kybbyk', 'kkkkkk'], {k: '#15171a', y: '#e6c02a', b: '#15171a'}, 4, 5);
+        p.px('#e6c02a', [6, 7], [7, 7]);
+        // The leak: a crack, a stain, a puddle at the foot.
+        p.px('#15171a', [11, 5], [12, 6]);
+        p.rect(11, 6, 2, 1, LEAK).rect(11, 7, 1, 7, LEAK).rect(12, 8, 1, 4, LEAK_DARK).rect(10, 12, 3, 1, LEAK).rect(9, 13, 5, 2, LEAK).rect(10, 14, 3, 1, LEAK_DARK);
+        p.px('#d6ff7a', [11, 8], [11, 10], [10, 13], [12, 13]);
+        return p;
+    });
+    block('leaking_waste_barrel_top', () => {
+        const p = new Painter(612);
+        p.noise(0, 0, 16, 16, '#7a4328', 0.06);
+        p.rect(2, 2, 12, 12, '#6e3b23');
+        p.inset(3, 3, 10, 10, '#5a3220', 0.05);
+        p.rect(7, 7, 2, 2, '#2a2a2c').rect(6, 6, 1, 1, '#8c97a3').rect(10, 9, 1, 1, '#8c97a3');
+        // Toxic residue around the bung.
+        p.rect(9, 5, 3, 2, LEAK).px(LEAK_DARK, [11, 6], [12, 7]).px(LEAK, [4, 10], [5, 10], [5, 11]);
+        return p;
+    });
+
+    // Radioisotope generator: yellow-green accent, cooling fins at the sides, a shielded core on top.
+    function rtgSide() {
+        const p = casing(new Painter(701), RAD);
+        p.inset(3, 3, 10, 10, DARK);
+        [4, 6, 8, 10].forEach(x => p.rect(x, 4, 1, 8, shade(STEEL, 0.95)).rect(x + 1, 4, 1, 8, '#101215'));
+        return p;
+    }
+    function rtgTop(glow) {
+        const p = casing(new Painter(702), RAD);
+        p.bevel(3, 3, 10, 10, LIGHT, 0.03);
+        p.inset(5, 5, 6, 6, '#14171b');
+        p.rect(6, 6, 4, 4, glow ? RAD : '#2c3a14').rect(7, 7, 2, 2, glow ? '#f4ffb0' : '#14171b');
+        return p;
+    }
+    function rtgFront(glow) {
+        const p = casing(new Painter(703), RAD);
+        p.inset(3, 3, 10, 7, '#0e1208', 0.02);
+        const c = glow ? RAD_GLOW : '#6a7c2a';
+        p.grid(['.yy....yy.', '.yyy..yyy.', '..yyyyyy..', '...yyyy...', '....yy....'], {y: c}, 3, 4);
+        p.px(glow ? '#ffffff' : '#0e1208', [7, 6], [8, 6]);
+        hazard(p, 3, 11, 10, 2);
+        return p;
+    }
+    block('radioisotope_generator_side', () => rtgSide());
+    block('radioisotope_generator_top', () => rtgTop(false));
+    block('radioisotope_generator_front', () => rtgFront(false));
+    animated('radioisotope_generator_side_on', 4, 4, i => {
+        const p = baseOf('radioisotope_generator_side');
+        [4, 6, 8, 10].forEach((x, k) => p.rect(x, 4, 1, 8, mix('#59626c', RAD_GLOW, (k + i) % 4 === 0 ? 0.95 : 0.55)));
+        return p;
+    });
+    animated('radioisotope_generator_top_on', 4, 4, i => {
+        const p = rtgTop(true);
+        p.rect(7, 7, 2, 2, ['#f4ffb0', '#d8f060', '#b5d62a', '#d8f060'][i]);
+        return p;
+    });
+    animated('radioisotope_generator_front_on', 4, 4, i => {
+        const p = rtgFront(true);
+        p.px(['#7dff3a', '#2c3a14', '#7dff3a', '#b5ff8a'][i], [12, 9]);
+        return p;
+    });
 
     function savePng(canvas, path) {
         const data = canvas.toDataURL('image/png').split(',')[1];

@@ -4,6 +4,7 @@ import com.projectrebirth.ProjectRebirth;
 import com.projectrebirth.technology.energy.BatteryBlockEntity;
 import com.projectrebirth.technology.energy.CableInput;
 import com.projectrebirth.technology.energy.CombustionGeneratorBlockEntity;
+import com.projectrebirth.technology.energy.RadioisotopeGeneratorBlockEntity;
 import com.projectrebirth.technology.energy.SolarPanelBlockEntity;
 
 import net.minecraft.core.registries.Registries;
@@ -40,6 +41,11 @@ public final class TechBlockEntities {
                     TechBlocks.COMBUSTION_GENERATOR.get()).build(null));
 
     @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadioisotopeGeneratorBlockEntity>> RADIOISOTOPE_GENERATOR =
+            BLOCK_ENTITIES.register("radioisotope_generator", () -> BlockEntityType.Builder.of(RadioisotopeGeneratorBlockEntity::new,
+                    TechBlocks.RADIOISOTOPE_GENERATOR.get()).build(null));
+
+    @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SolarPanelBlockEntity>> SOLAR_PANEL =
             BLOCK_ENTITIES.register("solar_panel", () -> BlockEntityType.Builder.of(SolarPanelBlockEntity::new,
                     TechBlocks.SOLAR_PANEL.get()).build(null));
@@ -70,6 +76,7 @@ public final class TechBlockEntities {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, MAINTENANCE.get(), (station, side) -> station.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, BODY_MODIFICATION.get(), (station, side) -> station.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, COMBUSTION_GENERATOR.get(), (generator, side) -> generator.energy());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, RADIOISOTOPE_GENERATOR.get(), (generator, side) -> generator.energy());
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, SOLAR_PANEL.get(), SolarPanelBlockEntity::forSide);
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, BATTERY.get(), BatteryBlockEntity::forSide);
         event.registerBlock(Capabilities.EnergyStorage.BLOCK, (level, pos, state, blockEntity, side) -> new CableInput(level, pos, side),

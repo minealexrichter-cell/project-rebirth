@@ -2456,5 +2456,123 @@
         };
     })();
 
+    // ------------------------------------------------------------------ mutants (1.6.0, part B3c)
+    // Creatures of the contaminated lands: the mutated hound (low, bony, raw flesh), the glowing ghoul (thin, hunched, long arms,
+    // green sores that glow: the glow mask keeps only the GLOW colour of its texture) and the brute (short legs, huge arms and
+    // shoulders, a low head). The head bone turns to where they look (code). Whole sizes where they can be; parts sink into each
+    // other instead of touching face to face.
+    (() => {
+        const FLESH = '#8a5a4a', RAW = '#b5655a', BONE = '#d8cfb5', DARK = '#3a2a24', SORE = '#9bc24a';
+        const flesh = more => Object.assign({c: FLESH, n: 0.12}, more);
+        const ribs = [[1, 1, 1, 4, BONE], [3, 1, 1, 4, BONE], [5, 1, 1, 4, BONE], [7, 1, 1, 4, BONE], [2, 4, 3, 1, RAW]];
+        const leg = (x, z) => C([x, 0, z], [2, 7, 2], flesh({f: [[0, 5, 2, 2, DARK]], edge: false}));
+        SPECS.mutated_hound = {
+            res: 64, seed: 1631, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'body', parent: 'root', pivot: [0, 9, 0], cubes: [
+                    C([-4, 6, -6], [8, 6, 11], flesh({sd: ribs, tp: [[1, 2, 2, 2, RAW], [5, 6, 2, 1, SORE]], bt: [[1, 1, 6, 9, DARK]]})),
+                    C([-1, 11, -4], [2, 2, 8], {c: BONE, n: 0.08, edge: false, tp: [[0, 1, 2, 1, DARK], [0, 4, 2, 1, DARK]]})]},
+                {name: 'head', parent: 'body', pivot: [0, 10, -6], cubes: [
+                    C([-3, 7, -11], [6, 6, 6], flesh({f: [[1, 1, 1, 1, SORE], [4, 1, 1, 1, SORE], [0, 3, 6, 1, DARK]], tp: [[2, 1, 2, 3, RAW]]})),
+                    C([-2, 6, -15], [4, 4, 5], flesh({f: [[0, 2, 4, 1, BONE], [1, 3, 2, 1, DARK]], sd: [[0, 2, 5, 1, BONE]], c: RAW})),
+                    C([-2.5, 12, -8], [1, 2, 1], {c: BONE, n: 0.05, edge: false}),
+                    C([1.5, 12, -8], [1, 2, 1], {c: BONE, n: 0.05, edge: false})]},
+                {name: 'front_right_leg', parent: 'body', pivot: [-2, 7, -4], cubes: [leg(-3, -5)]},
+                {name: 'front_left_leg', parent: 'body', pivot: [2, 7, -4], cubes: [leg(1, -5)]},
+                {name: 'back_right_leg', parent: 'body', pivot: [-2, 7, 3], cubes: [leg(-3, 2)]},
+                {name: 'back_left_leg', parent: 'body', pivot: [2, 7, 3], cubes: [leg(1, 2)]},
+                {name: 'tail', parent: 'body', pivot: [0, 10, 4], cubes: [C([-0.5, 9.5, 4], [1, 1, 5], {c: RAW, n: 0.1, edge: false}, {rot: [-25, 0, 0], pivot: [0, 10, 4]})]}
+            ],
+            animations: {
+                'animation.mutated_hound.idle': {length: 2, loop: 'loop', bones: {
+                    body: {p: steps(2, [[0, 0, 0], [0, -0.3, 0], [0, 0, 0]])},
+                    tail: {r: steps(2, [[0, -10, 0], [0, 10, 0], [0, -10, 0]])}}},
+                'animation.mutated_hound.walk': {length: 0.5, loop: 'loop', bones: {
+                    front_right_leg: {r: steps(0.5, [[35, 0, 0], [-35, 0, 0], [35, 0, 0]])},
+                    back_left_leg: {r: steps(0.5, [[35, 0, 0], [-35, 0, 0], [35, 0, 0]])},
+                    front_left_leg: {r: steps(0.5, [[-35, 0, 0], [35, 0, 0], [-35, 0, 0]])},
+                    back_right_leg: {r: steps(0.5, [[-35, 0, 0], [35, 0, 0], [-35, 0, 0]])},
+                    body: {p: steps(0.5, [[0, 0, 0], [0, 0.5, 0], [0, 0, 0], [0, 0.5, 0], [0, 0, 0]])},
+                    tail: {r: steps(0.5, [[0, -15, 0], [0, 15, 0], [0, -15, 0]])}}},
+                'animation.mutated_hound.attack': {length: 0.3, loop: 'once', bones: {
+                    body: {r: {'0.000': [0, 0, 0], '0.100': [-10, 0, 0], '0.300': [0, 0, 0]}, p: {'0.000': [0, 0, 0], '0.100': [0, 1, -2], '0.300': [0, 0, 0]}}}}
+            }
+        };
+    })();
+
+    (() => {
+        const SKIN = '#7a8a6a', DARK = '#3d4636', RAG = '#5a4a3a', GLOW = '#7cff4a', PALE = '#9aa88a';
+        const skin = more => Object.assign({c: SKIN, n: 0.1}, more);
+        SPECS.glowing_ghoul = {
+            res: 64, seed: 1632, noCoplanarFaces: true, glow: GLOW,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                ...limbs('leg', 'root', [-2, 13, 0], [C([-3, 0, -1.5], [2.5, 13, 3], skin({f: [[0, 0, 3, 5, RAG], [1, 8, 1, 1, GLOW]], k: [[0, 0, 3, 5, RAG]], edge: false}))]),
+                {name: 'body', parent: 'root', pivot: [0, 12, 0], cubes: [
+                    C([-4, 12, -2], [8, 11, 4], skin({f: [[0, 0, 8, 3, RAG], [2, 5, 2, 2, GLOW], [5, 7, 1, 1, GLOW], [1, 4, 6, 1, DARK]],
+                        k: [[3, 2, 2, 3, GLOW], [1, 7, 1, 1, GLOW], [0, 0, 8, 2, RAG]], sd: [[1, 6, 2, 1, GLOW]]}))]},
+                {name: 'head', parent: 'body', pivot: [0, 22, -1], cubes: [
+                    C([-3.5, 22, -4.5], [7, 7, 7], skin({f: [[1, 2, 2, 1, GLOW], [4, 2, 2, 1, GLOW], [2, 4, 3, 1, DARK], [1, 5, 5, 1, PALE]], tp: [[2, 2, 2, 2, GLOW]], sd: [[3, 3, 1, 1, GLOW]]}))]},
+                ...limbs('arm', 'body', [-5, 21, 0], [C([-6.5, 8, -1.5], [3, 14, 3], skin({f: [[1, 4, 1, 2, GLOW], [0, 12, 3, 2, DARK]], sd: [[1, 9, 1, 1, GLOW]], edge: false}))])
+            ],
+            animations: {
+                'animation.glowing_ghoul.idle': {length: 3, loop: 'loop', bones: {
+                    body: {r: steps(3, [[12, 0, 0], [16, 0, 2], [12, 0, 0]])},
+                    right_arm: {r: steps(3, [[-12, 0, 0], [-6, 0, 0], [-12, 0, 0]])},
+                    left_arm: {r: steps(3, [[-8, 0, 0], [-14, 0, 0], [-8, 0, 0]])}}},
+                'animation.glowing_ghoul.walk': {length: 1.4, loop: 'loop', bones: {
+                    body: {r: steps(1.4, [[15, 0, -3], [15, 0, 3], [15, 0, -3]])},
+                    right_leg: {r: steps(1.4, [[25, 0, 0], [-25, 0, 0], [25, 0, 0]])},
+                    left_leg: {r: steps(1.4, [[-25, 0, 0], [25, 0, 0], [-25, 0, 0]])},
+                    right_arm: {r: steps(1.4, [[-70, 0, 0], [-55, 0, 0], [-70, 0, 0]])},
+                    left_arm: {r: steps(1.4, [[-55, 0, 0], [-70, 0, 0], [-55, 0, 0]])}}},
+                'animation.glowing_ghoul.attack': {length: 0.5, loop: 'once', bones: {
+                    right_arm: {r: {'0.000': [-60, 0, 0], '0.150': [-120, 0, 0], '0.300': [-30, 0, 0], '0.500': [-60, 0, 0]}},
+                    left_arm: {r: {'0.000': [-60, 0, 0], '0.150': [-120, 0, 0], '0.300': [-30, 0, 0], '0.500': [-60, 0, 0]}}}}
+            }
+        };
+    })();
+
+    (() => {
+        const SKIN = '#8a6a5a', SCAR = '#b07a6a', DARK = '#4a3028', BONE = '#d8cfb5', SORE = '#9bc24a';
+        const skin = more => Object.assign({c: SKIN, n: 0.11}, more);
+        SPECS.brute = {
+            res: 128, seed: 1633, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                ...limbs('leg', 'root', [-3.5, 13, 0], [C([-6.5, 0, -3], [6, 13, 6], skin({f: [[0, 10, 6, 3, DARK], [2, 3, 2, 1, SCAR]], k: [[0, 10, 6, 3, DARK]]}))]),
+                {name: 'body', parent: 'root', pivot: [0, 13, 0], cubes: [
+                    C([-7, 12, -4], [14, 10, 9], skin({f: [[3, 2, 8, 1, SCAR], [5, 5, 3, 2, SORE]], k: [[0, 0, 14, 3, DARK]]})),
+                    C([-9, 21, -5], [18, 12, 11], skin({f: [[2, 2, 5, 1, SCAR], [11, 3, 4, 1, SCAR], [8, 6, 2, 3, SORE]], k: [[3, 4, 3, 2, SORE]],
+                        tp: [[2, 2, 3, 2, BONE], [8, 4, 2, 2, BONE], [13, 2, 3, 2, BONE]]})),
+                    C([-2, 32, 0], [4, 3, 3], {c: BONE, n: 0.06, edge: false}),
+                    C([-6, 32, 1], [3, 2, 2], {c: BONE, n: 0.06, edge: false}),
+                    C([3, 32, 1], [3, 2, 2], {c: BONE, n: 0.06, edge: false})]},
+                {name: 'head', parent: 'body', pivot: [0, 30, -5], cubes: [
+                    C([-3.5, 27, -10], [7, 7, 6], skin({f: [[1, 2, 2, 1, '#e8d050'], [4, 2, 2, 1, '#e8d050'], [1, 4, 5, 1, DARK], [1, 5, 1, 1, BONE], [5, 5, 1, 1, BONE]], tp: [[2, 1, 3, 3, SCAR]]}))]},
+                ...limbs('arm', 'body', [-10, 30, 0], [
+                    C([-15.5, 18, -3.5], [7, 14, 7], skin({f: [[2, 4, 3, 1, SCAR]], sd: [[2, 6, 2, 2, SORE]]})),
+                    C([-16, 4, -4.5], [8, 15, 9], skin({f: [[0, 12, 8, 3, DARK], [2, 3, 3, 2, SCAR]], bt: [[1, 1, 6, 7, DARK]]}))])
+            ],
+            animations: {
+                'animation.brute.idle': {length: 3, loop: 'loop', bones: {
+                    body: {r: steps(3, [[8, 0, 0], [11, 0, 0], [8, 0, 0]])},
+                    right_arm: {r: steps(3, [[-8, 0, 0], [-4, 0, 0], [-8, 0, 0]])},
+                    left_arm: {r: steps(3, [[-8, 0, 0], [-4, 0, 0], [-8, 0, 0]])}}},
+                'animation.brute.walk': {length: 1.6, loop: 'loop', bones: {
+                    body: {r: steps(1.6, [[10, 0, -4], [10, 0, 4], [10, 0, -4]]), p: steps(1.6, [[0, 0, 0], [0, -1, 0], [0, 0, 0], [0, -1, 0], [0, 0, 0]])},
+                    right_leg: {r: steps(1.6, [[20, 0, 0], [-20, 0, 0], [20, 0, 0]])},
+                    left_leg: {r: steps(1.6, [[-20, 0, 0], [20, 0, 0], [-20, 0, 0]])},
+                    right_arm: {r: steps(1.6, [[-20, 0, 0], [10, 0, 0], [-20, 0, 0]])},
+                    left_arm: {r: steps(1.6, [[10, 0, 0], [-20, 0, 0], [10, 0, 0]])}}},
+                'animation.brute.attack': {length: 0.6, loop: 'once', bones: {
+                    right_arm: {r: {'0.000': [0, 0, 0], '0.250': [-150, 0, 0], '0.350': [-20, 0, 0], '0.600': [0, 0, 0]}},
+                    left_arm: {r: {'0.000': [0, 0, 0], '0.250': [-150, 0, 0], '0.350': [-20, 0, 0], '0.600': [0, 0, 0]}},
+                    body: {r: {'0.000': [8, 0, 0], '0.250': [-5, 0, 0], '0.350': [20, 0, 0], '0.600': [8, 0, 0]}}}}
+            }
+        };
+    })();
+
     window.RebirthModels = {build, save, SPECS, coplanarFaces};
 })();

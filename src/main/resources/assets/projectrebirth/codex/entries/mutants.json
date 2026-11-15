@@ -1,0 +1,18 @@
+{
+  "icon": "projectrebirth:glowing_ghoul_spawn_egg",
+  "x": -3,
+  "y": -2,
+  "parents": [
+    "contaminated_zones"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mutants.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.mutants.p2"
+    }
+  ]
+}

@@ -454,6 +454,12 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         note('The rockets do not break blocks unless the config says so. Settings in the config ([hostile.mech]).',
             'Ракеты не разрушают блоки, если это не включено в конфиге. Настройки в конфиге ([hostile.mech]).')
     ]),
+    entry('mutants', P + 'glowing_ghoul_spawn_egg', -3, -2, ['contaminated_zones'], 'Mutants', 'Мутанты', [
+        text('Where a catastrophe left its contamination, and in the contamination zone, mutants come out. Mutated hounds are fast and weak and run in packs of two to four: hurt one and the whole pack turns on you. The glowing ghoul is slow, its sores glow green in the dark, and it is a walking source of radiation: standing near it gives you a dose like radioactive debris, so a suit and a dosimeter help. The brute is rare, slow and very strong; its blow throws you back.\n\nMutants do not burn in the sun and do not come in peaceful. They keep appearing while you stay on contaminated ground; leave it, or clean it, and they stop.',
+            'Там, где катастрофа оставила загрязнение, и в «Зоне заражения» выходят мутанты. Мутировавшие псы быстрые и слабые, бегают стаями по два–четыре: раните одного — на вас бросится вся стая. Светящийся гуль медленный, его язвы светятся зелёным в темноте, и он сам источник радиации: рядом с ним вы получаете дозу, как у радиоактивных обломков, поэтому помогают защитный костюм и дозиметр. Громила редкий, медленный и очень сильный; его удар отбрасывает.\n\nМутанты не горят на солнце и не появляются на мирной сложности. Они приходят, пока вы стоите на заражённой земле; уйдите или очистите её — и они перестанут.'),
+        note('Settings in the config ([hostile.mutants]): how often they come, how many at once, the share of each kind and their strength.',
+            'Настройки в конфиге ([hostile.mutants]): как часто приходят, сколько сразу, доля каждого вида и их сила.')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

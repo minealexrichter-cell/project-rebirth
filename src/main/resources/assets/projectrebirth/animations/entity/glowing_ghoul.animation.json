@@ -1,0 +1,159 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.glowing_ghoul.idle": {
+			"loop": true,
+			"animation_length": 3,
+			"bones": {
+				"body": {
+					"rotation": {
+						"0.0": {
+							"vector": [12, 0, 0]
+						},
+						"1.5": {
+							"vector": [16, 0, 2]
+						},
+						"3.0": {
+							"vector": [12, 0, 0]
+						}
+					}
+				},
+				"right_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [-12, 0, 0]
+						},
+						"1.5": {
+							"vector": [-6, 0, 0]
+						},
+						"3.0": {
+							"vector": [-12, 0, 0]
+						}
+					}
+				},
+				"left_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [-8, 0, 0]
+						},
+						"1.5": {
+							"vector": [-14, 0, 0]
+						},
+						"3.0": {
+							"vector": [-8, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.glowing_ghoul.walk": {
+			"loop": true,
+			"animation_length": 1.4,
+			"bones": {
+				"body": {
+					"rotation": {
+						"0.0": {
+							"vector": [15, 0, -3]
+						},
+						"0.7": {
+							"vector": [15, 0, 3]
+						},
+						"1.4": {
+							"vector": [15, 0, -3]
+						}
+					}
+				},
+				"right_leg": {
+					"rotation": {
+						"0.0": {
+							"vector": [25, 0, 0]
+						},
+						"0.7": {
+							"vector": [-25, 0, 0]
+						},
+						"1.4": {
+							"vector": [25, 0, 0]
+						}
+					}
+				},
+				"left_leg": {
+					"rotation": {
+						"0.0": {
+							"vector": [-25, 0, 0]
+						},
+						"0.7": {
+							"vector": [25, 0, 0]
+						},
+						"1.4": {
+							"vector": [-25, 0, 0]
+						}
+					}
+				},
+				"right_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [-70, 0, 0]
+						},
+						"0.7": {
+							"vector": [-55, 0, 0]
+						},
+						"1.4": {
+							"vector": [-70, 0, 0]
+						}
+					}
+				},
+				"left_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [-55, 0, 0]
+						},
+						"0.7": {
+							"vector": [-70, 0, 0]
+						},
+						"1.4": {
+							"vector": [-55, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.glowing_ghoul.attack": {
+			"animation_length": 0.5,
+			"bones": {
+				"right_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [-60, 0, 0]
+						},
+						"0.15": {
+							"vector": [-120, 0, 0]
+						},
+						"0.3": {
+							"vector": [-30, 0, 0]
+						},
+						"0.5": {
+							"vector": [-60, 0, 0]
+						}
+					}
+				},
+				"left_arm": {
+					"rotation": {
+						"0.0": {
+							"vector": [-60, 0, 0]
+						},
+						"0.15": {
+							"vector": [-120, 0, 0]
+						},
+						"0.3": {
+							"vector": [-30, 0, 0]
+						},
+						"0.5": {
+							"vector": [-60, 0, 0]
+						}
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

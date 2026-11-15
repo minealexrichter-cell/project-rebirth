@@ -54,6 +54,9 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.hostile.HostileRegistry.GUARD_TURRET_SPAWN_EGG.get());
                 output.accept(com.projectrebirth.hostile.HostileRegistry.PATROL_ROBOT_SPAWN_EGG.get());
                 output.accept(com.projectrebirth.hostile.HostileRegistry.MECH_SPAWN_EGG.get());
+                output.accept(com.projectrebirth.hostile.HostileRegistry.MUTATED_HOUND_SPAWN_EGG.get());
+                output.accept(com.projectrebirth.hostile.HostileRegistry.GLOWING_GHOUL_SPAWN_EGG.get());
+                output.accept(com.projectrebirth.hostile.HostileRegistry.BRUTE_SPAWN_EGG.get());
                 output.accept(com.projectrebirth.structures.StructureBlocks.TURRET_ITEM.get());
                 output.accept(com.projectrebirth.structures.StructureBlocks.WRECKED_TURRET_ITEM.get());
                 output.accept(com.projectrebirth.structures.StructureBlocks.AMMO_CRATE_ITEM.get());

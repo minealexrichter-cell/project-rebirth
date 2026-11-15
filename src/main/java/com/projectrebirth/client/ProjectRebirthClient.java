@@ -124,6 +124,9 @@ public class ProjectRebirthClient {
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.PATROL_ROBOT.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::robot);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::mech);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH_ROCKET.get(), com.projectrebirth.client.render.MechRocketRenderer::new);
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_HOUND.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "mutated_hound", 0.4f, false));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.GLOWING_GHOUL.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "glowing_ghoul", 0.45f, true));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.BRUTE.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "brute", 0.9f, false));
     }
 
     /** Fired on every resource reload, with a fresh renderer context. */

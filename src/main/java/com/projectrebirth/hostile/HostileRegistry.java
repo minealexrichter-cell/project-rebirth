@@ -50,6 +50,15 @@ public final class HostileRegistry {
                     .noSave()
                     .build("mech_rocket"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<MutatedHoundEntity>> MUTATED_HOUND = ENTITY_TYPES.register("mutated_hound",
+            () -> EntityType.Builder.of(MutatedHoundEntity::new, MobCategory.MONSTER).sized(0.7f, 0.85f).eyeHeight(0.7f).clientTrackingRange(10).build("mutated_hound"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<GlowingGhoulEntity>> GLOWING_GHOUL = ENTITY_TYPES.register("glowing_ghoul",
+            () -> EntityType.Builder.of(GlowingGhoulEntity::new, MobCategory.MONSTER).sized(0.6f, 1.9f).eyeHeight(1.7f).clientTrackingRange(10).build("glowing_ghoul"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<BruteEntity>> BRUTE = ENTITY_TYPES.register("brute",
+            () -> EntityType.Builder.of(BruteEntity::new, MobCategory.MONSTER).sized(1.3f, 2.5f).eyeHeight(2.2f).clientTrackingRange(10).build("brute"));
+
     /** For trying it out in creative; the ruins place their own. */
     public static final DeferredItem<Item> GUARD_TURRET_SPAWN_EGG = ITEMS.register("guard_turret_spawn_egg",
             () -> new DeferredSpawnEggItem(GUARD_TURRET, 0xA3ACB6, 0xC4382C, new Item.Properties()));
@@ -59,6 +68,15 @@ public final class HostileRegistry {
 
     public static final DeferredItem<Item> MECH_SPAWN_EGG = ITEMS.register("mech_spawn_egg",
             () -> new DeferredSpawnEggItem(MECH, 0x4F5A4A, 0xC4382C, new Item.Properties()));
+
+    public static final DeferredItem<Item> MUTATED_HOUND_SPAWN_EGG = ITEMS.register("mutated_hound_spawn_egg",
+            () -> new DeferredSpawnEggItem(MUTATED_HOUND, 0x6B4A3A, 0x9BC24A, new Item.Properties()));
+
+    public static final DeferredItem<Item> GLOWING_GHOUL_SPAWN_EGG = ITEMS.register("glowing_ghoul_spawn_egg",
+            () -> new DeferredSpawnEggItem(GLOWING_GHOUL, 0x7A8A6A, 0x7CFF4A, new Item.Properties()));
+
+    public static final DeferredItem<Item> BRUTE_SPAWN_EGG = ITEMS.register("brute_spawn_egg",
+            () -> new DeferredSpawnEggItem(BRUTE, 0x8A6A5A, 0x5A3A2A, new Item.Properties()));
 
     private HostileRegistry() {
     }
@@ -74,5 +92,8 @@ public final class HostileRegistry {
         event.put(GUARD_TURRET.get(), GuardTurretEntity.createAttributes().build());
         event.put(PATROL_ROBOT.get(), PatrolRobotEntity.createAttributes().build());
         event.put(MECH.get(), MechEntity.createAttributes().build());
+        event.put(MUTATED_HOUND.get(), MutatedHoundEntity.createAttributes().build());
+        event.put(GLOWING_GHOUL.get(), GlowingGhoulEntity.createAttributes().build());
+        event.put(BRUTE.get(), BruteEntity.createAttributes().build());
     }
 }

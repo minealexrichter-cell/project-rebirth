@@ -96,6 +96,7 @@
         "guard_turret",
         "patrol_robot",
         "mech",
+        "mutants",
         "dosimeter",
         "medicine",
         "machines_environment"

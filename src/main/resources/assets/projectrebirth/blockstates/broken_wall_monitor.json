@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectrebirth:block/broken_wall_monitor"
+    },
+    "facing=east": {
+      "model": "projectrebirth:block/broken_wall_monitor",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectrebirth:block/broken_wall_monitor",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectrebirth:block/broken_wall_monitor",
+      "y": 270
+    }
+  }
+}

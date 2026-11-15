@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectrebirth:block/rusted_armor_workstation"
+    },
+    "facing=east": {
+      "model": "projectrebirth:block/rusted_armor_workstation",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectrebirth:block/rusted_armor_workstation",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectrebirth:block/rusted_armor_workstation",
+      "y": 270
+    }
+  }
+}

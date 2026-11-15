@@ -137,7 +137,7 @@
       "template": "projectrebirth:ruins/military_base/solar",
       "x": 44,
       "z": 50,
-      "follow": true
+      "floor": 2
     },
     {
       "template": "projectrebirth:ruins/military_base/floodlight",
@@ -155,6 +155,36 @@
       "template": "projectrebirth:ruins/military_base/scrap",
       "x": 56,
       "z": 49,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/lamp_post_0",
+      "x": 27,
+      "z": 40,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/lamp_post_1",
+      "x": 33,
+      "z": 46,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/lamp_post_2",
+      "x": 27,
+      "z": 50,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/lamp_post_3",
+      "x": 44,
+      "z": 36,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/lamp_post_4",
+      "x": 52,
+      "z": 36,
       "follow": true
     }
   ]

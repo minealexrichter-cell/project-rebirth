@@ -1,18 +1,52 @@
 {
   "variants": {
-    "facing=north": {
+    "face=wall,facing=north": {
       "model": "projectrebirth:block/emergency_lamp"
     },
-    "facing=east": {
+    "face=floor,facing=north": {
+      "model": "projectrebirth:block/emergency_lamp_floor"
+    },
+    "face=ceiling,facing=north": {
+      "model": "projectrebirth:block/emergency_lamp_floor",
+      "x": 180
+    },
+    "face=wall,facing=east": {
       "model": "projectrebirth:block/emergency_lamp",
       "y": 90
     },
-    "facing=south": {
+    "face=floor,facing=east": {
+      "model": "projectrebirth:block/emergency_lamp_floor",
+      "y": 90
+    },
+    "face=ceiling,facing=east": {
+      "model": "projectrebirth:block/emergency_lamp_floor",
+      "x": 180,
+      "y": 90
+    },
+    "face=wall,facing=south": {
       "model": "projectrebirth:block/emergency_lamp",
       "y": 180
     },
-    "facing=west": {
+    "face=floor,facing=south": {
+      "model": "projectrebirth:block/emergency_lamp_floor",
+      "y": 180
+    },
+    "face=ceiling,facing=south": {
+      "model": "projectrebirth:block/emergency_lamp_floor",
+      "x": 180,
+      "y": 180
+    },
+    "face=wall,facing=west": {
       "model": "projectrebirth:block/emergency_lamp",
+      "y": 270
+    },
+    "face=floor,facing=west": {
+      "model": "projectrebirth:block/emergency_lamp_floor",
+      "y": 270
+    },
+    "face=ceiling,facing=west": {
+      "model": "projectrebirth:block/emergency_lamp_floor",
+      "x": 180,
       "y": 270
     }
   }

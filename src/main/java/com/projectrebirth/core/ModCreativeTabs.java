@@ -53,6 +53,10 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.structures.StructureBlocks.EMERGENCY_LAMP_ITEM.get());
                 output.accept(com.projectrebirth.structures.StructureBlocks.WRECKED_TURRET_ITEM.get());
                 output.accept(com.projectrebirth.structures.StructureBlocks.AMMO_CRATE_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.BROKEN_WALL_MONITOR_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.BROKEN_SERVER_RACK_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.BROKEN_SPECIMEN_TANK_ITEM.get());
+                com.projectrebirth.structures.StructureBlocks.RUSTED_ITEMS.values().forEach(item -> output.accept(item.get()));
                 output.accept(TechItems.BATTERY.get());
                 output.accept(com.projectrebirth.codex.CodexRegistry.REBIRTH_CODEX.get());
                 output.accept(TechItems.CABLE.get());

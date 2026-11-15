@@ -149,6 +149,7 @@ public class CompoundStructure extends Structure {
                            BoundingBox chunkBox, ChunkPos chunkPos, PiecesContainer pieces) {
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         int bottom = level.getMinBuildHeight();
+        connectCables(level, chunkBox, pieces, cursor);
         for (StructurePiece piece : pieces.pieces()) {
             if (!(piece instanceof PoolElementStructurePiece pool) || pool.getElement().getProjection() != StructureTemplatePool.Projection.RIGID) {
                 continue;
@@ -171,6 +172,38 @@ public class CompoundStructure extends Structure {
                             break;
                         }
                         level.setBlock(cursor, foundation, 2);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Gives every cable of the structure in this chunk the connections it really has: pieces stand at different heights and a
+     * turned template may not match its neighbour, so a cable only links to the cables and machines that are next to it now.
+     */
+    private static void connectCables(WorldGenLevel level, BoundingBox chunkBox, PiecesContainer pieces, BlockPos.MutableBlockPos cursor) {
+        for (StructurePiece piece : pieces.pieces()) {
+            BoundingBox box = piece.getBoundingBox();
+            if (!box.intersects(chunkBox)) {
+                continue;
+            }
+            boolean onGround = piece instanceof PoolElementStructurePiece pool
+                    && pool.getElement().getProjection() == StructureTemplatePool.Projection.TERRAIN_MATCHING;
+            for (int x = Math.max(box.minX(), chunkBox.minX()); x <= Math.min(box.maxX(), chunkBox.maxX()); x++) {
+                for (int z = Math.max(box.minZ(), chunkBox.minZ()); z <= Math.min(box.maxZ(), chunkBox.maxZ()); z++) {
+                    // a building: its whole box; a piece on the ground: a band around the surface of its column
+                    int ground = onGround ? level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z) : 0;
+                    int from = onGround ? ground - 3 : box.minY() - 1, to = onGround ? ground + box.getYSpan() + 1 : box.maxY() + 1;
+                    for (int y = from; y <= to; y++) {
+                        cursor.set(x, y, z);
+                        BlockState state = level.getBlockState(cursor);
+                        if (state.getBlock() instanceof com.projectrebirth.technology.energy.CableBlock) {
+                            BlockState connected = com.projectrebirth.technology.energy.CableBlock.connectedInWorldgen(state, level, cursor);
+                            if (connected != state) {
+                                level.setBlock(cursor, connected, 2);
+                            }
+                        }
                     }
                 }
             }

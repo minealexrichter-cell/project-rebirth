@@ -87,6 +87,40 @@ public class CableBlock extends PipeBlock {
         CableNetwork.invalidate(level);
     }
 
+    /** A structure turned as it is placed turns its cables too, so their arms keep pointing at the same neighbours. */
+    @Override
+    protected BlockState rotate(BlockState state, net.minecraft.world.level.block.Rotation rotation) {
+        BlockState out = state;
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            out = out.setValue(PROPERTY_BY_DIRECTION.get(rotation.rotate(direction)), state.getValue(PROPERTY_BY_DIRECTION.get(direction)));
+        }
+        return out;
+    }
+
+    @Override
+    protected BlockState mirror(BlockState state, net.minecraft.world.level.block.Mirror mirror) {
+        BlockState out = state;
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            out = out.setValue(PROPERTY_BY_DIRECTION.get(mirror.mirror(direction)), state.getValue(PROPERTY_BY_DIRECTION.get(direction)));
+        }
+        return out;
+    }
+
+    /**
+     * The connections of a cable from what is around it, without the energy capability (not there yet while a chunk is being
+     * generated): other cables and the blocks of the tag projectrebirth:cable_connects (the mod's machines). Used after a
+     * structure is placed.
+     */
+    public static BlockState connectedInWorldgen(BlockState state, LevelAccessor level, BlockPos pos) {
+        for (Direction direction : Direction.values()) {
+            BlockState neighbor = level.getBlockState(pos.relative(direction));
+            boolean connected = neighbor.getBlock() instanceof CableBlock
+                    || neighbor.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK, com.projectrebirth.ProjectRebirth.id("cable_connects")));
+            state = state.setValue(PROPERTY_BY_DIRECTION.get(direction), connected);
+        }
+        return state;
+    }
+
     private static boolean connects(LevelAccessor level, BlockPos neighborPos, Direction direction) {
         if (level.getBlockState(neighborPos).getBlock() instanceof CableBlock) {
             return true;

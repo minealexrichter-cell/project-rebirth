@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectrebirth:block/rusted_air_filtration_unit"
+    },
+    "facing=east": {
+      "model": "projectrebirth:block/rusted_air_filtration_unit",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectrebirth:block/rusted_air_filtration_unit",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectrebirth:block/rusted_air_filtration_unit",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectrebirth:block/rusted_heater"
+    },
+    "facing=east": {
+      "model": "projectrebirth:block/rusted_heater",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectrebirth:block/rusted_heater",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectrebirth:block/rusted_heater",
+      "y": 270
+    }
+  }
+}

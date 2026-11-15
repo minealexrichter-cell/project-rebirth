@@ -2632,99 +2632,179 @@
         return p;
     });
 
-    // Wrecked turret: olive armor plates with seams, rivets, worn edges and soot; a dark gunmetal mechanism; barrels; a cracked sensor.
-    block('turret_armor', () => {
-        const p = new Painter(851);
-        p.noise(0, 0, 16, 16, '#4b5236', 0.05);
-        p.bevel(0, 0, 8, 7, '#51583a', 0.04).bevel(8, 0, 8, 7, '#4e5538', 0.04).bevel(0, 7, 16, 9, '#495034', 0.04);
-        p.px('#2d3320', [1, 1], [6, 1], [9, 1], [14, 1], [1, 9], [14, 9], [1, 14], [14, 14]);
-        // worn edges show steel, soot and a scorch, a short hazard stripe
-        p.px('#8c97a3', [7, 3], [8, 4], [0, 12], [15, 5], [3, 15], [12, 8]);
-        [[10, 10, 4, 3], [11, 9, 2, 1], [9, 12, 2, 2]].forEach(([x, y, w, h]) => p.noise(x, y, w, h, '#2b2a24', 0.12));
-        p.px('#151513', [11, 11], [12, 11]);
-        for (let x = 2; x < 8; x++) p.px(x % 2 ? '#b8982e' : '#1a1a1a', [x, 4]);
+    // ---------------------------------------------------------------- wrecked turret (after the owner's reference): clean flat
+    // pixel art, little noise: an orange hull with soft light and shade, a cabin window of four panes, dark shield plates with a
+    // raised pattern, grey barrels with a bright band, dark feet and joints.
+    const HULL = '#d98a1e', HULL_LIGHT = '#f1ad3b', HULL_SHADE = '#a6611a', HULL_DEEP = '#7c4515';
+    const PLATE = '#3c3f45', PLATE_LIGHT = '#5a5e66', PLATE_DARK = '#2a2c31';
+    block('turret_hull', () => {
+        const p = new Painter(901);
+        p.noise(0, 0, 16, 16, HULL, 0.02);
+        p.rect(0, 0, 16, 2, HULL_LIGHT).rect(0, 0, 2, 16, HULL_LIGHT);
+        p.rect(0, 14, 16, 2, HULL_SHADE).rect(14, 0, 2, 16, HULL_SHADE);
+        p.rect(0, 15, 16, 1, HULL_DEEP).rect(15, 0, 1, 16, HULL_DEEP);
+        // a seam and a small scuff where the paint has gone to the metal
+        p.rect(2, 8, 12, 1, HULL_SHADE).rect(2, 9, 12, 1, '#e79d2c');
+        p.px('#8c97a3', [11, 4], [12, 4], [4, 12]);
         return p;
     });
-    block('turret_metal', () => {
-        const p = new Painter(852);
-        p.noise(0, 0, 16, 16, '#30353c', 0.05);
-        p.inset(2, 2, 12, 12, '#262a30', 0.03);
-        [[3, 3], [12, 3], [3, 12], [12, 12]].forEach(([x, y]) => p.bevel(x, y, 1, 1, '#7b858f', 0));
-        p.rect(4, 7, 8, 2, '#1a1d21').rect(5, 7, 1, 2, '#c77b3b').rect(10, 7, 1, 2, '#6e4a31');
+    block('turret_visor', () => {
+        const p = new Painter(902);
+        p.rect(0, 0, 16, 16, HULL).rect(0, 0, 16, 1, HULL_LIGHT).rect(0, 15, 16, 1, HULL_SHADE);
+        p.rect(2, 2, 12, 12, PLATE_DARK);
+        p.rect(3, 3, 10, 10, PLATE);
+        // four panes with a highlight each, one cracked
+        for (const [x, y] of [[4, 4], [9, 4], [4, 9], [9, 9]]) {
+            p.rect(x, y, 3, 3, '#1a1c20').rect(x, y, 2, 1, '#c9d2db').rect(x, y + 1, 1, 1, '#8a96a3');
+        }
+        p.px('#c9d2db', [10, 10], [11, 11]);
+        return p;
+    });
+    block('turret_shield', () => {
+        const p = new Painter(903);
+        p.rect(0, 0, 16, 16, PLATE);
+        p.rect(0, 0, 16, 1, PLATE_LIGHT).rect(0, 0, 1, 16, PLATE_LIGHT).rect(0, 15, 16, 1, PLATE_DARK).rect(15, 0, 1, 16, PLATE_DARK);
+        // the raised pattern: a hooked groove inside a frame
+        p.rect(3, 3, 10, 1, PLATE_DARK).rect(3, 3, 1, 10, PLATE_DARK).rect(3, 12, 10, 1, PLATE_LIGHT).rect(12, 3, 1, 10, PLATE_LIGHT);
+        p.rect(6, 6, 5, 1, PLATE_LIGHT).rect(10, 6, 1, 4, PLATE_LIGHT).rect(6, 9, 3, 1, PLATE_DARK).rect(6, 6, 1, 4, PLATE_DARK);
         return p;
     });
     block('turret_barrel', () => {
-        const p = new Painter(853);
-        p.noise(0, 0, 16, 16, '#3b4048', 0.05);
-        [0, 5, 10].forEach(y => p.rect(0, y, 16, 1, '#1d2025'));
-        p.rect(0, 1, 16, 1, '#59626c');
-        // the muzzle face (u 6..10, v 12..16): a dark bore in a ring
-        p.rect(6, 12, 4, 4, '#59626c').rect(7, 13, 2, 2, '#0b0c0e');
+        const p = new Painter(904);
+        p.rect(0, 0, 16, 16, '#4a4f57');
+        p.rect(0, 0, 16, 1, '#646a73').rect(0, 15, 16, 1, '#33363c');
+        p.rect(5, 0, 5, 16, '#aebbc6').rect(5, 0, 5, 1, '#dbe5ec').rect(5, 15, 5, 1, '#7f8b95');
+        // the muzzle face (u 11..16, v 0..5): a dark bore in a ring
+        p.rect(11, 0, 5, 5, '#3a3e45').rect(12, 1, 3, 3, '#121316');
         return p;
     });
-    block('turret_sensor', () => {
-        const p = new Painter(854);
-        p.noise(0, 0, 16, 16, '#262a30', 0.04);
-        p.rect(3, 3, 10, 10, '#121417');
-        p.rect(4, 4, 8, 8, '#3a0d0b').rect(6, 6, 4, 4, '#7a1a14').rect(7, 7, 1, 1, '#c8463a');
-        // the crack across the lens
-        p.px('#c9d2db', [4, 5], [5, 6], [6, 6], [7, 8], [8, 9], [9, 9], [10, 11]);
+    block('turret_dark', () => {
+        const p = new Painter(905);
+        p.rect(0, 0, 16, 16, '#30333a');
+        p.rect(0, 0, 16, 1, '#4b4f57').rect(0, 0, 1, 16, '#4b4f57').rect(0, 15, 16, 1, '#202227').rect(15, 0, 1, 16, '#202227');
+        p.px('#9aa4ae', [3, 3], [12, 3], [3, 12], [12, 12]);
         return p;
     });
 
-    // Emergency lamp: a red ribbed lens that glows, a bright core, and a steel wall plate with screws.
-    block('lamp_lens', () => {
-        const p = new Painter(861);
-        p.noise(0, 0, 16, 16, '#d8261c', 0.05);
-        for (let x = 0; x < 16; x += 3) p.rect(x, 0, 1, 16, '#a3160f');
-        p.rect(5, 5, 6, 6, '#ff6a4a').rect(6, 6, 4, 4, '#ffb59a').rect(7, 7, 2, 2, '#fff1e6');
-        p.rect(2, 2, 2, 1, '#ff9c84').rect(2, 3, 1, 2, '#ff9c84');
+    // ---------------------------------------------------------------- emergency lamp: red glass over a bulb, like the specimen tank
+    block('lamp_glass', () => {
+        const p = new Painter(911);
+        const rgba = (r, g, b, a) => 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+        for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+            p.ctx.clearRect(x, y, 1, 1);
+            p.rect(x, y, 1, 1, rgba(205 + Math.round(p.rand() * 20), 30, 22, x % 4 === 0 ? 0.72 : 0.55));
+        }
+        for (let y = 2; y < 9; y++) { p.ctx.clearRect(3, y, 1, 1); p.rect(3, y, 1, 1, rgba(255, 170, 150, 0.8)); }
+        p.ctx.clearRect(4, 2, 1, 1); p.rect(4, 2, 1, 1, rgba(255, 200, 185, 0.85));
         return p;
     });
-    block('lamp_base', () => {
-        const p = new Painter(862);
-        p.noise(0, 0, 16, 16, '#4a525c', 0.05);
-        p.bevel(0, 0, 16, 16, '#4f5862', 0.03);
-        [[2, 2], [13, 2], [2, 13], [13, 13]].forEach(([x, y]) => p.px('#9aa4ae', [x, y]).px('#1e2228', [x + 1, y + 1]));
-        p.rect(0, 7, 16, 2, '#e0b92c');
-        for (let x = 0; x < 16; x += 2) p.px('#1a1a1a', [x, 7], [x + 1, 8]);
+    block('lamp_bulb', () => {
+        const p = new Painter(912);
+        p.rect(0, 0, 16, 16, '#ffd9a0');
+        p.rect(4, 4, 8, 8, '#fff2d6').rect(6, 6, 4, 4, '#ffffff');
         return p;
     });
-
-
-    // Military ammo crate: olive planks, a stencil band, steel latches.
-    block('ammo_crate_side', () => {
-        const p = new Painter(831);
-        p.noise(0, 0, 16, 16, '#5d6a2e', 0.06);
-        [4, 8, 12].forEach(y => p.rect(0, y, 16, 1, '#434d20'));
-        p.rect(0, 0, 16, 1, '#7b8f3a').rect(0, 15, 16, 1, '#2f3616').rect(0, 0, 1, 16, '#3a4219').rect(15, 0, 1, 16, '#3a4219');
-        p.rect(3, 6, 10, 3, '#46511f');
-        p.grid(['y.y.yy.yyy', 'yyy.y..y.y', 'y.y.yy.yyy'], {y: '#d9c86a'}, 3, 6);
-        p.bevel(1, 2, 2, 3, '#8c97a3', 0.02).bevel(13, 2, 2, 3, '#8c97a3', 0.02);
-        return p;
-    });
-    block('ammo_crate_top', () => {
-        const p = new Painter(832);
-        p.noise(0, 0, 16, 16, '#66742f', 0.06);
-        [5, 10].forEach(x => p.rect(x, 0, 1, 16, '#434d20'));
-        p.rect(0, 0, 16, 1, '#7b8f3a').rect(0, 15, 16, 1, '#2f3616');
-        p.rect(1, 7, 14, 2, '#3a4219').rect(7, 6, 2, 4, '#8c97a3');
+    block('lamp_metal', () => {
+        const p = new Painter(913);
+        p.rect(0, 0, 16, 16, '#3f444c');
+        p.rect(0, 0, 16, 1, '#5d636c').rect(0, 0, 1, 16, '#5d636c').rect(0, 15, 16, 1, '#2a2d33').rect(15, 0, 1, 16, '#2a2d33');
+        p.px('#9aa4ae', [2, 2], [13, 2], [2, 13], [13, 13]);
         return p;
     });
 
-    // Irradiated sludge: a slow green ooze with bright bubbles.
-    function sludge(i) {
-        const p = new Painter(841);
-        p.noise(0, 0, 16, 16, '#3c8a1c', 0.12);
-        [[2, 3, 4, 3], [9, 1, 5, 4], [5, 9, 6, 4], [12, 10, 3, 4], [0, 12, 3, 3]].forEach(([x, y, w, h], k) => {
-            p.noise((x + i) % 16, y, w, h, k % 2 ? '#6fd62a' : '#58b81f', 0.08);
-        });
-        [[4, 4], [11, 3], [7, 11], [13, 12], [1, 13]].forEach(([x, y], k) => {
-            if ((k + i) % 3 !== 0) p.px('#d8ff9a', [(x + i) % 16, y]);
-        });
+    // ---------------------------------------------------------------- broken variants
+    block('wall_monitor_screen_broken', () => {
+        const p = new Painter(921);
+        p.rect(0, 0, 16, 16, '#0b0f15');
+        p.noise(1, 1, 14, 14, '#10161f', 0.08);
+        // a dead screen: a spider crack from a hit, a corner of glass gone
+        [[9, 5], [8, 6], [7, 7], [10, 6], [11, 7], [12, 8], [9, 4], [10, 3], [8, 8], [7, 9], [6, 10], [5, 11], [9, 7], [10, 9], [10, 10]].forEach(([x, y]) => p.px('#7d8a99', [x, y]));
+        p.px('#c5ced8', [9, 5], [8, 6]);
+        p.rect(1, 11, 4, 4, '#05070a').px('#3a4450', [1, 10], [2, 10], [5, 12], [5, 13]);
+        p.rect(3, 3, 2, 1, '#173040');
         return p;
+    });
+    block('server_rack_front_broken', () => {
+        const p = new Painter(922);
+        p.noise(0, 0, 16, 16, '#1d2126', 0.05);
+        for (let r = 0; r < 5; r++) {
+            const y = 1 + r * 3;
+            if (r === 1 || r === 3) { p.rect(1, y, 14, 2, '#08090b'); continue; } // bays pulled out: empty holes
+            p.bevel(1, y, 14, 2, '#2b3037', 0.03);
+            p.rect(2, y + 1, 8, 1, '#121417');
+            p.px('#1f2a22', [11, y + 1]).px('#2a1a1a', [13, y + 1]);
+        }
+        p.rect(4, 7, 1, 3, '#c77b3b').rect(6, 7, 1, 4, '#3a6d9a'); // loose wires in an empty bay
+        return p;
+    });
+    block('tank_glass_broken', () => {
+        const p = new Painter(923);
+        const rgba = (r, g, b, a) => 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+        // a pane with a jagged top edge: transparent above the break
+        const edge = [6, 5, 7, 9, 8, 6, 4, 5, 7, 10, 9, 6, 5, 6, 8, 7];
+        for (let x = 0; x < 16; x++) for (let y = 0; y < 16; y++) {
+            p.ctx.clearRect(x, y, 1, 1);
+            if (y >= edge[x]) p.rect(x, y, 1, 1, rgba(215, 235, 240, y === edge[x] ? 0.75 : 0.14));
+        }
+        [[3, 11], [4, 12], [5, 12], [10, 13], [11, 12]].forEach(([x, y]) => { p.ctx.clearRect(x, y, 1, 1); p.rect(x, y, 1, 1, rgba(230, 250, 255, 0.85)); });
+        return p;
+    });
+    block('specimen_dead', () => {
+        const p = new Painter(924);
+        p.noise(0, 0, 16, 16, '#7f8f78', 0.08);
+        [[2, 9], [5, 12], [10, 10], [12, 13], [7, 14]].forEach(([x, y]) => p.px('#5d6b57', [x, y], [x + 1, y]));
+        p.noise(0, 0, 6, 6, '#879a80', 0.05);
+        p.rect(1, 2, 1, 1, '#1d221c').rect(4, 2, 1, 1, '#1d221c').rect(2, 4, 2, 1, '#4f5c49');
+        return p;
+    });
+
+    // ---------------------------------------------------------------- rusted machines: the same faces, gone to rust
+    /** A rusted copy of a texture: colours dulled and darkened, rust patches and streaks running down, screens dead. */
+    function rusted(id, seed) {
+        TEXTURES['block/' + id + '_rusted'] = () => {
+            const made = TEXTURES['block/' + id]();
+            const src = made.canvas;
+            const p = new Painter(seed);
+            p.ctx.drawImage(src, 0, 0, 16, 16, 0, 0, 16, 16);
+            const img = p.ctx.getImageData(0, 0, 16, 16), d = img.data;
+            const rust = [[122, 66, 36], [146, 82, 40], [96, 54, 34], [168, 98, 52]];
+            const patch = [];
+            for (let i = 0; i < 5; i++) patch.push([p.rand() * 16, p.rand() * 16, 1.5 + p.rand() * 2.5]);
+            for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+                const k = (y * 16 + x) * 4;
+                if (d[k + 3] === 0) continue;
+                let [r, g, b] = [d[k], d[k + 1], d[k + 2]];
+                const max = Math.max(r, g, b), min = Math.min(r, g, b);
+                // screens and lights die: bright, coloured pixels go dark
+                if (max > 150 && max - min > 70) { r = r * 0.22 + 14; g = g * 0.22 + 14; b = b * 0.22 + 16; }
+                // dull and darken
+                const grey = (r + g + b) / 3;
+                r = (r * 0.55 + grey * 0.45) * 0.82; g = (g * 0.55 + grey * 0.45) * 0.8; b = (b * 0.55 + grey * 0.45) * 0.76;
+                // rust in patches and in streaks running down from them
+                let t = 0;
+                for (const [px, py, pr] of patch) {
+                    const dist = Math.hypot(x - px, (y - py) * (y > py ? 0.35 : 1));
+                    t = Math.max(t, 1 - dist / pr);
+                }
+                t = Math.min(1, t + (p.rand() < 0.08 ? 0.5 : 0));
+                if (t > 0) {
+                    const c = rust[Math.floor(p.rand() * rust.length)];
+                    r = r * (1 - t * 0.85) + c[0] * t * 0.85; g = g * (1 - t * 0.85) + c[1] * t * 0.85; b = b * (1 - t * 0.85) + c[2] * t * 0.85;
+                }
+                d[k] = Math.round(r); d[k + 1] = Math.round(g); d[k + 2] = Math.round(b);
+            }
+            p.ctx.putImageData(img, 0, 0);
+            return p;
+        };
     }
-    animated('irradiated_sludge', 4, 12, i => sludge(i));
+
+    // the textures of the rusted machines (structures/StructureBlocks.RUSTED_IDS)
+    ['electronics_fabricator', 'assembly_station', 'armor_workstation', 'maintenance_station', 'implant_fabricator', 'body_modification_station',
+        'armor_upgrade_fabricator', 'weapon_workshop', 'combustion_generator', 'air_filtration_unit', 'shelter_control_panel'].forEach((id, i) => {
+        ['front', 'side', 'top'].forEach((k, j) => rusted(id + '_' + k, 950 + i * 3 + j));
+    });
+    ['battery_front', 'battery_side', 'solar_panel_top', 'heater_side', 'heater_top', 'backup_battery_side', 'backup_battery_top', 'machine_parts', 'server_rack_side']
+        .forEach((id, i) => rusted(id, 990 + i));
 
     function savePng(canvas, path) {
         const data = canvas.toDataURL('image/png').split(',')[1];

@@ -42,6 +42,24 @@
     "projectrebirth:server_rack",
     "projectrebirth:specimen_tank",
     "projectrebirth:emergency_lamp",
-    "projectrebirth:wrecked_turret"
+    "projectrebirth:wrecked_turret",
+    "projectrebirth:broken_wall_monitor",
+    "projectrebirth:broken_server_rack",
+    "projectrebirth:broken_specimen_tank",
+    "projectrebirth:rusted_electronics_fabricator",
+    "projectrebirth:rusted_assembly_station",
+    "projectrebirth:rusted_armor_workstation",
+    "projectrebirth:rusted_maintenance_station",
+    "projectrebirth:rusted_implant_fabricator",
+    "projectrebirth:rusted_body_modification_station",
+    "projectrebirth:rusted_armor_upgrade_fabricator",
+    "projectrebirth:rusted_weapon_workshop",
+    "projectrebirth:rusted_combustion_generator",
+    "projectrebirth:rusted_battery",
+    "projectrebirth:rusted_solar_panel",
+    "projectrebirth:rusted_air_filtration_unit",
+    "projectrebirth:rusted_shelter_control_panel",
+    "projectrebirth:rusted_heater",
+    "projectrebirth:rusted_backup_battery"
   ]
 }

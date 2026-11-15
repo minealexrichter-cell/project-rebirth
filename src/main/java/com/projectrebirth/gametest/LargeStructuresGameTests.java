@@ -10,6 +10,7 @@ import com.projectrebirth.environment.RadiationSources;
 import com.projectrebirth.environment.SourceRegistry;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.structures.CompoundStructure;
+import com.projectrebirth.structures.EmergencyLampBlock;
 import com.projectrebirth.structures.StructureBlocks;
 import com.projectrebirth.structures.StructureSwitches;
 import com.projectrebirth.structures.SwitchableSpreadPlacement;
@@ -122,9 +123,26 @@ public class LargeStructuresGameTests {
         helper.assertTrue(count(helper, StructureSwitches.MILITARY, StructureBlocks.WRECKED_TURRET.get()) >= 4, "The base has its turrets");
         helper.assertTrue(count(helper, StructureSwitches.MILITARY, StructureBlocks.AMMO_CRATE.get()) >= 10, "The base has its ammo crates");
         helper.assertTrue(count(helper, StructureSwitches.MILITARY, com.projectrebirth.shelter.ShelterRegistry.AIRLOCK_DOOR.get()) >= 4, "The base's buildings have airlock doors");
-        helper.assertTrue(count(helper, StructureSwitches.SCIENCE, StructureBlocks.SPECIMEN_TANK.get()) >= 10, "The complex has its specimen tanks");
-        helper.assertTrue(count(helper, StructureSwitches.SCIENCE, StructureBlocks.SERVER_RACK.get()) >= 20, "The complex has its server room");
-        helper.assertTrue(count(helper, StructureSwitches.COMM, StructureBlocks.WALL_MONITOR.get()) >= 20, "The station has its screen wall");
+        int tanks = count(helper, StructureSwitches.SCIENCE, StructureBlocks.SPECIMEN_TANK.get());
+        int brokenTanks = count(helper, StructureSwitches.SCIENCE, StructureBlocks.BROKEN_SPECIMEN_TANK.get());
+        helper.assertTrue(tanks + brokenTanks >= 10, "The complex has its specimen tanks");
+        helper.assertTrue(count(helper, StructureSwitches.SCIENCE, StructureBlocks.SERVER_RACK.get())
+                + count(helper, StructureSwitches.SCIENCE, StructureBlocks.BROKEN_SERVER_RACK.get()) >= 20, "The complex has its server room");
+        helper.assertTrue(count(helper, StructureSwitches.COMM, StructureBlocks.WALL_MONITOR.get())
+                + count(helper, StructureSwitches.COMM, StructureBlocks.BROKEN_WALL_MONITOR.get()) >= 20, "The station has its screen wall");
+        // ruin: the broken monitors, racks and tanks outnumber the whole ones, the rusted machines the working ones
+        int whole = 0, broken = 0, working = 0, rusted = 0;
+        for (String name : NAMES) {
+            whole += count(helper, name, StructureBlocks.WALL_MONITOR.get()) + count(helper, name, StructureBlocks.SERVER_RACK.get()) + count(helper, name, StructureBlocks.SPECIMEN_TANK.get());
+            broken += count(helper, name, StructureBlocks.BROKEN_WALL_MONITOR.get()) + count(helper, name, StructureBlocks.BROKEN_SERVER_RACK.get())
+                    + count(helper, name, StructureBlocks.BROKEN_SPECIMEN_TANK.get());
+            for (String id : StructureBlocks.RUSTED_IDS) {
+                rusted += count(helper, name, StructureBlocks.RUSTED.get(id).get());
+                working += count(helper, name, net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(ProjectRebirth.id(id)));
+            }
+        }
+        helper.assertTrue(broken > whole, "Broken monitors, racks and tanks prevail: " + broken + " broken, " + whole + " whole");
+        helper.assertTrue(rusted >= 2 * working && working > 0, "About four rusted machines to one working: " + rusted + " rusted, " + working + " working");
         helper.assertTrue(count(helper, StructureSwitches.FACTORY, com.projectrebirth.technology.TechBlocks.CABLE.get()) >= 10, "The factory's machines are wired");
         helper.assertTrue(count(helper, StructureSwitches.ZONE, SourceRegistry.IRRADIATED_SLUDGE.get()) >= 60, "The zone has its sludge pools");
         helper.assertTrue(count(helper, StructureSwitches.ZONE, SourceRegistry.RADIOACTIVE_DEBRIS.get()) >= 10, "The zone has its debris");
@@ -162,6 +180,7 @@ public class LargeStructuresGameTests {
         BlockPos where = helper.absolutePos(at);
         // the lamp and the turret come away whole; the rest is taken apart for its parts, unless with silk touch
         for (Block block : List.of(StructureBlocks.EMERGENCY_LAMP.get(), StructureBlocks.WRECKED_TURRET.get())) {
+            // the lamp keeps to whatever holds it; here: a fence post
             List<ItemStack> drops = Block.getDrops(block.defaultBlockState(), helper.getLevel(), where, null, null, pick);
             helper.assertTrue(drops.size() == 1 && drops.get(0).is(block.asItem()), block + " drops itself, got " + drops);
         }
@@ -169,7 +188,10 @@ public class LargeStructuresGameTests {
                 StructureBlocks.WALL_MONITOR.get(), com.projectrebirth.technology.TechItems.CIRCUIT_BOARD.get(),
                 StructureBlocks.SERVER_RACK.get(), com.projectrebirth.technology.TechItems.CIRCUIT_BOARD.get(),
                 StructureBlocks.SPECIMEN_TANK.get(), net.minecraft.world.item.Items.GLASS,
-                StructureBlocks.AMMO_CRATE.get(), net.minecraft.world.item.Items.STICK);
+                StructureBlocks.AMMO_CRATE.get(), net.minecraft.world.item.Items.STICK,
+                StructureBlocks.BROKEN_SERVER_RACK.get(), net.minecraft.world.item.Items.IRON_NUGGET,
+                StructureBlocks.BROKEN_SPECIMEN_TANK.get(), net.minecraft.world.item.Items.IRON_NUGGET,
+                StructureBlocks.RUSTED.get("assembly_station").get(), net.minecraft.world.item.Items.IRON_NUGGET);
         for (Map.Entry<Block, net.minecraft.world.item.Item> entry : part.entrySet()) {
             Block block = entry.getKey();
             List<ItemStack> drops = Block.getDrops(block.defaultBlockState(), helper.getLevel(), where, null, null, pick);
@@ -178,6 +200,18 @@ public class LargeStructuresGameTests {
             List<ItemStack> whole = Block.getDrops(block.defaultBlockState(), helper.getLevel(), where, null, null, silk);
             helper.assertTrue(whole.size() == 1 && whole.get(0).is(block.asItem()), block + " comes away whole with silk touch, got " + whole);
         }
+        // a cable turned with its structure keeps pointing at the same neighbours
+        var cable = com.projectrebirth.technology.TechBlocks.CABLE.get().defaultBlockState()
+                .setValue(net.minecraft.world.level.block.PipeBlock.NORTH, true).setValue(net.minecraft.world.level.block.PipeBlock.UP, true);
+        var turned = cable.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
+        helper.assertTrue(turned.getValue(net.minecraft.world.level.block.PipeBlock.EAST) && !turned.getValue(net.minecraft.world.level.block.PipeBlock.NORTH)
+                && turned.getValue(net.minecraft.world.level.block.PipeBlock.UP), "A turned cable's arm turns with it: north to east");
+        // the lamp stands on a fence post, and hangs on to it
+        BlockPos post = new BlockPos(0, 2, 0);
+        helper.setBlock(post, net.minecraft.world.level.block.Blocks.DARK_OAK_FENCE);
+        helper.setBlock(post.above(), StructureBlocks.EMERGENCY_LAMP.get().defaultBlockState()
+                .setValue(EmergencyLampBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.FLOOR));
+        helper.assertTrue(helper.getBlockState(post.above()).canSurvive(helper.getLevel(), helper.absolutePos(post.above())), "A lamp stands on a fence post");
         boolean ammo = false;
         for (int i = 0; i < 20 && !ammo; i++) {
             ammo = Block.getDrops(StructureBlocks.AMMO_CRATE.get().defaultBlockState(), helper.getLevel(), where, null, null, pick).stream()

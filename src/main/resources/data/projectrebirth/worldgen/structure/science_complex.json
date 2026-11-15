@@ -47,13 +47,13 @@
       "template": "projectrebirth:ruins/science_complex/solar_1",
       "x": 2,
       "z": 44,
-      "follow": true
+      "floor": 2
     },
     {
       "template": "projectrebirth:ruins/science_complex/solar_2",
       "x": 2,
       "z": 48,
-      "follow": true
+      "floor": 2
     },
     {
       "template": "projectrebirth:ruins/science_complex/fence_s",
@@ -78,6 +78,36 @@
       "x": 51,
       "z": 43,
       "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/lamp_post_0",
+      "x": 18,
+      "z": 32,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/lamp_post_1",
+      "x": 22,
+      "z": 38,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/lamp_post_2",
+      "x": 18,
+      "z": 44,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/lamp_post_3",
+      "x": 36,
+      "z": 15,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/lamp_post_4",
+      "x": 43,
+      "z": 15,
+      "follow": true
     }
   ]
 }

@@ -126,6 +126,36 @@
       "x": 5,
       "z": 16,
       "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/lamp_post_0",
+      "x": 22,
+      "z": 25,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/lamp_post_1",
+      "x": 27,
+      "z": 25,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/lamp_post_2",
+      "x": 22,
+      "z": 35,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/lamp_post_3",
+      "x": 27,
+      "z": 35,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/lamp_post_4",
+      "x": 14,
+      "z": 21,
+      "follow": true
     }
   ]
 }

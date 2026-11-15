@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectrebirth:block/rusted_body_modification_station"
+    },
+    "facing=east": {
+      "model": "projectrebirth:block/rusted_body_modification_station",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectrebirth:block/rusted_body_modification_station",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectrebirth:block/rusted_body_modification_station",
+      "y": 270
+    }
+  }
+}

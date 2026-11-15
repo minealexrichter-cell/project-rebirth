@@ -22,24 +22,33 @@ const AIR = 'minecraft:air';
 const DEBRIS = P + 'radioactive_debris';
 const BARREL = P + 'leaking_waste_barrel';
 const SLUDGE = P + 'irradiated_sludge';
-const TANK = P + 'specimen_tank';
 const CABLE = P + 'cable';
 const F = 2; // the floor row of a rigid piece
 
 // ------------------------------------------------------------------ block helpers
 
 const facing = (id, f, extra) => [P + id, Object.assign({facing: f}, extra || {})];
-const monitor = f => facing('wall_monitor', f);
-const lamp = f => facing('emergency_lamp', f);
-const rack = f => facing('server_rack', f);
+// One random for the choices of the helpers below, so each run writes the same files.
+let seed = 1606;
+const roll = () => { seed = (seed * 1103515245 + 12345) >>> 0; return (seed >>> 8) / 16777216; };
+const BROKEN_SHARE = 0.65, RUSTED_SHARE = 0.8;
+// monitors, racks and tanks: mostly broken; machines: about four rusted to one that still works
+const monitor = f => facing(roll() < BROKEN_SHARE ? 'broken_wall_monitor' : 'wall_monitor', f);
+const rack = f => facing(roll() < BROKEN_SHARE ? 'broken_server_rack' : 'server_rack', f);
+const tank = () => P + (roll() < BROKEN_SHARE ? 'broken_specimen_tank' : 'specimen_tank');
+const machine = (id, f, props) => roll() < RUSTED_SHARE ? facing('rusted_' + id, f || 'north') : [P + id, Object.assign(f ? {facing: f} : {}, props)];
+const station = (id, f) => machine(id, f, {working: 'false'});
+const generator = f => machine('combustion_generator', f, {lit: 'false'});
+const battery = f => machine('battery', f, {working: 'false'});
+const solar = f => machine('solar_panel', f, {working: 'false'});
+const backupBattery = () => machine('backup_battery', null, {working: 'false'});
+const heater = () => machine('heater', null, {working: 'false'});
+// the emergency lamp on a wall (looking toward f), standing on a block or a fence post, or hanging from a ceiling
+const lamp = f => [P + 'emergency_lamp', {face: 'wall', facing: f}];
+const lampUp = [P + 'emergency_lamp', {face: 'floor', facing: 'north'}];
+const lampHang = [P + 'emergency_lamp', {face: 'ceiling', facing: 'north'}];
 const turret = f => facing('wrecked_turret', f);
 const crate = f => facing('ammo_crate', f);
-const station = (id, f) => facing(id, f, {working: 'false'});
-const generator = f => facing('combustion_generator', f, {lit: 'false'});
-const battery = f => facing('battery', f, {working: 'false'});
-const solar = f => facing('solar_panel', f, {working: 'false'});
-const backupBattery = [P + 'backup_battery', {working: 'false'}];
-const heater = [P + 'heater', {working: 'false'}];
 const chest = (f, table) => ['minecraft:chest', {facing: f, type: 'single', waterlogged: 'false'}, {LootTable: P + 'chests/' + table}];
 const lootBarrel = (table, f) => ['minecraft:barrel', {facing: f || 'up', open: 'false'}, {LootTable: P + 'chests/' + table}];
 const plainBarrel = f => ['minecraft:barrel', {facing: f || 'up', open: 'false'}];
@@ -94,7 +103,7 @@ function wreck(b, x, y, z, variant, yaw) {
 }
 
 /** Gives every cable cell its connections: to a neighbouring cable or a machine of the mod. */
-const MACHINES = /^projectrebirth:(cable|combustion_generator|battery|solar_panel|backup_battery|radioisotope_generator|.*_station|.*fabricator|.*workstation|weapon_workshop|air_filtration_unit|heater|charging_pad|shelter_control_panel|decontamination_chamber)$/;
+const MACHINES = /^projectrebirth:(rusted_.*|cable|combustion_generator|battery|solar_panel|backup_battery|radioisotope_generator|.*_station|.*fabricator|.*workstation|weapon_workshop|air_filtration_unit|heater|charging_pad|shelter_control_panel|decontamination_chamber)$/;
 function wireCables(b) {
     for (const [k, cell] of b.cells) {
         if (name(cell) !== CABLE) continue;
@@ -379,15 +388,25 @@ function wreckSpot(variant, yaw, table, seed) {
     return b;
 }
 
-/** A row of solar panels on the ground with a cable behind them. */
+/** A row of solar panels on a levelled strip with a cable behind them, ending in a battery; rigid, so the cable stays joined. */
 function solarRow(len, seed) {
-    const b = new Build(len, 2, 2, seed);
+    const b = new Build(len, 4, 2, seed);
+    b.box(0, 0, 0, len - 1, 1, 1, 'minecraft:cobblestone');
     for (let x = 0; x < len; x++) {
-        b.set(x, 0, 0, 'minecraft:polished_andesite'); b.set(x, 0, 1, 'minecraft:gravel');
-        if (!b.chance(0.15)) b.set(x, 1, 0, solar('south'));
-        b.set(x, 1, 1, CABLE);
+        b.set(x, F, 0, 'minecraft:polished_andesite'); b.set(x, F, 1, 'minecraft:gravel');
+        if (!b.chance(0.15)) b.set(x, F + 1, 0, solar('south'));
+        b.set(x, F + 1, 1, x === len - 1 ? battery('west') : CABLE);
     }
     wireCables(b);
+    return b;
+}
+
+/** A lamp post on the ground: a dark fence post with the emergency lamp standing on top. */
+function lampPost(seed) {
+    const b = new Build(1, 4, 1, seed);
+    b.set(0, 0, 0, 'minecraft:gravel');
+    b.set(0, 1, 0, 'minecraft:dark_oak_fence'); b.set(0, 2, 0, 'minecraft:dark_oak_fence');
+    b.set(0, 3, 0, lampUp);
     return b;
 }
 
@@ -517,7 +536,8 @@ function militaryBase() {
         partition(b, 'z', X(15), Z(10), Z(16), g.y, 4, CON, [Z(13)]);
         for (let x = X(2); x <= X(20); x++) { b.set(x, g.y + 2, Z(0), monitor('south')); b.set(x, g.y + 3, Z(0), monitor('south')); }
         for (const x of [X(0), X(1), X(21), X(22)]) { b.set(x, g.y + 1, Z(0), rack('south')); b.set(x, g.y + 2, Z(0), rack('south')); }
-        for (let x = X(2); x <= X(20); x++) b.set(x, g.y + 1, Z(0), x % 3 ? CABLE : rack('south'));
+        for (let x = X(2); x <= X(20); x++) b.set(x, g.y + 1, Z(0), slab('minecraft:polished_blackstone_slab', 'top')); // the console under the screens
+        for (const x of [X(5), X(11), X(17)]) b.set(x, g.y + 4, Z(5), lampHang);
         for (let x = X(7); x <= X(15); x++) for (const z of [Z(4), Z(5)]) b.set(x, g.y + 1, z, slab('minecraft:polished_blackstone_slab', 'top'));
         for (const x of [X(8), X(10), X(12), X(14)]) { b.set(x, g.y + 1, Z(3), stair('minecraft:polished_blackstone_stairs', 'south')); b.set(x, g.y + 1, Z(6), stair('minecraft:polished_blackstone_stairs', 'north')); }
         b.set(X(11), g.y + 2, Z(4), monitor('south'));
@@ -528,8 +548,7 @@ function militaryBase() {
         for (let z = Z(10); z <= Z(15); z++) b.set(X(0), g.y + 1, z, z % 2 ? plainBarrel('east') : lootBarrel('military_base', 'east'));
         b.set(X(5), g.y + 1, Z(16), crate('north')); b.set(X(5), g.y + 2, Z(16), crate('north')); b.set(X(4), g.y + 1, Z(16), crate('north'));
         stairRun(b, X(17), Z(16), 'north', g.y, 5, 2, 'minecraft:polished_deepslate_stairs', 'minecraft:polished_deepslate');
-        b.set(X(22), g.y + 1, Z(16), battery('west')); b.set(X(22), g.y + 1, Z(15), battery('west'));
-        cableLine(b, [[X(22), Z(14)], [X(22), Z(10)]], g.y + 1);
+        b.set(X(22), g.y + 1, Z(16), battery('west')); b.set(X(22), g.y + 1, Z(15), CABLE); b.set(X(22), g.y + 1, Z(14), station('shelter_control_panel', 'west'));
         for (const [x, z, f] of [[X(0), Z(3), 'east'], [X(22), Z(3), 'west'], [X(6), Z(11), 'west'], [X(16), Z(11), 'east']]) b.set(x, g.y + 3, z, lamp(f));
         // second floor: dormitory, mess, armory, medical bay
         stairRun(b, X(20), Z(11), 'south', f2.y, 5, 2, 'minecraft:polished_deepslate_stairs', 'minecraft:polished_deepslate');
@@ -543,7 +562,7 @@ function militaryBase() {
         for (let x = X(13); x <= X(21); x++) b.set(x, f2.y + 1, Z(4), slab('minecraft:spruce_slab', 'top'));
         for (let x = X(13); x <= X(21); x += 2) { b.set(x, f2.y + 1, Z(3), stair('minecraft:spruce_stairs', 'south')); b.set(x, f2.y + 1, Z(5), stair('minecraft:spruce_stairs', 'north')); }
         b.set(X(22), f2.y + 1, Z(0), 'minecraft:cauldron'); b.set(X(21), f2.y + 1, Z(0), ['minecraft:smoker', {facing: 'south', lit: 'false'}]);
-        b.set(X(12), f2.y + 1, Z(0), heater);
+        b.set(X(12), f2.y + 1, Z(0), heater());
         for (let x = X(0); x <= X(7); x++) { b.set(x, f2.y + 1, Z(16), crate('north')); if (x % 2) b.set(x, f2.y + 2, Z(16), crate('north')); }
         b.set(X(0), f2.y + 1, Z(11), station('weapon_workshop', 'east'));
         b.set(X(6), f2.y + 1, Z(11), chest('west', 'military_base'));
@@ -629,7 +648,7 @@ function militaryBase() {
         for (const x of [X(0), X(3), X(6)]) bed(b, 'gray', x, g.y + 1, Z(5), 'north');
         b.set(X(1), g.y + 1, Z(5), lootBarrel('military_base', 'north'));
         b.set(X(12), g.y + 1, Z(0), station('air_filtration_unit', 'west'));
-        b.set(X(12), g.y + 1, Z(5), heater);
+        b.set(X(12), g.y + 1, Z(5), heater());
         b.set(X(9), g.y + 1, Z(5), chest('north', 'military_base'));
         b.set(X(6), g.y + 3, Z(0), lamp('south')); b.set(X(6), g.y + 3, Z(5), lamp('north'));
         weather(b);
@@ -645,9 +664,9 @@ function militaryBase() {
         const X = x => M + 2 + x, Z = z => M + 2 + z; // inner x 0..4, z 0..2
         entrance(b, s, 'west', Z(1), 0, 1, BASE);
         b.set(X(1), g.y + 1, Z(0), generator('south')); b.set(X(3), g.y + 1, Z(0), generator('south'));
-        b.set(X(1), g.y + 1, Z(2), battery('north')); b.set(X(3), g.y + 1, Z(2), backupBattery);
+        b.set(X(1), g.y + 1, Z(2), battery('north')); b.set(X(3), g.y + 1, Z(2), backupBattery());
         cableLine(b, [[X(2), Z(0)], [X(2), Z(2)]], g.y + 1);
-        b.set(X(4), g.y + 1, Z(1), CABLE); b.set(X(3), g.y + 1, Z(1), CABLE); b.set(s.x2 - 1, g.y + 1, Z(1), CABLE); b.set(s.x2, g.y + 1, Z(1), CABLE);
+        b.set(X(4), g.y + 1, Z(1), station('shelter_control_panel', 'west')); b.set(X(3), g.y + 1, Z(1), CABLE);
         b.set(X(0), g.y + 1, Z(0), plainBarrel('east')); b.set(X(0), g.y + 2, Z(0), lootBarrel('military_base'));
         b.set(X(2), g.y + 3, Z(1), lamp('north'));
         wireCables(b);
@@ -662,10 +681,11 @@ function militaryBase() {
     L.follow('path_barracks', pathStrip(6, 3, 'x', 628), 23, 42);
     L.follow('nest_w', sandbags('south', 'military_base', 629), 19, 51);
     L.follow('nest_e', sandbags('south', null, 630), 34, 49);
-    L.follow('solar', solarRow(10, 631), 44, 50);
+    L.rigid('solar', solarRow(10, 631), 44, 50);
     L.rigid('floodlight', floodlight(632), 10, 30);
     L.rigid('wreck_gate', wreckSpot('combat', 180, null, 633), 31, 42);
     L.follow('scrap', scrapHeap(634), 56, 49);
+    [[27, 40], [33, 46], [27, 50], [44, 36], [52, 36]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(635 + i), x, z));
     return L;
 }
 
@@ -692,9 +712,8 @@ function scienceComplex() {
         partition(b, 'z', X(9), Z(10), Z(14), g.y, 5, 'minecraft:light_blue_stained_glass', [Z(12)]);
         partition(b, 'z', X(17), Z(10), Z(14), g.y, 5, LAB.wall, [Z(12)]);
         // the specimen lab
-        for (const x of [X(1), X(3), X(5), X(7), X(9), X(11)]) { b.set(x, g.y + 1, Z(0), TANK); b.set(x, g.y + 2, Z(0), 'minecraft:iron_block'); }
-        for (let x = X(1); x <= X(11); x++) b.set(x, g.y + 3, Z(0), CABLE);
-        for (const x of [X(1), X(4), X(7), X(10)]) b.set(x, g.y + 1, Z(3), TANK);
+        for (const x of [X(1), X(3), X(5), X(7), X(9), X(11)]) { b.set(x, g.y + 1, Z(0), tank()); b.set(x, g.y + 2, Z(0), 'minecraft:iron_block'); }
+        for (const x of [X(1), X(4), X(7), X(10)]) b.set(x, g.y + 1, Z(3), tank());
         b.set(X(7), g.y + 1, Z(3), 'minecraft:glass'); b.set(X(7), g.y + 2, Z(3), slab('minecraft:smooth_stone_slab'));
         b.set(X(8), g.y + 1, Z(4), DEBRIS);
         b.set(X(12), g.y + 1, Z(5), station('implant_fabricator', 'west'));
@@ -725,15 +744,14 @@ function scienceComplex() {
         // upstairs: the server room to the north, the research hall to the south
         partition(b, 'x', Z(7), X(0), X(26), f2.y, 5, LAB.wall, [X(4), X(5), X(14), X(15)]);
         for (const z of [Z(1), Z(4)]) for (let x = X(1); x <= X(22); x++) if (x !== X(12)) { b.set(x, f2.y + 1, z, rack(z === Z(1) ? 'south' : 'north')); b.set(x, f2.y + 2, z, rack(z === Z(1) ? 'south' : 'north')); }
-        for (let x = X(1); x <= X(22); x++) b.set(x, f2.y + 4, Z(2), CABLE);
-        b.set(X(24), f2.y + 1, Z(0), backupBattery); b.set(X(25), f2.y + 1, Z(0), backupBattery);
+        b.set(X(24), f2.y + 1, Z(0), backupBattery()); b.set(X(25), f2.y + 1, Z(0), backupBattery());
         b.set(X(26), f2.y + 1, Z(5), chest('west', 'science_complex'));
         b.set(X(1), f2.y + 1, Z(10), station('body_modification_station', 'east'));
         b.set(X(1), f2.y + 1, Z(13), station('implant_fabricator', 'east'));
         for (const z of [Z(10), Z(13)]) b.set(X(0), f2.y + 3, z, monitor('east'));
         for (let x = X(5); x <= X(13); x++) b.set(x, f2.y + 1, Z(10), slab('minecraft:smooth_quartz_slab', 'top'));
         for (const x of [X(6), X(9), X(12)]) b.set(x, f2.y + 2, Z(10), monitor('south'));
-        for (const x of [X(6), X(8), X(10)]) b.set(x, f2.y + 1, Z(14), TANK);
+        for (const x of [X(6), X(8), X(10)]) b.set(x, f2.y + 1, Z(14), tank());
         b.set(X(16), f2.y + 1, Z(14), lootBarrel('science_complex', 'north'));
         for (const [x, z, f] of [[X(0), Z(3), 'east'], [X(26), Z(10), 'west'], [X(13), Z(8), 'south']]) b.set(x, f2.y + 4, z, lamp(f));
         // the roof: air units, a dish, the hole where it fell in
@@ -772,7 +790,7 @@ function scienceComplex() {
         for (const [x, z, f] of [[4, 6, 'east'], [4, 12, 'east'], [14, 6, 'west'], [14, 12, 'west']]) { b.set(x, F + 1, z, slab('minecraft:polished_blackstone_slab', 'top')); b.set(x, F + 2, z, monitor(f)); }
         b.set(12, F + 1, 14, chest('north', 'science_complex'));
         b.set(9, F + 1, 15, station('electronics_fabricator', 'north'));
-        b.set(10, F + 1, 15, battery('north')); b.set(8, F + 1, 15, CABLE); b.set(8, F + 1, 14, backupBattery);
+        b.set(10, F + 1, 15, battery('north')); b.set(8, F + 1, 15, CABLE); b.set(8, F + 1, 14, backupBattery());
         b.set(3, F + 5, 9, lamp('east'));
         wireCables(b);
         weather(b, {leafClumps: 2});
@@ -806,8 +824,8 @@ function scienceComplex() {
     // the grounds
     L.follow('path_main', pathStrip(22, 3, 'z', 644, ['minecraft:polished_andesite', 'minecraft:smooth_stone', 'minecraft:andesite', 'minecraft:gravel']), 19, 28);
     L.follow('path_obs', pathStrip(6, 3, 'x', 645, ['minecraft:polished_andesite', 'minecraft:smooth_stone', 'minecraft:gravel']), 37, 16);
-    L.follow('solar_1', solarRow(14, 646), 2, 44);
-    L.follow('solar_2', solarRow(14, 647), 2, 48);
+    L.rigid('solar_1', solarRow(14, 646), 2, 44);
+    L.rigid('solar_2', solarRow(14, 647), 2, 48);
     L.follow('fence_s', fenceLine(26, 'x', 648), 24, 53);
     L.follow('fence_e', fenceLine(26, 'z', 649), 61, 26);
     L.rigid('wreck_bay', wreckSpot('worker', 120, 'science_complex', 650), 28, 36);
@@ -818,6 +836,7 @@ function scienceComplex() {
         dish(b, 4, F + 6, 4, 3, 'south', 'minecraft:white_concrete');
         L.rigid('dish', b, 51, 43);
     })();
+    [[18, 32], [22, 38], [18, 44], [36, 15], [43, 15]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(652 + i), x, z));
     return L;
 }
 
@@ -866,6 +885,7 @@ function abandonedFactory() {
             b.set(x, g.y + 1, Z(12), ['minecraft:hopper', {enabled: 'true', facing: 'down'}]);
         }
         cableLine(b, [[X(3), Z(16)], [X(31), Z(16)], [X(31), Z(22)]], g.y + 1);
+        b.set(X(2), g.y + 1, Z(16), station('assembly_station', 'east'));
         // the machine room in the south-east under the mezzanine
         partition(b, 'x', Z(17), X(28), X(32), g.y, 4, 'minecraft:gray_concrete', [X(29)]);
         partition(b, 'z', X(27), Z(17), Z(22), g.y, 4, 'minecraft:gray_concrete', []);
@@ -880,7 +900,7 @@ function abandonedFactory() {
         stairRun(b, X(32), Z(12), 'south', g.y, 5, 1, 'minecraft:stone_brick_stairs', 'minecraft:stone_bricks');
         b.set(X(29), g.y + 6, Z(22), station('assembly_station', 'north'));
         b.set(X(31), g.y + 6, Z(22), station('electronics_fabricator', 'north'));
-        b.set(X(30), g.y + 6, Z(22), CABLE); b.set(X(30), g.y + 6, Z(21), backupBattery);
+        b.set(X(30), g.y + 6, Z(22), CABLE); b.set(X(30), g.y + 6, Z(21), backupBattery());
         b.set(X(27), g.y + 6, Z(20), slab('minecraft:polished_blackstone_slab', 'top')); b.set(X(27), g.y + 7, Z(20), monitor('east'));
         b.set(X(32), g.y + 6, Z(20), chest('west', 'abandoned_factory'));
         // the store and the wrecks
@@ -963,6 +983,7 @@ function abandonedFactory() {
     L.follow('path_load', pathStrip(10, 4, 'z', 669), 26, 37);
     L.follow('path_yard', pathStrip(30, 4, 'x', 670), 22, 47);
     L.follow('path_door', pathStrip(4, 3, 'x', 671), 0, 19);
+    [[25, 40], [30, 45], [40, 51], [52, 46]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(672 + i), x, z));
     return L;
 }
 
@@ -997,7 +1018,7 @@ function commStation() {
         dish(b, 10, F + 36, 6, 2, 'east', 'minecraft:white_concrete');
         b.set(5, F + 17, 5, turret('north'));
         for (let z = 8; z <= 12; z++) b.set(6, F + 1, z, CABLE);
-        b.set(7, F + 1, 8, battery('west')); b.set(5, F + 1, 8, backupBattery);
+        b.set(7, F + 1, 8, battery('west')); b.set(5, F + 1, 8, backupBattery());
         wreck(b, 9, F + 1, 11, 'mobile', 200);
         wireCables(b);
         weather(b, {vines: 0.03, leafClumps: 0, rubble: 2});
@@ -1016,13 +1037,13 @@ function commStation() {
         partition(b, 'z', X(5), Z(7), Z(11), g.y, 5, OPS.wall, [Z(9)]);
         partition(b, 'z', X(11), Z(7), Z(11), g.y, 5, OPS.wall, [Z(9)]);
         for (let x = X(1); x <= X(15); x++) for (let y = g.y + 2; y <= g.y + 4; y++) b.set(x, y, Z(0), monitor('south'));
-        for (let x = X(1); x <= X(15); x++) b.set(x, g.y + 1, Z(0), x % 2 ? rack('south') : CABLE);
+        for (let x = X(1); x <= X(15); x++) b.set(x, g.y + 1, Z(0), slab('minecraft:polished_blackstone_slab', 'top'));
+        for (const x of [X(4), X(12)]) b.set(x, g.y + 5, Z(3), lampHang);
         for (let x = X(2); x <= X(14); x++) b.set(x, g.y + 1, Z(3), slab('minecraft:polished_blackstone_slab', 'top'));
         for (const x of [X(3), X(6), X(10), X(13)]) { b.set(x, g.y + 2, Z(3), monitor('south')); b.set(x, g.y + 1, Z(4), stair('minecraft:polished_blackstone_stairs', 'north')); }
         b.set(X(0), g.y + 1, Z(5), chest('east', 'comm_station'));
         b.set(X(16), g.y + 1, Z(1), station('shelter_control_panel', 'west'));
         for (const z of [Z(7), Z(8), Z(10), Z(11)]) { b.set(X(0), g.y + 1, z, rack('east')); b.set(X(0), g.y + 2, z, rack('east')); b.set(X(3), g.y + 1, z, rack('west')); b.set(X(3), g.y + 2, z, rack('west')); }
-        for (let z = Z(7); z <= Z(11); z++) b.set(X(1), g.y + 4, z, CABLE);
         b.set(X(4), g.y + 1, Z(11), lootBarrel('comm_station'));
         b.set(X(13), g.y + 1, Z(11), generator('north')); b.set(X(15), g.y + 1, Z(11), generator('north'));
         b.set(X(16), g.y + 1, Z(8), battery('west')); b.set(X(16), g.y + 2, Z(8), battery('west'));
@@ -1046,11 +1067,11 @@ function commStation() {
 
     // the cable trench to the mast, ground dishes, fuel tanks, fence, paths
     (() => {
-        const b = new Build(10, 2, 24, 683);
-        for (let z = 0; z < 24; z++) { b.set(9, 0, z, 'minecraft:black_concrete'); b.set(9, 1, z, CABLE); }
-        for (let x = 0; x < 10; x++) { b.set(x, 0, 23, 'minecraft:black_concrete'); b.set(x, 1, 23, CABLE); }
+        const b = new Build(10, 4, 24, 683);
+        for (let z = 0; z < 24; z++) { b.box(9, 0, z, 9, 1, z, 'minecraft:cobblestone'); b.set(9, F, z, 'minecraft:black_concrete'); b.set(9, F + 1, z, CABLE); }
+        for (let x = 0; x < 10; x++) { b.box(x, 0, 23, x, 1, 23, 'minecraft:cobblestone'); b.set(x, F, 23, 'minecraft:black_concrete'); b.set(x, F + 1, 23, CABLE); }
         wireCables(b);
-        L.follow('trench', b, 25, 18);
+        L.rigid('trench', b, 25, 18);
     })();
     for (const [i, x, z, f] of [[0, 4, 4, 'north'], [1, 15, 6, 'east']]) {
         const b = new Build(9, 13, 9, 684 + i);
@@ -1070,6 +1091,7 @@ function commStation() {
     L.follow('fence_e', fenceLine(40, 'z', 688), 51, 6);
     L.follow('path_door', pathStrip(5, 3, 'z', 689), 12, 47);
     L.follow('path_yard', pathStrip(20, 3, 'x', 690), 14, 24);
+    [[11, 47], [15, 47], [20, 23], [27, 27]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(691 + i), x, z));
     return L;
 }
 
@@ -1118,7 +1140,7 @@ function defensiveOutpost() {
         for (const x of [X(0), X(2), X(7), X(9)]) bed(b, 'brown', x, g.y + 1, Z(0), 'south');
         for (const x of [X(1), X(8)]) b.set(x, g.y + 1, Z(0), plainBarrel('south'));
         b.set(X(4), g.y + 1, Z(0), lootBarrel('defensive_outpost', 'south'));
-        b.set(X(10), g.y + 1, Z(4), heater);
+        b.set(X(10), g.y + 1, Z(4), heater());
         b.set(X(0), g.y + 1, Z(4), chest('east', 'defensive_outpost'));
         b.set(X(2), g.y + 1, Z(3), slab('minecraft:spruce_slab', 'top')); b.set(X(3), g.y + 1, Z(3), slab('minecraft:spruce_slab', 'top'));
         b.set(X(5), g.y + 3, Z(0), lamp('south'));
@@ -1154,6 +1176,7 @@ function defensiveOutpost() {
     L.follow('path_gate', pathStrip(20, 4, 'z', 717), 23, 21);
     L.follow('path_cross', pathStrip(22, 3, 'x', 718), 12, 22);
     L.follow('scrap', scrapHeap(719), 5, 16);
+    [[22, 25], [27, 25], [22, 35], [27, 35], [14, 21]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(720 + i), x, z));
     return L;
 }
 
@@ -1220,7 +1243,7 @@ function contaminationZone() {
         }
         for (let x = 1; x <= 6; x++) for (let z = 1; z <= 5; z++) b.set(x, F, z, SLUDGE);
         for (let x = 8; x <= 11; x++) b.set(x, F + 1, 1, slab('minecraft:smooth_quartz_slab', 'top'));
-        b.set(10, F + 2, 1, monitor('south')); b.set(11, F + 1, 3, TANK); b.set(11, F + 1, 5, chest('west', 'contamination_zone'));
+        b.set(10, F + 2, 1, monitor('south')); b.set(11, F + 1, 3, tank()); b.set(11, F + 1, 5, chest('west', 'contamination_zone'));
         b.set(11, F + 1, 7, BARREL); b.set(2, F + 1, 7, BARREL);
         b.set(6, R - 1, 6, 'minecraft:verdant_froglight');
         b.set(1, R - 1, 1, 'minecraft:cobweb'); b.set(11, R - 1, 8, 'minecraft:cobweb');

@@ -78,6 +78,30 @@
       "x": 0,
       "z": 19,
       "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/lamp_post_0",
+      "x": 25,
+      "z": 40,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/lamp_post_1",
+      "x": 30,
+      "z": 45,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/lamp_post_2",
+      "x": 40,
+      "z": 51,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/lamp_post_3",
+      "x": 52,
+      "z": 46,
+      "follow": true
     }
   ]
 }

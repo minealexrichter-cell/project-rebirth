@@ -29,7 +29,7 @@
       "template": "projectrebirth:ruins/comm_station/trench",
       "x": 25,
       "z": 18,
-      "follow": true
+      "floor": 2
     },
     {
       "template": "projectrebirth:ruins/comm_station/dish_0",
@@ -71,6 +71,30 @@
       "template": "projectrebirth:ruins/comm_station/path_yard",
       "x": 14,
       "z": 24,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/lamp_post_0",
+      "x": 11,
+      "z": 47,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/lamp_post_1",
+      "x": 15,
+      "z": 47,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/lamp_post_2",
+      "x": 20,
+      "z": 23,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/lamp_post_3",
+      "x": 27,
+      "z": 27,
       "follow": true
     }
   ]

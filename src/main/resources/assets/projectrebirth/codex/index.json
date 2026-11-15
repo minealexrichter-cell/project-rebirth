@@ -91,6 +91,7 @@
         "thermal_gear",
         "radiation_sources",
         "uranium",
+        "ruins",
         "dosimeter",
         "medicine",
         "machines_environment"

@@ -422,6 +422,12 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         note('Raw uranium and ingots radiate in the inventory: 0.03 units for each item, up to 4. A hazmat or heavy suit lessens it as it lessens any radiation. Keep the stock in chests.',
             'Сырой уран и слитки фонят в инвентаре: по 0,03 единицы за предмет, не больше 4. Химкостюм или тяжёлый костюм ослабляют это, как любую радиацию. Храните запас в сундуках.')
     ]),
+    entry('ruins', 'minecraft:chest', -4, -5, ['radiation_sources'], 'Ruins of the Past', 'Руины прошлого', [
+        text('Old buildings stand in newly explored land. The richer the place, the more dangerous it is.\n\nAn abandoned laboratory (small, in forests, plains and swamps) keeps electronics, filters and medicine among leaking waste barrels.\n\nIndustrial ruins (medium, in open land) keep metals, parts, upgrades and now and then a packed worn body, near radioactive debris.\n\nA ruined reactor (large and rare) has a core heaped with radioactive debris; the strongest technology lies there: processors, titanium, uranium, modules, worn bodies and wrecked power armor.',
+            'В новых, ещё не исследованных землях стоят старые постройки. Чем богаче место, тем оно опаснее.\n\nЗаброшенная лаборатория (малая, в лесах, на равнинах и болотах) хранит электронику, фильтры и лекарства среди протекающих бочек с отходами.\n\nПромышленные руины (средние, на открытых местах) хранят металлы, детали, улучшения и иногда упакованное изношенное тело — рядом с радиоактивными обломками.\n\nРазрушенный реактор (большой и редкий): его активная зона завалена радиоактивными обломками; там лежит лучшая техника — процессоры, титан, уран, модули, изношенные тела и разбитая силовая броня.'),
+        note('Found bodies and armor are badly damaged: repair them before use. /locate structure projectrebirth:abandoned_lab (industrial_ruins, ruined_reactor) finds the nearest one.',
+            'Найденные тела и броня сильно повреждены: перед использованием их нужно чинить. /locate structure projectrebirth:abandoned_lab (industrial_ruins, ruined_reactor) находит ближайшую.')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

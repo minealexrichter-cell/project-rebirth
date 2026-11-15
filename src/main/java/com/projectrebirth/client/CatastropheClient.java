@@ -340,7 +340,14 @@ public final class CatastropheClient {
      */
     private static void renderFlash(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (shown <= 0.0f || minecraft.options.hideGui) {
+        if (minecraft.options.hideGui) {
+            return;
+        }
+        // 1.6.0: the same grain from the radiation reaching the player (a spot, a source, uranium carried), by its level;
+        // with a burst going on the stronger of the two is drawn, never both
+        float level = levelGrain();
+        if (shown <= 0.0f) {
+            RadiationGrain.render(graphics, level);
             return;
         }
         if (is(Environment.EMI_STORM) && open > 0.0f) {
@@ -351,10 +358,31 @@ public final class CatastropheClient {
             int alpha = (int) (130 * shown * open);
             int rgb = (r << 16) | (g << 8) | b;
             graphics.fillGradient(0, 0, graphics.guiWidth(), graphics.guiHeight() / 2, (alpha << 24) | rgb, rgb);
+            RadiationGrain.render(graphics, level);
         } else if (is(Environment.RADIATION_BURST)) {
             float strength = shown * (EnvironmentClient.inSealedRoom() ? 0.5f : 1.0f);
-            RadiationGrain.render(graphics, strength);
+            RadiationGrain.render(graphics, Math.max(strength, level));
+        } else {
+            RadiationGrain.render(graphics, level);
         }
+    }
+
+    /** The grain from the radiation level, eased toward its target so that the once-a-second reading does not jump. */
+    private static float levelGrainShown;
+    private static long levelGrainTime;
+
+    private static float levelGrain() {
+        float target = 0.0f;
+        if (com.projectrebirth.config.RebirthClientConfig.RADIATION_GRAIN.get()) {
+            float from = com.projectrebirth.config.RebirthClientConfig.RADIATION_GRAIN_FROM.get().floatValue();
+            float full = Math.max(from + 0.1f, com.projectrebirth.config.RebirthClientConfig.RADIATION_GRAIN_FULL.get().floatValue());
+            target = Mth.clamp((EnvironmentClient.radiation() - from) / (full - from), 0.0f, 1.0f);
+        }
+        long now = net.minecraft.Util.getMillis();
+        float step = Mth.clamp((now - levelGrainTime) / 1500.0f, 0.0f, 1.0f);
+        levelGrainTime = now;
+        levelGrainShown += (target - levelGrainShown) * step;
+        return levelGrainShown < 0.01f ? 0.0f : levelGrainShown;
     }
 
     /** The hazard a catastrophe brings, for its mark; null for an unknown one (from a newer config). */

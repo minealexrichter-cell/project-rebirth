@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:industrial_ruins",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 40,
+    "separation": 14,
+    "salt": 160602,
+    "switch": "industrial_ruins"
+  }
+}

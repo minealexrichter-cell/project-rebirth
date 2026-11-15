@@ -1,0 +1,14 @@
+{
+  "fallback": "minecraft:empty",
+  "elements": [
+    {
+      "weight": 1,
+      "element": {
+        "element_type": "minecraft:single_pool_element",
+        "location": "projectrebirth:ruins/industrial_ruins",
+        "processors": "projectrebirth:ruins_decay",
+        "projection": "rigid"
+      }
+    }
+  ]
+}

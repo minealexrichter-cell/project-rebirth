@@ -9,6 +9,9 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec CLIENT_SPEC;
 
     public static final ModConfigSpec.BooleanValue HUD_ENABLED;
+    public static final ModConfigSpec.BooleanValue RADIATION_GRAIN;
+    public static final ModConfigSpec.DoubleValue RADIATION_GRAIN_FROM;
+    public static final ModConfigSpec.DoubleValue RADIATION_GRAIN_FULL;
     public static final ModConfigSpec.DoubleValue WEAPON_SCOPE_FOV;
     public static final ModConfigSpec.DoubleValue HUD_SCALE;
     public static final ModConfigSpec.IntValue HUD_PANEL_X;
@@ -54,6 +57,14 @@ public final class RebirthClientConfig {
         ZONES_VISUALS = builder.comment("Rare particles and a light tint of the air inside a contaminated spot.").define("visuals", true);
         ZONES_PARTICLES = builder.comment("Particles per second of a spot at full strength.").defineInRange("particlesPerSecond", 6.0, 0.0, 200.0);
         ZONES_TINT = builder.comment("Strength of the tint of the air inside a spot, 0 to 1.").defineInRange("tint", 0.2, 0.0, 1.0);
+        builder.pop();
+        builder.comment("Radiation grain (1.6.0): the film grain and brownish filter of a radiation burst also come whenever radiation reaches you",
+                "(a contaminated spot, a source, uranium you carry), growing with the level.").push("radiation_grain");
+        RADIATION_GRAIN = builder.comment("Show the grain from the radiation reaching you (a burst shows its own grain either way).").define("enabled", true);
+        RADIATION_GRAIN_FROM = builder.comment("Radiation at which the grain starts (the HUD calls radiation dangerous above 1.5).")
+                .defineInRange("from", 1.5, 0.0, 10000.0);
+        RADIATION_GRAIN_FULL = builder.comment("Radiation at which the grain is as strong as in the strongest burst.")
+                .defineInRange("full", 12.0, 0.1, 10000.0);
         builder.pop();
         CLIENT_SPEC = builder.build();
     }

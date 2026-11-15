@@ -209,6 +209,10 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ZONES_FORGET_BELOW;
     public static final ModConfigSpec.DoubleValue ZONES_MARK_THRESHOLD;
     public static final ModConfigSpec.BooleanValue SOURCES_ENABLED;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_ENABLED;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_LAB;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_RUINS;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_REACTOR;
     public static final ModConfigSpec.DoubleValue SOURCES_WALL_FACTOR;
     public static final ModConfigSpec.DoubleValue DEBRIS_RADIATION;
     public static final ModConfigSpec.IntValue DEBRIS_RANGE;
@@ -688,6 +692,14 @@ public final class RebirthConfig {
         ISOTOPE_RADIATES = builder.comment("Whether the radioisotope generator radiates around itself").define("generatorRadiates", true);
         ISOTOPE_RADIATION = builder.comment("Radiation of the radioisotope generator right next to it").defineInRange("generatorRadiation", 3.0, 0.0, 10000.0);
         ISOTOPE_RANGE = builder.comment("Reach of the radioisotope generator in blocks").defineInRange("generatorRange", 6, 1, 48);
+        builder.pop();
+        builder.comment("Structures (1.6.0): an abandoned laboratory, industrial ruins and a ruined reactor in newly generated chunks.",
+                "Switched off, none is placed in new chunks and /locate finds none; what was generated stays. How often and in which biomes: data",
+                "(worldgen/structure_set, tags/worldgen/biome/has_structure). A data pack can also remove a structure set.").push("structures");
+        STRUCTURES_ENABLED = builder.comment("All the structures of 1.6.0").define("enabled", true);
+        STRUCTURES_LAB = builder.comment("Abandoned laboratory (small)").define("abandonedLab", true);
+        STRUCTURES_RUINS = builder.comment("Industrial ruins (medium)").define("industrialRuins", true);
+        STRUCTURES_REACTOR = builder.comment("Ruined reactor (large, rare)").define("ruinedReactor", true);
         builder.pop();
 
         builder.comment("Temperature (1.5.0): the temperature of a place in degrees Celsius, and the heat or cold stress of a human body,",

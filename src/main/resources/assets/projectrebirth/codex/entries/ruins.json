@@ -1,0 +1,18 @@
+{
+  "icon": "minecraft:chest",
+  "x": -4,
+  "y": -5,
+  "parents": [
+    "radiation_sources"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.ruins.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.ruins.p2"
+    }
+  ]
+}

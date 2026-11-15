@@ -52,7 +52,7 @@ public class TurretBlock extends HorizontalDirectionalBlock {
     static {
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             TOWER.put(facing, Shapes.or(Block.box(5, 0, 5, 11, 3, 11), DecorBlock.turned(facing, 1.5, 3, 0, 14.5, 13.5, 15)));
-            BARREL.put(facing, DecorBlock.turned(facing, 5, 5, 4, 11, 10, 16));
+            BARREL.put(facing, DecorBlock.turned(facing, 5, 4, 4, 11, 10, 16));
         }
     }
 

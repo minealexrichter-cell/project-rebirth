@@ -684,8 +684,9 @@
                 el([5, 5, 0], [11, 10, 1.5], frame, slump)
             ];
             const barrel = [
-                el([5.5, 5.5, 6], [10.5, 9.5, 16], frame, hang),
-                el([5, 5, 4], [11, 10, 6], Object.assign(all(frame), {north: bore}), hang)
+                el([5.5, 5, 6], [10.5, 9, 16], frame, hang),
+                // the muzzle: 6 x 6 pixels on its face, the bore in the middle with a pixel of metal all round
+                el([5, 4, 4], [11, 10, 6], Object.assign(all(frame), {north: bore}), hang)
             ];
             return {base: placeUv(base), tower: placeUv(tower), barrel: placeUv(barrel)};
         };

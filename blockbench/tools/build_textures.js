@@ -2663,7 +2663,8 @@
     block('turret_frame', () => strokes(new Painter(932), IRON_DARK, 932));
     block('turret_bore', () => {
         const p = strokes(new Painter(933), IRON_DARK, 933);
-        p.rect(6, 7, 4, 4, '#1c1c1e').rect(7, 8, 2, 2, '#0a0a0b'); // the bore, where the muzzle's face takes the middle of the texture
+        // the muzzle's face takes pixels 5-10 across and 6-11 down: a ring of 4 x 4 and the bore of 2 x 2 in its middle, metal round them
+        p.rect(6, 7, 4, 4, '#1c1c1e').rect(7, 8, 2, 2, '#0a0a0b');
         return p;
     });
     /** The broken turret: cracks, soot from a hit and a spot or two of rust over the same metal. */

@@ -49,3 +49,9 @@ Read only the spec and docs of the model you work on, not the whole builder or p
 - bone and animation names that are new or changed, pivots that matter for code, texture size, fixed texture places;
 - what you actually looked at in Blockbench (views, frames) and what you did not;
 - anything the programmer or tester must do next.
+
+## Efficiency (usage limits)
+
+- Read only the spec of the model you change (search for its id in the builder) and the matching part of `MODEL_SPEC.md`.
+- Look at results with few views at reduced size (`max_size` about 600), not many full-size screenshots.
+- Keep the report to a few short points.

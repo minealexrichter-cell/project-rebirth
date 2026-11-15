@@ -42,3 +42,11 @@ Read only the files of the task and what they directly use. Do not re-analyse th
 - files changed and what each change does;
 - commands run and their real results (compiled, which test groups, how many passed or failed); never say something works in the game if it was not run there;
 - what still needs the artist or the tester, and open problems.
+
+## Efficiency (usage limits)
+
+- Start from the files and names the main agent gave you; search (Grep/Glob) only for what is missing. Read files in parts (offset/limit) around what you need, not whole large files like `RebirthConfig.java` or the lang files.
+- Filter command output: e.g. `.\gradlew runGameTestServer ... 2>&1 | Select-String -Pattern "required tests|failed at|BUILD" | Select-Object -Last 8`, and `compileJava -q` with only error lines. Never print whole logs.
+- Run a test group once after your changes are complete, not after every small edit; compile in between.
+- Make each edit precise (Edit with a unique snippet); do not rewrite whole files.
+- Keep the report to a few short points.

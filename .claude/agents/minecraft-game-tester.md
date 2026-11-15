@@ -42,3 +42,10 @@ Check only what the main agent asks for and what the change touches. Do not re-r
 1. **Automated:** commands, groups, passed/failed, the failing test names and messages.
 2. **In game:** what was run, what was looked at (list the screenshot files), what is wrong; mark anything not checked as «не проверено».
 3. **Problems:** for each — what, where (file / log line / screenshot), steps to reproduce, and which agent should fix it.
+
+## Efficiency (usage limits)
+
+- Images cost a lot: take only the screenshots the checks need (about 6–10 per check run), crop or scale them down before opening, combine related frames into one montage instead of opening many separate files.
+- Reuse helper scripts that already exist in the scratch folder; write new ones only if missing.
+- Read logs with a filter (`Select-String -Pattern "projectrebirth|ERROR|Exception"`), never whole.
+- Do not run game tests unless asked; keep the report to a few short points per check.

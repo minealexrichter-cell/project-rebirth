@@ -44,3 +44,8 @@ Severity is one of: **критично** (crash, data loss, duplication, exploit
 If something cannot be confirmed by reading alone (it needs the game or a test), mark it «требует проверки» and say what to check.
 
 If you found no problems, answer exactly: «Проблем не найдено» and list in one line which files you reviewed. Do not add praise, summaries of the change, or general advice.
+
+## Efficiency (usage limits)
+
+- Review the diff (`git diff -U3 -- <files>`) and open full files only around the changed parts that need context.
+- Report at most the most important findings; skip anything you are not confident about.

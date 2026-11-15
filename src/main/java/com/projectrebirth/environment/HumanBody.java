@@ -131,12 +131,15 @@ public final class HumanBody {
             float pollution = reaching(player, exposure, Hazard.POLLUTION);
             float acid = reaching(player, exposure, Hazard.ACID);
             float dust = reaching(player, exposure, Hazard.DUST);
+            net.minecraft.core.BlockPos eyes = net.minecraft.core.BlockPos.containing(player.getEyePosition());
+            ContaminationMap.Reading ground = ContaminationZones.readingAt(player.serverLevel(), eyes);
+            int zone = ContaminationZones.mask(ground);
             PacketDistributor.sendToPlayer(player, new EnvironmentStatusPayload(radiation, pollution, acid, biology.dose(), biology.toxin(),
                     dangerMask(radiation, pollution, acid, dust) | (Emi.disturbed(player) ? 1 << Hazard.EMI.ordinal() : 0),
                     com.projectrebirth.shelter.Shelters.stateAt(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())),
                     com.projectrebirth.shelter.Contamination.of(player),
                     TemperatureRegistry.enabled() ? Temperature.at(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())) : Float.NaN,
-                    Temperature.stress(player)));
+                    Temperature.stress(player), zone, ContaminationZones.visualStrength(ground.radiation(), ground.toxin())));
         }
     }
 

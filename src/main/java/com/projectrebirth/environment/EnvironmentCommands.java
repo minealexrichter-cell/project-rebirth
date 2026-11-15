@@ -1,8 +1,10 @@
 package com.projectrebirth.environment;
 
+import java.util.List;
 import java.util.Locale;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -67,10 +69,74 @@ public final class EnvironmentCommands {
                                         .then(Commands.argument("dose", FloatArgumentType.floatArg(0.0f))
                                                 .then(Commands.argument("toxin", FloatArgumentType.floatArg(0.0f))
                                                         .executes(EnvironmentCommands::setBody)))))
+                        .then(Commands.literal("zone")
+                                .then(Commands.literal("list").executes(EnvironmentCommands::zoneList))
+                                .then(Commands.literal("add")
+                                        .then(Commands.argument("type", StringArgumentType.word())
+                                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(List.of("radiation", "toxic"), builder))
+                                                .then(Commands.argument("strength", FloatArgumentType.floatArg(0.1f, 1000.0f))
+                                                        .then(Commands.argument("radius", IntegerArgumentType.integer(0, 8))
+                                                                .executes(ctx -> zoneAdd(ctx, ctx.getSource().getPlayerOrException().blockPosition()))
+                                                                .then(Commands.argument("pos", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
+                                                                        .executes(ctx -> zoneAdd(ctx, net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos(ctx, "pos"))))))))
+                                .then(Commands.literal("clear")
+                                        .executes(ctx -> zoneClear(ctx, -1))
+                                        .then(Commands.argument("radius", IntegerArgumentType.integer(0, 64))
+                                                .executes(ctx -> zoneClear(ctx, IntegerArgumentType.getInteger(ctx, "radius"))))))
                         .then(Commands.literal("thermal")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("stress", FloatArgumentType.floatArg(-100.0f, 100.0f))
                                                 .executes(EnvironmentCommands::setThermal))))));
+    }
+
+    /** How far (in chunks) around the caller the list looks. */
+    private static final int LIST_RADIUS = 8;
+    private static final int LIST_MAX_LINES = 12;
+
+    /** The contaminated chunks around the caller, now, the strongest first. */
+    private static int zoneList(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerLevel level = ctx.getSource().getLevel();
+        BlockPos here = ctx.getSource().getPlayerOrException().blockPosition();
+        ContaminationMap map = ContaminationMap.get(level);
+        List<ContaminationMap.Spot> spots = map.near(here, LIST_RADIUS, level.getGameTime());
+        if (spots.isEmpty()) {
+            ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.zone.list_empty", LIST_RADIUS, map.size()), false);
+            return 0;
+        }
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.zone.list_header", spots.size(), LIST_RADIUS, map.size()), false);
+        for (ContaminationMap.Spot spot : spots.subList(0, Math.min(LIST_MAX_LINES, spots.size()))) {
+            ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.zone.list_entry", spot.chunkX() * 16 + 8, spot.chunkZ() * 16 + 8,
+                    number(spot.radiation()), number(spot.toxin())), false);
+        }
+        return spots.size();
+    }
+
+    private static int zoneAdd(CommandContext<CommandSourceStack> ctx, BlockPos pos) {
+        String type = StringArgumentType.getString(ctx, "type");
+        boolean radiation = "radiation".equals(type);
+        if (!radiation && !"toxic".equals(type)) {
+            ctx.getSource().sendFailure(Component.translatable("message.projectrebirth.zone.unknown_type", type));
+            return 0;
+        }
+        if (!ContaminationZones.enabled()) {
+            ctx.getSource().sendFailure(Component.translatable("message.projectrebirth.zone.disabled"));
+            return 0;
+        }
+        ServerLevel level = ctx.getSource().getLevel();
+        float strength = FloatArgumentType.getFloat(ctx, "strength");
+        int radius = IntegerArgumentType.getInteger(ctx, "radius");
+        ContaminationMap.get(level).addSpot(pos, radius, radiation ? strength : 0.0f, radiation ? 0.0f : strength, level.getGameTime());
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.zone.added",
+                Component.translatable("environment.projectrebirth.zone." + type), number(strength), radius, pos.getX(), pos.getZ()), true);
+        return 1;
+    }
+
+    /** Forgets all the contamination of the dimension, or (with a radius in chunks) that around the caller. */
+    private static int zoneClear(CommandContext<CommandSourceStack> ctx, int radius) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ContaminationMap map = ContaminationMap.get(ctx.getSource().getLevel());
+        int removed = radius < 0 ? map.clearAll() : map.clearAround(ctx.getSource().getPlayerOrException().blockPosition(), radius);
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.zone.cleared", removed), true);
+        return removed;
     }
 
     /** Sets the heat (above 0) or cold (below 0) stress of a person (1.5.0), for tests and administration. */

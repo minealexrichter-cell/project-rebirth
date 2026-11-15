@@ -50,7 +50,13 @@ public final class Catastrophes {
                     rain(level, state.secondsLeft() + RebirthConfig.ENVIRONMENT_AFTERMATH_SECONDS.get());
                 }
             }
-            case AFTERMATH -> tellAll(level, Component.translatable("message.projectrebirth.environment.fading", name(event)));
+            case AFTERMATH -> {
+                tellAll(level, Component.translatable("message.projectrebirth.environment.fading", name(event)));
+                // 1.6.0: a radiation burst and a toxic storm leave spots of residual contamination around the players
+                if (event != null) {
+                    ContaminationZones.leaveSpots(level, event, state.intensity());
+                }
+            }
             case ENDED -> ended(level, before);
             default -> {
             }

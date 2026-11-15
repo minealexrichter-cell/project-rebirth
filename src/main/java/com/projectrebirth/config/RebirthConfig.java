@@ -186,6 +186,28 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue MACHINE_BODY_DUST_HEAT;
     public static final ModConfigSpec.DoubleValue MACHINE_ARMOR_DUST_WEAR_PER_SECOND;
     public static final ModConfigSpec.DoubleValue CONTAMINATION_PER_DUST;
+    /** 1.6.0: contaminated zones (residual spots of catastrophes). */
+    public static final ModConfigSpec.BooleanValue ZONES_ENABLED;
+    public static final ModConfigSpec.IntValue ZONES_RADIATION_MIN_SPOTS;
+    public static final ModConfigSpec.IntValue ZONES_RADIATION_MAX_SPOTS;
+    public static final ModConfigSpec.IntValue ZONES_RADIATION_MIN_RADIUS;
+    public static final ModConfigSpec.IntValue ZONES_RADIATION_MAX_RADIUS;
+    public static final ModConfigSpec.DoubleValue ZONES_RADIATION_STRENGTH;
+    public static final ModConfigSpec.DoubleValue ZONES_RADIATION_HALF_LIFE_DAYS;
+    public static final ModConfigSpec.IntValue ZONES_TOXIC_MIN_SPOTS;
+    public static final ModConfigSpec.IntValue ZONES_TOXIC_MAX_SPOTS;
+    public static final ModConfigSpec.IntValue ZONES_TOXIC_MIN_RADIUS;
+    public static final ModConfigSpec.IntValue ZONES_TOXIC_MAX_RADIUS;
+    public static final ModConfigSpec.DoubleValue ZONES_TOXIC_STRENGTH;
+    public static final ModConfigSpec.DoubleValue ZONES_TOXIC_HALF_LIFE_DAYS;
+    public static final ModConfigSpec.DoubleValue ZONES_TOXIC_LOWLAND_WEIGHT;
+    public static final ModConfigSpec.IntValue ZONES_LOWLAND_HEIGHT;
+    public static final ModConfigSpec.IntValue ZONES_MIN_DISTANCE;
+    public static final ModConfigSpec.IntValue ZONES_MAX_DISTANCE;
+    public static final ModConfigSpec.BooleanValue ZONES_ON_TERRITORY;
+    public static final ModConfigSpec.DoubleValue ZONES_MAX_PER_CHUNK;
+    public static final ModConfigSpec.DoubleValue ZONES_FORGET_BELOW;
+    public static final ModConfigSpec.DoubleValue ZONES_MARK_THRESHOLD;
     public static final ModConfigSpec.DoubleValue SOLAR_DUST_FACTOR;
     public static final ModConfigSpec.BooleanValue TEMP_ENABLED;
     public static final ModConfigSpec.DoubleValue TEMP_BIOME_SCALE;
@@ -592,6 +614,38 @@ public final class RebirthConfig {
         defineProtectionKit(builder, "respirator", 0.9, 0.0, 0.0, 0.0, 0.0);
         defineProtectionKit(builder, "hazmat", 0.95, 1.0, 0.3, 0.25, 0.25);
         defineProtectionKit(builder, "heavy_suit", 1.0, 1.0, 0.85, 0.8, 0.8);
+        builder.pop();
+
+        builder.comment("Contaminated zones (1.6.0): a radiation burst and a toxic storm leave spots of residual contamination around the players,",
+                "which fade by themselves. Strengths are in units of the hazard at the centre of a spot (radiation, polluted air). Off: no new spots",
+                "and no effect, as in 1.5.2 (what is saved stays and works again when it is switched on)").push("zones");
+        ZONES_ENABLED = builder.comment("The whole system (also needs environment.enabled)").define("enabled", true);
+        ZONES_RADIATION_MIN_SPOTS = builder.comment("Fewest spots a radiation burst leaves").defineInRange("radiationMinSpots", 3, 0, 64);
+        ZONES_RADIATION_MAX_SPOTS = builder.comment("Most spots a radiation burst leaves").defineInRange("radiationMaxSpots", 6, 0, 64);
+        ZONES_RADIATION_MIN_RADIUS = builder.comment("Smallest radius of a radiation spot, in chunks").defineInRange("radiationMinRadius", 1, 0, 8);
+        ZONES_RADIATION_MAX_RADIUS = builder.comment("Largest radius of a radiation spot, in chunks").defineInRange("radiationMaxRadius", 3, 0, 8);
+        ZONES_RADIATION_STRENGTH = builder.comment("Radiation at the centre of a spot per unit of the burst's intensity (the dosimeter marks danger from environment.hud.dangerRadiation)")
+                .defineInRange("radiationStrength", 8.0, 0.0, 10000.0);
+        ZONES_RADIATION_HALF_LIFE_DAYS = builder.comment("Half-life of residual radiation, in game days (24000 ticks); about 2.4 half-lives until a spot is no longer dangerous")
+                .defineInRange("radiationHalfLifeDays", 1.7, 0.01, 1000.0);
+        ZONES_TOXIC_MIN_SPOTS = builder.comment("Fewest spots a toxic storm leaves").defineInRange("toxicMinSpots", 2, 0, 64);
+        ZONES_TOXIC_MAX_SPOTS = builder.comment("Most spots a toxic storm leaves").defineInRange("toxicMaxSpots", 4, 0, 64);
+        ZONES_TOXIC_MIN_RADIUS = builder.comment("Smallest radius of a toxic spot, in chunks").defineInRange("toxicMinRadius", 1, 0, 8);
+        ZONES_TOXIC_MAX_RADIUS = builder.comment("Largest radius of a toxic spot, in chunks").defineInRange("toxicMaxRadius", 2, 0, 8);
+        ZONES_TOXIC_STRENGTH = builder.comment("Polluted air at the centre of a spot per unit of the storm's intensity (safe air is up to environment.protection.filterSafePollution)")
+                .defineInRange("toxicStrength", 6.0, 0.0, 10000.0);
+        ZONES_TOXIC_HALF_LIFE_DAYS = builder.comment("Half-life of residual toxins, in game days").defineInRange("toxicHalfLifeDays", 0.6, 0.01, 1000.0);
+        ZONES_TOXIC_LOWLAND_WEIGHT = builder.comment("How many times likelier a toxic spot lands in a swamp, by a river or in a lowland than elsewhere (1 = no preference)")
+                .defineInRange("toxicLowlandWeight", 3.0, 1.0, 100.0);
+        ZONES_LOWLAND_HEIGHT = builder.comment("Blocks above sea level up to which the ground counts as a lowland").defineInRange("lowlandHeight", 8, 0, 256);
+        ZONES_MIN_DISTANCE = builder.comment("Spots land at least this far (blocks) from the player they are placed around").defineInRange("minDistance", 32, 0, 1024);
+        ZONES_MAX_DISTANCE = builder.comment("... and at most this far, so that players meet them").defineInRange("maxDistance", 128, 1, 4096);
+        ZONES_ON_TERRITORY = builder.comment("Whether a spot may land on the territory of a faction (by default not, so that a catastrophe does not make a base unfit)")
+                .define("onFactionTerritory", false);
+        ZONES_MAX_PER_CHUNK = builder.comment("Most radiation or toxins one chunk holds").defineInRange("maxPerChunk", 40.0, 0.1, 100000.0);
+        ZONES_FORGET_BELOW = builder.comment("A chunk whose radiation and toxins both fell below this is forgotten").defineInRange("forgetBelow", 0.05, 0.0001, 100.0);
+        ZONES_MARK_THRESHOLD = builder.comment("From this much radiation or toxins a chunk counts as a contaminated zone for the HUD line and the visuals")
+                .defineInRange("markThreshold", 0.5, 0.0, 1000.0);
         builder.pop();
 
         builder.comment("Temperature (1.5.0): the temperature of a place in degrees Celsius, and the heat or cold stress of a human body,",

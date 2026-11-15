@@ -1,0 +1,22 @@
+{
+  "icon": "minecraft:poisonous_potato",
+  "x": -2,
+  "y": -2,
+  "parents": [
+    "catastrophes"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.contaminated_zones.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.contaminated_zones.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.contaminated_zones.p3"
+    }
+  ]
+}

@@ -22,6 +22,9 @@ public final class PlanTests {
     /** The tests of the power armor strikes of 1.5.2 (the cooldown of the empty armored hands). */
     public static final String ARMOR = ProjectRebirth.MOD_ID + "_armor";
 
+    /** The tests of version 1.6.0 "Scouting": contaminated zones and what follows (docs/PLAN_1.6.md). */
+    public static final String SCOUTING = ProjectRebirth.MOD_ID + "_scouting";
+
     private PlanTests() {
     }
 }

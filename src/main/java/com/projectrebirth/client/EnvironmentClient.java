@@ -143,7 +143,30 @@ public final class EnvironmentClient {
         if (last.contamination() >= 0.5f) {
             graphics.drawString(font, Component.translatable("hud.projectrebirth.contamination"), 0, y, 0xFFFFFFFF);
             graphics.drawString(font, number(last.contamination()), LABEL_WIDTH, y, last.contamination() >= 30.0f ? 0xFFFFA726 : 0xFFD4E157);
+            y += ROW;
         }
+        // 1.6.0: the ground here is contaminated; radiation is felt by no one, so without a dosimeter only toxins are named
+        if (last.zone() != 0) {
+            boolean radiation = (last.zone() & com.projectrebirth.environment.ContaminationZones.RADIATION_BIT) != 0;
+            boolean toxic = (last.zone() & com.projectrebirth.environment.ContaminationZones.TOXIC_BIT) != 0;
+            Component title = Component.translatable("hud.projectrebirth.zone");
+            graphics.drawString(font, title, 0, y, radiation ? 0xFFFF8A65 : 0xFFD4E157);
+            // radiation is felt by no one: without a dosimeter the line does not tell it is radiation
+            boolean tellRadiation = radiation && carriesDosimeter(Minecraft.getInstance().player);
+            if (tellRadiation || toxic) {
+                graphics.drawString(font, Component.translatable(tellRadiation && toxic ? "hud.projectrebirth.zone.both" : tellRadiation ? "hud.projectrebirth.zone.radiation" : "hud.projectrebirth.zone.toxic"),
+                        font.width(title) + 4, y, 0xFFBDBDBD);
+            }
+        }
+    }
+
+    /** Which contamination the ground here holds as the server last said ({@code ContaminationZones} bits), and how strong it looks, 0 to 1. */
+    static int zone() {
+        return last == null ? 0 : last.zone();
+    }
+
+    static float zoneStrength() {
+        return last == null ? 0.0f : last.zoneStrength();
     }
 
     /** What is dangerous here now, after protection. */

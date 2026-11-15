@@ -72,10 +72,17 @@ public final class Environment {
 
     /** The whole calculation, with nothing taken from the world, so that it can be checked by itself. */
     public static Exposure compute(EnvironmentProfile profile, EnvironmentState state, Shelter shelter) {
+        return compute(profile, state, shelter, ContaminationMap.Reading.NONE);
+    }
+
+    /** The same with the residual contamination of the ground there (1.6.0): it is added to the background, and the roof and the ground treat it as they treat that. */
+    public static Exposure compute(EnvironmentProfile profile, EnvironmentState state, Shelter shelter, ContaminationMap.Reading ground) {
         Exposure.Builder result = Exposure.builder();
         for (Hazard hazard : Hazard.values()) {
             result.add(hazard, profile.background(hazard) * state.backgroundFactor(hazard));
         }
+        result.add(Hazard.RADIATION, ground.radiation());
+        result.add(Hazard.POLLUTION, ground.toxin());
         String event = state.event();
         float strength = state.strengthNow();
         RebirthConfig.EnvironmentEventStats stats = event == null ? null : RebirthConfig.environmentEvent(event);
@@ -112,7 +119,7 @@ public final class Environment {
             return Exposure.NONE;
         }
         return profileFor(level.registryAccess(), level.getBiome(pos))
-                .map(profile -> compute(profile, EnvironmentState.get(level), shelterAt(level, pos)))
+                .map(profile -> compute(profile, EnvironmentState.get(level), shelterAt(level, pos), ContaminationZones.readingAt(level, pos)))
                 .orElse(Exposure.NONE);
     }
 

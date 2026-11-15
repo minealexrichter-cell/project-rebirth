@@ -99,6 +99,7 @@ public final class CatastropheClient {
         if (player == null || level == null) {
             state = CatastrophePayload.CALM;
             shown = 0.0f;
+            zoneShown = 0.0f;
             return;
         }
         shown += Mth.clamp(target() - shown, -0.01f, 0.01f);
@@ -114,6 +115,37 @@ public final class CatastropheClient {
         tickCrackle(level, player);
         tickClicks(level, player);
         tickParticles(level, player, minecraft);
+        tickZone(level, player, minecraft);
+    }
+
+    /** Shown strength of the contaminated zone around the player (1.6.0), eased so that the tint does not jump at the edge of a spot. */
+    private static float zoneShown;
+    private static final net.minecraft.core.particles.ParticleOptions ZONE_RADIATION =
+            new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.95f, 0.55f, 0.25f), 1.0f);
+    private static final net.minecraft.core.particles.ParticleOptions ZONE_TOXIC =
+            new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(0.7f, 0.8f, 0.3f), 1.2f);
+
+    private static boolean zonesShown() {
+        return com.projectrebirth.config.RebirthClientConfig.ZONES_VISUALS.get();
+    }
+
+    /** Rare drifting particles inside a contaminated spot, fewer with the "decreased" particle setting and none with "minimal"; none in a sealed room. */
+    private static void tickZone(ClientLevel level, LocalPlayer player, Minecraft minecraft) {
+        float target = zonesShown() && !EnvironmentClient.inSealedRoom() ? EnvironmentClient.zoneStrength() : 0.0f;
+        zoneShown += Mth.clamp(target - zoneShown, -0.02f, 0.02f);
+        if (zoneShown < 0.05f || minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.MINIMAL) {
+            return;
+        }
+        float many = minecraft.options.particles().get() == net.minecraft.client.ParticleStatus.DECREASED ? 0.4f : 1.0f;
+        float perTick = com.projectrebirth.config.RebirthClientConfig.ZONES_PARTICLES.get().floatValue() * zoneShown * many / TICKS_PER_SECOND;
+        int count = (int) perTick + (RANDOM.nextFloat() < perTick - (int) perTick ? 1 : 0);
+        int zone = EnvironmentClient.zone();
+        for (int i = 0; i < count; i++) {
+            boolean radiation = (zone & com.projectrebirth.environment.ContaminationZones.RADIATION_BIT) != 0
+                    && ((zone & com.projectrebirth.environment.ContaminationZones.TOXIC_BIT) == 0 || RANDOM.nextBoolean());
+            level.addParticle(radiation ? ZONE_RADIATION : ZONE_TOXIC, player.getX() + (RANDOM.nextDouble() - 0.5) * 14.0,
+                    player.getY() + RANDOM.nextDouble() * 3.0, player.getZ() + (RANDOM.nextDouble() - 0.5) * 14.0, 0.0, 0.02, 0.0);
+        }
     }
 
     /**
@@ -238,6 +270,16 @@ public final class CatastropheClient {
     }
 
     private static void onFogColor(ViewportEvent.ComputeFogColor event) {
+        if (zoneShown > 0.0f && zonesShown()) {
+            // a light tint of the air inside a contaminated spot: dirty brown for radiation, yellow-green for toxins
+            boolean radiation = (EnvironmentClient.zone() & com.projectrebirth.environment.ContaminationZones.RADIATION_BIT) != 0;
+            float tint = com.projectrebirth.config.RebirthClientConfig.ZONES_TINT.get().floatValue() * zoneShown;
+            if (radiation) {
+                blend(event, 0.55f, 0.45f, 0.30f, tint);
+            } else {
+                blend(event, 0.62f, 0.66f, 0.30f, tint);
+            }
+        }
         if (shown <= 0.0f) {
             return;
         }

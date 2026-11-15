@@ -18,6 +18,9 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec.BooleanValue TRANSFER_ANIMATION_ENABLED;
     public static final ModConfigSpec.DoubleValue TRANSFER_ANIMATION_SECONDS;
     public static final ModConfigSpec.DoubleValue TRANSFER_ANIMATION_HEIGHT;
+    public static final ModConfigSpec.BooleanValue ZONES_VISUALS;
+    public static final ModConfigSpec.DoubleValue ZONES_PARTICLES;
+    public static final ModConfigSpec.DoubleValue ZONES_TINT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -46,6 +49,11 @@ public final class RebirthClientConfig {
                 .defineInRange("seconds", 3.0, 1.0, 10.0);
         TRANSFER_ANIMATION_HEIGHT = builder.comment("How many blocks the camera rises.")
                 .defineInRange("height", 40.0, 10.0, 120.0);
+        builder.pop();
+        builder.comment("Contaminated zones (1.6.0): how a spot of residual contamination looks around you.").push("zones");
+        ZONES_VISUALS = builder.comment("Rare particles and a light tint of the air inside a contaminated spot.").define("visuals", true);
+        ZONES_PARTICLES = builder.comment("Particles per second of a spot at full strength.").defineInRange("particlesPerSecond", 6.0, 0.0, 200.0);
+        ZONES_TINT = builder.comment("Strength of the tint of the air inside a spot, 0 to 1.").defineInRange("tint", 0.2, 0.0, 1.0);
         builder.pop();
         CLIENT_SPEC = builder.build();
     }

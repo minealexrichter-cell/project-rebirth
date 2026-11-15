@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:military_base",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 64,
+    "separation": 24,
+    "salt": 160611,
+    "switch": "military_base"
+  }
+}

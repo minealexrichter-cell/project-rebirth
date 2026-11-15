@@ -213,9 +213,17 @@ public final class RebirthConfig {
     public static final ModConfigSpec.BooleanValue STRUCTURES_LAB;
     public static final ModConfigSpec.BooleanValue STRUCTURES_RUINS;
     public static final ModConfigSpec.BooleanValue STRUCTURES_REACTOR;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_MILITARY;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_SCIENCE;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_FACTORY;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_COMM;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_OUTPOST;
+    public static final ModConfigSpec.BooleanValue STRUCTURES_ZONE;
     public static final ModConfigSpec.DoubleValue SOURCES_WALL_FACTOR;
     public static final ModConfigSpec.DoubleValue DEBRIS_RADIATION;
     public static final ModConfigSpec.IntValue DEBRIS_RANGE;
+    public static final ModConfigSpec.DoubleValue SLUDGE_RADIATION;
+    public static final ModConfigSpec.IntValue SLUDGE_RANGE;
     public static final ModConfigSpec.DoubleValue BARREL_TOXIN;
     public static final ModConfigSpec.IntValue BARREL_RANGE;
     public static final ModConfigSpec.BooleanValue URANIUM_ORE_RADIATES;
@@ -679,6 +687,8 @@ public final class RebirthConfig {
                 .defineInRange("wallFactor", 0.5, 0.0, 1.0);
         DEBRIS_RADIATION = builder.comment("Radiation of radioactive debris right next to it").defineInRange("debrisRadiation", 8.0, 0.0, 10000.0);
         DEBRIS_RANGE = builder.comment("Reach of radioactive debris in blocks").defineInRange("debrisRange", 10, 1, 48);
+        SLUDGE_RADIATION = builder.comment("Radiation of one block of irradiated sludge (contamination zone) right next to it; a pool adds up all its blocks").defineInRange("sludgeRadiation", 0.5, 0.0, 10000.0);
+        SLUDGE_RANGE = builder.comment("Reach of irradiated sludge in blocks").defineInRange("sludgeRange", 5, 1, 48);
         BARREL_TOXIN = builder.comment("Polluted air right next to a leaking waste barrel").defineInRange("barrelToxin", 5.0, 0.0, 10000.0);
         BARREL_RANGE = builder.comment("Reach of a leaking waste barrel in blocks").defineInRange("barrelRange", 7, 1, 48);
         URANIUM_ORE_RADIATES = builder.comment("Whether uranium ore radiates nearby (weak, short range, no block entity)").define("uraniumOreRadiates", true);
@@ -693,13 +703,20 @@ public final class RebirthConfig {
         ISOTOPE_RADIATION = builder.comment("Radiation of the radioisotope generator right next to it").defineInRange("generatorRadiation", 3.0, 0.0, 10000.0);
         ISOTOPE_RANGE = builder.comment("Reach of the radioisotope generator in blocks").defineInRange("generatorRange", 6, 1, 48);
         builder.pop();
-        builder.comment("Structures (1.6.0): an abandoned laboratory, industrial ruins and a ruined reactor in newly generated chunks.",
+        builder.comment("Structures (1.6.0): an abandoned laboratory, industrial ruins, a ruined reactor and the large structures (military base, science complex,",
+                "abandoned factory, communication station, defensive outpost, contamination zone) in newly generated chunks.",
                 "Switched off, none is placed in new chunks and /locate finds none; what was generated stays. How often and in which biomes: data",
                 "(worldgen/structure_set, tags/worldgen/biome/has_structure). A data pack can also remove a structure set.").push("structures");
         STRUCTURES_ENABLED = builder.comment("All the structures of 1.6.0").define("enabled", true);
         STRUCTURES_LAB = builder.comment("Abandoned laboratory (small)").define("abandonedLab", true);
         STRUCTURES_RUINS = builder.comment("Industrial ruins (medium)").define("industrialRuins", true);
         STRUCTURES_REACTOR = builder.comment("Ruined reactor (large, rare)").define("ruinedReactor", true);
+        STRUCTURES_MILITARY = builder.comment("Military base (large, a fortified compound with a garage of wrecked armors)").define("militaryBase", true);
+        STRUCTURES_SCIENCE = builder.comment("Science complex (large, laboratories, a server room and an observatory)").define("scienceComplex", true);
+        STRUCTURES_FACTORY = builder.comment("Abandoned factory (large, a smelting hall and two chimneys)").define("abandonedFactory", true);
+        STRUCTURES_COMM = builder.comment("Communication station (large, a lattice mast and dishes)").define("commStation", true);
+        STRUCTURES_OUTPOST = builder.comment("Defensive outpost (medium-large, walls and two towers)").define("defensiveOutpost", true);
+        STRUCTURES_ZONE = builder.comment("Contamination zone (large, an ancient arch over irradiated sludge)").define("contaminationZone", true);
         builder.pop();
 
         builder.comment("Temperature (1.5.0): the temperature of a place in degrees Celsius, and the heat or cold stress of a human body,",

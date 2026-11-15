@@ -92,6 +92,7 @@
         "radiation_sources",
         "uranium",
         "ruins",
+        "large_structures",
         "dosimeter",
         "medicine",
         "machines_environment"

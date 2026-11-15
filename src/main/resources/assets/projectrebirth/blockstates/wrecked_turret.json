@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectrebirth:block/wrecked_turret"
+    },
+    "facing=east": {
+      "model": "projectrebirth:block/wrecked_turret",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectrebirth:block/wrecked_turret",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectrebirth:block/wrecked_turret",
+      "y": 270
+    }
+  }
+}

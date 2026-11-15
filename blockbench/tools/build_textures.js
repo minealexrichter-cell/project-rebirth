@@ -2542,6 +2542,98 @@
         return p;
     });
 
+    // ---------------------------------------------------------------- structure decoration (1.6.0, large structures)
+
+    // Wall monitor: a dark-blue screen with scrolling data lines, a graph and a blinking cursor.
+    function monitorScreen(i) {
+        const p = new Painter(801);
+        p.rect(0, 0, 16, 16, '#0a1626');
+        p.noise(1, 1, 14, 14, '#0d2340', 0.06);
+        const rows = [[2, 6], [2, 9], [2, 4], [2, 8], [2, 5], [2, 7], [2, 3], [2, 9]];
+        for (let r = 0; r < 4; r++) {
+            const [x, w] = rows[(r + i) % rows.length];
+            p.rect(x, 2 + r * 2, w, 1, r === 0 ? '#9fe8ff' : '#3f9fd8');
+        }
+        // A small bar graph on the right that rises and falls.
+        [[11, 3], [12, 5], [13, 2], [14, 4]].forEach(([x, h], k) => {
+            const hh = 1 + (h + i + k) % 5;
+            p.rect(x, 9 - hh, 1, hh, '#37e6ff');
+        });
+        // A wave along the bottom.
+        for (let x = 2; x < 14; x++) p.px('#5fd0ff', [x, 12 + Math.round(Math.sin((x + i * 2) * 0.8))]);
+        if (i % 2 === 0) p.rect(2 + 2 * 4, 10, 1, 1, '#e6f8ff');
+        return p;
+    }
+    animated('wall_monitor_screen_on', 4, 8, i => monitorScreen(i));
+
+    // Server rack: rows of drive bays with small status lights that blink.
+    function rackFront(i) {
+        const p = new Painter(811);
+        p.noise(0, 0, 16, 16, '#22262c', 0.05);
+        for (let r = 0; r < 5; r++) {
+            const y = 1 + r * 3;
+            p.bevel(1, y, 14, 2, '#30353d', 0.03);
+            p.rect(2, y + 1, 8, 1, '#15181c');
+            const lights = ['#35d07f', '#35d07f', '#f0c92f', '#37e6ff'];
+            p.px((r + i) % 3 === 0 ? '#0e2a1a' : lights[(r + i) % 4], [11, y + 1]);
+            p.px((r * 2 + i) % 4 === 0 ? '#e5483d' : '#35d07f', [13, y + 1]);
+        }
+        return p;
+    }
+    animated('server_rack_front', 4, 6, i => rackFront(i));
+    block('server_rack_side', () => {
+        const p = new Painter(812);
+        p.noise(0, 0, 16, 16, '#2a2f36', 0.05);
+        [3, 6, 9, 12].forEach(y => p.rect(2, y, 12, 1, '#16191d'));
+        p.rect(0, 0, 16, 1, '#3d434c').rect(0, 15, 16, 1, '#16191d');
+        return p;
+    });
+
+    // Specimen tank: cyan liquid with rising bubbles and a dark shape floating in it.
+    function tankLiquid(i) {
+        const p = new Painter(821);
+        p.noise(0, 0, 16, 16, '#1d8fb0', 0.05);
+        p.rect(0, 0, 2, 16, '#3fd6f0').rect(14, 0, 2, 16, '#146a86');
+        p.grid(['..dd..', '.dddd.', '.dddd.', '..dd..', '.dddd.', 'dddddd', 'dddddd', '.dddd.', '.d..d.'], {d: '#0e4a5e'}, 5, 3);
+        [[3, 13], [11, 9], [4, 6], [12, 2], [9, 14]].forEach(([x, y]) => p.px('#bff6ff', [x, (y - i * 4 + 64) % 16]));
+        return p;
+    }
+    animated('specimen_tank_liquid', 4, 5, i => tankLiquid(i));
+
+    // Military ammo crate: olive planks, a stencil band, steel latches.
+    block('ammo_crate_side', () => {
+        const p = new Painter(831);
+        p.noise(0, 0, 16, 16, '#5d6a2e', 0.06);
+        [4, 8, 12].forEach(y => p.rect(0, y, 16, 1, '#434d20'));
+        p.rect(0, 0, 16, 1, '#7b8f3a').rect(0, 15, 16, 1, '#2f3616').rect(0, 0, 1, 16, '#3a4219').rect(15, 0, 1, 16, '#3a4219');
+        p.rect(3, 6, 10, 3, '#46511f');
+        p.grid(['y.y.yy.yyy', 'yyy.y..y.y', 'y.y.yy.yyy'], {y: '#d9c86a'}, 3, 6);
+        p.bevel(1, 2, 2, 3, '#8c97a3', 0.02).bevel(13, 2, 2, 3, '#8c97a3', 0.02);
+        return p;
+    });
+    block('ammo_crate_top', () => {
+        const p = new Painter(832);
+        p.noise(0, 0, 16, 16, '#66742f', 0.06);
+        [5, 10].forEach(x => p.rect(x, 0, 1, 16, '#434d20'));
+        p.rect(0, 0, 16, 1, '#7b8f3a').rect(0, 15, 16, 1, '#2f3616');
+        p.rect(1, 7, 14, 2, '#3a4219').rect(7, 6, 2, 4, '#8c97a3');
+        return p;
+    });
+
+    // Irradiated sludge: a slow green ooze with bright bubbles.
+    function sludge(i) {
+        const p = new Painter(841);
+        p.noise(0, 0, 16, 16, '#3c8a1c', 0.12);
+        [[2, 3, 4, 3], [9, 1, 5, 4], [5, 9, 6, 4], [12, 10, 3, 4], [0, 12, 3, 3]].forEach(([x, y, w, h], k) => {
+            p.noise((x + i) % 16, y, w, h, k % 2 ? '#6fd62a' : '#58b81f', 0.08);
+        });
+        [[4, 4], [11, 3], [7, 11], [13, 12], [1, 13]].forEach(([x, y], k) => {
+            if ((k + i) % 3 !== 0) p.px('#d8ff9a', [(x + i) % 16, y]);
+        });
+        return p;
+    }
+    animated('irradiated_sludge', 4, 12, i => sludge(i));
+
     function savePng(canvas, path) {
         const data = canvas.toDataURL('image/png').split(',')[1];
         fs.writeFileSync(path, Buffer.from(data, 'base64'));

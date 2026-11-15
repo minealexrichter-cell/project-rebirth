@@ -517,6 +517,104 @@
         };
     })();
 
+    // ---------------------------------------------------------------- structure decoration (1.6.0, large structures)
+
+    const decorTextures = (map, particle) => Object.assign({parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/' + particle},
+        Object.fromEntries(Object.entries(map).map(([k, v]) => [k, 'projectrebirth:block/' + v])));
+
+    // Wall monitor: a framed screen hanging on the wall behind it (the south side); the screen faces north and glows.
+    MODELS.wall_monitor = {
+        parent: 'minecraft:block/block',
+        textures: decorTextures({screen: 'wall_monitor_screen_on'}, 'wall_monitor_screen_on'),
+        elements: [
+            box([1, 2, 14], [15, 14, 16], 'gun', {north: 'dark', south: 'dark'}),
+            box([2, 3, 13.5], [14, 13, 14], 'dark', {north: tex('screen', [2, 3, 14, 13])}, GLOW),
+            box([6, 1, 14.5], [10, 2, 15.5], 'steel'),
+            box([12, 13, 13.5], [13, 13.5, 14], 'green', undefined, GLOW)
+        ]
+    };
+
+    // Server rack: a dark cabinet with a front of drive bays and blinking lights.
+    MODELS.server_rack = {
+        parent: 'minecraft:block/block',
+        textures: decorTextures({front: 'server_rack_front', side: 'server_rack_side'}, 'server_rack_side'),
+        elements: [
+            box([1, 0, 1], [15, 16, 15], 'dark', {west: tex('side'), east: tex('side'), south: tex('side'), up: 'gun', down: 'gun'}),
+            without(box([1.5, 0.5, 0.5], [14.5, 15.5, 1], 'gun', {north: tex('front', [1, 0, 15, 16])}, GLOW), 'south'),
+            without(box([0.5, 0, 0.5], [1.5, 16, 1.5], 'steel'), 'up', 'down'),
+            without(box([14.5, 0, 0.5], [15.5, 16, 1.5], 'steel'), 'up', 'down')
+        ]
+    };
+
+    // Specimen tank: steel base and cap, four posts and a column of glowing liquid with something floating in it.
+    (() => {
+        const liquid = tex('liquid', [3, 2, 13, 14]);
+        MODELS.specimen_tank = {
+            parent: 'minecraft:block/block',
+            textures: decorTextures({liquid: 'specimen_tank_liquid'}, 'specimen_tank_liquid'),
+            elements: [
+                box([1, 0, 1], [15, 2, 15], 'gun', {up: 'steel'}),
+                box([1, 14, 1], [15, 16, 15], 'gun', {up: 'mid', down: 'steel'}),
+                without(box([3, 2, 3], [13, 14, 13], 'cyan', {north: liquid, south: liquid, west: liquid, east: liquid}, GLOW), 'up', 'down'),
+                without(box([1, 2, 1], [2.5, 14, 2.5], 'steel'), 'up', 'down'),
+                without(box([13.5, 2, 1], [15, 14, 2.5], 'steel'), 'up', 'down'),
+                without(box([1, 2, 13.5], [2.5, 14, 15], 'steel'), 'up', 'down'),
+                without(box([13.5, 2, 13.5], [15, 14, 15], 'steel'), 'up', 'down')
+            ]
+        };
+    })();
+
+    // Emergency lamp: a red lamp in a small cage, fixed to the wall behind it (the south side).
+    MODELS.emergency_lamp = {
+        parent: 'minecraft:block/block',
+        textures: decorTextures({}, 'machine_parts'),
+        elements: [
+            box([5, 4, 15], [11, 10, 16], 'gun'),
+            without(box([6, 5, 12], [10, 9, 15], 'red', undefined, GLOW), 'south'),
+            without(box([5.5, 6.75, 11.5], [10.5, 7.25, 15], 'steel'), 'south'),
+            box([7.75, 4.5, 11.25], [8.25, 9.5, 11.75], 'steel')
+        ]
+    };
+
+    // Wrecked turret: a pedestal, a cracked olive housing tipped over on its mount and a barrel hanging down to the north.
+    MODELS.wrecked_turret = {
+        parent: 'minecraft:block/block',
+        textures: decorTextures({}, 'machine_parts'),
+        elements: [
+            box([2, 0, 2], [14, 2, 14], 'gun', {up: 'hazard'}),
+            box([3, 2, 3], [13, 3, 13], 'dark'),
+            box([6, 3, 6], [10, 7, 10], 'steel'),
+            box([4, 7, 5], [12, 12, 13], 'olive', {north: 'dark', up: 'rust'}, {rotation: {angle: -22.5, axis: 'x', origin: [8, 7, 9]}}),
+            box([7, 7.5, 0], [9, 9.5, 6], 'gun', {north: 'dark'}, {rotation: {angle: 22.5, axis: 'x', origin: [8, 8.5, 6]}}),
+            box([5, 12, 9], [8, 13, 12], 'rust', undefined, {rotation: {angle: 22.5, axis: 'z', origin: [6.5, 12, 10.5]}}),
+            box([9.5, 9, 4], [11.5, 11, 5], 'dark')
+        ]
+    };
+
+    // Military ammo crate: an olive box with a stencil band and steel latches.
+    MODELS.ammo_crate = {
+        parent: 'minecraft:block/block',
+        textures: decorTextures({side: 'ammo_crate_side', top: 'ammo_crate_top'}, 'ammo_crate_side'),
+        elements: [
+            box([1, 0, 2], [15, 10, 14], 'olive', {north: tex('side', [1, 3, 15, 13]), south: tex('side', [1, 3, 15, 13]),
+                west: tex('side', [2, 3, 14, 13]), east: tex('side', [2, 3, 14, 13]), up: tex('top', [1, 2, 15, 14]), down: 'dark'}),
+            box([0.5, 2, 5], [1, 8, 11], 'gun'),
+            box([15, 2, 5], [15.5, 8, 11], 'gun')
+        ]
+    };
+
+    // Irradiated sludge: a glowing green layer two pixels deep over the ground.
+    (() => {
+        const ooze = tex('ooze'), edge = tex('ooze', [0, 14, 16, 16]);
+        MODELS.irradiated_sludge = {
+            parent: 'minecraft:block/block',
+            textures: decorTextures({ooze: 'irradiated_sludge'}, 'irradiated_sludge'),
+            elements: [
+                box([0, 0, 0], [16, 2, 16], 'green', {up: ooze, north: edge, south: edge, west: edge, east: edge, down: Object.assign(tex('ooze'), {cullface: 'down'})}, GLOW)
+            ]
+        };
+    })();
+
     // ---------------------------------------------------------------- block states
 
     const ROTATIONS = {north: 0, east: 90, south: 180, west: 270};
@@ -590,6 +688,14 @@
         });
     });
     STATES.leaking_waste_barrel = {variants: {'': variant('leaking_waste_barrel')}};
+
+    // Structure decoration (1.6.0): facing blocks look the way the model looks at north; the tank and the sludge have no facing.
+    ['wall_monitor', 'server_rack', 'emergency_lamp', 'wrecked_turret', 'ammo_crate'].forEach(id => {
+        STATES[id] = {variants: {}};
+        Object.entries(ROTATIONS).forEach(([facing, y]) => { STATES[id].variants['facing=' + facing] = variant(id, rotation(y)); });
+    });
+    STATES.specimen_tank = {variants: {'': variant('specimen_tank')}};
+    STATES.irradiated_sludge = {variants: {'': variant('irradiated_sludge')}};
 
     // ---------------------------------------------------------------- output
 

@@ -1,0 +1,22 @@
+{
+  "icon": "projectrebirth:wrecked_turret",
+  "x": -6,
+  "y": -5,
+  "parents": [
+    "ruins"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.large_structures.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.large_structures.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.large_structures.p3"
+    }
+  ]
+}

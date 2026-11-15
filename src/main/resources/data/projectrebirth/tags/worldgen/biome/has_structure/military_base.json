@@ -1,0 +1,10 @@
+{
+  "values": [
+    "minecraft:plains",
+    "minecraft:snowy_plains",
+    "minecraft:savanna",
+    "minecraft:taiga",
+    "minecraft:snowy_taiga",
+    "minecraft:forest"
+  ]
+}

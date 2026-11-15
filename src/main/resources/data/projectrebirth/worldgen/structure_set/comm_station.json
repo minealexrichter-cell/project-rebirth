@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:comm_station",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 56,
+    "separation": 20,
+    "salt": 160614,
+    "switch": "comm_station"
+  }
+}

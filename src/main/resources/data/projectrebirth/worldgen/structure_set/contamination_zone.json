@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:contamination_zone",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 64,
+    "separation": 24,
+    "salt": 160616,
+    "switch": "contamination_zone"
+  }
+}

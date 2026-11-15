@@ -7,6 +7,12 @@ public final class StructureSwitches {
     public static final String LAB = "abandoned_lab";
     public static final String RUINS = "industrial_ruins";
     public static final String REACTOR = "ruined_reactor";
+    public static final String MILITARY = "military_base";
+    public static final String SCIENCE = "science_complex";
+    public static final String FACTORY = "abandoned_factory";
+    public static final String COMM = "comm_station";
+    public static final String OUTPOST = "defensive_outpost";
+    public static final String ZONE = "contamination_zone";
 
     private StructureSwitches() {
     }
@@ -23,6 +29,12 @@ public final class StructureSwitches {
             case LAB -> RebirthConfig.STRUCTURES_LAB.get();
             case RUINS -> RebirthConfig.STRUCTURES_RUINS.get();
             case REACTOR -> RebirthConfig.STRUCTURES_REACTOR.get();
+            case MILITARY -> RebirthConfig.STRUCTURES_MILITARY.get();
+            case SCIENCE -> RebirthConfig.STRUCTURES_SCIENCE.get();
+            case FACTORY -> RebirthConfig.STRUCTURES_FACTORY.get();
+            case COMM -> RebirthConfig.STRUCTURES_COMM.get();
+            case OUTPOST -> RebirthConfig.STRUCTURES_OUTPOST.get();
+            case ZONE -> RebirthConfig.STRUCTURES_ZONE.get();
             default -> true;
         };
     }

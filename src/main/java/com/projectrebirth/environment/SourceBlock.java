@@ -26,6 +26,7 @@ public class SourceBlock extends BaseEntityBlock {
             com.mojang.serialization.Codec.STRING.xmap(SourceKind::valueOf, SourceKind::name).fieldOf("kind").forGetter(SourceBlock::kind))
             .apply(instance, SourceBlock::new));
     private static final VoxelShape BARREL_SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
+    private static final VoxelShape SLUDGE_SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
 
     private final SourceKind kind;
 
@@ -50,7 +51,11 @@ public class SourceBlock extends BaseEntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return kind == SourceKind.WASTE_BARREL ? BARREL_SHAPE : super.getShape(state, level, pos, context);
+        return switch (kind) {
+            case WASTE_BARREL -> BARREL_SHAPE;
+            case SLUDGE -> SLUDGE_SHAPE;
+            default -> super.getShape(state, level, pos, context);
+        };
     }
 
     /** A block just placed is in the index at once (the entity's own load may come a tick later); a loaded chunk is brought back by the entity. */
@@ -73,6 +78,8 @@ public class SourceBlock extends BaseEntityBlock {
         if (kind == SourceKind.WASTE_BARREL && random.nextInt(6) == 0) {
             level.addParticle(ParticleTypes.FALLING_SPORE_BLOSSOM, pos.getX() + 0.3 + random.nextDouble() * 0.4, pos.getY() + 0.05,
                     pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0.0, 0.0, 0.0);
+        } else if (kind == SourceKind.SLUDGE && random.nextInt(10) == 0) {
+            level.addParticle(ParticleTypes.SPORE_BLOSSOM_AIR, pos.getX() + random.nextDouble(), pos.getY() + 0.15, pos.getZ() + random.nextDouble(), 0.0, 0.01, 0.0);
         } else if (kind == SourceKind.DEBRIS && random.nextInt(12) == 0) {
             level.addParticle(ParticleTypes.ASH, pos.getX() + random.nextDouble(), pos.getY() + 1.0, pos.getZ() + random.nextDouble(), 0.0, 0.02, 0.0);
         }

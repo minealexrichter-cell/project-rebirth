@@ -35,13 +35,24 @@ public final class SourceRegistry {
                     .sound(SoundType.METAL)
                     .noOcclusion());
 
+    public static final DeferredBlock<SourceBlock> IRRADIATED_SLUDGE = BLOCKS.registerBlock("irradiated_sludge",
+            properties -> new SourceBlock(properties, SourceKind.SLUDGE),
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_GREEN)
+                    .strength(0.6f, 1.0f)
+                    .sound(SoundType.SLIME_BLOCK)
+                    .speedFactor(0.5f)
+                    .noOcclusion()
+                    .lightLevel(state -> 8));
+
     public static final DeferredItem<BlockItem> RADIOACTIVE_DEBRIS_ITEM = ITEMS.registerSimpleBlockItem(RADIOACTIVE_DEBRIS);
     public static final DeferredItem<BlockItem> LEAKING_WASTE_BARREL_ITEM = ITEMS.registerSimpleBlockItem(LEAKING_WASTE_BARREL);
+    public static final DeferredItem<BlockItem> IRRADIATED_SLUDGE_ITEM = ITEMS.registerSimpleBlockItem(IRRADIATED_SLUDGE);
 
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SourceBlockEntity>> SOURCE_ENTITY =
             BLOCK_ENTITIES.register("radiation_source", () -> BlockEntityType.Builder.of(SourceBlockEntity::new,
-                    RADIOACTIVE_DEBRIS.get(), LEAKING_WASTE_BARREL.get()).build(null));
+                    RADIOACTIVE_DEBRIS.get(), LEAKING_WASTE_BARREL.get(), IRRADIATED_SLUDGE.get()).build(null));
 
     private SourceRegistry() {
     }

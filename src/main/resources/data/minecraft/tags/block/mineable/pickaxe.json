@@ -37,6 +37,11 @@
     "projectrebirth:radiation_purge_station",
     "projectrebirth:shelter_control_panel",
     "projectrebirth:charging_pad",
-    "projectrebirth:heater"
+    "projectrebirth:heater",
+    "projectrebirth:wall_monitor",
+    "projectrebirth:server_rack",
+    "projectrebirth:specimen_tank",
+    "projectrebirth:emergency_lamp",
+    "projectrebirth:wrecked_turret"
   ]
 }

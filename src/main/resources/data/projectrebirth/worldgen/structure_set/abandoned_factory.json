@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:abandoned_factory",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 60,
+    "separation": 22,
+    "salt": 160613,
+    "switch": "abandoned_factory"
+  }
+}

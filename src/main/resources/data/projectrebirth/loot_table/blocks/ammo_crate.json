@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "projectrebirth:ammo_crate"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "projectrebirth:blocks/ammo_crate"
+}

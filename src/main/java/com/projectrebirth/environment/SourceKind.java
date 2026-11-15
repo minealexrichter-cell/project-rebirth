@@ -12,7 +12,9 @@ public enum SourceKind {
     /** Leaking waste barrel: polluted air. */
     WASTE_BARREL,
     /** Radioisotope generator: weaker radiation. */
-    GENERATOR;
+    GENERATOR,
+    /** Irradiated sludge in the contamination zone (large structures of 1.6.0): weaker radiation than debris, shorter reach. */
+    SLUDGE;
 
     public boolean enabled() {
         return this != GENERATOR || RebirthConfig.ISOTOPE_RADIATES.get();
@@ -23,6 +25,7 @@ public enum SourceKind {
         return switch (this) {
             case DEBRIS -> RebirthConfig.DEBRIS_RADIATION.get().floatValue();
             case GENERATOR -> RebirthConfig.ISOTOPE_RADIATION.get().floatValue();
+            case SLUDGE -> RebirthConfig.SLUDGE_RADIATION.get().floatValue();
             case WASTE_BARREL -> 0.0f;
         };
     }
@@ -38,6 +41,7 @@ public enum SourceKind {
             case DEBRIS -> RebirthConfig.DEBRIS_RANGE.get();
             case WASTE_BARREL -> RebirthConfig.BARREL_RANGE.get();
             case GENERATOR -> RebirthConfig.ISOTOPE_RANGE.get();
+            case SLUDGE -> RebirthConfig.SLUDGE_RANGE.get();
         };
     }
 }

@@ -73,6 +73,7 @@ public class ProjectRebirth {
         com.projectrebirth.environment.TemperatureRegistry.register(modEventBus);
         com.projectrebirth.environment.SourceRegistry.register(modEventBus);
         com.projectrebirth.structures.StructureRegistry.register(modEventBus);
+        com.projectrebirth.structures.StructureBlocks.register(modEventBus);
         com.projectrebirth.shelter.ShelterRegistry.register(modEventBus);
         com.projectrebirth.codex.CodexRegistry.register(modEventBus);
         Jetpack.register(modEventBus);

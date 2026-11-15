@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:defensive_outpost",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 44,
+    "separation": 16,
+    "salt": 160615,
+    "switch": "defensive_outpost"
+  }
+}

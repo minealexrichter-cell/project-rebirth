@@ -46,6 +46,13 @@ public final class ModCreativeTabs {
                 output.accept(TechItems.RADIOISOTOPE_GENERATOR.get());
                 output.accept(com.projectrebirth.environment.SourceRegistry.RADIOACTIVE_DEBRIS_ITEM.get());
                 output.accept(com.projectrebirth.environment.SourceRegistry.LEAKING_WASTE_BARREL_ITEM.get());
+                output.accept(com.projectrebirth.environment.SourceRegistry.IRRADIATED_SLUDGE_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.WALL_MONITOR_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.SERVER_RACK_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.SPECIMEN_TANK_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.EMERGENCY_LAMP_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.WRECKED_TURRET_ITEM.get());
+                output.accept(com.projectrebirth.structures.StructureBlocks.AMMO_CRATE_ITEM.get());
                 output.accept(TechItems.BATTERY.get());
                 output.accept(com.projectrebirth.codex.CodexRegistry.REBIRTH_CODEX.get());
                 output.accept(TechItems.CABLE.get());

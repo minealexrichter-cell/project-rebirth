@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "projectrebirth:wrecked_turret"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "projectrebirth:blocks/wrecked_turret"
+}

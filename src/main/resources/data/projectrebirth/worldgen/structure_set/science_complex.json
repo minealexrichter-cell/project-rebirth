@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:science_complex",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 60,
+    "separation": 22,
+    "salt": 160612,
+    "switch": "science_complex"
+  }
+}

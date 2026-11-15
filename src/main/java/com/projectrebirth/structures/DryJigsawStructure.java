@@ -55,9 +55,13 @@ public class DryJigsawStructure extends Structure {
 
     /** No water over the ground and no steep slope at the middle of the chunk and four points around it. */
     boolean dryAndLevel(GenerationContext context) {
+        return dryAndLevel(context, checkRadius, maxSlope);
+    }
+
+    /** The same check for any structure: no fluid over the ground and at most maxSlope blocks of height difference. */
+    static boolean dryAndLevel(GenerationContext context, int r, int maxSlope) {
         int x = context.chunkPos().getMiddleBlockX();
         int z = context.chunkPos().getMiddleBlockZ();
-        int r = checkRadius;
         int low = Integer.MAX_VALUE, high = Integer.MIN_VALUE;
         for (int[] d : new int[][] {{0, 0}, {r, r}, {r, -r}, {-r, r}, {-r, -r}}) {
             int surface = context.chunkGenerator().getFirstOccupiedHeight(x + d[0], z + d[1], Heightmap.Types.WORLD_SURFACE_WG,

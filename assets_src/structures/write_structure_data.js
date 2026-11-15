@@ -20,44 +20,45 @@ const STRUCTURES = {
     ruined_reactor: {checkRadius: 16, spacing: 80, separation: 30, salt: 160603,
         biomes: ['minecraft:plains', 'minecraft:savanna', 'minecraft:desert', '#minecraft:is_badlands', 'minecraft:snowy_plains']},
     // the large structures (after the owner's concept art): rarer than the small ruins, on flatter ground
-    military_base: {checkRadius: 22, maxSlope: 8, spacing: 64, separation: 24, salt: 160611,
+    military_base: {checkRadius: 22, maxSlope: 12, spacing: 64, separation: 24, salt: 160611,
         biomes: ['minecraft:plains', 'minecraft:snowy_plains', 'minecraft:savanna', 'minecraft:taiga', 'minecraft:snowy_taiga', 'minecraft:forest']},
-    science_complex: {checkRadius: 20, maxSlope: 8, spacing: 60, separation: 22, salt: 160612,
+    science_complex: {checkRadius: 20, maxSlope: 12, spacing: 60, separation: 22, salt: 160612,
         biomes: ['#minecraft:is_forest', 'minecraft:taiga', 'minecraft:plains', 'minecraft:meadow']},
-    abandoned_factory: {checkRadius: 24, maxSlope: 8, spacing: 60, separation: 22, salt: 160613,
+    abandoned_factory: {checkRadius: 24, maxSlope: 12, spacing: 60, separation: 22, salt: 160613,
         biomes: ['minecraft:plains', 'minecraft:savanna', 'minecraft:desert', '#minecraft:is_badlands', 'minecraft:snowy_plains']},
-    comm_station: {checkRadius: 16, maxSlope: 8, spacing: 56, separation: 20, salt: 160614,
+    comm_station: {checkRadius: 16, maxSlope: 12, spacing: 56, separation: 20, salt: 160614,
         biomes: ['minecraft:plains', 'minecraft:meadow', 'minecraft:taiga', 'minecraft:snowy_plains', 'minecraft:savanna']},
-    defensive_outpost: {checkRadius: 18, maxSlope: 7, spacing: 44, separation: 16, salt: 160615,
+    defensive_outpost: {checkRadius: 18, maxSlope: 12, spacing: 44, separation: 16, salt: 160615,
         biomes: ['#minecraft:is_forest', '#minecraft:is_taiga', 'minecraft:plains', 'minecraft:savanna', 'minecraft:snowy_plains']},
-    contamination_zone: {checkRadius: 17, maxSlope: 8, spacing: 64, separation: 24, salt: 160616,
+    contamination_zone: {checkRadius: 17, maxSlope: 12, spacing: 64, separation: 24, salt: 160616,
         biomes: ['#minecraft:is_forest', 'minecraft:swamp', 'minecraft:taiga', 'minecraft:plains', 'minecraft:dark_forest']}
 };
 
+// The large structures are laid out of several pieces (assets_src/structures/layouts.json, written by build_large_structures.js);
+// the three small ruins are one piece each. All of them use the compound structure (structures/CompoundStructure.java): each
+// building sits on the ground under it and only there the terrain is shaped, walls and paths lie on the ground.
+const LAYOUTS = JSON.parse(fs.readFileSync(path.join(__dirname, 'layouts.json'), 'utf8'));
+const SINGLE = {abandoned_lab: [15, 13, 'minecraft:stone_bricks'], industrial_ruins: [25, 21, 'minecraft:cobblestone'], ruined_reactor: [33, 33, 'minecraft:polished_blackstone']};
 for (const [name, s] of Object.entries(STRUCTURES)) {
+    const layout = LAYOUTS[name] || {size_x: SINGLE[name][0], size_z: SINGLE[name][1], foundation: SINGLE[name][2],
+        parts: [{template: 'projectrebirth:ruins/' + name, x: 0, z: 0, floor: 2}]};
     write(`worldgen/structure/${name}.json`, {
-        // a jigsaw that keeps off water and steep slopes (structures/DryJigsawStructure.java)
-        type: 'projectrebirth:dry_jigsaw',
-        check_radius: s.checkRadius,
-        max_slope: s.maxSlope || 6,
+        type: 'projectrebirth:compound',
         biomes: `#projectrebirth:has_structure/${name}`,
-        // the large ones go in after the trees (top_layer_modification), so that their clearing keeps trees out of yards and halls
-        step: s.maxSlope ? 'top_layer_modification' : 'surface_structures',
+        step: 'surface_structures',
         spawn_overrides: {},
+        // each building's own box: the ground is filled up under it and cut away over it, softly into the land around
         terrain_adaptation: 'beard_thin',
-        start_pool: `projectrebirth:ruins/${name}`,
-        size: 1,
-        // two blocks down: the foundation goes into the ground and the floor lies at the surface
-        start_height: {absolute: -2},
-        project_start_to_heightmap: 'WORLD_SURFACE_WG',
-        max_distance_from_center: 80,
-        use_expansion_hack: false
+        check_radius: s.checkRadius,
+        max_slope: s.maxSlope || 10,
+        size_x: layout.size_x,
+        size_z: layout.size_z,
+        processors: 'projectrebirth:ruins_decay',
+        foundation: {Name: layout.foundation},
+        parts: layout.parts
     });
-    write(`worldgen/template_pool/ruins/${name}.json`, {
-        fallback: 'minecraft:empty',
-        elements: [{weight: 1, element: {element_type: 'minecraft:single_pool_element', location: `projectrebirth:ruins/${name}`,
-            processors: 'projectrebirth:ruins_decay', projection: 'rigid'}}]
-    });
+    const pool = `worldgen/template_pool/ruins/${name}.json`;
+    if (fs.existsSync(path.join(DATA, pool))) fs.unlinkSync(path.join(DATA, pool)); // the jigsaw pools of the first version
     write(`worldgen/structure_set/${name}.json`, {
         structures: [{structure: `projectrebirth:${name}`, weight: 1}],
         placement: {type: 'projectrebirth:switchable_spread', spacing: s.spacing, separation: s.separation, salt: s.salt, switch: name}
@@ -96,7 +97,11 @@ write('worldgen/processor_list/ruins_decay.json', {processors: [{processor_type:
     rule('minecraft:blue_stained_glass_pane', 0.35, 'minecraft:air'),
     rule('minecraft:bricks', 0.04, 'minecraft:air'),
     rule('minecraft:iron_bars', 0.12, 'minecraft:air'),
-    rule('minecraft:mossy_stone_bricks', 0.08, 'minecraft:air')
+    rule('minecraft:mossy_stone_bricks', 0.08, 'minecraft:air'),
+    rule('minecraft:cobblestone', 0.2, 'minecraft:mossy_cobblestone'),
+    rule('minecraft:stone_brick_slab', 0.15, 'minecraft:mossy_stone_brick_slab', {type: 'top', waterlogged: 'false'}),
+    rule('minecraft:polished_andesite', 0.04, 'minecraft:moss_block'),
+    rule('minecraft:gray_concrete', 0.04, 'minecraft:cyan_terracotta')
 ]}]});
 
 // ------------------------------------------------------------------ loot: the value grows with the danger

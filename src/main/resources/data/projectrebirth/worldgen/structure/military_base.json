@@ -1,17 +1,161 @@
 {
-  "type": "projectrebirth:dry_jigsaw",
-  "check_radius": 22,
-  "max_slope": 8,
+  "type": "projectrebirth:compound",
   "biomes": "#projectrebirth:has_structure/military_base",
-  "step": "top_layer_modification",
+  "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "projectrebirth:ruins/military_base",
-  "size": 1,
-  "start_height": {
-    "absolute": -2
+  "check_radius": 22,
+  "max_slope": 12,
+  "size_x": 66,
+  "size_z": 62,
+  "processors": "projectrebirth:ruins_decay",
+  "foundation": {
+    "Name": "minecraft:cobbled_deepslate"
   },
-  "project_start_to_heightmap": "WORLD_SURFACE_WG",
-  "max_distance_from_center": 80,
-  "use_expansion_hack": false
+  "parts": [
+    {
+      "template": "projectrebirth:ruins/military_base/tower_nw",
+      "x": 0,
+      "z": 0,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/tower_ne",
+      "x": 58,
+      "z": 0,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/tower_sw",
+      "x": 0,
+      "z": 54,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/tower_se",
+      "x": 58,
+      "z": 54,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/wall_n",
+      "x": 9,
+      "z": 2,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/wall_w",
+      "x": 2,
+      "z": 9,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/wall_e",
+      "x": 62,
+      "z": 9,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/wall_sw",
+      "x": 8,
+      "z": 58,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/wall_se",
+      "x": 42,
+      "z": 58,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/gatehouse",
+      "x": 24,
+      "z": 54,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/headquarters",
+      "x": 14,
+      "z": 11,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/garage",
+      "x": 45,
+      "z": 8,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/barracks",
+      "x": 4,
+      "z": 37,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/generator_shed",
+      "x": 46,
+      "z": 38,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/path_gate",
+      "x": 28,
+      "z": 36,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/path_cross",
+      "x": 32,
+      "z": 37,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/path_garage",
+      "x": 51,
+      "z": 30,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/path_barracks",
+      "x": 23,
+      "z": 42,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/nest_w",
+      "x": 19,
+      "z": 51,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/nest_e",
+      "x": 34,
+      "z": 49,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/solar",
+      "x": 44,
+      "z": 50,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/floodlight",
+      "x": 10,
+      "z": 30,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/wreck_gate",
+      "x": 31,
+      "z": 42,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/military_base/scrap",
+      "x": 56,
+      "z": 49,
+      "follow": true
+    }
+  ]
 }

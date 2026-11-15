@@ -1,17 +1,77 @@
 {
-  "type": "projectrebirth:dry_jigsaw",
-  "check_radius": 16,
-  "max_slope": 8,
+  "type": "projectrebirth:compound",
   "biomes": "#projectrebirth:has_structure/comm_station",
-  "step": "top_layer_modification",
+  "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "projectrebirth:ruins/comm_station",
-  "size": 1,
-  "start_height": {
-    "absolute": -2
+  "check_radius": 16,
+  "max_slope": 12,
+  "size_x": 52,
+  "size_z": 52,
+  "processors": "projectrebirth:ruins_decay",
+  "foundation": {
+    "Name": "minecraft:stone_bricks"
   },
-  "project_start_to_heightmap": "WORLD_SURFACE_WG",
-  "max_distance_from_center": 80,
-  "use_expansion_hack": false
+  "parts": [
+    {
+      "template": "projectrebirth:ruins/comm_station/mast",
+      "x": 28,
+      "z": 6,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/control",
+      "x": 2,
+      "z": 28,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/trench",
+      "x": 25,
+      "z": 18,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/dish_0",
+      "x": 4,
+      "z": 4,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/dish_1",
+      "x": 15,
+      "z": 6,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/fuel_tanks",
+      "x": 40,
+      "z": 40,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/fence_n",
+      "x": 6,
+      "z": 0,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/fence_e",
+      "x": 51,
+      "z": 6,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/path_door",
+      "x": 12,
+      "z": 47,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/path_yard",
+      "x": 14,
+      "z": 24,
+      "follow": true
+    }
+  ]
 }

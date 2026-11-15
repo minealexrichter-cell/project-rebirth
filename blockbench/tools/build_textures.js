@@ -2589,16 +2589,108 @@
         return p;
     });
 
-    // Specimen tank: cyan liquid with rising bubbles and a dark shape floating in it.
+    // Specimen tank liquid: translucent blue water with rising bubbles and a brighter glass edge; the specimen is a 3D model inside.
     function tankLiquid(i) {
         const p = new Painter(821);
-        p.noise(0, 0, 16, 16, '#1d8fb0', 0.05);
-        p.rect(0, 0, 2, 16, '#3fd6f0').rect(14, 0, 2, 16, '#146a86');
-        p.grid(['..dd..', '.dddd.', '.dddd.', '..dd..', '.dddd.', 'dddddd', 'dddddd', '.dddd.', '.d..d.'], {d: '#0e4a5e'}, 5, 3);
-        [[3, 13], [11, 9], [4, 6], [12, 2], [9, 14]].forEach(([x, y]) => p.px('#bff6ff', [x, (y - i * 4 + 64) % 16]));
+        const rgba = (r, g, b, a) => 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+        for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+            const v = p.rand() * 0.06;
+            p.ctx.clearRect(x, y, 1, 1);
+            p.rect(x, y, 1, 1, rgba(25 + Math.round(v * 200), 135 + Math.round(v * 300), 205, 0.5 + (y / 16) * 0.14));
+        }
+        // the glass: a lighter edge on the left, a darker one on the right, a long highlight streak
+        for (let y = 0; y < 16; y++) { p.ctx.clearRect(0, y, 1, 1); p.rect(0, y, 1, 1, rgba(150, 235, 255, 0.7)); p.ctx.clearRect(15, y, 1, 1); p.rect(15, y, 1, 1, rgba(20, 90, 120, 0.7)); }
+        for (let y = 2; y < 13; y++) { p.ctx.clearRect(2, y, 1, 1); p.rect(2, y, 1, 1, rgba(220, 250, 255, 0.55)); }
+        // bubbles rising
+        [[4, 13], [11, 9], [5, 6], [12, 2], [9, 14], [7, 3]].forEach(([x, y], k) => {
+            const yy = (y - i * 4 + 64 + k) % 16;
+            p.ctx.clearRect(x, yy, 1, 1);
+            p.rect(x, yy, 1, 1, rgba(225, 252, 255, 0.85));
+        });
         return p;
     }
     animated('specimen_tank_liquid', 4, 5, i => tankLiquid(i));
+
+    // The specimen floating in the tank: pale grey-green skin with darker folds; the head's front has closed dark eyes.
+    block('specimen', () => {
+        const p = new Painter(822);
+        p.noise(0, 0, 16, 16, '#9fb7a6', 0.08);
+        [[1, 9], [4, 12], [9, 10], [13, 13], [6, 14], [11, 7]].forEach(([x, y]) => p.px('#7c9584', [x, y], [x + 1, y]));
+        // the face (u 0..6, v 0..6): brow, two closed eyes, a slit of a mouth
+        p.noise(0, 0, 6, 6, '#a9c1b0', 0.05);
+        p.rect(1, 2, 1, 1, '#2c3a33').rect(4, 2, 1, 1, '#2c3a33').rect(2, 4, 2, 1, '#6d8577').rect(0, 1, 6, 1, '#93ab9a');
+        // veins on the body area
+        p.px('#6e7fa0', [9, 2], [10, 3], [10, 4], [11, 5], [8, 8], [8, 9]);
+        return p;
+    });
+    block('tank_metal', () => {
+        const p = new Painter(823);
+        p.noise(0, 0, 16, 16, '#4a525c', 0.05);
+        p.rect(0, 0, 16, 1, '#6b7580').rect(0, 15, 16, 1, '#2a2f36');
+        [[2, 7], [13, 7]].forEach(([x, y]) => p.bevel(x, y, 2, 2, '#8c97a3', 0.02));
+        p.rect(5, 6, 6, 4, '#1e2228').rect(6, 7, 1, 2, '#37e6ff').rect(8, 7, 2, 1, '#35d07f');
+        return p;
+    });
+
+    // Wrecked turret: olive armor plates with seams, rivets, worn edges and soot; a dark gunmetal mechanism; barrels; a cracked sensor.
+    block('turret_armor', () => {
+        const p = new Painter(851);
+        p.noise(0, 0, 16, 16, '#4b5236', 0.05);
+        p.bevel(0, 0, 8, 7, '#51583a', 0.04).bevel(8, 0, 8, 7, '#4e5538', 0.04).bevel(0, 7, 16, 9, '#495034', 0.04);
+        p.px('#2d3320', [1, 1], [6, 1], [9, 1], [14, 1], [1, 9], [14, 9], [1, 14], [14, 14]);
+        // worn edges show steel, soot and a scorch, a short hazard stripe
+        p.px('#8c97a3', [7, 3], [8, 4], [0, 12], [15, 5], [3, 15], [12, 8]);
+        [[10, 10, 4, 3], [11, 9, 2, 1], [9, 12, 2, 2]].forEach(([x, y, w, h]) => p.noise(x, y, w, h, '#2b2a24', 0.12));
+        p.px('#151513', [11, 11], [12, 11]);
+        for (let x = 2; x < 8; x++) p.px(x % 2 ? '#b8982e' : '#1a1a1a', [x, 4]);
+        return p;
+    });
+    block('turret_metal', () => {
+        const p = new Painter(852);
+        p.noise(0, 0, 16, 16, '#30353c', 0.05);
+        p.inset(2, 2, 12, 12, '#262a30', 0.03);
+        [[3, 3], [12, 3], [3, 12], [12, 12]].forEach(([x, y]) => p.bevel(x, y, 1, 1, '#7b858f', 0));
+        p.rect(4, 7, 8, 2, '#1a1d21').rect(5, 7, 1, 2, '#c77b3b').rect(10, 7, 1, 2, '#6e4a31');
+        return p;
+    });
+    block('turret_barrel', () => {
+        const p = new Painter(853);
+        p.noise(0, 0, 16, 16, '#3b4048', 0.05);
+        [0, 5, 10].forEach(y => p.rect(0, y, 16, 1, '#1d2025'));
+        p.rect(0, 1, 16, 1, '#59626c');
+        // the muzzle face (u 6..10, v 12..16): a dark bore in a ring
+        p.rect(6, 12, 4, 4, '#59626c').rect(7, 13, 2, 2, '#0b0c0e');
+        return p;
+    });
+    block('turret_sensor', () => {
+        const p = new Painter(854);
+        p.noise(0, 0, 16, 16, '#262a30', 0.04);
+        p.rect(3, 3, 10, 10, '#121417');
+        p.rect(4, 4, 8, 8, '#3a0d0b').rect(6, 6, 4, 4, '#7a1a14').rect(7, 7, 1, 1, '#c8463a');
+        // the crack across the lens
+        p.px('#c9d2db', [4, 5], [5, 6], [6, 6], [7, 8], [8, 9], [9, 9], [10, 11]);
+        return p;
+    });
+
+    // Emergency lamp: a red ribbed lens that glows, a bright core, and a steel wall plate with screws.
+    block('lamp_lens', () => {
+        const p = new Painter(861);
+        p.noise(0, 0, 16, 16, '#d8261c', 0.05);
+        for (let x = 0; x < 16; x += 3) p.rect(x, 0, 1, 16, '#a3160f');
+        p.rect(5, 5, 6, 6, '#ff6a4a').rect(6, 6, 4, 4, '#ffb59a').rect(7, 7, 2, 2, '#fff1e6');
+        p.rect(2, 2, 2, 1, '#ff9c84').rect(2, 3, 1, 2, '#ff9c84');
+        return p;
+    });
+    block('lamp_base', () => {
+        const p = new Painter(862);
+        p.noise(0, 0, 16, 16, '#4a525c', 0.05);
+        p.bevel(0, 0, 16, 16, '#4f5862', 0.03);
+        [[2, 2], [13, 2], [2, 13], [13, 13]].forEach(([x, y]) => p.px('#9aa4ae', [x, y]).px('#1e2228', [x + 1, y + 1]));
+        p.rect(0, 7, 16, 2, '#e0b92c');
+        for (let x = 0; x < 16; x += 2) p.px('#1a1a1a', [x, 7], [x + 1, 8]);
+        return p;
+    });
+
 
     // Military ammo crate: olive planks, a stencil band, steel latches.
     block('ammo_crate_side', () => {

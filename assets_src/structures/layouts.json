@@ -1,0 +1,590 @@
+{
+  "military_base": {
+    "size_x": 66,
+    "size_z": 62,
+    "foundation": "minecraft:cobbled_deepslate",
+    "parts": [
+      {
+        "template": "projectrebirth:ruins/military_base/tower_nw",
+        "x": 0,
+        "z": 0,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/tower_ne",
+        "x": 58,
+        "z": 0,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/tower_sw",
+        "x": 0,
+        "z": 54,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/tower_se",
+        "x": 58,
+        "z": 54,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/wall_n",
+        "x": 9,
+        "z": 2,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/wall_w",
+        "x": 2,
+        "z": 9,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/wall_e",
+        "x": 62,
+        "z": 9,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/wall_sw",
+        "x": 8,
+        "z": 58,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/wall_se",
+        "x": 42,
+        "z": 58,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/gatehouse",
+        "x": 24,
+        "z": 54,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/headquarters",
+        "x": 14,
+        "z": 11,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/garage",
+        "x": 45,
+        "z": 8,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/barracks",
+        "x": 4,
+        "z": 37,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/generator_shed",
+        "x": 46,
+        "z": 38,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/path_gate",
+        "x": 28,
+        "z": 36,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/path_cross",
+        "x": 32,
+        "z": 37,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/path_garage",
+        "x": 51,
+        "z": 30,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/path_barracks",
+        "x": 23,
+        "z": 42,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/nest_w",
+        "x": 19,
+        "z": 51,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/nest_e",
+        "x": 34,
+        "z": 49,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/solar",
+        "x": 44,
+        "z": 50,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/floodlight",
+        "x": 10,
+        "z": 30,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/wreck_gate",
+        "x": 31,
+        "z": 42,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/scrap",
+        "x": 56,
+        "z": 49,
+        "follow": true
+      }
+    ]
+  },
+  "science_complex": {
+    "size_x": 62,
+    "size_z": 54,
+    "foundation": "minecraft:stone_bricks",
+    "parts": [
+      {
+        "template": "projectrebirth:ruins/science_complex/laboratory",
+        "x": 4,
+        "z": 6,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/observatory",
+        "x": 41,
+        "z": 8,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/greenhouse",
+        "x": 42,
+        "z": 32,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/path_main",
+        "x": 19,
+        "z": 28,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/path_obs",
+        "x": 37,
+        "z": 16,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/solar_1",
+        "x": 2,
+        "z": 44,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/solar_2",
+        "x": 2,
+        "z": 48,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/fence_s",
+        "x": 24,
+        "z": 53,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/fence_e",
+        "x": 61,
+        "z": 26,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/wreck_bay",
+        "x": 28,
+        "z": 36,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/dish",
+        "x": 51,
+        "z": 43,
+        "floor": 2
+      }
+    ]
+  },
+  "abandoned_factory": {
+    "size_x": 74,
+    "size_z": 52,
+    "foundation": "minecraft:cobblestone",
+    "parts": [
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/hall",
+        "x": 2,
+        "z": 6,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/boiler_house",
+        "x": 44,
+        "z": 9,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/warehouse",
+        "x": 54,
+        "z": 34,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/rails",
+        "x": 30,
+        "z": 40,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/scrap_1",
+        "x": 46,
+        "z": 44,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/scrap_2",
+        "x": 8,
+        "z": 40,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/waste_dump",
+        "x": 16,
+        "z": 42,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/transformer",
+        "x": 62,
+        "z": 8,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/path_load",
+        "x": 26,
+        "z": 37,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/path_yard",
+        "x": 22,
+        "z": 47,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/path_door",
+        "x": 0,
+        "z": 19,
+        "follow": true
+      }
+    ]
+  },
+  "comm_station": {
+    "size_x": 52,
+    "size_z": 52,
+    "foundation": "minecraft:stone_bricks",
+    "parts": [
+      {
+        "template": "projectrebirth:ruins/comm_station/mast",
+        "x": 28,
+        "z": 6,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/control",
+        "x": 2,
+        "z": 28,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/trench",
+        "x": 25,
+        "z": 18,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/dish_0",
+        "x": 4,
+        "z": 4,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/dish_1",
+        "x": 15,
+        "z": 6,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/fuel_tanks",
+        "x": 40,
+        "z": 40,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/fence_n",
+        "x": 6,
+        "z": 0,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/fence_e",
+        "x": 51,
+        "z": 6,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/path_door",
+        "x": 12,
+        "z": 47,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/path_yard",
+        "x": 14,
+        "z": 24,
+        "follow": true
+      }
+    ]
+  },
+  "defensive_outpost": {
+    "size_x": 54,
+    "size_z": 46,
+    "foundation": "minecraft:cobbled_deepslate",
+    "parts": [
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/tower_w",
+        "x": 0,
+        "z": 36,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/tower_e",
+        "x": 45,
+        "z": 0,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/wall_n",
+        "x": 2,
+        "z": 2,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/wall_w",
+        "x": 2,
+        "z": 3,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/wall_e",
+        "x": 50,
+        "z": 9,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/wall_s1",
+        "x": 9,
+        "z": 42,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/wall_s2",
+        "x": 31,
+        "z": 42,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/gate",
+        "x": 19,
+        "z": 40,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/barracks",
+        "x": 7,
+        "z": 7,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/armory",
+        "x": 28,
+        "z": 9,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/nest_1",
+        "x": 13,
+        "z": 33,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/nest_2",
+        "x": 33,
+        "z": 33,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/nest_3",
+        "x": 44,
+        "z": 22,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/floodlight_1",
+        "x": 8,
+        "z": 26,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/floodlight_2",
+        "x": 40,
+        "z": 30,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/wreck_gate",
+        "x": 27,
+        "z": 30,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/path_gate",
+        "x": 23,
+        "z": 21,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/path_cross",
+        "x": 12,
+        "z": 22,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/scrap",
+        "x": 5,
+        "z": 16,
+        "follow": true
+      }
+    ]
+  },
+  "contamination_zone": {
+    "size_x": 50,
+    "size_z": 50,
+    "foundation": "minecraft:cobbled_deepslate",
+    "parts": [
+      {
+        "template": "projectrebirth:ruins/contamination_zone/arch",
+        "x": 12,
+        "z": 17,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/column_0",
+        "x": 6,
+        "z": 6,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/column_1",
+        "x": 40,
+        "z": 6,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/column_2",
+        "x": 6,
+        "z": 40,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/column_3",
+        "x": 40,
+        "z": 40,
+        "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/bunker",
+        "x": 27,
+        "z": 33,
+        "floor": 7
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/pool_1",
+        "x": 6,
+        "z": 32,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/pool_2",
+        "x": 34,
+        "z": 10,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/pool_3",
+        "x": 18,
+        "z": 6,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/debris_0",
+        "x": 18,
+        "z": 36,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/debris_1",
+        "x": 4,
+        "z": 14,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/tree_0",
+        "x": 3,
+        "z": 24,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/tree_1",
+        "x": 46,
+        "z": 16,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/tree_2",
+        "x": 14,
+        "z": 44,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/tree_3",
+        "x": 26,
+        "z": 3,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/camp",
+        "x": 40,
+        "z": 24,
+        "floor": 2
+      }
+    ]
+  }
+}

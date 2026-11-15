@@ -287,7 +287,10 @@ public class RadiationSourcesGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(4, 2, 4));
         for (Block block : List.of(SourceRegistry.RADIOACTIVE_DEBRIS.get(), SourceRegistry.LEAKING_WASTE_BARREL.get())) {
-            helper.assertTrue(Block.getDrops(block.defaultBlockState(), level, pos, null).isEmpty(), block + " drops nothing: no one carries a source to another's land");
+            for (int i = 0; i < 20; i++) {
+                helper.assertTrue(Block.getDrops(block.defaultBlockState(), level, pos, null).stream().noneMatch(stack -> stack.is(block.asItem())),
+                        block + " never drops itself: no one carries a source to another's land");
+            }
         }
         helper.assertTrue(Block.getDrops(TechBlocks.RADIOISOTOPE_GENERATOR.get().defaultBlockState(), level, pos, null, null, new ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE))
                 .stream().anyMatch(stack -> stack.is(TechItems.RADIOISOTOPE_GENERATOR.get())), "The generator drops itself");

@@ -1,17 +1,83 @@
 {
-  "type": "projectrebirth:dry_jigsaw",
-  "check_radius": 20,
-  "max_slope": 8,
+  "type": "projectrebirth:compound",
   "biomes": "#projectrebirth:has_structure/science_complex",
-  "step": "top_layer_modification",
+  "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "projectrebirth:ruins/science_complex",
-  "size": 1,
-  "start_height": {
-    "absolute": -2
+  "check_radius": 20,
+  "max_slope": 12,
+  "size_x": 62,
+  "size_z": 54,
+  "processors": "projectrebirth:ruins_decay",
+  "foundation": {
+    "Name": "minecraft:stone_bricks"
   },
-  "project_start_to_heightmap": "WORLD_SURFACE_WG",
-  "max_distance_from_center": 80,
-  "use_expansion_hack": false
+  "parts": [
+    {
+      "template": "projectrebirth:ruins/science_complex/laboratory",
+      "x": 4,
+      "z": 6,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/observatory",
+      "x": 41,
+      "z": 8,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/greenhouse",
+      "x": 42,
+      "z": 32,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/path_main",
+      "x": 19,
+      "z": 28,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/path_obs",
+      "x": 37,
+      "z": 16,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/solar_1",
+      "x": 2,
+      "z": 44,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/solar_2",
+      "x": 2,
+      "z": 48,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/fence_s",
+      "x": 24,
+      "z": 53,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/fence_e",
+      "x": 61,
+      "z": 26,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/wreck_bay",
+      "x": 28,
+      "z": 36,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/dish",
+      "x": 51,
+      "z": 43,
+      "floor": 2
+    }
+  ]
 }

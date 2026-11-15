@@ -1,17 +1,83 @@
 {
-  "type": "projectrebirth:dry_jigsaw",
-  "check_radius": 24,
-  "max_slope": 8,
+  "type": "projectrebirth:compound",
   "biomes": "#projectrebirth:has_structure/abandoned_factory",
-  "step": "top_layer_modification",
+  "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "projectrebirth:ruins/abandoned_factory",
-  "size": 1,
-  "start_height": {
-    "absolute": -2
+  "check_radius": 24,
+  "max_slope": 12,
+  "size_x": 74,
+  "size_z": 52,
+  "processors": "projectrebirth:ruins_decay",
+  "foundation": {
+    "Name": "minecraft:cobblestone"
   },
-  "project_start_to_heightmap": "WORLD_SURFACE_WG",
-  "max_distance_from_center": 80,
-  "use_expansion_hack": false
+  "parts": [
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/hall",
+      "x": 2,
+      "z": 6,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/boiler_house",
+      "x": 44,
+      "z": 9,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/warehouse",
+      "x": 54,
+      "z": 34,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/rails",
+      "x": 30,
+      "z": 40,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/scrap_1",
+      "x": 46,
+      "z": 44,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/scrap_2",
+      "x": 8,
+      "z": 40,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/waste_dump",
+      "x": 16,
+      "z": 42,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/transformer",
+      "x": 62,
+      "z": 8,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/path_load",
+      "x": 26,
+      "z": 37,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/path_yard",
+      "x": 22,
+      "z": 47,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/path_door",
+      "x": 0,
+      "z": 19,
+      "follow": true
+    }
+  ]
 }

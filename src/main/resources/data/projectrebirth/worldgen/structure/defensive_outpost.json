@@ -1,17 +1,131 @@
 {
-  "type": "projectrebirth:dry_jigsaw",
-  "check_radius": 18,
-  "max_slope": 7,
+  "type": "projectrebirth:compound",
   "biomes": "#projectrebirth:has_structure/defensive_outpost",
-  "step": "top_layer_modification",
+  "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "projectrebirth:ruins/defensive_outpost",
-  "size": 1,
-  "start_height": {
-    "absolute": -2
+  "check_radius": 18,
+  "max_slope": 12,
+  "size_x": 54,
+  "size_z": 46,
+  "processors": "projectrebirth:ruins_decay",
+  "foundation": {
+    "Name": "minecraft:cobbled_deepslate"
   },
-  "project_start_to_heightmap": "WORLD_SURFACE_WG",
-  "max_distance_from_center": 80,
-  "use_expansion_hack": false
+  "parts": [
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/tower_w",
+      "x": 0,
+      "z": 36,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/tower_e",
+      "x": 45,
+      "z": 0,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/wall_n",
+      "x": 2,
+      "z": 2,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/wall_w",
+      "x": 2,
+      "z": 3,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/wall_e",
+      "x": 50,
+      "z": 9,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/wall_s1",
+      "x": 9,
+      "z": 42,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/wall_s2",
+      "x": 31,
+      "z": 42,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/gate",
+      "x": 19,
+      "z": 40,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/barracks",
+      "x": 7,
+      "z": 7,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/armory",
+      "x": 28,
+      "z": 9,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/nest_1",
+      "x": 13,
+      "z": 33,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/nest_2",
+      "x": 33,
+      "z": 33,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/nest_3",
+      "x": 44,
+      "z": 22,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/floodlight_1",
+      "x": 8,
+      "z": 26,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/floodlight_2",
+      "x": 40,
+      "z": 30,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/wreck_gate",
+      "x": 27,
+      "z": 30,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/path_gate",
+      "x": 23,
+      "z": 21,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/path_cross",
+      "x": 12,
+      "z": 22,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/scrap",
+      "x": 5,
+      "z": 16,
+      "follow": true
+    }
+  ]
 }

@@ -1,17 +1,113 @@
 {
-  "type": "projectrebirth:dry_jigsaw",
-  "check_radius": 17,
-  "max_slope": 8,
+  "type": "projectrebirth:compound",
   "biomes": "#projectrebirth:has_structure/contamination_zone",
-  "step": "top_layer_modification",
+  "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "projectrebirth:ruins/contamination_zone",
-  "size": 1,
-  "start_height": {
-    "absolute": -2
+  "check_radius": 17,
+  "max_slope": 12,
+  "size_x": 50,
+  "size_z": 50,
+  "processors": "projectrebirth:ruins_decay",
+  "foundation": {
+    "Name": "minecraft:cobbled_deepslate"
   },
-  "project_start_to_heightmap": "WORLD_SURFACE_WG",
-  "max_distance_from_center": 80,
-  "use_expansion_hack": false
+  "parts": [
+    {
+      "template": "projectrebirth:ruins/contamination_zone/arch",
+      "x": 12,
+      "z": 17,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/column_0",
+      "x": 6,
+      "z": 6,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/column_1",
+      "x": 40,
+      "z": 6,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/column_2",
+      "x": 6,
+      "z": 40,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/column_3",
+      "x": 40,
+      "z": 40,
+      "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/bunker",
+      "x": 27,
+      "z": 33,
+      "floor": 7
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/pool_1",
+      "x": 6,
+      "z": 32,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/pool_2",
+      "x": 34,
+      "z": 10,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/pool_3",
+      "x": 18,
+      "z": 6,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/debris_0",
+      "x": 18,
+      "z": 36,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/debris_1",
+      "x": 4,
+      "z": 14,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/tree_0",
+      "x": 3,
+      "z": 24,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/tree_1",
+      "x": 46,
+      "z": 16,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/tree_2",
+      "x": 14,
+      "z": 44,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/tree_3",
+      "x": 26,
+      "z": 3,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/camp",
+      "x": 40,
+      "z": 24,
+      "floor": 2
+    }
+  ]
 }

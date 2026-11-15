@@ -1,17 +1,23 @@
 {
-  "type": "projectrebirth:dry_jigsaw",
-  "check_radius": 12,
-  "max_slope": 6,
+  "type": "projectrebirth:compound",
   "biomes": "#projectrebirth:has_structure/industrial_ruins",
   "step": "surface_structures",
   "spawn_overrides": {},
   "terrain_adaptation": "beard_thin",
-  "start_pool": "projectrebirth:ruins/industrial_ruins",
-  "size": 1,
-  "start_height": {
-    "absolute": -2
+  "check_radius": 12,
+  "max_slope": 10,
+  "size_x": 25,
+  "size_z": 21,
+  "processors": "projectrebirth:ruins_decay",
+  "foundation": {
+    "Name": "minecraft:cobblestone"
   },
-  "project_start_to_heightmap": "WORLD_SURFACE_WG",
-  "max_distance_from_center": 80,
-  "use_expansion_hack": false
+  "parts": [
+    {
+      "template": "projectrebirth:ruins/industrial_ruins",
+      "x": 0,
+      "z": 0,
+      "floor": 2
+    }
+  ]
 }

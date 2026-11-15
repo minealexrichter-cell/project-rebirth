@@ -26,6 +26,10 @@ public final class StructureRegistry {
     public static final DeferredHolder<StructureType<?>, StructureType<DryJigsawStructure>> DRY_JIGSAW =
             TYPES.register("dry_jigsaw", () -> () -> DryJigsawStructure.CODEC);
 
+    /** A structure laid out of several pieces that each sit on their own ground (see CompoundStructure). */
+    public static final DeferredHolder<StructureType<?>, StructureType<CompoundStructure>> COMPOUND =
+            TYPES.register("compound", () -> () -> CompoundStructure.CODEC);
+
     private StructureRegistry() {
     }
 

@@ -9,6 +9,7 @@ import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.environment.RadiationSources;
 import com.projectrebirth.environment.SourceRegistry;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
+import com.projectrebirth.structures.CompoundStructure;
 import com.projectrebirth.structures.StructureBlocks;
 import com.projectrebirth.structures.StructureSwitches;
 import com.projectrebirth.structures.SwitchableSpreadPlacement;
@@ -54,25 +55,42 @@ public class LargeStructuresGameTests {
     private static final String TEMPLATE = "floor_5x5";
     private static final List<String> NAMES = List.of(StructureSwitches.MILITARY, StructureSwitches.SCIENCE, StructureSwitches.FACTORY,
             StructureSwitches.COMM, StructureSwitches.OUTPOST, StructureSwitches.ZONE);
-    /** Size, and how many wrecked armors stand in each. */
-    private static final Map<String, int[]> SIZES = Map.of(
-            StructureSwitches.MILITARY, new int[] {48, 34, 45, 5},
-            StructureSwitches.SCIENCE, new int[] {46, 28, 40, 1},
-            StructureSwitches.FACTORY, new int[] {54, 38, 40, 2},
-            StructureSwitches.COMM, new int[] {36, 48, 36, 1},
-            StructureSwitches.OUTPOST, new int[] {40, 22, 32, 1},
-            StructureSwitches.ZONE, new int[] {38, 28, 38, 1});
+    /** How many wrecked armors stand in each. */
+    private static final Map<String, Integer> WRECKS = Map.of(StructureSwitches.MILITARY, 5, StructureSwitches.SCIENCE, 2,
+            StructureSwitches.FACTORY, 3, StructureSwitches.COMM, 1, StructureSwitches.OUTPOST, 1, StructureSwitches.ZONE, 1);
 
-    private static StructureTemplate template(GameTestHelper helper, String name) {
-        return helper.getLevel().getStructureManager().get(ProjectRebirth.id("ruins/" + name))
-                .orElseThrow(() -> new IllegalStateException("No structure piece ruins/" + name));
+    /** The structure as registered: a compound of pieces. */
+    private static CompoundStructure structure(GameTestHelper helper, String name) {
+        var structure = helper.getLevel().registryAccess().registryOrThrow(Registries.STRUCTURE).get(ProjectRebirth.id(name));
+        if (!(structure instanceof CompoundStructure compound)) {
+            throw new IllegalStateException(name + " is a compound structure, got " + structure);
+        }
+        return compound;
     }
 
-    private static int count(StructureTemplate template, Block block) {
-        return template.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), block).size();
+    /** All the pieces of a structure. */
+    private static List<StructureTemplate> pieces(GameTestHelper helper, String name) {
+        List<StructureTemplate> out = new ArrayList<>();
+        for (CompoundStructure.Part part : structure(helper, name).parts()) {
+            out.add(helper.getLevel().getStructureManager().get(part.template())
+                    .orElseThrow(() -> new IllegalStateException("No structure piece " + part.template())));
+        }
+        return out;
     }
 
-    private static List<CompoundTag> wrecks(GameTestHelper helper, StructureTemplate template) {
+    private static int count(GameTestHelper helper, String name, Block block) {
+        return pieces(helper, name).stream().mapToInt(t -> t.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), block).size()).sum();
+    }
+
+    private static List<CompoundTag> wrecks(GameTestHelper helper, String name) {
+        List<CompoundTag> out = new ArrayList<>();
+        for (StructureTemplate template : pieces(helper, name)) {
+            out.addAll(wrecks(template));
+        }
+        return out;
+    }
+
+    private static List<CompoundTag> wrecks(StructureTemplate template) {
         ListTag entities = template.save(new CompoundTag()).getList("entities", Tag.TAG_COMPOUND);
         List<CompoundTag> out = new ArrayList<>();
         for (int i = 0; i < entities.size(); i++) {
@@ -87,25 +105,29 @@ public class LargeStructuresGameTests {
     @GameTest(template = TEMPLATE)
     public static void thePiecesLoadWithChestsDecorationAndWrecks(GameTestHelper helper) {
         for (String name : NAMES) {
-            StructureTemplate piece = template(helper, name);
-            int[] size = SIZES.get(name);
-            helper.assertTrue(piece.getSize().getX() == size[0] && piece.getSize().getY() == size[1] && piece.getSize().getZ() == size[2],
-                    name + " has the size " + size[0] + "x" + size[1] + "x" + size[2] + ", got " + piece.getSize());
-            List<StructureTemplate.StructureBlockInfo> chests = piece.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), Blocks.CHEST);
-            helper.assertTrue(chests.size() >= 3, name + " holds at least three chests");
-            for (StructureTemplate.StructureBlockInfo chest : chests) {
-                helper.assertTrue(chest.nbt() != null && chest.nbt().getString("LootTable").equals(ProjectRebirth.MOD_ID + ":chests/" + name),
-                        name + ": every chest fills from its own loot table");
+            List<StructureTemplate> pieces = pieces(helper, name);
+            helper.assertTrue(pieces.size() >= 8, name + " is laid out of many pieces, got " + pieces.size());
+            int chests = 0;
+            for (StructureTemplate piece : pieces) {
+                helper.assertTrue(piece.getSize().getX() > 0 && piece.getSize().getZ() > 0, name + ": every piece has blocks");
+                for (StructureTemplate.StructureBlockInfo chest : piece.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), Blocks.CHEST)) {
+                    helper.assertTrue(chest.nbt() != null && chest.nbt().getString("LootTable").equals(ProjectRebirth.MOD_ID + ":chests/" + name),
+                            name + ": every chest fills from its own loot table");
+                    chests++;
+                }
             }
-            helper.assertTrue(wrecks(helper, piece).size() == size[3], name + " has " + size[3] + " wrecked armors, got " + wrecks(helper, piece).size());
+            helper.assertTrue(chests >= 3, name + " holds at least three chests, got " + chests);
+            helper.assertTrue(wrecks(helper, name).size() == WRECKS.get(name), name + " has " + WRECKS.get(name) + " wrecked armors, got " + wrecks(helper, name).size());
         }
-        helper.assertTrue(count(template(helper, StructureSwitches.MILITARY), StructureBlocks.WRECKED_TURRET.get()) >= 4, "The base has its turrets");
-        helper.assertTrue(count(template(helper, StructureSwitches.MILITARY), StructureBlocks.AMMO_CRATE.get()) >= 10, "The base has its ammo crates");
-        helper.assertTrue(count(template(helper, StructureSwitches.SCIENCE), StructureBlocks.SPECIMEN_TANK.get()) >= 10, "The complex has its specimen tanks");
-        helper.assertTrue(count(template(helper, StructureSwitches.SCIENCE), StructureBlocks.SERVER_RACK.get()) >= 20, "The complex has its server room");
-        helper.assertTrue(count(template(helper, StructureSwitches.COMM), StructureBlocks.WALL_MONITOR.get()) >= 20, "The station has its screen wall");
-        helper.assertTrue(count(template(helper, StructureSwitches.ZONE), SourceRegistry.IRRADIATED_SLUDGE.get()) >= 60, "The zone has its sludge pools");
-        helper.assertTrue(count(template(helper, StructureSwitches.ZONE), SourceRegistry.RADIOACTIVE_DEBRIS.get()) >= 10, "The zone has its debris");
+        helper.assertTrue(count(helper, StructureSwitches.MILITARY, StructureBlocks.WRECKED_TURRET.get()) >= 4, "The base has its turrets");
+        helper.assertTrue(count(helper, StructureSwitches.MILITARY, StructureBlocks.AMMO_CRATE.get()) >= 10, "The base has its ammo crates");
+        helper.assertTrue(count(helper, StructureSwitches.MILITARY, com.projectrebirth.shelter.ShelterRegistry.AIRLOCK_DOOR.get()) >= 4, "The base's buildings have airlock doors");
+        helper.assertTrue(count(helper, StructureSwitches.SCIENCE, StructureBlocks.SPECIMEN_TANK.get()) >= 10, "The complex has its specimen tanks");
+        helper.assertTrue(count(helper, StructureSwitches.SCIENCE, StructureBlocks.SERVER_RACK.get()) >= 20, "The complex has its server room");
+        helper.assertTrue(count(helper, StructureSwitches.COMM, StructureBlocks.WALL_MONITOR.get()) >= 20, "The station has its screen wall");
+        helper.assertTrue(count(helper, StructureSwitches.FACTORY, com.projectrebirth.technology.TechBlocks.CABLE.get()) >= 10, "The factory's machines are wired");
+        helper.assertTrue(count(helper, StructureSwitches.ZONE, SourceRegistry.IRRADIATED_SLUDGE.get()) >= 60, "The zone has its sludge pools");
+        helper.assertTrue(count(helper, StructureSwitches.ZONE, SourceRegistry.RADIOACTIVE_DEBRIS.get()) >= 10, "The zone has its debris");
         helper.succeed();
     }
 
@@ -113,7 +135,7 @@ public class LargeStructuresGameTests {
     public static void aWreckFromThePieceComesOutAsAWreckedArmor(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         for (String name : NAMES) {
-            for (CompoundTag nbt : wrecks(helper, template(helper, name))) {
+            for (CompoundTag nbt : wrecks(helper, name)) {
                 Entity entity = EntityType.create(nbt.copy(), level).orElse(null);
                 helper.assertTrue(entity instanceof PowerArmorEntity, name + ": the wreck is a power armor");
                 PowerArmorEntity armor = (PowerArmorEntity) entity;
@@ -126,24 +148,42 @@ public class LargeStructuresGameTests {
     }
 
     @GameTest(template = TEMPLATE)
-    public static void theDecorationTurnsWhereItIsPutAndDropsItself(GameTestHelper helper) {
+    public static void theDecorationTurnsAndDropsWhatItIsMadeOf(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 2, 2);
         helper.setBlock(at, StructureBlocks.WALL_MONITOR.get().defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.EAST));
         helper.assertTrue(helper.getBlockState(at).getValue(HorizontalDirectionalBlock.FACING) == Direction.EAST, "The monitor keeps its side");
         // the monitor hangs on the west side of its block when it looks east
         var shape = helper.getBlockState(at).getShape(helper.getLevel(), helper.absolutePos(at));
         helper.assertTrue(shape.bounds().minX == 0.0 && shape.bounds().maxX < 0.25, "The monitor's shape turns with it, got " + shape.bounds());
-        for (Block block : List.of(StructureBlocks.WALL_MONITOR.get(), StructureBlocks.SERVER_RACK.get(), StructureBlocks.SPECIMEN_TANK.get(),
-                StructureBlocks.EMERGENCY_LAMP.get(), StructureBlocks.WRECKED_TURRET.get(), StructureBlocks.AMMO_CRATE.get())) {
-            LootTable table = helper.getLevel().getServer().reloadableRegistries().getLootTable(block.getLootTable());
-            LootParams params = new LootParams.Builder(helper.getLevel())
-                    .withParameter(LootContextParams.ORIGIN, Vec3.ZERO)
-                    .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-                    .withParameter(LootContextParams.BLOCK_STATE, block.defaultBlockState())
-                    .create(LootContextParamSets.BLOCK);
-            List<ItemStack> drops = table.getRandomItems(params);
-            helper.assertTrue(drops.size() == 1 && drops.get(0).is(block.asItem()), block + " drops itself");
+        ItemStack pick = new ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE);
+        ItemStack silk = pick.copy();
+        silk.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
+                .getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH), 1);
+        BlockPos where = helper.absolutePos(at);
+        // the lamp and the turret come away whole; the rest is taken apart for its parts, unless with silk touch
+        for (Block block : List.of(StructureBlocks.EMERGENCY_LAMP.get(), StructureBlocks.WRECKED_TURRET.get())) {
+            List<ItemStack> drops = Block.getDrops(block.defaultBlockState(), helper.getLevel(), where, null, null, pick);
+            helper.assertTrue(drops.size() == 1 && drops.get(0).is(block.asItem()), block + " drops itself, got " + drops);
         }
+        Map<Block, net.minecraft.world.item.Item> part = Map.of(
+                StructureBlocks.WALL_MONITOR.get(), com.projectrebirth.technology.TechItems.CIRCUIT_BOARD.get(),
+                StructureBlocks.SERVER_RACK.get(), com.projectrebirth.technology.TechItems.CIRCUIT_BOARD.get(),
+                StructureBlocks.SPECIMEN_TANK.get(), net.minecraft.world.item.Items.GLASS,
+                StructureBlocks.AMMO_CRATE.get(), net.minecraft.world.item.Items.STICK);
+        for (Map.Entry<Block, net.minecraft.world.item.Item> entry : part.entrySet()) {
+            Block block = entry.getKey();
+            List<ItemStack> drops = Block.getDrops(block.defaultBlockState(), helper.getLevel(), where, null, null, pick);
+            helper.assertTrue(drops.stream().noneMatch(stack -> stack.is(block.asItem())) && drops.stream().anyMatch(stack -> stack.is(entry.getValue())),
+                    block + " is taken apart for its parts, got " + drops);
+            List<ItemStack> whole = Block.getDrops(block.defaultBlockState(), helper.getLevel(), where, null, null, silk);
+            helper.assertTrue(whole.size() == 1 && whole.get(0).is(block.asItem()), block + " comes away whole with silk touch, got " + whole);
+        }
+        boolean ammo = false;
+        for (int i = 0; i < 20 && !ammo; i++) {
+            ammo = Block.getDrops(StructureBlocks.AMMO_CRATE.get().defaultBlockState(), helper.getLevel(), where, null, null, pick).stream()
+                    .anyMatch(stack -> stack.getItem().builtInRegistryHolder().key().location().getPath().contains("ammo") || stack.getItem().builtInRegistryHolder().key().location().getPath().contains("shell"));
+        }
+        helper.assertTrue(ammo, "An ammo crate holds ammunition");
         helper.succeed();
     }
 

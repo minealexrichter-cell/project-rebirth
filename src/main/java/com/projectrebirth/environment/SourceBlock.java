@@ -17,8 +17,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * A block that radiates or pollutes around itself (1.6.0): radioactive debris and the leaking waste barrel. The strength is in
- * {@link SourceKind}; the block only holds the entity that keeps it in the index. It drops nothing, so that no one carries it
- * to another person's land (the structures place it, concept 15.4).
+ * {@link SourceKind}; the block only holds the entity that keeps it in the index. It never drops itself, so that no one carries it
+ * to another person's land (the structures place it, concept 15.4); broken, debris gives stone and a little raw uranium, the
+ * barrel iron nuggets (loot_table/blocks).
  */
 public class SourceBlock extends BaseEntityBlock {
     public static final MapCodec<SourceBlock> CODEC = com.mojang.serialization.codecs.RecordCodecBuilder.mapCodec(instance -> instance.group(

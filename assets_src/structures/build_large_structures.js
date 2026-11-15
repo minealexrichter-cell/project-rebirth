@@ -44,10 +44,80 @@ const solar = f => machine('solar_panel', f, {working: 'false'});
 const backupBattery = () => machine('backup_battery', null, {working: 'false'});
 const heater = () => machine('heater', null, {working: 'false'});
 // the emergency lamp on a wall (looking toward f), standing on a block or a fence post, or hanging from a ceiling
-const lamp = f => [P + 'emergency_lamp', {face: 'wall', facing: f}];
-const lampUp = [P + 'emergency_lamp', {face: 'floor', facing: 'north'}];
-const lampHang = [P + 'emergency_lamp', {face: 'ceiling', facing: 'north'}];
-const turret = f => facing('wrecked_turret', f);
+const lamp = f => [P + 'emergency_lamp', {face: 'wall', facing: f, post: 'false'}];
+const lampUp = [P + 'emergency_lamp', {face: 'floor', facing: 'north', post: 'false'}];
+const lampHang = [P + 'emergency_lamp', {face: 'ceiling', facing: 'north', post: 'false'}];
+
+/** A turret of three blocks looking toward f: base at (x, y, z), tower over it, barrel in front of the tower; most are broken. */
+function turretAt(b, x, y, z, f, whole) {
+    const id = P + (whole === undefined ? (roll() < 0.25 ? 'turret' : 'wrecked_turret') : whole ? 'turret' : 'wrecked_turret');
+    const [dx, dz] = STEP[f];
+    b.set(x, y, z, [id, {facing: f, part: 'base'}]);
+    b.set(x, y + 1, z, [id, {facing: f, part: 'tower'}]);
+    b.set(x + dx, y + 1, z + dz, [id, {facing: f, part: 'barrel'}]);
+}
+
+/** What a lamp can hold on to in the template: 'post' (a fence or a stone wall), 'solid', or null (nothing, a slab or a thin block). */
+const NO_HOLD = /air|vine|leaves|carpet|cobweb|lamp|monitor|ladder|pane|bars|door|trapdoor|banner|chain|torch|lantern|rod|sludge|rail|lever|plate|bed|cable|fern|grass|azalea|bush|campfire|turret|slab|stairs|glass|solar|chest|barrel|crate|rack|tank/;
+function holdOf(b, x, y, z) {
+    const c = b.get(x, y, z);
+    if (!c) return null; // outside what the template places: the land there is unknown
+    const n = name(c);
+    if (/_wall$|_fence$/.test(n)) return 'post';
+    return NO_HOLD.test(n) ? null : 'solid';
+}
+
+/**
+ * Every lamp of a piece holds on to something: the block it is fixed to must be solid, a fence or a stone wall, inside the piece.
+ * A lamp that would hang on nothing is moved to a floor, a ceiling or a wall next to it, or taken away if there is none.
+ */
+function fixLamps(b) {
+    const sides = {north: [0, 0, -1], south: [0, 0, 1], west: [-1, 0, 0], east: [1, 0, 0]};
+    let moved = 0, removed = 0;
+    for (const [k, cell] of [...b.cells]) {
+        if (name(cell) !== P + 'emergency_lamp') continue;
+        const [x, y, z] = k.split(',').map(Number);
+        const props = cell[1];
+        const support = props.face === 'floor' ? [0, -1, 0] : props.face === 'ceiling' ? [0, 1, 0] : sides[OPPOSITE[props.facing]];
+        let hold = holdOf(b, x + support[0], y + support[1], z + support[2]);
+        let next = Object.assign({}, props);
+        if (!hold) {
+            // look for something to hold on to: under a ceiling one or two blocks up, a wall beside, the floor
+            let target = null;
+            for (let dy = 1; dy <= 2 && !target; dy++) {
+                const free = [...Array(dy).keys()].every(i => b.get(x, y + 1 + i - 1 + (i === 0 ? 0 : 0), z) === AIR || i === 0);
+                if (b.get(x, y + dy, z) === AIR && holdOf(b, x, y + dy + 1, z) && free) target = [x, y + dy, z, {face: 'ceiling', facing: props.facing}];
+            }
+            if (!target) {
+                const wall = Object.entries(sides).find(([, [dx, , dz]]) => holdOf(b, x + dx, y, z + dz));
+                if (wall) target = [x, y, z, {face: 'wall', facing: OPPOSITE[wall[0]]}];
+            }
+            if (!target && holdOf(b, x, y - 1, z)) target = [x, y, z, {face: 'floor', facing: props.facing}];
+            if (!target) {
+                removed++;
+                if (process.env.LAMP_DEBUG) console.log('    lamp at', x, y, z, JSON.stringify(props), 'support', JSON.stringify(b.get(x + support[0], y + support[1], z + support[2])));
+                b.cells.set(k, AIR);
+                continue;
+            }
+            moved++;
+            if (target[1] !== y) b.cells.set(k, AIR);
+            next = Object.assign({post: 'false'}, target[3]);
+            const [tx, ty, tz] = target;
+            if (next.face === 'wall') {
+                const [dx, , dz] = sides[OPPOSITE[next.facing]];
+                next.post = String(holdOf(b, tx + dx, ty, tz + dz) === 'post');
+            }
+            b.set(tx, ty, tz, [P + 'emergency_lamp', next]);
+            continue;
+        }
+        if (next.face === 'wall') {
+            const [dx, , dz] = sides[OPPOSITE[next.facing]];
+            next.post = String(holdOf(b, x + dx, y, z + dz) === 'post');
+        } else next.post = 'false';
+        b.cells.set(k, [P + 'emergency_lamp', next]);
+    }
+    return {moved, removed};
+}
 const crate = f => facing('ammo_crate', f);
 const chest = (f, table) => ['minecraft:chest', {facing: f, type: 'single', waterlogged: 'false'}, {LootTable: P + 'chests/' + table}];
 const lootBarrel = (table, f) => ['minecraft:barrel', {facing: f || 'up', open: 'false'}, {LootTable: P + 'chests/' + table}];
@@ -56,7 +126,7 @@ const pane = (axis, glass) => [glass || 'minecraft:glass_pane', axis === 'x'
     ? {east: 'true', west: 'true', north: 'false', south: 'false', waterlogged: 'false'}
     : {north: 'true', south: 'true', east: 'false', west: 'false', waterlogged: 'false'}];
 const bars = axis => pane(axis, 'minecraft:iron_bars');
-const pole = ['minecraft:iron_bars', {east: 'false', west: 'false', north: 'false', south: 'false', waterlogged: 'false'}];
+const pole = ['minecraft:polished_deepslate_wall', {up: 'true', north: 'none', south: 'none', east: 'none', west: 'none', waterlogged: 'false'}];
 const slab = (block, type) => [block, {type: type || 'bottom', waterlogged: 'false'}];
 const stair = (block, f, half) => [block, {facing: f, half: half || 'bottom', shape: 'straight', waterlogged: 'false'}];
 const post = block => [block, {up: 'true', north: 'none', south: 'none', east: 'none', west: 'none', waterlogged: 'false'}];
@@ -454,7 +524,7 @@ function towerPiece(size, top, wall, floor, door, opts, seed) {
         for (const [x, z] of [[x1, z1], [x2, z1], [x1, z2], [x2, z2]]) b.box(x, top + 1, z, x, top + 3, z, post('minecraft:deepslate_brick_wall'));
         b.box(x1, top + 4, z1, x2, top + 4, z2, slab('minecraft:deepslate_tile_slab'));
     }
-    if (opts.turret) b.set(c, top + 1, c, turret(opts.turret));
+    if (opts.turret) turretAt(b, c, top + 1, c, opts.turret);
     if (opts.light) { b.set(x1 + 1, top + 1, z1 + 1, 'minecraft:sea_lantern'); b.set(x1 + 1, top + 2, z1 + 1, trapdoor('north', 'bottom', false)); }
     if (opts.antenna) {
         for (let y = top + 1; y <= top + 7; y++) b.set(c + 1, y, c, pole);
@@ -502,7 +572,7 @@ function militaryBase() {
             b.walls(x0, F + 1, 1, x0 + 4, F + 7, 6, BLACK);
             b.box(x0, F + 8, 1, x0 + 4, F + 8, 6, TILE);
             battlements(b, x0, 1, x0 + 4, 6, F + 9, BLACK);
-            b.set(x0 + 2, F + 9, 3, turret('south'));
+            turretAt(b, x0 + 2, F + 9, 3, 'south');
             b.set(x0 + 2, F + 4, 6, bars('x')); b.set(x0 + 2, F + 5, 6, bars('x'));
         }
         ironDoor(b, 4, F + 1, 3, 'east', false);
@@ -512,7 +582,7 @@ function militaryBase() {
         b.box(5, F + 6, 2, 12, F + 8, 5, BLACK);
         b.box(5, F + 9, 2, 12, F + 9, 5, TILE);
         for (const x of [6, 11]) b.set(x, F + 7, 6, banner('red', 'south'));
-        b.set(8, F + 5, 6, lamp('south')); b.set(9, F + 5, 6, lamp('south'));
+        b.set(8, F + 6, 6, lamp('south')); b.set(9, F + 6, 6, lamp('south'));
         b.box(5, 0, 0, 12, 1, 7, 'minecraft:cobblestone');
         for (let x = 5; x <= 12; x++) for (let z = 0; z <= 7; z++) b.set(x, F, z, b.pick(['minecraft:gravel', 'minecraft:polished_andesite', 'minecraft:coarse_dirt']));
         b.set(5, F + 1, 7, post('minecraft:polished_blackstone_wall')); b.set(5, F + 2, 7, post('minecraft:polished_blackstone_wall'));
@@ -608,7 +678,7 @@ function militaryBase() {
             b.set(x, g.y + 5, s.z2 - 1, bars('x')); b.set(x, g.y + 5, s.z2, AIR); b.set(x, g.y + 6, s.z2 - 1, 'minecraft:iron_block');
             b.set(x, F, s.z2 + 1, b.pick(['minecraft:gravel', 'minecraft:polished_andesite']));
         }
-        b.set(X(0), g.y + 4, s.z2 + 1, lamp('south')); b.set(X(8), g.y + 4, s.z2 + 1, lamp('south'));
+        b.set(s.x1, g.y + 4, s.z2 + 1, lamp('south')); b.set(s.x2, g.y + 4, s.z2 + 1, lamp('south'));
         b.set(s.x1, g.y + 1, Z(3), AIR); b.set(s.x1, g.y + 2, Z(3), AIR);
         ironDoor(b, s.x1 + 1, g.y + 1, Z(3), 'east', true);
         for (let x = X(3); x <= X(5); x++) for (let z = Z(4); z <= Z(9); z++) { b.set(x, g.y, z, AIR); b.set(x, g.y - 1, z, 'minecraft:black_concrete'); }
@@ -668,7 +738,7 @@ function militaryBase() {
         cableLine(b, [[X(2), Z(0)], [X(2), Z(2)]], g.y + 1);
         b.set(X(4), g.y + 1, Z(1), station('shelter_control_panel', 'west')); b.set(X(3), g.y + 1, Z(1), CABLE);
         b.set(X(0), g.y + 1, Z(0), plainBarrel('east')); b.set(X(0), g.y + 2, Z(0), lootBarrel('military_base'));
-        b.set(X(2), g.y + 3, Z(1), lamp('north'));
+        b.set(X(2), g.y + 3, Z(2), lamp('north'));
         wireCables(b);
         weather(b, {leafClumps: 1});
         L.rigid('generator_shed', b, 46, 38);
@@ -864,7 +934,7 @@ function abandonedFactory() {
             for (let y = g.y + 1; y <= g.y + 5; y++) { b.set(x, y, s.z2 - 1, AIR); b.set(x, y, s.z2, AIR); }
             b.set(x, g.y + 6, s.z2 - 1, bars('x')); b.set(x, g.y + 7, s.z2 - 1, 'minecraft:iron_block');
         }
-        b.set(X(19), g.y + 5, s.z2 + 1, lamp('south')); b.set(X(28), g.y + 5, s.z2 + 1, lamp('south'));
+        b.set(X(16), g.y + 5, s.z2 + 1, lamp('south')); b.set(X(28), g.y + 5, s.z2 + 1, lamp('south'));
         // the furnace line, a hood over it, glowing pits in front
         for (let x = X(1); x <= X(15); x += 2) { b.set(x, g.y + 1, Z(0), ['minecraft:blast_furnace', {facing: 'south', lit: 'false'}]); b.set(x, g.y, Z(2), 'minecraft:magma_block'); }
         for (let x = X(1); x <= X(15); x++) { b.set(x, g.y + 2, Z(0), 'minecraft:iron_block'); b.set(x, g.y + 3, Z(1), stair('minecraft:stone_brick_stairs', 'south', 'top')); }
@@ -910,7 +980,7 @@ function abandonedFactory() {
         b.set(X(0), g.y + 1, Z(6), chest('east', 'abandoned_factory'));
         wreck(b, X(14), g.y + 1, Z(19), 'worker', 30);
         wreck(b, X(26), g.y + 1, Z(8), 'worker', -90);
-        for (const [x, z, f] of [[X(0), Z(3), 'east'], [X(32), Z(5), 'west'], [X(16), Z(22), 'north'], [X(8), Z(1), 'south']]) b.set(x, g.y + 6, z, lamp(f));
+        for (const [x, z, f] of [[X(0), Z(3), 'east'], [X(32), Z(5), 'west'], [X(16), Z(22), 'north'], [X(8), Z(0), 'south']]) b.set(x, g.y + 6, z, lamp(f));
         wireCables(b);
         weather(b, {moss: 0.01, leafClumps: 4, vines: 0.06});
         L.rigid('hall', b, 2, 6);
@@ -947,7 +1017,7 @@ function abandonedFactory() {
         const g = s.levels[0];
         const X = x => M + 2 + x, Z = z => M + 2 + z; // inner x 0..10, z 0..7
         for (const z of [Z(3), Z(4)]) for (let y = g.y + 1; y <= g.y + 4; y++) { b.set(s.x1 + 1, y, z, AIR); b.set(s.x1, y, z, AIR); }
-        b.set(s.x1 - 1, g.y + 4, Z(2), lamp('west'));
+        b.set(s.x1 - 1, g.y + 4, s.z1 + 7, lamp('west')); // on the pillar by the door
         for (const z of [Z(0), Z(7)]) for (let x = X(1); x <= X(10); x++) {
             b.set(x, g.y + 1, z, b.chance(0.3) ? lootBarrel('abandoned_factory', z === Z(0) ? 'south' : 'north') : plainBarrel(z === Z(0) ? 'south' : 'north'));
             b.set(x, g.y + 2, z, slab('minecraft:spruce_slab', 'bottom'));
@@ -1016,7 +1086,7 @@ function commStation() {
         for (const [x, z, f] of [[5, 6, 'west'], [7, 6, 'east'], [6, 5, 'north'], [6, 7, 'south']]) b.set(x, F + 43, z, lamp(f));
         dish(b, 6, F + 24, 10, 3, 'south', 'minecraft:white_concrete');
         dish(b, 10, F + 36, 6, 2, 'east', 'minecraft:white_concrete');
-        b.set(5, F + 17, 5, turret('north'));
+        turretAt(b, 5, F + 17, 5, 'north');
         for (let z = 8; z <= 12; z++) b.set(6, F + 1, z, CABLE);
         b.set(7, F + 1, 8, battery('west')); b.set(5, F + 1, 8, backupBattery());
         wreck(b, 9, F + 1, 11, 'mobile', 200);
@@ -1295,6 +1365,8 @@ for (const make of [militaryBase, scienceComplex, abandonedFactory, commStation,
     const counts = {};
     let wrecks = 0;
     for (const part of L.parts) {
+        const lamps = fixLamps(part.b);
+        if (lamps.moved || lamps.removed) console.log('  ' + L.id + '/' + part.piece + ': lamps moved ' + lamps.moved + ', removed ' + lamps.removed);
         fs.writeFileSync(path.join(dir, part.piece + '.nbt'), nbtFile(part.b.toNbt()));
         wrecks += part.b.entities.length;
         for (const block of part.b.cells.values()) {

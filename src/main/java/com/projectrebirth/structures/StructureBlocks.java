@@ -38,8 +38,8 @@ public final class StructureBlocks {
             p -> new DecorBlock(p, 0.5, 0, 0.5, 15.5, 16, 15, false), metal(3));
     public static final DeferredBlock<EmergencyLampBlock> EMERGENCY_LAMP = BLOCKS.registerBlock("emergency_lamp",
             EmergencyLampBlock::new, metal(11).sound(SoundType.LANTERN));
-    public static final DeferredBlock<DecorBlock> WRECKED_TURRET = BLOCKS.registerBlock("wrecked_turret",
-            p -> new DecorBlock(p, 2, 0, 0, 14, 13, 14, false), metal(0));
+    public static final DeferredBlock<TurretBlock> WRECKED_TURRET = BLOCKS.registerBlock("wrecked_turret", TurretBlock::new, metal(0));
+    public static final DeferredBlock<TurretBlock> TURRET = BLOCKS.registerBlock("turret", TurretBlock::new, metal(4));
     public static final DeferredBlock<DecorBlock> AMMO_CRATE = BLOCKS.registerBlock("ammo_crate",
             p -> new DecorBlock(p, 0.5, 0, 2, 15.5, 10, 14, false),
             BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(2.0f, 3.0f).sound(SoundType.WOOD).noOcclusion());
@@ -82,6 +82,7 @@ public final class StructureBlocks {
     public static final DeferredItem<BlockItem> SERVER_RACK_ITEM = ITEMS.registerSimpleBlockItem(SERVER_RACK);
     public static final DeferredItem<BlockItem> EMERGENCY_LAMP_ITEM = ITEMS.registerSimpleBlockItem(EMERGENCY_LAMP);
     public static final DeferredItem<BlockItem> WRECKED_TURRET_ITEM = ITEMS.registerSimpleBlockItem(WRECKED_TURRET);
+    public static final DeferredItem<BlockItem> TURRET_ITEM = ITEMS.registerSimpleBlockItem(TURRET);
     public static final DeferredItem<BlockItem> AMMO_CRATE_ITEM = ITEMS.registerSimpleBlockItem(AMMO_CRATE);
     public static final DeferredItem<BlockItem> SPECIMEN_TANK_ITEM = ITEMS.registerSimpleBlockItem(SPECIMEN_TANK);
 

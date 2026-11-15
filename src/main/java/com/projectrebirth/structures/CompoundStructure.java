@@ -9,6 +9,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -198,7 +199,9 @@ public class CompoundStructure extends Structure {
                     for (int y = from; y <= to; y++) {
                         cursor.set(x, y, z);
                         BlockState state = level.getBlockState(cursor);
-                        if (state.getBlock() instanceof com.projectrebirth.technology.energy.CableBlock) {
+                        if (state.getBlock() instanceof EmergencyLampBlock) {
+                            settleLamp(level, chunkBox, cursor.immutable(), state);
+                        } else if (state.getBlock() instanceof com.projectrebirth.technology.energy.CableBlock) {
                             BlockState connected = com.projectrebirth.technology.energy.CableBlock.connectedInWorldgen(state, level, cursor);
                             if (connected != state) {
                                 level.setBlock(cursor, connected, 2);
@@ -207,6 +210,30 @@ public class CompoundStructure extends Structure {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * A lamp whose support was taken by the decay (a wall block turned to air) would hang on nothing: it goes. Only when the support
+     * lies in this chunk; a support in a chunk not placed yet is left alone. On the side of a post the lamp gets its bracket.
+     */
+    private static void settleLamp(WorldGenLevel level, BoundingBox chunkBox, BlockPos pos, BlockState state) {
+        Direction toSupport = switch (state.getValue(EmergencyLampBlock.FACE)) {
+            case FLOOR -> Direction.DOWN;
+            case CEILING -> Direction.UP;
+            default -> state.getValue(EmergencyLampBlock.FACING).getOpposite();
+        };
+        BlockPos supportPos = pos.relative(toSupport);
+        if (!chunkBox.isInside(supportPos)) {
+            return;
+        }
+        if (!state.canSurvive(level, pos)) {
+            level.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+            return;
+        }
+        boolean post = toSupport.getAxis().isHorizontal() && EmergencyLampBlock.isPost(level.getBlockState(supportPos));
+        if (state.getValue(EmergencyLampBlock.POST) != post) {
+            level.setBlock(pos, state.setValue(EmergencyLampBlock.POST, post), 2);
         }
     }
 

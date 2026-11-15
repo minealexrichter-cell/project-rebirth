@@ -19,25 +19,28 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The emergency lamp (1.6.0): a red glass dome over a bulb, fixed to a wall, standing on a block or on a fence post (its sleeve
- * fits round the post), or hanging from a ceiling. It holds on to anything solid, a fence or a wall block; with nothing to
- * hold on to it drops.
+ * The alarm lamp (1.6.0): a red glass column over a bulb in a cage on a dark housing. It stands on a block, a fence or a stone
+ * wall, hangs under one, or is fixed to the side of one; on the side of a post (a fence or any stone wall) it gets a bracket
+ * reaching to the post ({@link #POST}). It holds on to anything solid, a fence or a wall; with nothing to hold on to it drops.
  */
 public class EmergencyLampBlock extends FaceAttachedHorizontalDirectionalBlock {
     public static final MapCodec<EmergencyLampBlock> CODEC = simpleCodec(EmergencyLampBlock::new);
-    private static final VoxelShape FLOOR = Block.box(5, 0, 5, 11, 7.5, 11);
-    private static final VoxelShape CEILING = Block.box(5, 8.5, 5, 11, 16, 11);
+    /** On the side of a thin post (a fence or a stone wall): the model has a bracket reaching across to it. */
+    public static final net.minecraft.world.level.block.state.properties.BooleanProperty POST =
+            net.minecraft.world.level.block.state.properties.BooleanProperty.create("post");
+    private static final VoxelShape FLOOR = Block.box(1, 0, 1, 15, 16, 15);
+    private static final VoxelShape CEILING = FLOOR;
     private static final Map<Direction, VoxelShape> WALL = new EnumMap<>(Direction.class);
 
     static {
         for (Direction facing : Direction.Plane.HORIZONTAL) {
-            WALL.put(facing, DecorBlock.turned(facing, 4.5, 4, 8.5, 11.5, 12, 16));
+            WALL.put(facing, DecorBlock.turned(facing, 1, 1, 0, 15, 15, 16));
         }
     }
 
     public EmergencyLampBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(FACE, AttachFace.WALL));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(FACE, AttachFace.WALL).setValue(POST, false));
     }
 
     @Override
@@ -47,7 +50,31 @@ public class EmergencyLampBlock extends FaceAttachedHorizontalDirectionalBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACE, FACING);
+        builder.add(FACE, FACING, POST);
+    }
+
+    /** Whether the block holding the lamp is a thin post: a fence or a stone wall of any kind. */
+    public static boolean isPost(BlockState support) {
+        return support.is(BlockTags.FENCES) || support.is(BlockTags.WALLS);
+    }
+
+    private BlockState withPost(BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos) {
+        boolean post = state.getValue(FACE) == AttachFace.WALL && isPost(level.getBlockState(pos.relative(getConnectedDirection(state).getOpposite())));
+        return state.setValue(POST, post);
+    }
+
+    @javax.annotation.Nullable
+    @Override
+    public BlockState getStateForPlacement(net.minecraft.world.item.context.BlockPlaceContext context) {
+        BlockState state = super.getStateForPlacement(context);
+        return state == null ? null : withPost(state, context.getLevel(), context.getClickedPos());
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbor, net.minecraft.world.level.LevelAccessor level,
+                                     BlockPos pos, BlockPos neighborPos) {
+        BlockState updated = super.updateShape(state, direction, neighbor, level, pos, neighborPos);
+        return updated.is(this) ? withPost(updated, level, pos) : updated;
     }
 
     @Override

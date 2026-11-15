@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "facing=north,part=base": {
+      "model": "projectrebirth:block/turret_base"
+    },
+    "facing=north,part=tower": {
+      "model": "projectrebirth:block/turret_tower"
+    },
+    "facing=north,part=barrel": {
+      "model": "projectrebirth:block/turret_barrel"
+    },
+    "facing=east,part=base": {
+      "model": "projectrebirth:block/turret_base",
+      "y": 90
+    },
+    "facing=east,part=tower": {
+      "model": "projectrebirth:block/turret_tower",
+      "y": 90
+    },
+    "facing=east,part=barrel": {
+      "model": "projectrebirth:block/turret_barrel",
+      "y": 90
+    },
+    "facing=south,part=base": {
+      "model": "projectrebirth:block/turret_base",
+      "y": 180
+    },
+    "facing=south,part=tower": {
+      "model": "projectrebirth:block/turret_tower",
+      "y": 180
+    },
+    "facing=south,part=barrel": {
+      "model": "projectrebirth:block/turret_barrel",
+      "y": 180
+    },
+    "facing=west,part=base": {
+      "model": "projectrebirth:block/turret_base",
+      "y": 270
+    },
+    "facing=west,part=tower": {
+      "model": "projectrebirth:block/turret_tower",
+      "y": 270
+    },
+    "facing=west,part=barrel": {
+      "model": "projectrebirth:block/turret_barrel",
+      "y": 270
+    }
+  }
+}

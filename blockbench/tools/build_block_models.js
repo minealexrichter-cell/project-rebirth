@@ -605,76 +605,94 @@
         };
     })();
 
-    // Emergency lamp, made like the specimen tank: a 3D bulb glowing behind red glass. Two models: on a wall (the plate behind,
-    // to the south) and standing (on a block or a fence post: a sleeve reaches down round the post); hanging from a ceiling is
-    // the standing one turned over. Drawn in the translucent layer.
+    // Alarm lamp (after the owner's drawing, 14 wide and 16 tall): a dark housing with vents and a red slot in front, a ring, a
+    // cage of four posts and middle bars round a red glass column with a bulb glowing inside, a top ring, a cap and a knob.
+    // Standing it is this model; hanging, it is turned over; on a wall it lies with its housing against the wall; on the side of a
+    // post (a fence or a stone wall) it has a bracket reaching across to the post. Drawn in the translucent layer.
     (() => {
-        const glass = tex('glass'), bulb = tex('bulb'), metal = tex('metal');
+        const housing = tex('housing'), vents = tex('vents'), glass = tex('glass'), bulb = tex('bulb'), metal = tex('metal');
         const all = t => ({north: t, south: t, west: t, east: t, up: t, down: t});
-        const el = (from, to, t, extra) => Object.assign({from, to, faces: all(t)}, extra || {});
-        const lampTextures = decorTextures({glass: 'lamp_glass', bulb: 'lamp_bulb', metal: 'lamp_metal'}, 'lamp_metal');
-        MODELS.emergency_lamp = {
-            parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures,
-            elements: [
-                el([5, 4, 15], [11, 12, 16], metal),
-                without(el([6.5, 6.5, 13.5], [9.5, 9.5, 15], metal), 'south'),
-                el([5, 5, 12.5], [11, 11, 13.5], metal),
-                // the bulb inside, then the glass dome round it in two steps
-                el([7, 7, 10], [9, 9, 12.5], bulb, GLOW),
-                without(el([5.5, 5.5, 9], [10.5, 10.5, 12.5], glass, GLOW), 'south'),
-                without(el([6.5, 6.5, 8.5], [9.5, 9.5, 9], glass, GLOW), 'south'),
-                // the wire guard: four bars along the dome and a cross over its front
-                el([7.75, 10.5, 8.75], [8.25, 11, 12.5], metal), el([7.75, 5, 8.75], [8.25, 5.5, 12.5], metal),
-                el([5, 7.75, 8.75], [5.5, 8.25, 12.5], metal), el([10.5, 7.75, 8.75], [11, 8.25, 12.5], metal),
-                el([5.5, 7.75, 8.25], [10.5, 8.25, 8.75], metal), el([7.75, 5.5, 8], [8.25, 10.5, 8.25], metal)
-            ]
-        };
-        MODELS.emergency_lamp_floor = {
-            parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures,
-            elements: [
-                without(el([5.5, -4, 5.5], [10.5, 0, 10.5], metal), 'down'), // the sleeve round a fence post (hidden in a full block)
-                el([4.5, 0, 4.5], [11.5, 1, 11.5], metal),
-                el([5, 1, 5], [11, 2, 11], metal),
-                el([7, 2, 7], [9, 4.5, 9], bulb, GLOW),
-                without(el([5.5, 2, 5.5], [10.5, 6.5, 10.5], glass, GLOW), 'down'),
-                without(el([6.5, 6.5, 6.5], [9.5, 7, 9.5], glass, GLOW), 'down'),
-                el([7.75, 2, 5], [8.25, 6.75, 5.5], metal), el([7.75, 2, 10.5], [8.25, 6.75, 11], metal),
-                el([5, 2, 7.75], [5.5, 6.75, 8.25], metal), el([10.5, 2, 7.75], [11, 6.75, 8.25], metal),
-                el([5.5, 7, 7.75], [10.5, 7.5, 8.25], metal), el([7.75, 7.5, 5.5], [8.25, 7.75, 10.5], metal)
-            ]
-        };
+        const el = (from, to, faces, extra) => Object.assign({from, to, faces: faces.texture ? all(faces) : faces}, extra || {});
+        const lampTextures = decorTextures({housing: 'lamp_housing', vents: 'lamp_vents', glass: 'lamp_glass', bulb: 'lamp_bulb', metal: 'lamp_metal'}, 'lamp_housing');
+        const lamp = [
+            el([1, 0, 1], [15, 5, 15], {north: tex('housing', [1, 11, 15, 16]), south: tex('vents', [1, 5, 15, 10]), west: tex('vents', [1, 5, 15, 10]), east: tex('vents', [1, 5, 15, 10]), up: housing, down: housing}),
+            el([5, 1.5, 0.75], [11, 3, 1], {north: tex('glass', [5, 6, 11, 8]), west: glass, east: glass, up: glass, down: glass}, GLOW),
+            el([2, 5, 2], [14, 6, 14], metal),
+            el([2, 6, 2], [3.5, 13, 3.5], metal), el([12.5, 6, 2], [14, 13, 3.5], metal),
+            el([2, 6, 12.5], [3.5, 13, 14], metal), el([12.5, 6, 12.5], [14, 13, 14], metal),
+            without(el([3.5, 6, 3.5], [12.5, 13, 12.5], glass, GLOW), 'up', 'down'),
+            el([6, 6.5, 6], [10, 12, 10], bulb, GLOW),
+            el([7.5, 6, 3], [8.5, 13, 3.5], metal), el([7.5, 6, 12.5], [8.5, 13, 13], metal),
+            el([3, 6, 7.5], [3.5, 13, 8.5], metal), el([12.5, 6, 7.5], [13, 13, 8.5], metal),
+            el([2, 13, 2], [14, 14, 14], metal),
+            el([4, 14, 4], [12, 15, 12], housing),
+            el([6, 15, 6], [10, 16, 10], metal)
+        ];
+        MODELS.emergency_lamp = {parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures, elements: lamp};
+        MODELS.emergency_lamp_post = {parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures,
+            elements: [...lamp, without(el([6, -6, 6], [10, 0, 10], metal), 'up'), el([5, -6.5, 5], [11, -5.5, 11], metal)]};
     })();
 
-    // Wrecked turret, after the owner's reference: two dark feet, short orange legs, a dark waist, an orange body, the cabin with its
-    // window on top, a dark shoulder axle carrying a shield and a gun on each side; the barrels point north. Its wreckage: the right
-    // shield has slipped down on its mount, the left gun droops.
+    // Turret (after the owner's drawing), three blocks, looking north. The base: four dark feet, a stepped light casing, a dark
+    // collar and the foot of the column. The tower: the column, a turntable, the light housing with a red lamp on each side, a sight
+    // on top and the sleeve of the barrel at the front. The barrel: a long dark barrel ending in a muzzle with its bore. The broken
+    // turret: the same parts gone to rust, rubble round the base, the housing slumped forward and the barrel hanging down.
     (() => {
-        const hull = tex('hull'), dark = tex('dark'), shield = tex('shield'), visor = tex('visor');
         const all = t => ({north: t, south: t, west: t, east: t, up: t, down: t});
-        const el = (from, to, faces, extra) => Object.assign({from, to, faces: typeof faces === 'object' && faces.texture ? all(faces) : faces}, extra || {});
-        const barrelSide = tex('barrel', [0, 4, 16, 12]), muzzle = tex('barrel', [11, 0, 16, 5]);
-        const barrel = {north: muzzle, south: muzzle, west: barrelSide, east: barrelSide, up: barrelSide, down: barrelSide};
-        MODELS.wrecked_turret = {
-            parent: 'minecraft:block/block',
-            textures: decorTextures({hull: 'turret_hull', dark: 'turret_dark', shield: 'turret_shield', visor: 'turret_visor', barrel: 'turret_barrel'}, 'turret_hull'),
-            elements: [
-                el([2, 0, 5], [6.5, 2.5, 11], dark), el([9.5, 0, 5], [14, 2.5, 11], dark),
-                el([2.5, 2.5, 5.5], [6.5, 6, 10.5], hull), el([9.5, 2.5, 5.5], [13.5, 6, 10.5], hull),
-                el([4.5, 6, 6], [11.5, 7.5, 10], dark),
-                el([4, 7.5, 5.5], [12, 12, 11.5], hull),
-                el([5.5, 8, 5], [10.5, 10, 5.5], dark),
-                el([5, 12, 6.5], [11, 16, 11.5], Object.assign(all(hull), {north: visor})),
-                el([10, 12, 11.5], [10.5, 15, 12], dark),
-                el([2.5, 9.5, 7], [13.5, 11, 9], dark),
-                // the shields: a wide plate over a smaller one on each side, at the front corners
-                el([0, 8.5, 3.5], [4, 12.5, 5], shield), el([0.5, 4, 4], [4, 8, 5.25], shield),
-                el([12, 8.5, 3.5], [16, 12.5, 5], shield, {rotation: {angle: -22.5, axis: 'z', origin: [14, 12.5, 4.25]}}),
-                el([12, 4, 4], [15.5, 8, 5.25], shield),
-                el([3.75, 8.75, 4.75], [5.75, 10.75, 8], dark), el([10.25, 8.75, 4.75], [12.25, 10.75, 8], dark),
-                el([4.25, 9, 0], [5.5, 10.5, 5], barrel),
-                el([10.5, 9, 0], [11.75, 10.5, 5], barrel)
-            ]
+        const parts = (broken) => {
+            const casing = tex('casing'), frame = tex('frame'), bore = tex('bore');
+            const el = (from, to, t, extra) => Object.assign({from, to, faces: t.texture ? all(t) : t}, extra || {});
+            const light = broken ? 'rust' : 'red';
+            const slump = broken ? {rotation: {angle: -22.5, axis: 'x', origin: [8, 3, 8]}} : {};
+            const hang = broken ? {rotation: {angle: -45, axis: 'x', origin: [8, 7.5, 16]}} : {};
+            const base = [
+                el([0, 0, 0], [3.5, 3, 3.5], frame), el([12.5, 0, 0], [16, 3, 3.5], frame),
+                el([0, 0, 12.5], [3.5, 3, 16], frame), el([12.5, 0, 12.5], [16, 3, 16], frame),
+                without(el([1.5, 0, 1.5], [14.5, 6, 14.5], casing), 'down'),
+                el([3, 6, 3], [13, 10, 13], casing),
+                el([4.5, 10, 4.5], [11.5, 13, 11.5], casing),
+                el([4, 13, 4], [12, 14.5, 12], frame),
+                without(el([6, 14.5, 6], [10, 16, 10], frame), 'up')
+            ];
+            if (broken) base.push(el([0, 0, 6.5], [1.25, 1.5, 8], frame), el([14.75, 0, 9], [16, 1, 10.5], casing), el([9, 0, 0], [10.5, 1, 1.25], casing), el([5, 0, 14.75], [6, 1, 16], frame));
+            const tower = [
+                without(el([6, 0, 6], [10, 2, 10], frame), 'down'),
+                el([5, 2, 5], [11, 3, 11], frame),
+                el([1.5, 3, 1.5], [14.5, 12, 15], casing, slump),
+                el([6, 12, 4], [10, 13.5, 11], frame, slump),
+                box([14.5, 5.5, 8], [15, 8, 12], light, {west: light}, broken ? slump : Object.assign({}, GLOW)),
+                box([1, 5.5, 8], [1.5, 8, 12], light, {east: light}, broken ? slump : Object.assign({}, GLOW)),
+                el([5, 5, 0], [11, 10, 1.5], frame, slump)
+            ];
+            const barrel = [
+                el([5.5, 5.5, 6], [10.5, 9.5, 16], frame, hang),
+                el([5, 5, 4], [11, 10, 6], Object.assign(all(frame), {north: bore}), hang)
+            ];
+            return {base, tower, barrel};
         };
+        for (const [id, broken] of [['turret', false], ['wrecked_turret', true]]) {
+            const p = parts(broken);
+            const t = broken ? {casing: 'turret_casing_broken', frame: 'turret_frame_broken', bore: 'turret_bore'} : {casing: 'turret_casing', frame: 'turret_frame', bore: 'turret_bore'};
+            const textures = decorTextures(t, t.casing);
+            for (const part of ['base', 'tower', 'barrel']) MODELS[id + '_' + part] = {parent: 'minecraft:block/block', textures, elements: p[part]};
+            // the item: the three parts put together, shrunk to fit
+            const shift = (elements, dy, dz) => elements.map(e => {
+                const c = JSON.parse(JSON.stringify(e));
+                c.from = [c.from[0], c.from[1] + dy, c.from[2] + dz]; c.to = [c.to[0], c.to[1] + dy, c.to[2] + dz];
+                if (c.rotation) c.rotation.origin = [c.rotation.origin[0], c.rotation.origin[1] + dy, c.rotation.origin[2] + dz];
+                return c;
+            });
+            MODELS[id + '_item'] = {parent: 'minecraft:block/block', textures,
+                elements: [...shift(p.base, -8, 8), ...shift(p.tower, 8, 8), ...shift(p.barrel, 8, -8)],
+                display: {
+                    gui: {rotation: [30, 225, 0], translation: [0, -1, 0], scale: [0.36, 0.36, 0.36]},
+                    ground: {rotation: [0, 0, 0], translation: [0, 2, 0], scale: [0.2, 0.2, 0.2]},
+                    fixed: {rotation: [0, 0, 0], translation: [0, 0, 0], scale: [0.4, 0.4, 0.4]},
+                    thirdperson_righthand: {rotation: [75, 45, 0], translation: [0, 2.5, 0], scale: [0.25, 0.25, 0.25]},
+                    firstperson_righthand: {rotation: [0, 45, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3]},
+                    firstperson_lefthand: {rotation: [0, 225, 0], translation: [0, 0, 0], scale: [0.3, 0.3, 0.3]}
+                }};
+        }
     })();
 
     // Broken monitor: the same frame, the screen dead and cracked, no light.
@@ -819,7 +837,7 @@
     STATES.leaking_waste_barrel = {variants: {'': variant('leaking_waste_barrel')}};
 
     // Structure decoration (1.6.0): facing blocks look the way the model looks at north; the tank and the sludge have no facing.
-    ['wall_monitor', 'server_rack', 'wrecked_turret', 'ammo_crate', 'broken_wall_monitor', 'broken_server_rack', ...RUSTED.map(id => 'rusted_' + id)].forEach(id => {
+    ['wall_monitor', 'server_rack', 'ammo_crate', 'broken_wall_monitor', 'broken_server_rack', ...RUSTED.map(id => 'rusted_' + id)].forEach(id => {
         STATES[id] = {variants: {}};
         Object.entries(ROTATIONS).forEach(([facing, y]) => { STATES[id].variants['facing=' + facing] = variant(id, rotation(y)); });
     });
@@ -827,9 +845,19 @@
     STATES.broken_specimen_tank = {variants: {'': variant('broken_specimen_tank')}};
     STATES.emergency_lamp = {variants: {}};
     Object.entries(ROTATIONS).forEach(([facing, y]) => {
-        STATES.emergency_lamp.variants['face=wall,facing=' + facing] = variant('emergency_lamp', rotation(y));
-        STATES.emergency_lamp.variants['face=floor,facing=' + facing] = variant('emergency_lamp_floor', rotation(y));
-        STATES.emergency_lamp.variants['face=ceiling,facing=' + facing] = variant('emergency_lamp_floor', Object.assign({x: 180}, rotation(y)));
+        [false, true].forEach(post => {
+            const key = f => 'face=' + f + ',facing=' + facing + ',post=' + post;
+            STATES.emergency_lamp.variants[key('floor')] = variant('emergency_lamp', rotation(y));
+            STATES.emergency_lamp.variants[key('ceiling')] = variant('emergency_lamp', Object.assign({x: 180}, rotation(y)));
+            // on a wall the lamp lies with its housing against the wall, as an end rod does
+            STATES.emergency_lamp.variants[key('wall')] = variant(post ? 'emergency_lamp_post' : 'emergency_lamp', Object.assign({x: 90}, rotation(y)));
+        });
+    });
+    ['turret', 'wrecked_turret'].forEach(id => {
+        STATES[id] = {variants: {}};
+        Object.entries(ROTATIONS).forEach(([facing, y]) => ['base', 'tower', 'barrel'].forEach(part => {
+            STATES[id].variants['facing=' + facing + ',part=' + part] = variant(id + '_' + part, rotation(y));
+        }));
     });
     STATES.irradiated_sludge = {variants: {'': variant('irradiated_sludge')}};
 
@@ -846,7 +874,7 @@
     function problems(id, model) {
         const out = [];
         const axes = {west: [0, 1, 2, 0], east: [0, 1, 2, 1], down: [1, 0, 2, 0], up: [1, 0, 2, 1], north: [2, 0, 1, 0], south: [2, 0, 1, 1]};
-        const capsule = id.startsWith('transfer_capsule') || id === 'emergency_lamp_floor';
+        const capsule = id.startsWith('transfer_capsule') || id === 'emergency_lamp_post' || id.endsWith('turret_barrel') || id.endsWith('turret_item');
         model.elements.forEach((e, i) => {
             if (!capsule && [...e.from, ...e.to].some(v => v < 0 || v > 16)) {
                 out.push(id + ': part ' + i + ' is outside the block');

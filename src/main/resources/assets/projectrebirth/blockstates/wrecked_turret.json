@@ -1,18 +1,48 @@
 {
   "variants": {
-    "facing=north": {
-      "model": "projectrebirth:block/wrecked_turret"
+    "facing=north,part=base": {
+      "model": "projectrebirth:block/wrecked_turret_base"
     },
-    "facing=east": {
-      "model": "projectrebirth:block/wrecked_turret",
+    "facing=north,part=tower": {
+      "model": "projectrebirth:block/wrecked_turret_tower"
+    },
+    "facing=north,part=barrel": {
+      "model": "projectrebirth:block/wrecked_turret_barrel"
+    },
+    "facing=east,part=base": {
+      "model": "projectrebirth:block/wrecked_turret_base",
       "y": 90
     },
-    "facing=south": {
-      "model": "projectrebirth:block/wrecked_turret",
+    "facing=east,part=tower": {
+      "model": "projectrebirth:block/wrecked_turret_tower",
+      "y": 90
+    },
+    "facing=east,part=barrel": {
+      "model": "projectrebirth:block/wrecked_turret_barrel",
+      "y": 90
+    },
+    "facing=south,part=base": {
+      "model": "projectrebirth:block/wrecked_turret_base",
       "y": 180
     },
-    "facing=west": {
-      "model": "projectrebirth:block/wrecked_turret",
+    "facing=south,part=tower": {
+      "model": "projectrebirth:block/wrecked_turret_tower",
+      "y": 180
+    },
+    "facing=south,part=barrel": {
+      "model": "projectrebirth:block/wrecked_turret_barrel",
+      "y": 180
+    },
+    "facing=west,part=base": {
+      "model": "projectrebirth:block/wrecked_turret_base",
+      "y": 270
+    },
+    "facing=west,part=tower": {
+      "model": "projectrebirth:block/wrecked_turret_tower",
+      "y": 270
+    },
+    "facing=west,part=barrel": {
+      "model": "projectrebirth:block/wrecked_turret_barrel",
       "y": 270
     }
   }

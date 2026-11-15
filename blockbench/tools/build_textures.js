@@ -2632,57 +2632,59 @@
         return p;
     });
 
-    // ---------------------------------------------------------------- wrecked turret (after the owner's reference): clean flat
-    // pixel art, little noise: an orange hull with soft light and shade, a cabin window of four panes, dark shield plates with a
-    // raised pattern, grey barrels with a bright band, dark feet and joints.
-    const HULL = '#d98a1e', HULL_LIGHT = '#f1ad3b', HULL_SHADE = '#a6611a', HULL_DEEP = '#7c4515';
-    const PLATE = '#3c3f45', PLATE_LIGHT = '#5a5e66', PLATE_DARK = '#2a2c31';
-    block('turret_hull', () => {
-        const p = new Painter(901);
-        p.noise(0, 0, 16, 16, HULL, 0.02);
-        p.rect(0, 0, 16, 2, HULL_LIGHT).rect(0, 0, 2, 16, HULL_LIGHT);
-        p.rect(0, 14, 16, 2, HULL_SHADE).rect(14, 0, 2, 16, HULL_SHADE);
-        p.rect(0, 15, 16, 1, HULL_DEEP).rect(15, 0, 1, 16, HULL_DEEP);
-        // a seam and a small scuff where the paint has gone to the metal
-        p.rect(2, 8, 12, 1, HULL_SHADE).rect(2, 9, 12, 1, '#e79d2c');
-        p.px('#8c97a3', [11, 4], [12, 4], [4, 12]);
+    // ---------------------------------------------------------------- turret (after the owner's drawing), in the style of the
+    // mod's machines: a light steel casing with a bevel, an inset panel and rivets; a dark gun-metal frame; the bore of the barrel.
+    block('turret_casing', () => {
+        const p = new Painter(931);
+        p.bevel(0, 0, 16, 16, '#a3acb6', 0.025);
+        p.inset(3, 3, 10, 10, '#929ba5', 0.02);
+        p.rect(3, 8, 10, 1, '#7d8690');
+        p.rivets(STEEL, 1);
         return p;
     });
-    block('turret_visor', () => {
-        const p = new Painter(902);
-        p.rect(0, 0, 16, 16, HULL).rect(0, 0, 16, 1, HULL_LIGHT).rect(0, 15, 16, 1, HULL_SHADE);
-        p.rect(2, 2, 12, 12, PLATE_DARK);
-        p.rect(3, 3, 10, 10, PLATE);
-        // four panes with a highlight each, one cracked
-        for (const [x, y] of [[4, 4], [9, 4], [4, 9], [9, 9]]) {
-            p.rect(x, y, 3, 3, '#1a1c20').rect(x, y, 2, 1, '#c9d2db').rect(x, y + 1, 1, 1, '#8a96a3');
-        }
-        p.px('#c9d2db', [10, 10], [11, 11]);
+    block('turret_frame', () => {
+        const p = new Painter(932);
+        p.bevel(0, 0, 16, 16, GUN, 0.03);
+        p.inset(2, 2, 12, 12, '#2a2f36', 0.02);
+        p.rivets('#6b7480', 1);
         return p;
     });
-    block('turret_shield', () => {
-        const p = new Painter(903);
-        p.rect(0, 0, 16, 16, PLATE);
-        p.rect(0, 0, 16, 1, PLATE_LIGHT).rect(0, 0, 1, 16, PLATE_LIGHT).rect(0, 15, 16, 1, PLATE_DARK).rect(15, 0, 1, 16, PLATE_DARK);
-        // the raised pattern: a hooked groove inside a frame
-        p.rect(3, 3, 10, 1, PLATE_DARK).rect(3, 3, 1, 10, PLATE_DARK).rect(3, 12, 10, 1, PLATE_LIGHT).rect(12, 3, 1, 10, PLATE_LIGHT);
-        p.rect(6, 6, 5, 1, PLATE_LIGHT).rect(10, 6, 1, 4, PLATE_LIGHT).rect(6, 9, 3, 1, PLATE_DARK).rect(6, 6, 1, 4, PLATE_DARK);
+    block('turret_bore', () => {
+        const p = new Painter(933);
+        p.bevel(0, 0, 16, 16, GUN, 0.02);
+        p.rect(3, 3, 10, 10, '#23272d').rect(5, 5, 6, 6, '#0c0d10').rect(6, 6, 4, 4, '#050506');
+        p.rect(3, 3, 10, 1, '#1a1d22');
         return p;
     });
-    block('turret_barrel', () => {
-        const p = new Painter(904);
-        p.rect(0, 0, 16, 16, '#4a4f57');
-        p.rect(0, 0, 16, 1, '#646a73').rect(0, 15, 16, 1, '#33363c');
-        p.rect(5, 0, 5, 16, '#aebbc6').rect(5, 0, 5, 1, '#dbe5ec').rect(5, 15, 5, 1, '#7f8b95');
-        // the muzzle face (u 11..16, v 0..5): a dark bore in a ring
-        p.rect(11, 0, 5, 5, '#3a3e45').rect(12, 1, 3, 3, '#121316');
+
+    // the broken turret: the same casing, cracked, scorched and with a spot or two of rust, not rusted through
+    function damaged(p, seed) {
+        const r = random(seed);
+        // a crack from an edge, branching
+        [[11, 0], [11, 1], [10, 2], [10, 3], [9, 4], [9, 5], [10, 6], [8, 5], [7, 6], [6, 6]].forEach(([x, y]) => p.px('#2a2e33', [x, y]));
+        [[11, 1], [10, 3], [9, 5]].forEach(([x, y]) => p.px('#c3cbd3', [x + 1, y]));
+        // soot from a hit, a rust spot with a short streak
+        [[2, 10], [3, 10], [2, 11], [3, 11], [4, 12], [1, 12], [3, 12]].forEach(([x, y]) => p.px(r() < 0.5 ? '#3b3d40' : '#55585c', [x, y]));
+        p.px('#7a4a2c', [12, 11], [13, 11], [12, 12]).px('#8a5532', [12, 13], [12, 14]);
+        return p;
+    }
+    block('turret_casing_broken', () => damaged(TEXTURES['block/turret_casing'](), 961));
+    block('turret_frame_broken', () => damaged(TEXTURES['block/turret_frame'](), 962));
+
+    // ---------------------------------------------------------------- alarm lamp (after the owner's drawing): a dark housing with
+    // vents on its sides, a red glass column in a cage over it
+    block('lamp_housing', () => {
+        const p = new Painter(941);
+        p.bevel(0, 0, 16, 16, '#3a3f46', 0.03);
+        p.inset(2, 2, 12, 12, '#2b2f35', 0.02);
+        p.rivets('#6b7480', 1);
         return p;
     });
-    block('turret_dark', () => {
-        const p = new Painter(905);
-        p.rect(0, 0, 16, 16, '#30333a');
-        p.rect(0, 0, 16, 1, '#4b4f57').rect(0, 0, 1, 16, '#4b4f57').rect(0, 15, 16, 1, '#202227').rect(15, 0, 1, 16, '#202227');
-        p.px('#9aa4ae', [3, 3], [12, 3], [3, 12], [12, 12]);
+    block('lamp_vents', () => {
+        const p = new Painter(942);
+        p.bevel(0, 0, 16, 16, '#3a3f46', 0.03);
+        p.rect(1, 0, 2, 16, '#2b2f35').rect(13, 0, 2, 16, '#2b2f35');
+        for (const y of [4, 7, 10]) p.rect(4, y, 8, 1, '#15181c').rect(4, y + 1, 8, 1, '#4c525a');
         return p;
     });
 
@@ -2690,12 +2692,13 @@
     block('lamp_glass', () => {
         const p = new Painter(911);
         const rgba = (r, g, b, a) => 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+        // deep red glass, brighter toward the middle where the bulb shines through, a highlight streak on the left
         for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+            const glow = 1 - Math.min(1, Math.hypot(x - 8, y - 8) / 9);
             p.ctx.clearRect(x, y, 1, 1);
-            p.rect(x, y, 1, 1, rgba(205 + Math.round(p.rand() * 20), 30, 22, x % 4 === 0 ? 0.72 : 0.55));
+            p.rect(x, y, 1, 1, rgba(200 + Math.round(55 * glow), 20 + Math.round(70 * glow * glow), 18, 0.82 + 0.1 * glow));
         }
-        for (let y = 2; y < 9; y++) { p.ctx.clearRect(3, y, 1, 1); p.rect(3, y, 1, 1, rgba(255, 170, 150, 0.8)); }
-        p.ctx.clearRect(4, 2, 1, 1); p.rect(4, 2, 1, 1, rgba(255, 200, 185, 0.85));
+        for (let y = 2; y < 13; y++) { p.ctx.clearRect(3, y, 1, 1); p.rect(3, y, 1, 1, rgba(255, 150, 120, 0.9)); }
         return p;
     });
     block('lamp_bulb', () => {

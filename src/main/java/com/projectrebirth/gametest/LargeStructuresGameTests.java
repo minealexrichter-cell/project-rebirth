@@ -83,6 +83,28 @@ public class LargeStructuresGameTests {
         return pieces(helper, name).stream().mapToInt(t -> t.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), block).size()).sum();
     }
 
+    /** Whether the block at a position of a piece can hold a lamp: there, not air, and solid, a fence or a stone wall. */
+    private static boolean holdsLamp(StructureTemplate piece, BlockPos at) {
+        for (StructureTemplate.StructureBlockInfo info : piece.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), net.minecraft.world.level.block.Blocks.AIR, false)) {
+            if (info.pos().equals(at)) {
+                return false; // air there
+            }
+        }
+        CompoundTag saved = piece.save(new CompoundTag());
+        ListTag palette = saved.getList("palette", Tag.TAG_COMPOUND);
+        ListTag blocks = saved.getList("blocks", Tag.TAG_COMPOUND);
+        for (int i = 0; i < blocks.size(); i++) {
+            CompoundTag block = blocks.getCompound(i);
+            ListTag pos = block.getList("pos", Tag.TAG_INT);
+            if (pos.getInt(0) == at.getX() && pos.getInt(1) == at.getY() && pos.getInt(2) == at.getZ()) {
+                String id = palette.getCompound(block.getInt("state")).getString("Name");
+                var state = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.parse(id)).defaultBlockState();
+                return !state.isAir() && (EmergencyLampBlock.isPost(state) || state.isSolid());
+            }
+        }
+        return false; // not in the piece: the land there is unknown
+    }
+
     private static List<CompoundTag> wrecks(GameTestHelper helper, String name) {
         List<CompoundTag> out = new ArrayList<>();
         for (StructureTemplate template : pieces(helper, name)) {
@@ -120,7 +142,23 @@ public class LargeStructuresGameTests {
             helper.assertTrue(chests >= 3, name + " holds at least three chests, got " + chests);
             helper.assertTrue(wrecks(helper, name).size() == WRECKS.get(name), name + " has " + WRECKS.get(name) + " wrecked armors, got " + wrecks(helper, name).size());
         }
-        helper.assertTrue(count(helper, StructureSwitches.MILITARY, StructureBlocks.WRECKED_TURRET.get()) >= 4, "The base has its turrets");
+        helper.assertTrue(count(helper, StructureSwitches.MILITARY, StructureBlocks.WRECKED_TURRET.get()) + count(helper, StructureSwitches.MILITARY, StructureBlocks.TURRET.get()) >= 12,
+                "The base has its turrets, three blocks each");
+        // no lamp of any piece hangs on nothing: what holds it is in the piece, solid, a fence or a stone wall
+        for (String name : NAMES) {
+            for (StructureTemplate piece : pieces(helper, name)) {
+                for (StructureTemplate.StructureBlockInfo lamp : piece.filterBlocks(BlockPos.ZERO, new StructurePlaceSettings(), StructureBlocks.EMERGENCY_LAMP.get())) {
+                    var state = lamp.state();
+                    Direction toSupport = switch (state.getValue(EmergencyLampBlock.FACE)) {
+                        case FLOOR -> Direction.DOWN;
+                        case CEILING -> Direction.UP;
+                        default -> state.getValue(EmergencyLampBlock.FACING).getOpposite();
+                    };
+                    BlockPos at = lamp.pos().relative(toSupport);
+                    helper.assertTrue(holdsLamp(piece, at), name + ": the lamp at " + lamp.pos() + " holds on to something at " + at);
+                }
+            }
+        }
         helper.assertTrue(count(helper, StructureSwitches.MILITARY, StructureBlocks.AMMO_CRATE.get()) >= 10, "The base has its ammo crates");
         helper.assertTrue(count(helper, StructureSwitches.MILITARY, com.projectrebirth.shelter.ShelterRegistry.AIRLOCK_DOOR.get()) >= 4, "The base's buildings have airlock doors");
         int tanks = count(helper, StructureSwitches.SCIENCE, StructureBlocks.SPECIMEN_TANK.get());
@@ -206,6 +244,23 @@ public class LargeStructuresGameTests {
         var turned = cable.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
         helper.assertTrue(turned.getValue(net.minecraft.world.level.block.PipeBlock.EAST) && !turned.getValue(net.minecraft.world.level.block.PipeBlock.NORTH)
                 && turned.getValue(net.minecraft.world.level.block.PipeBlock.UP), "A turned cable's arm turns with it: north to east");
+        // the turret is three blocks: broken at the tower, the base and the barrel go too
+        BlockPos base = new BlockPos(3, 2, 3);
+        var turret = StructureBlocks.TURRET.get().defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH);
+        helper.setBlock(base, turret.setValue(com.projectrebirth.structures.TurretBlock.PART, com.projectrebirth.structures.TurretBlock.Part.BASE));
+        helper.setBlock(base.above(), turret.setValue(com.projectrebirth.structures.TurretBlock.PART, com.projectrebirth.structures.TurretBlock.Part.TOWER));
+        helper.setBlock(base.above().north(), turret.setValue(com.projectrebirth.structures.TurretBlock.PART, com.projectrebirth.structures.TurretBlock.Part.BARREL));
+        helper.getLevel().destroyBlock(helper.absolutePos(base.above()), false);
+        helper.assertTrue(helper.getBlockState(base).isAir() && helper.getBlockState(base.above().north()).isAir(), "The whole turret goes with its tower");
+        // a lamp on the side of a stone wall holds on to it, with its bracket
+        BlockPos wall = new BlockPos(1, 2, 3);
+        helper.setBlock(wall, net.minecraft.world.level.block.Blocks.MOSSY_COBBLESTONE_WALL);
+        BlockPos side = wall.east();
+        helper.setBlock(side, StructureBlocks.EMERGENCY_LAMP.get().defaultBlockState()
+                .setValue(EmergencyLampBlock.FACE, net.minecraft.world.level.block.state.properties.AttachFace.WALL).setValue(EmergencyLampBlock.FACING, Direction.EAST));
+        helper.assertTrue(helper.getBlockState(side).canSurvive(helper.getLevel(), helper.absolutePos(side)), "A lamp holds on to the side of a stone wall");
+        var settled = helper.getBlockState(side).updateShape(Direction.WEST, helper.getBlockState(wall), helper.getLevel(), helper.absolutePos(side), helper.absolutePos(wall));
+        helper.assertTrue(settled.getValue(EmergencyLampBlock.POST), "On the side of a stone wall the lamp gets its bracket");
         // the lamp stands on a fence post, and hangs on to it
         BlockPos post = new BlockPos(0, 2, 0);
         helper.setBlock(post, net.minecraft.world.level.block.Blocks.DARK_OAK_FENCE);

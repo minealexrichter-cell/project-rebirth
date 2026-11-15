@@ -2632,86 +2632,79 @@
         return p;
     });
 
-    // ---------------------------------------------------------------- turret (after the owner's drawing), in the style of the
-    // mod's machines: a light steel casing with a bevel, an inset panel and rivets; a dark gun-metal frame; the bore of the barrel.
-    block('turret_casing', () => {
-        const p = new Painter(931);
-        p.bevel(0, 0, 16, 16, '#a3acb6', 0.025);
-        p.inset(3, 3, 10, 10, '#929ba5', 0.02);
-        p.rect(3, 8, 10, 1, '#7d8690');
-        p.rivets(STEEL, 1);
-        return p;
-    });
-    block('turret_frame', () => {
-        const p = new Painter(932);
-        p.bevel(0, 0, 16, 16, GUN, 0.03);
-        p.inset(2, 2, 12, 12, '#2a2f36', 0.02);
-        p.rivets('#6b7480', 1);
-        return p;
-    });
-    block('turret_bore', () => {
-        const p = new Painter(933);
-        p.bevel(0, 0, 16, 16, GUN, 0.02);
-        p.rect(3, 3, 10, 10, '#23272d').rect(5, 5, 6, 6, '#0c0d10').rect(6, 6, 4, 4, '#050506');
-        p.rect(3, 3, 10, 1, '#1a1d22');
-        return p;
-    });
-
-    // the broken turret: the same casing, cracked, scorched and with a spot or two of rust, not rusted through
-    function damaged(p, seed) {
+    // ---------------------------------------------------------------- turret and alarm lamp in Minecraft's own manner: a few close
+    // tones laid in short horizontal strokes and specks, as on the anvil, iron and deepslate textures; the models place them one
+    // pixel to a sixteenth of a block.
+    /** Fills the painter with strokes of a palette (dark to light): a middle ground, then lighter and darker strokes and specks. */
+    function strokes(p, palette, seed, count) {
         const r = random(seed);
-        // a crack from an edge, branching
-        [[11, 0], [11, 1], [10, 2], [10, 3], [9, 4], [9, 5], [10, 6], [8, 5], [7, 6], [6, 6]].forEach(([x, y]) => p.px('#2a2e33', [x, y]));
-        [[11, 1], [10, 3], [9, 5]].forEach(([x, y]) => p.px('#c3cbd3', [x + 1, y]));
-        // soot from a hit, a rust spot with a short streak
-        [[2, 10], [3, 10], [2, 11], [3, 11], [4, 12], [1, 12], [3, 12]].forEach(([x, y]) => p.px(r() < 0.5 ? '#3b3d40' : '#55585c', [x, y]));
-        p.px('#7a4a2c', [12, 11], [13, 11], [12, 12]).px('#8a5532', [12, 13], [12, 14]);
+        const mid = Math.floor(palette.length / 2);
+        for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) p.rect(x, y, 1, 1, palette[mid - (r() < 0.5 ? 1 : 0)]);
+        for (let i = 0; i < (count || 46); i++) {
+            const x = Math.floor(r() * 16), y = Math.floor(r() * 16), len = 2 + Math.floor(r() * 4);
+            const tone = palette[Math.floor(r() * palette.length)];
+            for (let k = 0; k < len; k++) p.rect((x + k) % 16, y, 1, 1, tone);
+        }
+        for (let i = 0; i < 14; i++) p.px(palette[r() < 0.5 ? 0 : palette.length - 1], [Math.floor(r() * 16), Math.floor(r() * 16)]);
         return p;
     }
-    block('turret_casing_broken', () => damaged(TEXTURES['block/turret_casing'](), 961));
-    block('turret_frame_broken', () => damaged(TEXTURES['block/turret_frame'](), 962));
-
-    // ---------------------------------------------------------------- alarm lamp (after the owner's drawing): a dark housing with
-    // vents on its sides, a red glass column in a cage over it
-    block('lamp_housing', () => {
-        const p = new Painter(941);
-        p.bevel(0, 0, 16, 16, '#3a3f46', 0.03);
-        p.inset(2, 2, 12, 12, '#2b2f35', 0.02);
-        p.rivets('#6b7480', 1);
+    const STEEL_TONES = ['#7c8289', '#8b9198', '#989ea5', '#a5abb2', '#b3b9bf', '#c3c8cd'];
+    const IRON_DARK = ['#2f2f31', '#38383a', '#3f3f42', '#47474a', '#505053', '#5b5b5e'];
+    const HOUSING_TONES = ['#242426', '#2d2d30', '#37373a', '#414145', '#4c4d51', '#58595d'];
+    const CAGE_TONES = ['#45494f', '#51555b', '#5d6167', '#696d74', '#777b82'];
+    /** A panel seam across the middle and rivets near the corners, in the palette's darkest and lightest tones. */
+    function seams(p, palette) {
+        const dark = palette[0], light = palette[palette.length - 1];
+        p.rect(0, 7, 16, 1, dark).rect(0, 8, 16, 1, light);
+        for (const [x, y] of [[2, 2], [13, 2], [2, 12], [13, 12]]) p.px(light, [x, y]).px(dark, [x + 1, y + 1]);
+        return p;
+    }
+    block('turret_casing', () => seams(strokes(new Painter(931), STEEL_TONES, 931), STEEL_TONES));
+    block('turret_frame', () => strokes(new Painter(932), IRON_DARK, 932));
+    block('turret_bore', () => {
+        const p = strokes(new Painter(933), IRON_DARK, 933);
+        p.rect(6, 7, 4, 4, '#1c1c1e').rect(7, 8, 2, 2, '#0a0a0b'); // the bore, where the muzzle's face takes the middle of the texture
         return p;
     });
+    /** The broken turret: cracks, soot from a hit and a spot or two of rust over the same metal. */
+    function wrecked(p, seed, palette) {
+        const r = random(seed);
+        const dark = palette[0], darker = palette === STEEL_TONES ? '#5f646a' : '#242426';
+        // a crack or two in the plate's own darkest tones, a dull scorch, one small spot of rust
+        [[11, 1], [10, 2], [10, 3], [9, 4], [9, 5], [4, 11], [5, 12], [5, 13]].forEach(([x, y]) => p.px(darker, [x, y]));
+        [[10, 1], [9, 3], [4, 12]].forEach(([x, y]) => p.px(dark, [x, y]));
+        for (let i = 0; i < 6; i++) p.px(dark, [1 + Math.floor(r() * 4), 10 + Math.floor(r() * 4)]);
+        p.px('#7b5136', [12, 11], [13, 12]).px('#8a5a3a', [12, 12]);
+        return p;
+    }
+    block('turret_casing_broken', () => wrecked(TEXTURES['block/turret_casing'](), 961, STEEL_TONES));
+    block('turret_frame_broken', () => wrecked(TEXTURES['block/turret_frame'](), 962, IRON_DARK));
+
+    // alarm lamp
+    block('lamp_housing', () => seams(strokes(new Painter(941), HOUSING_TONES, 941), HOUSING_TONES));
     block('lamp_vents', () => {
-        const p = new Painter(942);
-        p.bevel(0, 0, 16, 16, '#3a3f46', 0.03);
-        p.rect(1, 0, 2, 16, '#2b2f35').rect(13, 0, 2, 16, '#2b2f35');
-        for (const y of [4, 7, 10]) p.rect(4, y, 8, 1, '#15181c').rect(4, y + 1, 8, 1, '#4c525a');
+        const p = strokes(new Painter(942), HOUSING_TONES, 942);
+        for (const y of [1, 4, 7, 10, 13]) p.rect(1, y, 14, 1, '#141416').rect(1, y + 1, 14, 1, HOUSING_TONES[5]);
         return p;
     });
-
-    // ---------------------------------------------------------------- emergency lamp: red glass over a bulb, like the specimen tank
+    block('lamp_metal', () => strokes(new Painter(943), CAGE_TONES, 943));
     block('lamp_glass', () => {
+        // like the red stained glass: a see-through red with lighter streaks, a little brighter, it glows
         const p = new Painter(911);
-        const rgba = (r, g, b, a) => 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
-        // deep red glass, brighter toward the middle where the bulb shines through, a highlight streak on the left
-        for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
-            const glow = 1 - Math.min(1, Math.hypot(x - 8, y - 8) / 9);
-            p.ctx.clearRect(x, y, 1, 1);
-            p.rect(x, y, 1, 1, rgba(200 + Math.round(55 * glow), 20 + Math.round(70 * glow * glow), 18, 0.82 + 0.1 * glow));
-        }
-        for (let y = 2; y < 13; y++) { p.ctx.clearRect(3, y, 1, 1); p.rect(3, y, 1, 1, rgba(255, 150, 120, 0.9)); }
+        const r = random(911);
+        const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+        for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { p.ctx.clearRect(x, y, 1, 1); p.rect(x, y, 1, 1, rgba(r() < 0.3 ? [176, 44, 36] : [190, 52, 40], 0.66)); }
+        for (const [x0, y0, len] of [[2, 3, 4], [9, 1, 3], [4, 10, 5], [11, 9, 3]]) for (let k = 0; k < len; k++) { p.ctx.clearRect(x0 + k, y0 + k, 1, 1); p.rect(x0 + k, y0 + k, 1, 1, rgba([238, 120, 98], 0.8)); }
         return p;
     });
     block('lamp_bulb', () => {
         const p = new Painter(912);
-        p.rect(0, 0, 16, 16, '#ffd9a0');
-        p.rect(4, 4, 8, 8, '#fff2d6').rect(6, 6, 4, 4, '#ffffff');
-        return p;
-    });
-    block('lamp_metal', () => {
-        const p = new Painter(913);
-        p.rect(0, 0, 16, 16, '#3f444c');
-        p.rect(0, 0, 16, 1, '#5d636c').rect(0, 0, 1, 16, '#5d636c').rect(0, 15, 16, 1, '#2a2d33').rect(15, 0, 1, 16, '#2a2d33');
-        p.px('#9aa4ae', [2, 2], [13, 2], [2, 13], [13, 13]);
+        const r = random(912);
+        const tones = ['#f09149', '#f6b25a', '#f9c966', '#ffe0a0', '#fff3d2'];
+        for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+            const d = Math.hypot(x - 7.5, y - 7.5) / 8;
+            p.rect(x, y, 1, 1, tones[Math.max(0, Math.min(4, Math.round(4 - d * 4 + (r() - 0.5))))]);
+        }
         return p;
     });
 

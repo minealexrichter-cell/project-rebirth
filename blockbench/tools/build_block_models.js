@@ -39,6 +39,22 @@
 
     const GLOW = {neoforge_data: {block_light: 15}};
 
+    /**
+     * Gives every textured face without a uv the uv vanilla would give it from the element's place, so one pixel of the texture is
+     * one sixteenth of a block, as in Minecraft's own models. Coordinates outside the block are wrapped into it first.
+     */
+    function placeUv(elements) {
+        // an interval outside the block is moved by a whole block into it
+        const into = (a, b) => (a < 0 ? [a + 16, b + 16] : b > 16 ? [a - 16, b - 16] : [a, b]);
+        for (const e of elements) {
+            const [x1, x2] = into(e.from[0], e.to[0]), [y1, y2] = into(e.from[1], e.to[1]), [z1, z2] = into(e.from[2], e.to[2]);
+            const uv = {down: [x1, 16 - z2, x2, 16 - z1], up: [x1, z1, x2, z2], north: [16 - x2, 16 - y2, 16 - x1, 16 - y1],
+                south: [x1, 16 - y2, x2, 16 - y1], west: [z1, 16 - y2, z2, 16 - y1], east: [16 - z2, 16 - y2, 16 - z1, 16 - y1]};
+            for (const [dir, face] of Object.entries(e.faces)) if (!face.uv) face.uv = uv[dir];
+        }
+        return elements;
+    }
+
     /** Removes faces that nothing can see, so that they cannot flicker against each other. */
     function without(element, ...dirs) {
         dirs.forEach(dir => delete element.faces[dir]);
@@ -610,13 +626,14 @@
     // Standing it is this model; hanging, it is turned over; on a wall it lies with its housing against the wall; on the side of a
     // post (a fence or a stone wall) it has a bracket reaching across to the post. Drawn in the translucent layer.
     (() => {
+        const tex = key => ({texture: '#' + key}); // placed by position: one pixel per sixteenth of a block
         const housing = tex('housing'), vents = tex('vents'), glass = tex('glass'), bulb = tex('bulb'), metal = tex('metal');
-        const all = t => ({north: t, south: t, west: t, east: t, up: t, down: t});
+        const all = t => ({north: {...t}, south: {...t}, west: {...t}, east: {...t}, up: {...t}, down: {...t}});
         const el = (from, to, faces, extra) => Object.assign({from, to, faces: faces.texture ? all(faces) : faces}, extra || {});
         const lampTextures = decorTextures({housing: 'lamp_housing', vents: 'lamp_vents', glass: 'lamp_glass', bulb: 'lamp_bulb', metal: 'lamp_metal'}, 'lamp_housing');
         const lamp = [
-            el([1, 0, 1], [15, 5, 15], {north: tex('housing', [1, 11, 15, 16]), south: tex('vents', [1, 5, 15, 10]), west: tex('vents', [1, 5, 15, 10]), east: tex('vents', [1, 5, 15, 10]), up: housing, down: housing}),
-            el([5, 1.5, 0.75], [11, 3, 1], {north: tex('glass', [5, 6, 11, 8]), west: glass, east: glass, up: glass, down: glass}, GLOW),
+            el([1, 0, 1], [15, 5, 15], {north: tex('housing'), south: tex('vents'), west: tex('vents'), east: tex('vents'), up: tex('housing'), down: tex('housing')}),
+            el([5, 1.5, 0.75], [11, 3, 1], {north: tex('glass'), west: tex('glass'), east: tex('glass'), up: tex('glass'), down: tex('glass')}, GLOW),
             el([2, 5, 2], [14, 6, 14], metal),
             el([2, 6, 2], [3.5, 13, 3.5], metal), el([12.5, 6, 2], [14, 13, 3.5], metal),
             el([2, 6, 12.5], [3.5, 13, 14], metal), el([12.5, 6, 12.5], [14, 13, 14], metal),
@@ -628,9 +645,10 @@
             el([4, 14, 4], [12, 15, 12], housing),
             el([6, 15, 6], [10, 16, 10], metal)
         ];
+        placeUv(lamp);
         MODELS.emergency_lamp = {parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures, elements: lamp};
         MODELS.emergency_lamp_post = {parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures,
-            elements: [...lamp, without(el([6, -6, 6], [10, 0, 10], metal), 'up'), el([5, -6.5, 5], [11, -5.5, 11], metal)]};
+            elements: [...lamp, ...placeUv([without(el([6, -6, 6], [10, 0, 10], tex('metal')), 'up'), el([5, -6.5, 5], [11, -5.5, 11], tex('metal'))])]};
     })();
 
     // Turret (after the owner's drawing), three blocks, looking north. The base: four dark feet, a stepped light casing, a dark
@@ -638,7 +656,8 @@
     // on top and the sleeve of the barrel at the front. The barrel: a long dark barrel ending in a muzzle with its bore. The broken
     // turret: the same parts gone to rust, rubble round the base, the housing slumped forward and the barrel hanging down.
     (() => {
-        const all = t => ({north: t, south: t, west: t, east: t, up: t, down: t});
+        const all = t => ({north: {...t}, south: {...t}, west: {...t}, east: {...t}, up: {...t}, down: {...t}});
+        const tex = key => ({texture: '#' + key}); // placed by position: one pixel per sixteenth of a block
         const parts = (broken) => {
             const casing = tex('casing'), frame = tex('frame'), bore = tex('bore');
             const el = (from, to, t, extra) => Object.assign({from, to, faces: t.texture ? all(t) : t}, extra || {});
@@ -668,7 +687,7 @@
                 el([5.5, 5.5, 6], [10.5, 9.5, 16], frame, hang),
                 el([5, 5, 4], [11, 10, 6], Object.assign(all(frame), {north: bore}), hang)
             ];
-            return {base, tower, barrel};
+            return {base: placeUv(base), tower: placeUv(tower), barrel: placeUv(barrel)};
         };
         for (const [id, broken] of [['turret', false], ['wrecked_turret', true]]) {
             const p = parts(broken);

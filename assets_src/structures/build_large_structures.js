@@ -48,10 +48,19 @@ const lamp = f => [P + 'emergency_lamp', {face: 'wall', facing: f, post: 'false'
 const lampUp = [P + 'emergency_lamp', {face: 'floor', facing: 'north', post: 'false'}];
 const lampHang = [P + 'emergency_lamp', {face: 'ceiling', facing: 'north', post: 'false'}];
 
-/** A turret of three blocks looking toward f: base at (x, y, z), tower over it, barrel in front of the tower; most are broken. */
-function turretAt(b, x, y, z, f, whole) {
-    const id = P + (whole === undefined ? (roll() < 0.25 ? 'turret' : 'wrecked_turret') : whole ? 'turret' : 'wrecked_turret');
+/**
+ * A turret looking toward f at (x, y, z). About two in five still work: a guard turret (an entity, part B3 of 1.6.0) that turns and
+ * shoots, with the room it needs left free; the rest are the broken turret's three blocks (base, tower over it, barrel in front).
+ */
+const YAW = {south: 0, west: 90, north: 180, east: -90};
+function turretAt(b, x, y, z, f, active) {
     const [dx, dz] = STEP[f];
+    if (active === undefined ? roll() < 0.4 : active) {
+        b.set(x, y, z, AIR); b.set(x, y + 1, z, AIR); b.set(x + dx, y + 1, z + dz, AIR);
+        b.entity(x, y, z, compound({id: str(P + 'guard_turret'), Rotation: list(T.FLOAT, [float(YAW[f]), float(0)]), PersistenceRequired: byte(1)}));
+        return;
+    }
+    const id = P + 'wrecked_turret';
     b.set(x, y, z, [id, {facing: f, part: 'base'}]);
     b.set(x, y + 1, z, [id, {facing: f, part: 'tower'}]);
     b.set(x + dx, y + 1, z + dz, [id, {facing: f, part: 'barrel'}]);

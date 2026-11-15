@@ -1,0 +1,18 @@
+{
+  "icon": "projectrebirth:turret",
+  "x": -8,
+  "y": -5,
+  "parents": [
+    "large_structures"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.guard_turret.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.guard_turret.p2"
+    }
+  ]
+}

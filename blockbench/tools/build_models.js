@@ -2274,5 +2274,47 @@
         'animation.weapon.empty': {length: 0.2, loop: 'once', bones: {trigger: {r: {'0.000': still(0, 0, 0), '0.060': still(-20, 0, 0), '0.200': still(0, 0, 0)}}}}
     });
 
+    // ------------------------------------------------------------------ guard turret (1.6.0, part B3a)
+    // The living version of the turret block: the base stands still, the head turns (bone "head", turned by the code to where
+    // the turret looks) and the barrel tilts (bone "barrel"). Same light casing, dark frame and red lamps as the block turret,
+    // painted with a coarse grain so it sits with Minecraft's own textures.
+    (() => {
+        const CASING = {c: '#a3a9b0', n: 0.09};
+        const FRAME = {c: '#404044', n: 0.1};
+        const RED = {c: '#d0352a', n: 0.04, edge: false};
+        const panel = {c: '#a3a9b0', n: 0.09, sd: [[2, 2, 9, 1, '#7c8289']], f: [[1, 3, 10, 1, '#7c8289']]};
+        const feet = [[-8, -8], [5, -8], [-8, 5], [5, 5]].map(([x, z]) => C([x, 0, z], [3, 3, 3], FRAME));
+        // parts sink a pixel into each other instead of touching face to face, which would flicker
+        const base = [...feet,
+            C([-6, 1, -6], [12, 5, 12], CASING),
+            C([-5, 5, -5], [10, 5, 10], CASING),
+            C([-3, 9, -3], [6, 4, 6], CASING),
+            C([-4, 12, -4], [8, 3, 8], FRAME),
+            C([-2, 14, -2], [4, 7, 4], FRAME)];
+        const head = [
+            C([-3, 18, -3], [6, 2, 6], FRAME),
+            C([-6, 19, -7], [12, 9, 13], panel),
+            C([-2, 27, -4], [4, 3, 6], FRAME),
+            C([-7, 21, 1], [2, 2, 4], RED),
+            C([5, 21, 1], [2, 2, 4], RED),
+            C([-3, 20, -9], [6, 6, 3], FRAME)];
+        const barrel = [
+            C([-2, 21, -23], [4, 4, 15], FRAME),
+            // the muzzle: the bore in the middle of its front with a pixel of metal all round
+            C([-3, 20, -25], [6, 6, 3], {c: '#404044', n: 0.1, f: [[1, 1, 4, 4, '#1c1c1e'], [2, 2, 2, 2, '#0a0a0b']]})];
+        SPECS.guard_turret = {
+            res: 128, seed: 1601, noCoplanarFaces: true,
+            bones: [
+                {name: 'base', parent: undefined, pivot: [0, 0, 0], cubes: base},
+                {name: 'head', parent: 'base', pivot: [0, 19, 0], cubes: head},
+                {name: 'barrel', parent: 'head', pivot: [0, 23, -8], cubes: barrel}
+            ],
+            animations: {
+                'animation.guard_turret.idle': {length: 2, loop: 'loop', bones: {barrel: {p: {'0.000': [0, 0, 0], '2.000': [0, 0, 0]}}}},
+                'animation.guard_turret.shot': {length: 0.2, loop: 'once', bones: {barrel: {p: {'0.000': [0, 0, 0], '0.050': [0, 0, 1.5], '0.200': [0, 0, 0]}}}}
+            }
+        };
+    })();
+
     window.RebirthModels = {build, save, SPECS, coplanarFaces};
 })();

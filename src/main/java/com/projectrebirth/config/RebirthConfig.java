@@ -219,6 +219,18 @@ public final class RebirthConfig {
     public static final ModConfigSpec.BooleanValue STRUCTURES_COMM;
     public static final ModConfigSpec.BooleanValue STRUCTURES_OUTPOST;
     public static final ModConfigSpec.BooleanValue STRUCTURES_ZONE;
+    public static final ModConfigSpec.BooleanValue HOSTILE_ENABLED;
+    public static final ModConfigSpec.BooleanValue TURRET_ENABLED;
+    public static final ModConfigSpec.DoubleValue TURRET_HEALTH;
+    public static final ModConfigSpec.DoubleValue TURRET_ARMOR;
+    public static final ModConfigSpec.DoubleValue TURRET_RANGE;
+    public static final ModConfigSpec.IntValue TURRET_LOCK_TICKS;
+    public static final ModConfigSpec.IntValue TURRET_BURST;
+    public static final ModConfigSpec.IntValue TURRET_SHOT_INTERVAL;
+    public static final ModConfigSpec.IntValue TURRET_BURST_PAUSE;
+    public static final ModConfigSpec.DoubleValue TURRET_DAMAGE;
+    public static final ModConfigSpec.DoubleValue TURRET_SPREAD;
+    public static final ModConfigSpec.DoubleValue TURRET_TURN_SPEED;
     public static final ModConfigSpec.DoubleValue SOURCES_WALL_FACTOR;
     public static final ModConfigSpec.DoubleValue DEBRIS_RADIATION;
     public static final ModConfigSpec.IntValue DEBRIS_RANGE;
@@ -718,6 +730,23 @@ public final class RebirthConfig {
         STRUCTURES_OUTPOST = builder.comment("Defensive outpost (medium-large, walls and two towers)").define("defensiveOutpost", true);
         STRUCTURES_ZONE = builder.comment("Contamination zone (large, an ancient arch over irradiated sludge)").define("contaminationZone", true);
         builder.pop();
+
+        builder.comment("Hostile mechanisms and creatures (1.6.0, part B3): guard turrets of the ruins, sentries, mutants.",
+                "Switched off, a mechanism standing in a ruin turns into its broken block and creatures do not appear.").push("hostile");
+        HOSTILE_ENABLED = builder.comment("All the hostile mechanisms and creatures").define("enabled", true);
+        builder.push("guard_turret");
+        TURRET_ENABLED = builder.comment("Guard turrets in the ruins; off, they stand there broken").define("enabled", true);
+        TURRET_HEALTH = builder.comment("Health of a guard turret").defineInRange("health", 40.0, 1.0, 10000.0);
+        TURRET_ARMOR = builder.comment("Armor points of a guard turret").defineInRange("armor", 8.0, 0.0, 30.0);
+        TURRET_RANGE = builder.comment("How far a turret sees and shoots, in blocks (it needs a clear line of sight)").defineInRange("range", 20.0, 2.0, 64.0);
+        TURRET_LOCK_TICKS = builder.comment("Ticks from spotting a target (a warning beep) to the first shot").defineInRange("lockTicks", 20, 0, 200);
+        TURRET_BURST = builder.comment("Shots in one burst").defineInRange("burst", 3, 1, 20);
+        TURRET_SHOT_INTERVAL = builder.comment("Ticks between the shots of a burst").defineInRange("shotInterval", 4, 1, 100);
+        TURRET_BURST_PAUSE = builder.comment("Ticks between bursts").defineInRange("burstPause", 30, 1, 400);
+        TURRET_DAMAGE = builder.comment("Damage of one bullet").defineInRange("damage", 3.0, 0.0, 1000.0);
+        TURRET_SPREAD = builder.comment("Spread of the bullets in degrees").defineInRange("spreadDegrees", 3.0, 0.0, 45.0);
+        TURRET_TURN_SPEED = builder.comment("How fast the head turns to its target, degrees per tick").defineInRange("turnSpeed", 12.0, 1.0, 180.0);
+        builder.pop(2);
 
         builder.comment("Temperature (1.5.0): the temperature of a place in degrees Celsius, and the heat or cold stress of a human body,",
                 "from -100 (cold) to 100 (heat). Off: no temperature, as in 1.4.1. Artificial bodies do not feel cold; heat goes into",

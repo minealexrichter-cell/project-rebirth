@@ -78,6 +78,7 @@ public class ProjectRebirthClient {
         modEventBus.addListener(this::registerRenderers);
         modEventBus.addListener(this::createPossessedRenderers);
         modEventBus.addListener(this::registerKeys);
+        HostileClient.init();
         modEventBus.addListener(this::registerGuiLayers);
         modEventBus.addListener(this::registerScreens);
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
@@ -119,6 +120,7 @@ public class ProjectRebirthClient {
             event.registerEntityRenderer(BodyEntities.type(bodyClass), context -> new ArtificialBodyRenderer(context, bodyClass));
         }
         event.registerEntityRenderer(BodyEntities.HUMAN_SHELL.get(), HumanShellRenderer::new);
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.GUARD_TURRET.get(), com.projectrebirth.client.render.GuardTurretRenderer::new);
     }
 
     /** Fired on every resource reload, with a fresh renderer context. */

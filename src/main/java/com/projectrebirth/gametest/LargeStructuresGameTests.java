@@ -190,6 +190,23 @@ public class LargeStructuresGameTests {
     @GameTest(template = TEMPLATE)
     public static void aWreckFromThePieceComesOutAsAWreckedArmor(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
+        // the working guard turrets of the ruins come out as turrets too
+        int turrets = 0;
+        for (String name : NAMES) {
+            for (StructureTemplate piece : pieces(helper, name)) {
+                ListTag entities = piece.save(new CompoundTag()).getList("entities", Tag.TAG_COMPOUND);
+                for (int i = 0; i < entities.size(); i++) {
+                    CompoundTag nbt = entities.getCompound(i).getCompound("nbt");
+                    if (nbt.getString("id").equals(ProjectRebirth.MOD_ID + ":guard_turret")) {
+                        Entity entity = EntityType.create(nbt.copy(), level).orElse(null);
+                        helper.assertTrue(entity instanceof com.projectrebirth.hostile.GuardTurretEntity, name + ": a guard turret of the ruins is a turret");
+                        entity.discard();
+                        turrets++;
+                    }
+                }
+            }
+        }
+        helper.assertTrue(turrets >= 3, "The ruins hold working guard turrets: " + turrets);
         for (String name : NAMES) {
             for (CompoundTag nbt : wrecks(helper, name)) {
                 Entity entity = EntityType.create(nbt.copy(), level).orElse(null);

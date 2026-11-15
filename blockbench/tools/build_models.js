@@ -2316,5 +2316,145 @@
         };
     })();
 
+    // ------------------------------------------------------------------ patrol robot and mech (1.6.0, part B3b)
+    // Walking machines of the ruins. The robot: a gun for a right arm held forward, a heavy left fist, a head that turns and
+    // tilts (bone "head", turned by the code). The mech: two heavy legs with knees, a torso that turns on the hips (bone
+    // "torso", turned by the code), a twin machine gun on the right and a rocket pod on the left shoulder. Whole sizes; parts
+    // sink a pixel into each other instead of touching face to face. Coarse grain, like the turret.
+    (() => {
+        const CASE = {c: '#8a9086', n: 0.09};
+        const FRAME = {c: '#3c3e40', n: 0.1};
+        const DARK = '#1c1d1f', EDGE = '#6a7068', AMBER = '#e0a030';
+        const vent = (x, y, w, rows) => vents(x, y, w, rows, DARK, 2);
+        const leg = [
+            C([-6, 8, -2], [4, 9, 4], FRAME),
+            C([-6.5, 2, -3], [5, 7, 6], Object.assign({}, CASE, {f: [[1, 1, 3, 1, EDGE], [1, 3, 3, 1, EDGE]]})),
+            C([-7, 0, -5], [6, 3, 9], Object.assign({}, FRAME, {f: hazard(0, 0, 6, 3, AMBER, DARK, 2)}))];
+        const body = [
+            C([-5, 15, -3], [10, 4, 6], FRAME),
+            C([-7, 18, -4], [14, 10, 8], Object.assign({}, CASE, {f: [[1, 1, 12, 1, EDGE], [5, 3, 4, 4, DARK], [6, 4, 2, 2, AMBER]], sd: vent(2, 2, 4, 3)})),
+            C([-5, 19, 3], [10, 8, 3], Object.assign({}, FRAME, {k: vent(1, 1, 8, 3)}))];
+        const head = [
+            C([-2, 26, -2], [4, 3, 4], FRAME),
+            C([-4, 27, -5], [8, 6, 8], Object.assign({}, CASE, {f: [[1, 2, 6, 2, DARK], [2, 2, 1, 2, AMBER], [5, 2, 1, 2, AMBER]], tp: [[1, 1, 6, 1, EDGE]]})),
+            C([2, 32, 1], [1, 4, 1], Object.assign({}, FRAME, {edge: false}))];
+        const gunArm = [
+            C([-14, 23, -3], [8, 6, 6], Object.assign({}, CASE, {tp: hazard(0, 0, 8, 6, AMBER, DARK, 2)})),
+            C([-13, 17, -2], [4, 7, 4], FRAME),
+            C([-14, 14, -12], [6, 6, 13], Object.assign({}, CASE, {sd: [[2, 1, 9, 1, EDGE], [2, 3, 9, 1, DARK]]})),
+            // the muzzle: the bore in the middle of its front with metal all round
+            C([-13, 15, -17], [4, 4, 6], {c: '#3c3e40', n: 0.1, f: [[1, 1, 2, 2, '#0a0a0b']]})];
+        const fistArm = [
+            C([6, 23, -3], [8, 6, 6], Object.assign({}, CASE, {tp: hazard(0, 0, 8, 6, AMBER, DARK, 2)})),
+            C([9, 15, -2], [3, 9, 4], FRAME),
+            C([7, 8, -3], [6, 8, 6], Object.assign({}, CASE, {f: [[1, 1, 4, 1, EDGE]]})),
+            C([7.5, 6, -2.5], [5, 3, 5], FRAME)];
+        SPECS.patrol_robot = {
+            res: 128, seed: 1602, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                ...limbs('leg', 'root', [-4, 16, 0], leg),
+                {name: 'body', parent: 'root', pivot: [0, 16, 0], cubes: body},
+                {name: 'head', parent: 'body', pivot: [0, 28, 0], cubes: head},
+                {name: 'right_arm', parent: 'body', pivot: [-9, 26, 0], cubes: gunArm},
+                {name: 'left_arm', parent: 'body', pivot: [9, 26, 0], cubes: fistArm}
+            ],
+            animations: {
+                'animation.patrol_robot.idle': {length: 3, loop: 'loop', bones: {
+                    body: {p: steps(3, [[0, 0, 0], [0, -0.3, 0], [0, 0, 0]])},
+                    left_arm: {r: steps(3, [[0, 0, 0], [-3, 0, 0], [0, 0, 0]])}}},
+                'animation.patrol_robot.walk': {length: 1.2, loop: 'loop', bones: {
+                    right_leg: {r: steps(1.2, [[25, 0, 0], [-25, 0, 0], [25, 0, 0]])},
+                    left_leg: {r: steps(1.2, [[-25, 0, 0], [25, 0, 0], [-25, 0, 0]])},
+                    left_arm: {r: steps(1.2, [[18, 0, 0], [-18, 0, 0], [18, 0, 0]])},
+                    right_arm: {r: steps(1.2, [[-3, 0, 0], [3, 0, 0], [-3, 0, 0]])},
+                    body: {p: steps(1.2, [[0, 0, 0], [0, -0.6, 0], [0, 0, 0], [0, -0.6, 0], [0, 0, 0]])}}},
+                'animation.patrol_robot.shot': {length: 0.15, loop: 'once', bones: {
+                    right_arm: {p: {'0.000': [0, 0, 0], '0.050': [0, 0, 1.5], '0.150': [0, 0, 0]}}}},
+                'animation.patrol_robot.melee': {length: 0.5, loop: 'once', bones: {
+                    left_arm: {r: {'0.000': [0, 0, 0], '0.150': [-110, 0, 0], '0.250': [-30, 0, 0], '0.500': [0, 0, 0]}}}}
+            }
+        };
+    })();
+
+    (() => {
+        const PLATE = {c: '#5f6957', n: 0.08};
+        const FRAME = {c: '#34362f', n: 0.1};
+        const DARK = '#151613', EDGE = '#495043', LIGHT = '#7b8670', AMBER = '#d89a2a', RED = '#d0352a';
+        const P = (o, s, more) => C(o, s, Object.assign({}, PLATE, more));
+        const F = (o, s, more) => C(o, s, Object.assign({}, FRAME, more));
+        const thigh = [
+            F([-15, 24, -4], [7, 6, 8]),
+            P([-14, 15, -3], [5, 11, 6], {f: [[1, 1, 4, 1, LIGHT], [1, 4, 4, 1, EDGE]], sd: [[1, 2, 5, 1, EDGE]]})];
+        const shin = [
+            F([-15, 13, -5], [7, 4, 9]),
+            P([-14, 4, -3], [5, 10, 6], {f: [[1, 1, 4, 1, LIGHT], [2, 3, 2, 5, EDGE]]}),
+            F([-16, 0, -9], [10, 5, 15], {f: hazard(0, 0, 10, 5, AMBER, DARK, 2)})];
+        const hips = [F([-9, 27, -6], [18, 6, 12])];
+        const torso = [
+            P([-12, 31, -9], [24, 15, 17], {f: [[1, 1, 22, 1, LIGHT], [2, 9, 20, 1, EDGE], [3, 11, 6, 2, AMBER], [15, 11, 6, 2, AMBER]],
+                sd: [[2, 2, 13, 1, EDGE], ...vents(3, 5, 10, 4, DARK, 2)], k: vents(4, 3, 16, 5, DARK, 2)}),
+            F([-6, 38, -11], [12, 6, 3], {f: [[1, 2, 10, 2, DARK], [2, 2, 3, 2, RED], [7, 2, 3, 2, RED]]}),
+            P([-10, 45, -7], [20, 3, 13], {tp: [[1, 1, 18, 1, LIGHT], [1, 11, 18, 1, EDGE]]}),
+            F([6, 47, 1], [1, 7, 1], {edge: false}),
+            F([-7, 33, 7], [14, 11, 4], {k: vents(1, 1, 12, 5, DARK, 2)})];
+        const gun = [
+            F([-18, 36, -5], [7, 9, 10]),
+            P([-19, 32, -16], [9, 7, 20], {sd: [[2, 1, 16, 1, LIGHT], [2, 4, 16, 1, EDGE]], tp: [[1, 2, 7, 1, EDGE]]}),
+            F([-18, 34, -21], [3, 3, 6], {f: [[1, 1, 1, 1, '#050505']], edge: false}),
+            F([-14, 34, -21], [3, 3, 6], {f: [[1, 1, 1, 1, '#050505']], edge: false}),
+            F([-19, 33, -29], [9, 5, 9], {f: [[1, 1, 2, 2, '#050505'], [5, 1, 2, 2, '#050505']]})];
+        const pod = [
+            F([11, 39, -4], [5, 6, 8]),
+            P([13, 44, -8], [11, 9, 14], {f: [[1, 1, 4, 3, DARK], [6, 1, 4, 3, DARK], [1, 5, 4, 3, DARK], [6, 5, 4, 3, DARK],
+                [2, 2, 2, 1, RED], [7, 2, 2, 1, RED], [2, 6, 2, 1, RED], [7, 6, 2, 1, RED]], sd: hazard(1, 6, 12, 2, AMBER, DARK, 2)})];
+        const legBones = side => {
+            const s = side === 'right' ? 1 : -1;
+            const flip = c => (s > 0 ? c : mirror(c));
+            return [
+                {name: side + '_leg', parent: 'hips', pivot: [-11.5 * s, 29, 0], cubes: thigh.map(flip)},
+                {name: side + '_shin', parent: side + '_leg', pivot: [-11.5 * s, 15, 0], cubes: shin.map(flip)}];
+        };
+        SPECS.mech = {
+            res: 256, seed: 1603, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'hips', parent: 'root', pivot: [0, 30, 0], cubes: hips},
+                ...legBones('right'), ...legBones('left'),
+                {name: 'torso', parent: 'hips', pivot: [0, 32, 0], cubes: torso},
+                {name: 'right_gun', parent: 'torso', pivot: [-14, 40, 0], cubes: gun},
+                {name: 'left_pod', parent: 'torso', pivot: [14, 44, 0], cubes: pod}
+            ],
+            animations: {
+                'animation.mech.idle': {length: 3, loop: 'loop', bones: {
+                    hips: {p: steps(3, [[0, 0, 0], [0, -0.4, 0], [0, 0, 0]])},
+                    right_gun: {r: steps(3, [[0, 0, 0], [-2, 0, 0], [0, 0, 0]])}}},
+                'animation.mech.walk': {length: 2, loop: 'loop', bones: {
+                    right_leg: {r: steps(2, [[20, 0, 0], [-20, 0, 0], [20, 0, 0]])},
+                    left_leg: {r: steps(2, [[-20, 0, 0], [20, 0, 0], [-20, 0, 0]])},
+                    right_shin: {r: steps(2, [[0, 0, 0], [0, 0, 0], [25, 0, 0], [0, 0, 0], [0, 0, 0]])},
+                    left_shin: {r: steps(2, [[25, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [25, 0, 0]])},
+                    hips: {p: steps(2, [[0, 0, 0], [0, -1, 0], [0, 0, 0], [0, -1, 0], [0, 0, 0]]), r: steps(2, [[0, 0, 2], [0, 0, -2], [0, 0, 2]])}}},
+                'animation.mech.shot': {length: 0.12, loop: 'once', bones: {
+                    right_gun: {p: {'0.000': [0, 0, 0], '0.040': [0, 0, 2], '0.120': [0, 0, 0]}}}},
+                'animation.mech.rockets': {length: 0.6, loop: 'once', bones: {
+                    left_pod: {r: {'0.000': [0, 0, 0], '0.100': [-12, 0, 0], '0.600': [0, 0, 0]}, p: {'0.000': [0, 0, 0], '0.100': [0, -1, 1.5], '0.600': [0, 0, 0]}}}},
+                'animation.mech.stomp': {length: 1, loop: 'once', bones: {
+                    right_leg: {r: {'0.000': [0, 0, 0], '0.500': [-45, 0, 0], '0.600': [8, 0, 0], '1.000': [0, 0, 0]}},
+                    right_shin: {r: {'0.000': [0, 0, 0], '0.500': [50, 0, 0], '0.600': [0, 0, 0], '1.000': [0, 0, 0]}},
+                    hips: {p: {'0.000': [0, 0, 0], '0.500': [0, 1, 0], '0.600': [0, -2, 0], '1.000': [0, 0, 0]}}}}
+            }
+        };
+        SPECS.mech_rocket = {
+            res: 32, seed: 1604, noCoplanarFaces: true,
+            bones: [{name: 'rocket', parent: undefined, pivot: [0, 2.5, 0], cubes: [
+                C([-1, 1.5, -4], [2, 2, 8], {c: '#c8ccc4', n: 0.06, sd: [[2, 0, 1, 2, RED]], tp: [[2, 0, 1, 2, RED]]}),
+                C([-0.5, 2, -5], [1, 1, 2], {c: RED, n: 0.05, edge: false}),
+                C([-2, 2, 1.5], [4, 1, 2], {c: '#34362f', n: 0.08, edge: false}),
+                C([-0.5, 0.5, 1], [1, 4, 2], {c: '#34362f', n: 0.08, edge: false})]}],
+            animations: {'animation.mech_rocket.idle': {length: 1, loop: 'loop', bones: {rocket: {r: {'0.000': [0, 0, 0], '1.000': [0, 0, 360]}}}}}
+        };
+    })();
+
     window.RebirthModels = {build, save, SPECS, coplanarFaces};
 })();

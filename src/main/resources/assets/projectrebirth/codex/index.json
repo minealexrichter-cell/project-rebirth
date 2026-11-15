@@ -94,6 +94,8 @@
         "ruins",
         "large_structures",
         "guard_turret",
+        "patrol_robot",
+        "mech",
         "dosimeter",
         "medicine",
         "machines_environment"

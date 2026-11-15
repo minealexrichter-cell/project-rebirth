@@ -26,9 +26,39 @@ public final class HostileRegistry {
                     .clientTrackingRange(10)
                     .build("guard_turret"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<PatrolRobotEntity>> PATROL_ROBOT = ENTITY_TYPES.register("patrol_robot",
+            () -> EntityType.Builder.of(PatrolRobotEntity::new, MobCategory.MONSTER)
+                    .sized(0.85f, 2.1f)
+                    .eyeHeight(1.8f)
+                    .fireImmune()
+                    .clientTrackingRange(10)
+                    .build("patrol_robot"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MechEntity>> MECH = ENTITY_TYPES.register("mech",
+            () -> EntityType.Builder.of(MechEntity::new, MobCategory.MONSTER)
+                    .sized(2.2f, 3.4f)
+                    .eyeHeight(2.6f)
+                    .fireImmune()
+                    .clientTrackingRange(12)
+                    .build("mech"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<MechRocketEntity>> MECH_ROCKET = ENTITY_TYPES.register("mech_rocket",
+            () -> EntityType.Builder.<MechRocketEntity>of(MechRocketEntity::new, MobCategory.MISC)
+                    .sized(0.3f, 0.3f)
+                    .clientTrackingRange(10)
+                    .updateInterval(1)
+                    .noSave()
+                    .build("mech_rocket"));
+
     /** For trying it out in creative; the ruins place their own. */
     public static final DeferredItem<Item> GUARD_TURRET_SPAWN_EGG = ITEMS.register("guard_turret_spawn_egg",
             () -> new DeferredSpawnEggItem(GUARD_TURRET, 0xA3ACB6, 0xC4382C, new Item.Properties()));
+
+    public static final DeferredItem<Item> PATROL_ROBOT_SPAWN_EGG = ITEMS.register("patrol_robot_spawn_egg",
+            () -> new DeferredSpawnEggItem(PATROL_ROBOT, 0x6E7680, 0xE0A030, new Item.Properties()));
+
+    public static final DeferredItem<Item> MECH_SPAWN_EGG = ITEMS.register("mech_spawn_egg",
+            () -> new DeferredSpawnEggItem(MECH, 0x4F5A4A, 0xC4382C, new Item.Properties()));
 
     private HostileRegistry() {
     }
@@ -42,5 +72,7 @@ public final class HostileRegistry {
 
     private static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(GUARD_TURRET.get(), GuardTurretEntity.createAttributes().build());
+        event.put(PATROL_ROBOT.get(), PatrolRobotEntity.createAttributes().build());
+        event.put(MECH.get(), MechEntity.createAttributes().build());
     }
 }

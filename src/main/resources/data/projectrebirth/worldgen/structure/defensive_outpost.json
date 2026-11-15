@@ -156,6 +156,18 @@
       "x": 14,
       "z": 21,
       "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/robot_post_0",
+      "x": 18,
+      "z": 28,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/defensive_outpost/robot_post_1",
+      "x": 38,
+      "z": 29,
+      "follow": true
     }
   ]
 }

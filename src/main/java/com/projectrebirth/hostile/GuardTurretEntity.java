@@ -1,10 +1,8 @@
 package com.projectrebirth.hostile;
 
 import com.projectrebirth.config.RebirthConfig;
-import com.projectrebirth.powerarmor.PowerArmorEntity;
 import com.projectrebirth.structures.StructureBlocks;
 import com.projectrebirth.structures.TurretBlock;
-import com.projectrebirth.weapons.WeaponRegistry;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,15 +23,9 @@ import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -138,10 +130,10 @@ public class GuardTurretEntity extends Monster implements GeoEntity {
         return false;
     }
 
-    /** Turrets do not shoot each other; a stray bullet of another turret does nothing. */
+    /** The mechanisms do not hurt each other; a stray bullet of another one does nothing. */
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        if (source.getEntity() instanceof GuardTurretEntity) {
+        if (Gunnery.isMechanism(source.getEntity())) {
             return false;
         }
         return super.hurt(source, amount);
@@ -211,9 +203,7 @@ public class GuardTurretEntity extends Monster implements GeoEntity {
                 && !(current instanceof Player player && (player.isCreative() || player.isSpectator()))) {
             return;
         }
-        Player found = level().getNearestPlayer(getX(), getEyeY(), getZ(), range,
-                e -> e instanceof Player player && player.isAlive() && !player.isCreative() && !player.isSpectator() && hasLineOfSight(player));
-        setTarget(found);
+        setTarget(Gunnery.nearestVisiblePlayer(this, range));
     }
 
     /** Health, armor and sight from the config, once. */
@@ -249,50 +239,11 @@ public class GuardTurretEntity extends Monster implements GeoEntity {
         return barrelDirection().dot(to) >= Math.cos(degrees * Mth.DEG_TO_RAD);
     }
 
-    /** One bullet: from the muzzle toward the target with spread, to the first block or body in the way. */
+    /** One bullet of the burst (see Gunnery). */
     private void fire(LivingEntity target) {
-        Level level = level();
-        Vec3 start = muzzle();
-        Vec3 aim = target.getEyePosition().subtract(0.0, 0.3, 0.0).subtract(start).normalize();
-        Vec3 direction = scatter(aim, RebirthConfig.TURRET_SPREAD.get());
-        double range = RebirthConfig.TURRET_RANGE.get() + 4.0;
-        Vec3 end = start.add(direction.scale(range));
-        int ending = 0;
-        BlockHitResult block = level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-        if (block.getType() != HitResult.Type.MISS) {
-            end = block.getLocation();
-            ending = 1;
-        }
-        EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, this, start, end, getBoundingBox().expandTowards(end.subtract(start)).inflate(1.0),
-                e -> e != this && e.isPickable() && !e.isSpectator() && !(e.getVehicle() instanceof PowerArmorEntity) && !(e instanceof GuardTurretEntity), 0.1f);
-        if (hit != null) {
-            end = hit.getLocation();
-            ending = 2;
-            Entity victim = hit.getEntity();
-            DamageSource source = damageSources().source(WeaponRegistry.BULLET, this);
-            victim.invulnerableTime = 0;
-            victim.hurt(source, RebirthConfig.TURRET_DAMAGE.get().floatValue());
-            victim.invulnerableTime = 0;
-        }
-        SoundEvent shot = WeaponRegistry.sounds("assault_rifle").shot().get();
-        level.playSound(null, start.x, start.y, start.z, shot, SoundSource.HOSTILE, 1.4f, 0.9f + getRandom().nextFloat() * 0.1f);
+        Gunnery.fire(this, muzzle(), target, RebirthConfig.TURRET_SPREAD.get(), RebirthConfig.TURRET_DAMAGE.get().floatValue(),
+                RebirthConfig.TURRET_RANGE.get() + 4.0, 0.9f);
         triggerAnim("main", "shot");
-        if (level instanceof ServerLevel) {
-            PacketDistributor.sendToPlayersTrackingEntity(this, new TurretShotPayload(getId(), (float) start.x, (float) start.y, (float) start.z,
-                    (float) end.x, (float) end.y, (float) end.z, ending));
-        }
-    }
-
-    private Vec3 scatter(Vec3 direction, double degrees) {
-        if (degrees <= 0.0) {
-            return direction;
-        }
-        double spread = Math.tan(degrees * Mth.DEG_TO_RAD);
-        Vec3 side = direction.cross(new Vec3(0.0, 1.0, 0.0));
-        side = side.lengthSqr() < 1.0e-6 ? new Vec3(1.0, 0.0, 0.0) : side.normalize();
-        Vec3 up = side.cross(direction).normalize();
-        double a = getRandom().nextDouble() * Math.PI * 2.0, r = Math.sqrt(getRandom().nextDouble()) * spread;
-        return direction.add(side.scale(Math.cos(a) * r)).add(up.scale(Math.sin(a) * r)).normalize();
     }
 
     /** Killed: smoke and sparks, then the broken turret's blocks where it stood. */

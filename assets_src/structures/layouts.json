@@ -177,6 +177,30 @@
         "x": 52,
         "z": 36,
         "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/mech_post",
+        "x": 38,
+        "z": 42,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/robot_post_0",
+        "x": 26,
+        "z": 46,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/robot_post_1",
+        "x": 41,
+        "z": 47,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/military_base/robot_post_2",
+        "x": 36,
+        "z": 40,
+        "follow": true
       }
     ]
   },
@@ -618,6 +642,18 @@
         "template": "projectrebirth:ruins/defensive_outpost/lamp_post_4",
         "x": 14,
         "z": 21,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/robot_post_0",
+        "x": 18,
+        "z": 28,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/defensive_outpost/robot_post_1",
+        "x": 38,
+        "z": 29,
         "follow": true
       }
     ]

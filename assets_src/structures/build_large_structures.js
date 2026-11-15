@@ -66,6 +66,19 @@ function turretAt(b, x, y, z, f, active) {
     b.set(x + dx, y + 1, z + dz, [id, {facing: f, part: 'barrel'}]);
 }
 
+/**
+ * A guard post of the yard (part B3 of 1.6.0): a patch of trodden ground and a walking machine on it looking toward f, 'patrol_robot'
+ * or 'mech'. It keeps to this place and walks round it (see WalkingGunner).
+ */
+function guardPost(kind, f, seed) {
+    const n = kind === 'mech' ? 3 : 1;
+    const b = new Build(n, 2, n, seed);
+    for (let x = 0; x < n; x++) for (let z = 0; z < n; z++) b.set(x, 0, z, b.pick(['minecraft:gravel', 'minecraft:coarse_dirt', 'minecraft:packed_mud']));
+    const c = (n - 1) / 2;
+    b.entity(c, 1, c, compound({id: str(P + kind), Rotation: list(T.FLOAT, [float(YAW[f]), float(0)]), PersistenceRequired: byte(1)}));
+    return b;
+}
+
 /** What a lamp can hold on to in the template: 'post' (a fence or a stone wall), 'solid', or null (nothing, a slab or a thin block). */
 const NO_HOLD = /air|vine|leaves|carpet|cobweb|lamp|monitor|ladder|pane|bars|door|trapdoor|banner|chain|torch|lantern|rod|sludge|rail|lever|plate|bed|cable|fern|grass|azalea|bush|campfire|turret|slab|stairs|glass|solar|chest|barrel|crate|rack|tank/;
 function holdOf(b, x, y, z) {
@@ -765,6 +778,9 @@ function militaryBase() {
     L.rigid('wreck_gate', wreckSpot('combat', 180, null, 633), 31, 42);
     L.follow('scrap', scrapHeap(634), 56, 49);
     [[27, 40], [33, 46], [27, 50], [44, 36], [52, 36]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(635 + i), x, z));
+    // the guards of the yard: three patrol robots and the mech
+    L.follow('mech_post', guardPost('mech', 'south', 640), 38, 42);
+    [[26, 46, 'east'], [41, 47, 'south'], [36, 40, 'west']].forEach(([x, z, f], i) => L.follow('robot_post_' + i, guardPost('patrol_robot', f, 641 + i), x, z));
     return L;
 }
 
@@ -1256,6 +1272,7 @@ function defensiveOutpost() {
     L.follow('path_cross', pathStrip(22, 3, 'x', 718), 12, 22);
     L.follow('scrap', scrapHeap(719), 5, 16);
     [[22, 25], [27, 25], [22, 35], [27, 35], [14, 21]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(720 + i), x, z));
+    [[18, 28, 'south'], [38, 29, 'west']].forEach(([x, z, f], i) => L.follow('robot_post_' + i, guardPost('patrol_robot', f, 726 + i), x, z));
     return L;
 }
 

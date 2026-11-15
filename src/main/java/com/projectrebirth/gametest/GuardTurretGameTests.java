@@ -42,7 +42,7 @@ public class GuardTurretGameTests {
      * A player in the level whose game mode is real: the game test's own mock player always counts as creative, and a turret
      * rightly leaves such a player alone. Made the same way as the mock player, without that.
      */
-    private static ServerPlayer player(GameTestHelper helper, GameType mode) {
+    static ServerPlayer player(GameTestHelper helper, GameType mode) {
         var cookie = net.minecraft.server.network.CommonListenerCookie.createInitial(
                 new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "test-turret-target"), false);
         ServerPlayer player = new ServerPlayer(helper.getLevel().getServer(), helper.getLevel(), cookie.gameProfile(), cookie.clientInformation());

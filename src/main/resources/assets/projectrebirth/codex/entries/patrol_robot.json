@@ -1,0 +1,18 @@
+{
+  "icon": "projectrebirth:patrol_robot_spawn_egg",
+  "x": -10,
+  "y": -5,
+  "parents": [
+    "guard_turret"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.patrol_robot.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.patrol_robot.p2"
+    }
+  ]
+}

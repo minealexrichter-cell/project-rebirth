@@ -191,7 +191,7 @@ public class LargeStructuresGameTests {
     public static void aWreckFromThePieceComesOutAsAWreckedArmor(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         // the working guard turrets of the ruins come out as turrets too
-        int turrets = 0;
+        int turrets = 0, robots = 0, mechs = 0;
         for (String name : NAMES) {
             for (StructureTemplate piece : pieces(helper, name)) {
                 ListTag entities = piece.save(new CompoundTag()).getList("entities", Tag.TAG_COMPOUND);
@@ -202,11 +202,23 @@ public class LargeStructuresGameTests {
                         helper.assertTrue(entity instanceof com.projectrebirth.hostile.GuardTurretEntity, name + ": a guard turret of the ruins is a turret");
                         entity.discard();
                         turrets++;
+                    } else if (nbt.getString("id").equals(ProjectRebirth.MOD_ID + ":patrol_robot")) {
+                        Entity entity = EntityType.create(nbt.copy(), level).orElse(null);
+                        helper.assertTrue(entity instanceof com.projectrebirth.hostile.PatrolRobotEntity, name + ": a patrol robot of the ruins is a robot");
+                        entity.discard();
+                        robots++;
+                    } else if (nbt.getString("id").equals(ProjectRebirth.MOD_ID + ":mech")) {
+                        Entity entity = EntityType.create(nbt.copy(), level).orElse(null);
+                        helper.assertTrue(entity instanceof com.projectrebirth.hostile.MechEntity && "military_base".equals(name), name + ": the mech guards the military base");
+                        entity.discard();
+                        mechs++;
                     }
                 }
             }
         }
         helper.assertTrue(turrets >= 3, "The ruins hold working guard turrets: " + turrets);
+        helper.assertTrue(robots >= 4, "The military base and the outpost hold patrol robots: " + robots);
+        helper.assertTrue(mechs == 1, "One mech, in the military base: " + mechs);
         for (String name : NAMES) {
             for (CompoundTag nbt : wrecks(helper, name)) {
                 Entity entity = EntityType.create(nbt.copy(), level).orElse(null);

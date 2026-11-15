@@ -442,6 +442,18 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         note('Approach from cover, or from behind where its head has to turn. Switched off in the config ([hostile]), the turrets stand broken.',
             'Подходите из-за укрытия или сзади, где ей приходится поворачивать голову. Если их выключить в конфиге ([hostile]), турели стоят сломанными.')
     ]),
+    entry('patrol_robot', P + 'patrol_robot_spawn_egg', -10, -5, ['guard_turret'], 'Patrol Robots', 'Патрульные роботы', [
+        text('Two-metre walkers guard the military base and the defensive outpost. Each keeps to its post and walks round it; when it sees you within about 16 blocks it comes closer and fires short bursts from the gun of its right arm. Come up close and it hits with its heavy left fist instead.\n\nIt follows you only so far from its post, then turns back. Destroyed, it drops scrap, ammunition and often a board or an actuator.',
+            'Двухметровые шагающие машины охраняют военную базу и оборонительный аванпост. Каждая держится своего поста и обходит его; заметив вас примерно в 16 блоках, подходит ближе и бьёт короткими очередями из пушки на правой руке. Если подойти вплотную, бьёт тяжёлым левым кулаком.\n\nОт поста она уходит недалеко, потом возвращается. Уничтоженная роняет лом, патроны и часто плату или привод.'),
+        note('A wall breaks its line of fire, as with the turrets. The machines of the ruins do not hurt each other. Settings in the config ([hostile.patrol_robot]).',
+            'Стена закрывает её линию огня, как у турелей. Машины руин друг друга не ранят. Настройки в конфиге ([hostile.patrol_robot]).')
+    ]),
+    entry('mech', P + 'mech_spawn_egg', -10, -3, ['patrol_robot'], 'The Mech', 'Мех', [
+        text('One heavy walker, about three and a half blocks tall, guards the yard of each military base; its health bar shows while you are near. A twin machine gun under its right arm fires long bursts. Now and then the rocket pod on its left shoulder marks the ground under you with a red ring and an alarm: a moment later the rockets fall there, so do not stay in the ring. Come up close and it stomps, hurting and throwing back everyone around it.\n\nIt is slow and does not leave its yard. Destroyed, it drops a lot of metal, boards, actuators, ammunition and a power cell.',
+            'Одна тяжёлая шагающая машина ростом около трёх с половиной блоков охраняет двор каждой военной базы; пока вы рядом, видна полоса её здоровья. Спаренный пулемёт под правой рукой бьёт длинными очередями. Время от времени ракетный блок на левом плече отмечает землю под вами красным кругом и сигналом тревоги: через мгновение туда падают ракеты, поэтому не оставайтесь в круге. Если подойти вплотную, она топает, раня и отбрасывая всех вокруг.\n\nОна медленная и не покидает свой двор. Уничтоженная роняет много металла, платы, приводы, патроны и энергоячейку.'),
+        note('The rockets do not break blocks unless the config says so. Settings in the config ([hostile.mech]).',
+            'Ракеты не разрушают блоки, если это не включено в конфиге. Настройки в конфиге ([hostile.mech]).')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

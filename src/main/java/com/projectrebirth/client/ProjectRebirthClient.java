@@ -121,6 +121,9 @@ public class ProjectRebirthClient {
         }
         event.registerEntityRenderer(BodyEntities.HUMAN_SHELL.get(), HumanShellRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.GUARD_TURRET.get(), com.projectrebirth.client.render.GuardTurretRenderer::new);
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.PATROL_ROBOT.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::robot);
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::mech);
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH_ROCKET.get(), com.projectrebirth.client.render.MechRocketRenderer::new);
     }
 
     /** Fired on every resource reload, with a fresh renderer context. */

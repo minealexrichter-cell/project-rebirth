@@ -1,0 +1,18 @@
+{
+  "icon": "projectrebirth:mech_spawn_egg",
+  "x": -10,
+  "y": -3,
+  "parents": [
+    "patrol_robot"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mech.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.mech.p2"
+    }
+  ]
+}

@@ -35,6 +35,7 @@
     "projectrebirth:rusted_backup_battery",
     "projectrebirth:water_purifier",
     "projectrebirth:weather_station",
-    "projectrebirth:monitoring_station"
+    "projectrebirth:monitoring_station",
+    "projectrebirth:energy_port"
   ]
 }

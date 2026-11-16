@@ -1,0 +1,34 @@
+{
+  "test_only": true,
+  "layers": [
+    [
+      "III",
+      "IZI",
+      "ECG"
+    ],
+    [
+      "III",
+      "IZI",
+      "III"
+    ]
+  ],
+  "key": {
+    "I": {
+      "blocks": [
+        "minecraft:iron_block"
+      ]
+    },
+    "Z": {
+      "zone": true
+    },
+    "E": {
+      "port": "energy"
+    },
+    "C": {
+      "controller": true
+    },
+    "G": {
+      "port": "cargo"
+    }
+  }
+}

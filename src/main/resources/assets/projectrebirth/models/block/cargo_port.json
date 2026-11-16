@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "projectrebirth:block/cargo_port",
+    "top": "projectrebirth:block/cargo_port_top",
+    "bottom": "projectrebirth:block/cargo_port_top"
+  }
+}

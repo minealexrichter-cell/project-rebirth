@@ -24,6 +24,8 @@ public final class PlanTests {
 
     /** The tests of version 1.6.0 "Scouting": contaminated zones and what follows (docs/PLAN_1.6.md). */
     public static final String SCOUTING = ProjectRebirth.MOD_ID + "_scouting";
+    /** Version 1.7.0 «Garrison»: multiblocks, the AI core, the machines. */
+    public static final String GARRISON = ProjectRebirth.MOD_ID + "_garrison";
 
     private PlanTests() {
     }

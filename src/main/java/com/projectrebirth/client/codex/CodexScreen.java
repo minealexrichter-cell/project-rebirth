@@ -432,6 +432,9 @@ public class CodexScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (CodexPages.scroll(mouseX, mouseY, scrollY)) {
+            return true;
+        }
         if (openEntry != null) {
             spread = Mth.clamp(spread - (int) Math.signum(scrollY), 0, lastSpread());
             return true;

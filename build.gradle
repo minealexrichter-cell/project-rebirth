@@ -73,7 +73,7 @@ neoForge {
         client {
             client()
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex,${project.mod_id}_power,${project.mod_id}_armor,${project.mod_id}_scouting"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex,${project.mod_id}_power,${project.mod_id}_armor,${project.mod_id}_scouting,${project.mod_id}_garrison"
             // Optional: .\gradlew runClient -PquickPlayServer=localhost joins the dev server right after startup
             if (project.hasProperty('quickPlayServer')) {
                 programArguments.addAll '--quickPlayMultiplayer', project.property('quickPlayServer').toString()
@@ -93,7 +93,9 @@ neoForge {
         server {
             server()
             programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex,${project.mod_id}_power,${project.mod_id}_armor,${project.mod_id}_scouting"
+            // 1.7.0: the dev server, like the dev client, runs with game tests on (the plans and recipes of the tests work there)
+            systemProperty 'neoforge.enableGameTest', 'true'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex,${project.mod_id}_power,${project.mod_id}_armor,${project.mod_id}_scouting,${project.mod_id}_garrison"
         }
 
         // This run config launches GameTestServer and runs all registered gametests, then exits.
@@ -101,7 +103,7 @@ neoForge {
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex,${project.mod_id}_power,${project.mod_id}_armor,${project.mod_id}_scouting"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.findProperty('gameTests') ?: "${project.mod_id},${project.mod_id}_atmosphere,${project.mod_id}_shelter,${project.mod_id}_codex,${project.mod_id}_power,${project.mod_id}_armor,${project.mod_id}_scouting,${project.mod_id}_garrison"
         }
 
         data {

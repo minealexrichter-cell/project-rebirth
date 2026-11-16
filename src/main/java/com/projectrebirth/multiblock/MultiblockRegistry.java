@@ -1,0 +1,151 @@
+package com.projectrebirth.multiblock;
+
+import java.util.Comparator;
+import java.util.List;
+
+import org.jetbrains.annotations.Nullable;
+
+import com.mojang.serialization.MapCodec;
+import com.projectrebirth.ProjectRebirth;
+import com.projectrebirth.config.RebirthConfig;
+
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+/**
+ * The multiblock engine (1.7.0, block A): the plans (a data pack registry, also sent to clients for the hologram, the Codex and
+ * JEI), the assembly recipe, the generic controller of the tests and the two ports.
+ */
+public final class MultiblockRegistry {
+    public static final ResourceKey<Registry<MultiblockSchema>> SCHEMAS = ResourceKey.createRegistryKey(ProjectRebirth.id("multiblock"));
+
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ProjectRebirth.MOD_ID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ProjectRebirth.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ProjectRebirth.MOD_ID);
+    private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ProjectRebirth.MOD_ID);
+    private static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(Registries.RECIPE_TYPE, ProjectRebirth.MOD_ID);
+    private static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, ProjectRebirth.MOD_ID);
+
+    public static final DeferredHolder<RecipeType<?>, RecipeType<AssemblyRecipe>> ASSEMBLY =
+            RECIPE_TYPES.register("assembly", () -> RecipeType.simple(ProjectRebirth.id("assembly")));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<AssemblyRecipe>> ASSEMBLY_SERIALIZER =
+            SERIALIZERS.register("assembly", () -> new RecipeSerializer<>() {
+                @Override
+                public MapCodec<AssemblyRecipe> codec() {
+                    return AssemblyRecipe.CODEC;
+                }
+
+                @Override
+                public StreamCodec<RegistryFriendlyByteBuf, AssemblyRecipe> streamCodec() {
+                    return AssemblyRecipe.STREAM_CODEC;
+                }
+            });
+
+    private static BlockBehaviour.Properties machine() {
+        return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops();
+    }
+
+    /** The controller without a plan of its own: only the automated tests use it (no item, no recipe). */
+    public static final DeferredBlock<MultiblockControllerBlock> CONTROLLER = BLOCKS.register("multiblock_controller",
+            () -> new MultiblockControllerBlock(null, machine()));
+    public static final DeferredBlock<PortBlock> ENERGY_PORT = BLOCKS.register("energy_port", () -> new PortBlock(PortBlock.ENERGY, machine()));
+    public static final DeferredBlock<PortBlock> CARGO_PORT = BLOCKS.register("cargo_port", () -> new PortBlock(PortBlock.CARGO, machine()));
+    public static final DeferredItem<BlockItem> ENERGY_PORT_ITEM = ITEMS.registerSimpleBlockItem(ENERGY_PORT);
+    public static final DeferredItem<BlockItem> CARGO_PORT_ITEM = ITEMS.registerSimpleBlockItem(CARGO_PORT);
+
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MultiblockControllerBlockEntity>> CONTROLLER_ENTITY =
+            BLOCK_ENTITIES.register("multiblock_controller", () -> BlockEntityType.Builder.of(MultiblockControllerBlockEntity::new, CONTROLLER.get()).build(null));
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> PORT_ENTITY =
+            BLOCK_ENTITIES.register("multiblock_port", () -> BlockEntityType.Builder.of(PortBlockEntity::new, ENERGY_PORT.get(), CARGO_PORT.get()).build(null));
+    public static final DeferredHolder<MenuType<?>, MenuType<MultiblockMenu>> CONTROLLER_MENU =
+            MENUS.register("multiblock_controller", () -> IMenuTypeExtension.create(MultiblockMenu::new));
+
+    private MultiblockRegistry() {
+    }
+
+    public static void register(IEventBus modEventBus) {
+        BLOCKS.register(modEventBus);
+        ITEMS.register(modEventBus);
+        BLOCK_ENTITIES.register(modEventBus);
+        MENUS.register(modEventBus);
+        RECIPE_TYPES.register(modEventBus);
+        SERIALIZERS.register(modEventBus);
+        MultiblockStatusPayload.register(modEventBus);
+        modEventBus.addListener(MultiblockRegistry::registerDataRegistry);
+        modEventBus.addListener(MultiblockRegistry::registerCapabilities);
+    }
+
+    private static void registerDataRegistry(DataPackRegistryEvent.NewRegistry event) {
+        // sent to clients too: the hologram, the Codex and JEI draw the plans
+        event.dataPackRegistry(SCHEMAS, MultiblockSchema.CODEC, MultiblockSchema.CODEC);
+    }
+
+    private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PORT_ENTITY.get(), (port, side) -> {
+            MultiblockControllerBlockEntity controller = port.getBlockState().getBlock() instanceof PortBlock block && block.kind().equals(PortBlock.ENERGY)
+                    ? port.controller() : null;
+            return controller == null ? null : controller.energy().inputOnly();
+        });
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PORT_ENTITY.get(), (port, side) -> {
+            MultiblockControllerBlockEntity controller = port.getBlockState().getBlock() instanceof PortBlock block && block.kind().equals(PortBlock.CARGO)
+                    ? port.controller() : null;
+            return controller == null ? null : controller.automation();
+        });
+    }
+
+    /** Whether the multiblocks work at all ([garrison] and [garrison.multiblocks]). */
+    public static boolean enabled() {
+        return !RebirthConfig.SERVER_SPEC.isLoaded() || RebirthConfig.GARRISON_ENABLED.get() && RebirthConfig.MULTIBLOCKS_ENABLED.get();
+    }
+
+    /** A plan by its name, or null if there is none or it is a plan of the tests outside them. */
+    @Nullable
+    public static MultiblockSchema schema(RegistryAccess access, ResourceLocation id) {
+        MultiblockSchema schema = access.registry(SCHEMAS).map(registry -> registry.get(id)).orElse(null);
+        return schema != null && schema.available() ? schema : null;
+    }
+
+    /** The recipes of a multiblock in display order; recipes are synced to clients, so both sides get the same list. */
+    public static List<RecipeHolder<AssemblyRecipe>> recipesFor(Level level, ResourceLocation schema) {
+        return level.getRecipeManager().getAllRecipesFor(ASSEMBLY.get()).stream()
+                .filter(holder -> holder.value().multiblock().equals(schema) && holder.value().available())
+                .sorted(Comparator.comparingInt((RecipeHolder<AssemblyRecipe> holder) -> holder.value().sort())
+                        .thenComparing(holder -> holder.id().toString()))
+                .toList();
+    }
+
+    /** All the available recipes of all multiblocks (for JEI). */
+    public static List<RecipeHolder<AssemblyRecipe>> allRecipes(Level level) {
+        return level.getRecipeManager().getAllRecipesFor(ASSEMBLY.get()).stream().filter(holder -> holder.value().available())
+                .sorted(Comparator.comparing((RecipeHolder<AssemblyRecipe> holder) -> holder.value().multiblock().toString())
+                        .thenComparingInt(holder -> holder.value().sort()))
+                .toList();
+    }
+
+}

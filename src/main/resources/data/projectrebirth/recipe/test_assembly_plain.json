@@ -1,0 +1,23 @@
+{
+  "type": "projectrebirth:assembly",
+  "test_only": true,
+  "multiblock": "projectrebirth:test_frame",
+  "sort": 1,
+  "stages": [
+    {
+      "name": "frame",
+      "materials": [
+        {
+          "item": "minecraft:iron_ingot",
+          "count": 1
+        }
+      ],
+      "time": 10,
+      "energy": 5
+    }
+  ],
+  "result": {
+    "id": "minecraft:iron_block",
+    "count": 1
+  }
+}

@@ -232,6 +232,11 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PURIFIER_CARTRIDGE_SHARE;
     public static final ModConfigSpec.IntValue PURIFIER_BUCKET_BOTTLES;
     public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
+    public static final ModConfigSpec.BooleanValue GARRISON_ENABLED;
+    public static final ModConfigSpec.BooleanValue MULTIBLOCKS_ENABLED;
+    public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_CAPACITY;
+    public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_RECEIVE;
+    public static final ModConfigSpec.IntValue MULTIBLOCK_HOLOGRAM_SECONDS;
     public static final ModConfigSpec.BooleanValue SCOUTING_ENABLED;
     public static final ModConfigSpec.IntValue SCOUTING_UPDATE_SECONDS;
     public static final ModConfigSpec.IntValue ANALYZER_RADIUS;
@@ -850,6 +855,16 @@ public final class RebirthConfig {
         PURIFIER_ENERGY_CAPACITY = builder.comment("Energy a water purifier holds").defineInRange("energyCapacity", 10000, 1, 1_000_000_000);
         PURIFIER_CARTRIDGE_SHARE = builder.comment("Share of a filter cartridge's life one bottle uses (0.02: fifty bottles a cartridge)").defineInRange("cartridgePerBottle", 0.02, 0.0, 1.0);
         PURIFIER_BUCKET_BOTTLES = builder.comment("How many bottles of work one bucket is").defineInRange("bucketBottles", 3, 1, 64);
+        builder.pop(2);
+
+        builder.comment("The garrison (1.7.0): multiblock assembly, the AI core and the player's own machines. Switched off, the mod plays as 1.6.0.").push("garrison");
+        GARRISON_ENABLED = builder.comment("The whole garrison").define("enabled", true);
+        builder.comment("Multiblocks (block A): a controller checks its construction from a plan in the data, takes energy and materials through its",
+                "ports and builds a recipe stage by stage.").push("multiblocks");
+        MULTIBLOCKS_ENABLED = builder.comment("Whether multiblocks work").define("enabled", true);
+        MULTIBLOCK_ENERGY_CAPACITY = builder.comment("Energy a controller holds").defineInRange("energyCapacity", 200000, 1, 1_000_000_000);
+        MULTIBLOCK_ENERGY_RECEIVE = builder.comment("Energy a controller takes per tick through its energy ports").defineInRange("energyReceive", 2000, 1, 1_000_000_000);
+        MULTIBLOCK_HOLOGRAM_SECONDS = builder.comment("Seconds the hologram of a construction stays on unless switched off").defineInRange("hologramSeconds", 60, 1, 3600);
         builder.pop(2);
 
         builder.comment("Scouting in the field (1.6.0, block F): the field analyzer in hand, the sensor module of bodies and the sensor unit of",

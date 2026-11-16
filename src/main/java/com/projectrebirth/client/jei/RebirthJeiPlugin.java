@@ -56,6 +56,8 @@ public class RebirthJeiPlugin implements IModPlugin {
         for (Station station : Station.values()) {
             registration.addRecipeCategories(new StationRecipeCategory(registration.getJeiHelpers().getGuiHelper(), station, TYPES.get(station)));
         }
+        // 1.7.0, block A: the multiblocks
+        registration.addRecipeCategories(new AssemblyRecipeCategory(registration.getJeiHelpers().getGuiHelper()));
     }
 
     /** Recipes are synced to the client with the server's data packs, so data pack changes show up here too. */
@@ -69,6 +71,9 @@ public class RebirthJeiPlugin implements IModPlugin {
                     .map(RecipeHolder::value)
                     .toList());
         }
+        registration.addRecipes(AssemblyRecipeCategory.TYPE, com.projectrebirth.multiblock.MultiblockRegistry.allRecipes(Minecraft.getInstance().level).stream()
+                .map(RecipeHolder::value)
+                .toList());
     }
 
     @Override

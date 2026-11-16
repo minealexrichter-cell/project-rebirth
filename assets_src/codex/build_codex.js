@@ -18,6 +18,8 @@ const item = (id, en, ru) => ['item', id, en, ru];
 const block = (id, en, ru) => ['block', id, en, ru];
 const entity = (id, en, ru) => ['entity', id, en, ru];
 const recipe = (id, en, ru) => ['recipe', id, en || null, ru || null];
+// 1.7.0, block A: the plan of a multiblock, a turning model with a layer chosen by the mouse wheel
+const multiblock = (id, en, ru) => ['multiblock', id, en || null, ru || null];
 
 // ================================================================ basics
 

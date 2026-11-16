@@ -71,6 +71,7 @@ final class CodexPages {
             case "block" -> 84;
             case "entity" -> 92;
             case "recipe" -> 78;
+            case "multiblock" -> 112;
             default -> 0;
         };
     }
@@ -187,9 +188,58 @@ final class CodexPages {
                 }
             }
             case "recipe" -> drawRecipe(screen, graphics, font, value, x, y, width, mouseX, mouseY);
+            case "multiblock" -> drawMultiblock(graphics, font, value, x, y, width, height, mouseX, mouseY, partialTick);
             default -> {
             }
         }
+    }
+
+    // ---------------------------------------------------------------- multiblocks (1.7.0, block A)
+
+    /** The layer shown of each plan (all of them until the mouse wheel picks one). */
+    private static final Map<String, Integer> LAYERS = new HashMap<>();
+    /** Where the last plan was drawn, for the mouse wheel. */
+    private static String scrollPlan;
+    private static int scrollX, scrollY, scrollW, scrollH;
+
+    /** The plan of a multiblock as a turning model up to the chosen layer, with the layer named below. */
+    private static void drawMultiblock(GuiGraphics graphics, Font font, String id, int x, int y, int width, int height, int mouseX, int mouseY,
+                                       float partialTick) {
+        Minecraft minecraft = Minecraft.getInstance();
+        ResourceLocation location = ResourceLocation.tryParse(id);
+        com.projectrebirth.multiblock.MultiblockSchema schema = minecraft.level == null || location == null ? null
+                : com.projectrebirth.multiblock.MultiblockRegistry.schema(minecraft.level.registryAccess(), location);
+        if (schema == null) {
+            return;
+        }
+        int layers = schema.height();
+        int layer = Math.min(layers, LAYERS.getOrDefault(id, layers));
+        com.projectrebirth.client.multiblock.MultiblockView.draw3d(graphics, schema, layer, x + width / 2, y + (height - 12) / 2, height - 16, partialTick);
+        Component label = Component.translatable("screen.projectrebirth.codex.multiblock_layer", layer, layers);
+        graphics.drawString(font, label, x + (width - font.width(label)) / 2, y + height - 10, CodexScreen.INK, false);
+        scrollPlan = id;
+        scrollX = x;
+        scrollY = y;
+        scrollW = width;
+        scrollH = height;
+    }
+
+    /** The mouse wheel over a plan picks its layer; returns whether it was over one. */
+    static boolean scroll(double mouseX, double mouseY, double amount) {
+        if (scrollPlan == null || mouseX < scrollX || mouseX >= scrollX + scrollW || mouseY < scrollY || mouseY >= scrollY + scrollH) {
+            return false;
+        }
+        Minecraft minecraft = Minecraft.getInstance();
+        ResourceLocation location = ResourceLocation.tryParse(scrollPlan);
+        com.projectrebirth.multiblock.MultiblockSchema schema = minecraft.level == null || location == null ? null
+                : com.projectrebirth.multiblock.MultiblockRegistry.schema(minecraft.level.registryAccess(), location);
+        if (schema == null) {
+            return false;
+        }
+        int layers = schema.height();
+        int layer = LAYERS.getOrDefault(scrollPlan, layers) + (amount > 0 ? 1 : -1);
+        LAYERS.put(scrollPlan, Math.max(1, Math.min(layers, layer)));
+        return true;
     }
 
     private static int entityScale(LivingEntity entity, int height) {

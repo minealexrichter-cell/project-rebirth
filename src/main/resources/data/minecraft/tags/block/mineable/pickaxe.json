@@ -64,6 +64,9 @@
     "projectrebirth:turret",
     "projectrebirth:water_purifier",
     "projectrebirth:weather_station",
-    "projectrebirth:monitoring_station"
+    "projectrebirth:monitoring_station",
+    "projectrebirth:multiblock_controller",
+    "projectrebirth:energy_port",
+    "projectrebirth:cargo_port"
   ]
 }

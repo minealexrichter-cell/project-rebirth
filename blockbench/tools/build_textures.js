@@ -2268,6 +2268,44 @@
         '................',
         '................'], {k: '#1e2228', m: '#59626c', G: '#343a42', L: '#2f7a46', l: '#5fbf3a', s: '#8c97a3', y: '#e6d23a'}));
 
+    // ---------------------------------------------------------------- multiblocks (version 1.7.0, block A)
+
+    const PORT_YELLOW = '#e0b33a', PORT_GREY = '#59626c';
+    // The energy port: a steel casing with a copper socket and a yellow lightning bolt, the same on every side.
+    block('energy_port', () => {
+        const p = casing(new Painter(191), PORT_YELLOW);
+        p.bevel(4, 4, 8, 8, '#2a3036', 0.02);
+        p.inset(5, 5, 6, 6, '#b06a3a', 0.04);
+        p.px('#ffd54f', [9, 5], [8, 6], [7, 7], [8, 7], [9, 7], [8, 8], [7, 9], [6, 10]);
+        return p;
+    });
+    // The cargo port: a hatch with a grille, hazard stripes round it; the top and bottom with a hopper mouth.
+    block('cargo_port', () => {
+        const p = casing(new Painter(192), '#37c6e8');
+        p.inset(3, 3, 10, 10, '#1e2228', 0.02);
+        for (let y = 4; y < 12; y += 2) p.rect(4, y, 8, 1, PORT_GREY);
+        p.px('#37c6e8', [3, 3], [12, 3], [3, 12], [12, 12]);
+        return p;
+    });
+    block('cargo_port_top', () => {
+        const p = casing(new Painter(193), '#37c6e8');
+        p.bevel(3, 3, 10, 10, PORT_GREY, 0.03);
+        p.inset(5, 5, 6, 6, '#14171b', 0.02);
+        return p;
+    });
+    // The controller of the tests: a screen with the grid of a plan.
+    function controllerFront(on) {
+        const p = casing(new Painter(194), '#e0b33a');
+        p.inset(2, 2, 12, 9, '#14181c', 0.02);
+        for (let y = 3; y < 10; y += 2) for (let x = 3; x < 13; x += 2) p.px(on ? '#37c6e8' : '#2a3a44', [x, y]);
+        if (on) p.px('#5fbf3a', [7, 5], [9, 7]);
+        p.rect(4, 12, 3, 2, on ? '#5fbf3a' : '#3a2a2a').rect(9, 12, 3, 2, '#2a3036');
+        return p;
+    }
+    block('multiblock_controller_front', () => controllerFront(false));
+    block('multiblock_controller_front_on', () => controllerFront(true));
+    block('multiblock_controller_side', () => casing(new Painter(195), '#e0b33a'));
+
     // The bucket of polluted water is the game's bucket with a liquid layer over it: blockbench/tools/polluted_bucket.js.
 
     /** Airlock door: a heavy steel door, the lower half with a hazard band and a locking wheel, the upper with a thick window. */

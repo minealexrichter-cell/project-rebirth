@@ -96,6 +96,7 @@ public class ProjectRebirthClient {
         ForecastClient.register();
         MonitoringClient.register();
         ScoutingClient.register(modEventBus);
+        com.projectrebirth.client.multiblock.MultiblockClient.register();
         BodyHud.register(modEventBus);
         JetpackClient.register();
         TransferAnimation.register();
@@ -112,6 +113,7 @@ public class ProjectRebirthClient {
         event.register(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_MENU.get(), com.projectrebirth.client.screen.WaterPurifierScreen::new);
         event.register(com.projectrebirth.weather.WeatherRegistry.WEATHER_STATION_MENU.get(), com.projectrebirth.client.screen.WeatherStationScreen::new);
         event.register(com.projectrebirth.monitoring.MonitoringRegistry.MONITORING_STATION_MENU.get(), com.projectrebirth.client.screen.MonitoringStationScreen::new);
+        event.register(com.projectrebirth.multiblock.MultiblockRegistry.CONTROLLER_MENU.get(), com.projectrebirth.client.screen.MultiblockScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.SHELTER_PANEL_MENU.get(), com.projectrebirth.client.screen.ShelterPanelScreen::new);
         event.register(TechMenus.BODY_MODIFICATION.get(), BodyModificationScreen::new);
         event.register(TechMenus.ARMOR_MOUNTING.get(), ArmorMountingScreen::new);

@@ -164,8 +164,9 @@ public class WaterPurifierBlockEntity extends BlockEntity implements MenuProvide
             return STATE_NO_CARTRIDGE;
         }
         ItemStack out = cleaned(input);
-        if (!items.getStackInSlot(OUTPUT_SLOT).isEmpty()) {
-            return STATE_OUTPUT_FULL; // clean water bottles and buckets do not stack
+        ItemStack held = items.getStackInSlot(OUTPUT_SLOT);
+        if (!held.isEmpty() && (!ItemStack.isSameItemSameComponents(held, out) || held.getCount() >= held.getMaxStackSize())) {
+            return STATE_OUTPUT_FULL; // water bottles stack (config [water] waterBottleStack), buckets do not
         }
         if (!energy.consume(RebirthConfig.PURIFIER_ENERGY_PER_TICK.get())) {
             return STATE_NO_ENERGY;
@@ -176,7 +177,7 @@ public class WaterPurifierBlockEntity extends BlockEntity implements MenuProvide
             ItemStack left = input.copy();
             left.shrink(1);
             items.setStackInSlot(INPUT_SLOT, left);
-            items.setStackInSlot(OUTPUT_SLOT, out);
+            items.setStackInSlot(OUTPUT_SLOT, held.isEmpty() ? out : held.copyWithCount(held.getCount() + 1));
             float life = CartridgeItem.life(cartridge) - wear;
             if (life <= 0.0f) {
                 items.setStackInSlot(CARTRIDGE_SLOT, new ItemStack(ShelterRegistry.SPENT_FILTER_CARTRIDGE.get()));

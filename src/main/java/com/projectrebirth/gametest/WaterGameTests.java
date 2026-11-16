@@ -114,14 +114,33 @@ public class WaterGameTests {
             helper.assertTrue(purifier.items().getStackInSlot(WaterPurifierBlockEntity.OUTPUT_SLOT).isEmpty(), "Without a cartridge nothing is cleaned");
             purifier.items().setStackInSlot(WaterPurifierBlockEntity.CARTRIDGE_SLOT, new ItemStack(ShelterRegistry.FILTER_CARTRIDGE.get()));
         });
-        helper.runAfterDelay(2 * RebirthConfig.PURIFIER_TICKS.get() + 20, () -> {
+        helper.runAfterDelay(3 * RebirthConfig.PURIFIER_TICKS.get() + 30, () -> {
             ItemStack out = purifier.items().getStackInSlot(WaterPurifierBlockEntity.OUTPUT_SLOT);
             PotionContents contents = out.get(net.minecraft.core.component.DataComponents.POTION_CONTENTS);
-            helper.assertTrue(out.is(Items.POTION) && contents != null && contents.is(Potions.WATER), "A clean water bottle comes out: " + out);
-            helper.assertTrue(purifier.items().getStackInSlot(WaterPurifierBlockEntity.INPUT_SLOT).getCount() == 1, "One bottle of polluted water used");
+            helper.assertTrue(out.is(Items.POTION) && contents != null && contents.is(Potions.WATER) && out.getCount() == 2, "Two clean water bottles come out, in one stack: " + out);
+            helper.assertTrue(purifier.items().getStackInSlot(WaterPurifierBlockEntity.INPUT_SLOT).isEmpty(), "Both bottles of polluted water used");
             helper.assertTrue(CartridgeItem.lifeShare(purifier.items().getStackInSlot(WaterPurifierBlockEntity.CARTRIDGE_SLOT)) < 1.0f, "The cartridge wore a little");
             helper.assertTrue(purifier.energy().getEnergyStored() < purifier.energy().getMaxEnergyStored(), "Energy was used");
             helper.succeed();
         });
+    }
+
+    @GameTest(template = TEMPLATE, batch = "scouting_water_stacks")
+    public static void bottlesOfWaterAndPotionsStack(GameTestHelper helper) {
+        ItemStack water = PotionContents.createItemStack(Items.POTION, Potions.WATER);
+        helper.assertTrue(water.getMaxStackSize() == RebirthConfig.WATER_BOTTLE_STACK.get(), "Water bottles: " + water.getMaxStackSize());
+        helper.assertTrue(new ItemStack(WaterRegistry.POLLUTED_WATER_BOTTLE.get()).getMaxStackSize() == RebirthConfig.WATER_BOTTLE_STACK.get(), "Polluted water bottles");
+        helper.assertTrue(PotionContents.createItemStack(Items.POTION, Potions.HEALING).getMaxStackSize() == RebirthConfig.POTION_STACK.get(), "Potions");
+        helper.assertTrue(PotionContents.createItemStack(Items.SPLASH_POTION, Potions.HEALING).getMaxStackSize() == RebirthConfig.POTION_STACK.get(), "Splash potions");
+        helper.assertTrue(PotionContents.createItemStack(Items.LINGERING_POTION, Potions.HEALING).getMaxStackSize() == RebirthConfig.POTION_STACK.get(), "Lingering potions");
+        helper.assertTrue(new ItemStack(Items.GLASS_BOTTLE).getMaxStackSize() == 64, "Other items keep their own");
+        ServerPlayer player = helper.makeMockServerPlayerInLevel();
+        player.setGameMode(GameType.SURVIVAL);
+        player.getInventory().clearContent();
+        ItemStack two = water.copyWithCount(2);
+        ItemStack left = two.getItem().finishUsingItem(two, helper.getLevel(), player);
+        helper.assertTrue(left.is(Items.POTION) && left.getCount() == 1, "One drunk, one left: " + left);
+        helper.assertTrue(player.getInventory().countItem(Items.GLASS_BOTTLE) == 1, "The empty bottle goes to the inventory");
+        helper.succeed();
     }
 }

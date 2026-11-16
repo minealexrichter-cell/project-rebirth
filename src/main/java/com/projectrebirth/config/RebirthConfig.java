@@ -230,6 +230,8 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue PURIFIER_ENERGY_CAPACITY;
     public static final ModConfigSpec.DoubleValue PURIFIER_CARTRIDGE_SHARE;
     public static final ModConfigSpec.IntValue PURIFIER_BUCKET_BOTTLES;
+    public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
+    public static final ModConfigSpec.IntValue POTION_STACK;
     public static final ModConfigSpec.BooleanValue TURRET_ENABLED;
     public static final ModConfigSpec.DoubleValue TURRET_HEALTH;
     public static final ModConfigSpec.DoubleValue TURRET_ARMOR;
@@ -812,6 +814,8 @@ public final class RebirthConfig {
         WATER_SWIM_TOXIN = builder.comment("Toxic load a person takes per second of swimming in polluted water (less through a protective suit)").defineInRange("swimToxin", 4.0, 0.0, 1000.0);
         WATER_SWIM_CONTAMINATION = builder.comment("External contamination gathered per second of swimming in polluted water").defineInRange("swimContamination", 2.0, 0.0, 1000.0);
         WATER_DRINK_TOXIN = builder.comment("Toxic load of one drunk bottle of polluted water").defineInRange("drinkToxin", 15.0, 0.0, 1000.0);
+        WATER_BOTTLE_STACK = builder.comment("How many bottles of water (and of polluted water) stack together").defineInRange("waterBottleStack", 16, 1, 99);
+        POTION_STACK = builder.comment("How many potions (drinkable, splash, lingering) stack together; the brewing stand still takes one per slot").defineInRange("potionStack", 4, 1, 99);
         builder.push("purifier");
         PURIFIER_TICKS = builder.comment("Ticks a water purifier needs to clean one bottle").defineInRange("ticksPerBottle", 80, 1, 24000);
         PURIFIER_ENERGY_PER_TICK = builder.comment("Energy a water purifier takes per tick of work").defineInRange("energyPerTick", 15, 0, 1_000_000);

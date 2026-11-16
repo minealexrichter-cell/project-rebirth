@@ -118,6 +118,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     private int state = STATE_NO_PLAN;
     /** Block B: the manipulators of the construction, and whether they were last set working. */
     private final List<BlockPos> manipulators = new ArrayList<>();
+    /** The frames hidden under the hall of a whole construction (Shell), and whether the hall stands (also on the client). */
+    private final List<BlockPos> hidden = new ArrayList<>();
+    private boolean formed;
     private boolean manipulatorsWorking;
     /** What the clients last heard of the machine under assembly: its result and the stage of its model (-1: none). */
     private ItemStack shownResult = ItemStack.EMPTY;
@@ -203,6 +206,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             tag.putString("schema", schemaId.toString());
         }
         tag.putInt("preview_stage", shownStage);
+        tag.putBoolean("formed", formed);
         if (!shownResult.isEmpty()) {
             tag.put("preview_result", shownResult.save(registries));
         }
@@ -218,6 +222,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             schemaId = ResourceLocation.tryParse(tag.getString("schema"));
         }
         previewStage = tag.contains("preview_stage") ? tag.getInt("preview_stage") : -1;
+        formed = tag.getBoolean("formed");
         previewResult = tag.contains("preview_result") ? ItemStack.parseOptional(registries, tag.getCompound("preview_result")) : ItemStack.EMPTY;
         previewPart = tag.contains("preview_part") ? ItemStack.parseOptional(registries, tag.getCompound("preview_part")) : ItemStack.EMPTY;
     }
@@ -363,6 +368,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         }
         relink(ports);
         findManipulators(schema);
+        formShell(schema);
         if (level instanceof ServerLevel server) {
             MultiblockTracker.track(server, worldPosition, check.bounds());
             for (ServerPlayer player : server.players()) {
@@ -372,6 +378,57 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             }
         }
         return check;
+    }
+
+    /**
+     * The hall (1.7.0): over a whole construction whose plan has a shell, its frames turn invisible and the clients draw the hall
+     * (MultiblockControllerRenderer); otherwise the frames hidden before show again.
+     */
+    private void formShell(MultiblockSchema schema) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        boolean whole = check != null && check.complete() && schema.shell().isPresent();
+        List<BlockPos> now = new ArrayList<>();
+        if (whole) {
+            String hide = schema.shell().get().hide();
+            for (int y = 0; y < schema.height(); y++) {
+                for (int r = 0; r < schema.depth(); r++) {
+                    for (int c = 0; c < schema.width(); c++) {
+                        if (hide.indexOf(schema.letter(y, r, c)) >= 0) {
+                            now.add(schema.worldPos(worldPosition, facing(), c, y, r).immutable());
+                        }
+                    }
+                }
+            }
+        }
+        for (BlockPos pos : hidden) {
+            if (!now.contains(pos)) {
+                setFormed(pos, false);
+            }
+        }
+        for (BlockPos pos : now) {
+            setFormed(pos, true);
+        }
+        hidden.clear();
+        hidden.addAll(now);
+        if (formed != whole) {
+            formed = whole;
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private void setFormed(BlockPos pos, boolean value) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof FrameBlock && state.getValue(FrameBlock.FORMED) != value) {
+            level.setBlock(pos, state.setValue(FrameBlock.FORMED, value), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
+    }
+
+    /** Whether the hall of the construction stands (on the client: as the server said). */
+    public boolean formed() {
+        return formed;
     }
 
     /** The manipulators inside a whole construction, each turned to face the machine under assembly. */
@@ -718,6 +775,11 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         if (level == null) {
             return;
         }
+        // the hall goes with its controller: the hidden frames show again
+        for (BlockPos pos : hidden) {
+            setFormed(pos, false);
+        }
+        hidden.clear();
         List<ItemStack> all = new ArrayList<>();
         for (int i = 0; i < SLOTS; i++) {
             all.add(items.getStackInSlot(i));
@@ -754,6 +816,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("items", items.serializeNBT(registries));
+        tag.putLongArray("hidden", hidden.stream().mapToLong(BlockPos::asLong).toArray());
         tag.putInt("energy", energy.saved());
         if (schemaId != null) {
             tag.putString("schema", schemaId.toString());
@@ -785,6 +848,10 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         items.deserializeNBT(registries, tag.getCompound("items"));
+        hidden.clear();
+        for (long packed : tag.getLongArray("hidden")) {
+            hidden.add(BlockPos.of(packed));
+        }
         energy.load(tag.getInt("energy"));
         if (tag.contains("schema")) {
             schemaId = ResourceLocation.tryParse(tag.getString("schema"));

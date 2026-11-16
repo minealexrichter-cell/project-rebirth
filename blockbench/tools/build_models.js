@@ -235,6 +235,59 @@
         return res;
     }
 
+    /**
+     * Holes in a model (1.7.0): faces whose texture area, as the game reads it, takes in pixels left transparent. With box UV
+     * the game lays the faces out by the cube's size rounded down, while the painting rounds sizes up; a fractional size shifts a
+     * face onto the empty corners of the net, and the game shows a hole there (the brute's head, the manipulators). Clear glass
+     * (clear: true) is left out: it is transparent by design. Returns "cube/face" names.
+     */
+    function textureHoles(cubes, canvas, spec) {
+        const boneOf = c => { const b = spec.bones.find(b => b.cubes.includes(c)); return b ? b.name : 'cube'; };
+        const ctx = canvas.getContext('2d');
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        const out = [];
+        cubes.forEach((c, index) => {
+            const owner = c.share || c;
+            if (!owner.uv || (c.p && c.p.clear)) {
+                return;
+            }
+            // GeckoLib lays the faces out by the sizes rounded down (BakedModelFactory: Math.floor), the painting by the sizes rounded up
+            const net = netOf(owner.uv[0], owner.uv[1], owner.s.map(Math.floor));
+            for (const [face, [x, y, w, h]] of Object.entries(net)) {
+                if (w <= 0 || h <= 0) {
+                    continue;
+                }
+                let empty = 0;
+                for (let j = Math.floor(y); j < Math.ceil(y + h - 1e-6); j++) {
+                    for (let i = Math.floor(x); i < Math.ceil(x + w - 1e-6); i++) {
+                        if (i < 0 || j < 0 || i >= canvas.width || j >= canvas.height || data[(j * canvas.width + i) * 4 + 3] === 0) {
+                            empty++;
+                        }
+                    }
+                }
+                if (empty > 0) {
+                    out.push(boneOf(c) + '#' + index + '/' + face + ' (size ' + owner.s.join('x') + ')');
+                }
+            }
+        });
+        return out;
+    }
+
+    /** Every model's holes without building it: the check for all specs (a list of "model: holes"). */
+    function checkAll() {
+        const out = [];
+        for (const id of Object.keys(SPECS)) {
+            const spec = SPECS[id];
+            const cubes = allCubes(spec);
+            spec.texRes = pack(cubes, spec.res);
+            const holes = textureHoles(cubes, paintTexture(spec, cubes), spec);
+            if (holes.length) {
+                out.push(id + ': ' + holes.length + ' — ' + holes.slice(0, 6).join(', '));
+            }
+        }
+        return out;
+    }
+
     function paintTexture(spec, cubes) {
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = spec.texRes || spec.res;
@@ -516,6 +569,9 @@
     }};
 
     const SPECS = {};
+    /** Models made before the hole check (1.7.0) that still have holes; empty is the goal. Filled from checkAll(). */
+    const KNOWN_HOLES = new Set(['basic_robot_body', 'improved_robot_body', 'advanced_synthetic_body', 'hightech_synthetic_body',
+        'premium_synthetic_body', 'power_armor', 'mobile_power_armor', 'worker_power_armor', 'glowing_ghoul', 'brute']);
 
     // 1. Basic robot: a cheap welded machine. Scratched grey steel, rust, one amber eye slot, exposed joints.
     (function () {
@@ -2003,6 +2059,12 @@
         Project.texture_width = spec.texRes;
         Project.texture_height = spec.texRes;
         const canvas = paintTexture(spec, cubes);
+        // no faces showing the empty parts of the texture (see textureHoles); older models that have them are listed in
+        // KNOWN_HOLES until they are fixed, every other model must have none
+        const holes = textureHoles(cubes, canvas, spec);
+        if (holes.length && !KNOWN_HOLES.has(id)) {
+            throw new Error(holes.length + ' faces show holes in the texture (make the sizes whole, thin parts by inflate): ' + holes.slice(0, 10).join('; '));
+        }
         const texture = new Texture({name: id + '.png'}).fromDataURL(canvas.toDataURL('image/png')).add(false);
 
         const groups = {};
@@ -3438,7 +3500,8 @@
     // ("extension_1..3", each slides up to 9 px forward) and a wrist ("wrist") at 11.5 px in front of the elbow, holding the
     // tool pointing forward (-Z). The code (ManipulatorPose) turns and bends them every frame so that the tool's tip touches
     // the machine under assembly; the numbers there must match these. The tips: welder 7 px, gripper 6.5 px, screwdriver 8 px
-    // in front of the wrist.
+    // in front of the wrist (the welder's 6.75). Whole sizes only: GeckoLib reads the texture by sizes rounded down, so a
+    // fractional size shows holes (textureHoles checks it).
     (() => {
         const FRAME = {c: '#4a4f56', n: 0.08};
         const DARK = {c: '#2a2d31', n: 0.06, edge: false};
@@ -3453,13 +3516,13 @@
                 {name: 'turret', parent: 'base', pivot: [0, 4, 0], cubes: [C([-3.5, 4, -3.5], [7, 4, 7], turret)]},
                 {name: 'lower_arm', parent: 'turret', pivot: [0, 9, 0], cubes: [
                     C([-3, 6, -2.5], [6, 6, 5], FRAME),
-                    C([-1.5, 9, -1.5], [3, 9.25, 3], ARM)]},
+                    C([-1.5, 9, -1.5], [3, 9, 3], ARM)]},
                 {name: 'forearm', parent: 'lower_arm', pivot: [0, 21, 0], cubes: [
-                    C([-3, 18, -2], [6, 6, 4], FRAME),
+                    C([-3, 17, -2], [6, 7, 4], FRAME),
                     C([-2.5, 18.5, -10], [5, 5, 11], ARM)]},
-                {name: 'extension_1', parent: 'forearm', pivot: [0, 21, 0], cubes: [C([-2, 19, -10.5], [4, 4, 10.5], STEEL)]},
-                {name: 'extension_2', parent: 'extension_1', pivot: [0, 21, 0], cubes: [C([-1.5, 19.5, -11], [3, 3, 10.5], STEEL)]},
-                {name: 'extension_3', parent: 'extension_2', pivot: [0, 21, 0], cubes: [C([-1, 20, -11.5], [2, 2, 10.5], STEEL)]}
+                {name: 'extension_1', parent: 'forearm', pivot: [0, 21, 0], cubes: [C([-2, 19, -10.5], [4, 4, 10], STEEL)]},
+                {name: 'extension_2', parent: 'extension_1', pivot: [0, 21, 0], cubes: [C([-1.5, 19.5, -11.25], [3, 3, 10], STEEL)]},
+                {name: 'extension_3', parent: 'extension_2', pivot: [0, 21, 0], cubes: [C([-1, 20, -11.75], [2, 2, 10], STEEL)]}
             ];
         }
         const idle = {'animation.manipulator.idle': {length: 1, loop: 'loop', bones: {turret: {r: {'0.000': [0, 0, 0], '1.000': [0, 0, 0]}}}}};
@@ -3467,32 +3530,32 @@
             res: 128, seed: 1701, block: true, noCoplanarFaces: true,
             bones: [...arm('#e07a24'),
                 {name: 'wrist', parent: 'extension_3', pivot: [0, 21, -11.5], cubes: [
-                    C([-1.75, 19.25, -14], [3.5, 3.5, 3.25], FRAME),
+                    C([-2, 19, -14], [4, 4, 3], FRAME),
                     C([-1, 20, -17.5], [2, 2, 4], {c: '#b06a3a', n: 0.05}),
-                    C([-0.5, 20.5, -18.5], [1, 1, 1.5], {c: '#9fd8ff', n: 0.02, edge: false})]}],
+                    C([-0.5, 20.5, -18.25], [1, 1, 1], {c: '#9fd8ff', n: 0.02, edge: false})]}],
             animations: idle
         };
         const FINGER = {c: '#c3c8cd', n: 0.05, edge: false};
         SPECS.gripper_manipulator = {
             res: 128, seed: 1702, block: true, noCoplanarFaces: true,
             bones: [...arm('#3a8fd0'),
-                {name: 'wrist', parent: 'extension_3', pivot: [0, 21, -11.5], cubes: [C([-2, 19, -13.5], [4, 4, 2.75], FRAME)]},
-                {name: 'finger_top', parent: 'wrist', pivot: [0, 22, -13], cubes: [C([-0.5, 21.5, -18], [1, 1, 5.5], FINGER)]},
-                {name: 'finger_left', parent: 'wrist', pivot: [1.3, 20.1, -13], cubes: [C([0.8, 19.6, -18], [1, 1, 5.5], FINGER)]},
-                {name: 'finger_right', parent: 'wrist', pivot: [-1.3, 20.1, -13], cubes: [C([-1.8, 19.6, -18], [1, 1, 5.5], FINGER)]}],
+                {name: 'wrist', parent: 'extension_3', pivot: [0, 21, -11.5], cubes: [C([-2, 19, -13.75], [4, 4, 3], FRAME)]},
+                {name: 'finger_top', parent: 'wrist', pivot: [0, 22, -13], cubes: [C([-0.5, 21.5, -18], [1, 1, 5], FINGER)]},
+                {name: 'finger_left', parent: 'wrist', pivot: [1.3, 20.1, -13], cubes: [C([0.8, 19.6, -18], [1, 1, 5], FINGER)]},
+                {name: 'finger_right', parent: 'wrist', pivot: [-1.3, 20.1, -13], cubes: [C([-1.8, 19.6, -18], [1, 1, 5], FINGER)]}],
             animations: idle
         };
         SPECS.screwdriver_manipulator = {
             res: 128, seed: 1703, block: true, noCoplanarFaces: true,
             bones: [...arm('#5aa04a'),
                 {name: 'wrist', parent: 'extension_3', pivot: [0, 21, -11.5], cubes: [
-                    C([-1.75, 19.25, -15], [3.5, 3.5, 4.25], Object.assign({}, FRAME, {sd: [[1, 1, 2, 1, '#5aa04a']]})),
-                    C([-1, 20, -16], [2, 2, 1.5], DARK)]},
+                    C([-2, 19, -15], [4, 4, 4], Object.assign({}, FRAME, {sd: [[1, 1, 2, 1, '#5aa04a']]})),
+                    C([-1, 20, -16.5], [2, 2, 2], DARK)]},
                 {name: 'bit', parent: 'wrist', pivot: [0, 21, -16], cubes: [
                     C([-0.5, 20.5, -19.5], [1, 1, 4], {c: '#c3c8cd', n: 0.04, edge: false, f: [[0, 0, 1, 1, '#3a3f46']]})]}],
             animations: idle
         };
     })();
 
-    window.RebirthModels = {build, save, SPECS, coplanarFaces};
+    window.RebirthModels = {build, save, SPECS, coplanarFaces, checkAll};
 })();

@@ -14,18 +14,22 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/** Draws the machine under assembly in the zone of a working multiblock (1.7.0, block B). Client only. */
+/** Draws the hall of a whole construction and the machine under assembly in its zone (1.7.0, block B). Client only. */
 public class MultiblockControllerRenderer implements BlockEntityRenderer<MultiblockControllerBlockEntity> {
     public MultiblockControllerRenderer(BlockEntityRendererProvider.Context context) {
     }
 
     @Override
     public void render(MultiblockControllerBlockEntity controller, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
-        if (controller.previewStage() < 0 || controller.previewResult().isEmpty() || Minecraft.getInstance().level == null) {
+        MultiblockSchema schema = controller.schema();
+        if (schema == null || Minecraft.getInstance().level == null) {
             return;
         }
-        MultiblockSchema schema = controller.schema();
-        if (schema == null) {
+        // the hall over a whole construction (the body workshop): thin walls, a roof and a glass front instead of the frames
+        if (controller.formed()) {
+            HallShell.render(schema, controller.getBlockPos(), controller.facing(), pose, buffers);
+        }
+        if (controller.previewStage() < 0 || controller.previewResult().isEmpty()) {
             return;
         }
         Entity entity = AssemblyPreview.entityFor(controller.previewResult(), Minecraft.getInstance().level);

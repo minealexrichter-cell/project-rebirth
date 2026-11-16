@@ -36,7 +36,7 @@ public class ManipulatorBlock extends HorizontalDirectionalBlock implements Enti
 
     /** The tool on the arm; its tip is that many pixels in front of the wrist. */
     public enum Tool implements StringRepresentable {
-        WELDER("welder", "welding_manipulator", 7.0f),
+        WELDER("welder", "welding_manipulator", 6.75f),
         GRIPPER("gripper", "gripper_manipulator", 6.5f),
         SCREWDRIVER("screwdriver", "screwdriver_manipulator", 8.0f);
 

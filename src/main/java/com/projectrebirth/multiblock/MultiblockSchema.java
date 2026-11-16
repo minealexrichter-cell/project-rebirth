@@ -41,9 +41,47 @@ import net.neoforged.neoforge.gametest.GameTestHooks;
  * @param display  the cell (column, layer, row) where the machine under assembly stands (block B); the middle of the zone without it
  * @param exit     the cell (column, layer, row, may lie outside the plan) a finished machine rolls out to on its own (the heavy dock's
  *                 power armor); without it every result goes into the output slot
+ * @param shell    the look of the whole construction (the body workshop): its frames are hidden and a solid hall with thin walls,
+ *                 a roof and a glass front is drawn over the cells instead
  */
 public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key, boolean testOnly, Optional<List<Integer>> display,
-                               Optional<List<Integer>> exit) {
+                               Optional<List<Integer>> exit, Optional<Shell> shell) {
+
+    /**
+     * The hall drawn over a whole construction (1.7.0). {@code hide}: the keys whose blocks turn invisible while it stands;
+     * {@code walls}: the keys whose cells get a thin wall on each outer side (the front one of glass) and the roof on top;
+     * the textures of the walls and roof, of the glass front and of the corner posts.
+     */
+    public record Shell(String hide, String walls, ResourceLocation wall, ResourceLocation glass, ResourceLocation post) {
+        public static final Codec<Shell> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.fieldOf("hide").forGetter(Shell::hide),
+                Codec.STRING.fieldOf("walls").forGetter(Shell::walls),
+                ResourceLocation.CODEC.fieldOf("wall").forGetter(Shell::wall),
+                ResourceLocation.CODEC.fieldOf("glass").forGetter(Shell::glass),
+                ResourceLocation.CODEC.fieldOf("post").forGetter(Shell::post)).apply(i, Shell::new));
+    }
+
+    /** The key letter of a cell (a space: any block). */
+    public char letter(int layer, int row, int column) {
+        return layers.get(layer).get(row).charAt(column);
+    }
+
+    /**
+     * A point of the plan in the world: the cell (column, layer, row) spans from those numbers to one more, so a point inside it
+     * has fractions; turned with the controller like {@link #worldPos}.
+     */
+    public net.minecraft.world.phys.Vec3 worldPoint(BlockPos controller, Direction facing, double column, double layer, double row) {
+        int[] c = controllerCell();
+        double dx = column - (c[0] + 0.5), dy = layer - (c[1] + 0.5), dz = row - (c[2] + 0.5);
+        double x, z;
+        switch (rotation(facing)) {
+            case CLOCKWISE_90 -> { x = -dz; z = dx; }
+            case CLOCKWISE_180 -> { x = -dx; z = -dz; }
+            case COUNTERCLOCKWISE_90 -> { x = dz; z = -dx; }
+            default -> { x = dx; z = dz; }
+        }
+        return new net.minecraft.world.phys.Vec3(controller.getX() + 0.5 + x, controller.getY() + 0.5 + dy, controller.getZ() + 0.5 + z);
+    }
     /**
      * What a cell of the plan takes.
      *
@@ -116,7 +154,8 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
             Codec.unboundedMap(Codec.STRING, Cell.CODEC).fieldOf("key").forGetter(MultiblockSchema::key),
             Codec.BOOL.optionalFieldOf("test_only", false).forGetter(MultiblockSchema::testOnly),
             Codec.INT.listOf().optionalFieldOf("display").forGetter(MultiblockSchema::display),
-            Codec.INT.listOf().optionalFieldOf("exit").forGetter(MultiblockSchema::exit)).apply(i, MultiblockSchema::new))
+            Codec.INT.listOf().optionalFieldOf("exit").forGetter(MultiblockSchema::exit),
+            Shell.CODEC.optionalFieldOf("shell").forGetter(MultiblockSchema::shell)).apply(i, MultiblockSchema::new))
             .validate(MultiblockSchema::validate);
 
     private static DataResult<MultiblockSchema> validate(MultiblockSchema schema) {

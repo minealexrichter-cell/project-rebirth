@@ -122,6 +122,36 @@ public class GarrisonGameTests {
         helper.succeed();
     }
 
+    /** The body workshop's hall: whole, its frames hide under the drawn walls; a broken block or controller shows them again. */
+    @GameTest(template = TEMPLATE)
+    public static void theWorkshopHidesItsFramesUnderTheHallWhileWhole(GameTestHelper helper) {
+        MultiblockControllerBlockEntity entity = build(helper, MultiblockRegistry.BODY_WORKSHOP, MultiblockRegistry.WORKSHOP_CONTROLLER.get());
+        MultiblockSchema.Check check = entity.revalidate();
+        helper.assertTrue(check.complete() && entity.formed(), "Whole and formed");
+        ServerLevel level = helper.getLevel();
+        java.util.List<BlockPos> frames = new java.util.ArrayList<>();
+        for (BlockPos pos : BlockPos.betweenClosed(check.bounds().minX(), check.bounds().minY(), check.bounds().minZ(),
+                check.bounds().maxX(), check.bounds().maxY(), check.bounds().maxZ())) {
+            if (level.getBlockState(pos).is(MultiblockRegistry.ASSEMBLY_FRAME.get())) {
+                frames.add(pos.immutable());
+            }
+        }
+        helper.assertTrue(frames.size() == 18 && frames.stream().allMatch(pos -> level.getBlockState(pos).getValue(com.projectrebirth.multiblock.FrameBlock.FORMED)),
+                "All 18 frames hidden: " + frames.size());
+        level.setBlock(frames.get(0), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+        entity.revalidate();
+        helper.assertTrue(!entity.formed() && frames.stream().skip(1).noneMatch(pos -> level.getBlockState(pos).getValue(com.projectrebirth.multiblock.FrameBlock.FORMED)),
+                "A broken frame: the hall goes, the others show");
+        level.setBlock(frames.get(0), MultiblockRegistry.ASSEMBLY_FRAME.get().defaultBlockState(), 3);
+        entity.revalidate();
+        helper.assertTrue(entity.formed(), "Mended, it stands again");
+        level.destroyBlock(entity.getBlockPos(), false);
+        helper.assertTrue(frames.stream().noneMatch(pos -> level.getBlockState(pos).getValue(com.projectrebirth.multiblock.FrameBlock.FORMED)),
+                "A broken controller shows every frame");
+        level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(entity.getBlockPos()).inflate(3)).forEach(e -> e.discard());
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE)
     public static void theHeavyDockIsWholeWhenBuiltByItsPlan(GameTestHelper helper) {
         MultiblockControllerBlockEntity entity = build(helper, MultiblockRegistry.HEAVY_DOCK, MultiblockRegistry.DOCK_CONTROLLER.get());

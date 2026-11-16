@@ -119,6 +119,9 @@
     }
 
     const TEXTURES = {};
+    /** Block textures see-through on purpose (see clearPixels). */
+    const CLEAR_BLOCKS = new Set(['assembly_frame', 'heavy_frame', 'decontamination_chamber_water', 'specimen_tank_liquid', 'lamp_glass',
+        'tank_glass_broken', 'workshop_glass']);
     const block = (id, make) => { TEXTURES['block/' + id] = make; };
     // The weapon icons are made from the models since 1.6.0 (derive_textures.js, RebirthDerived.icon): left alone here.
     const DRAWN_FROM_MODELS = new Set(['assault_rifle', 'battle_rifle', 'combat_shotgun', 'power_armor', 'mobile_power_armor', 'worker_power_armor']);
@@ -2341,6 +2344,34 @@
         p.px('#23262b', [2, 1], [6, 1], [10, 1], [14, 1], [2, 14], [6, 14], [10, 14], [14, 14]);
         return p;
     });
+    // The hall of the body workshop (drawn over its frames once whole): steel wall panels, dark corner posts, a glass front
+    // like the game's glass panes (a pale rim and a few gleams, the rest clear).
+    block('workshop_wall', () => {
+        const p = new Painter(208);
+        p.bevel(0, 0, 16, 16, '#76808a', 0.04);
+        p.inset(2, 2, 12, 12, '#646e78', 0.03);
+        p.rect(2, 7, 12, 2, '#4f5861').rect(2, 7, 12, 1, '#454d55');
+        p.rivets('#a6b0ba', 1);
+        p.px('#e0b33a', [7, 0], [8, 0], [7, 15], [8, 15]);
+        return p;
+    });
+    block('workshop_post', () => {
+        const p = new Painter(209);
+        p.bevel(0, 0, 16, 16, '#40464d', 0.05);
+        p.rect(0, 6, 16, 1, '#e0b33a').rect(0, 9, 16, 1, '#e0b33a');
+        return p;
+    });
+    const glassTint = (r, g, b, a) => 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+    block('workshop_glass', () => {
+        const p = new Painter(210);
+        p.rect(1, 1, 14, 14, glassTint(205, 232, 246, 0.14));
+        p.rect(0, 0, 16, 1, glassTint(222, 236, 244, 0.95)).rect(0, 15, 16, 1, glassTint(150, 175, 190, 0.95));
+        p.rect(0, 1, 1, 14, glassTint(222, 236, 244, 0.95)).rect(15, 1, 1, 14, glassTint(150, 175, 190, 0.95));
+        for (const [x, y] of [[3, 4], [4, 3], [5, 2], [3, 6], [4, 5], [5, 4], [6, 3], [7, 2], [10, 12], [11, 11], [12, 10]]) {
+            p.rect(x, y, 1, 1, glassTint(255, 255, 255, 0.55));
+        }
+        return p;
+    });
     block('crane_beam_end', () => {
         const p = new Painter(200);
         p.inset(0, 0, 16, 16, '#3a3f46', 0.03);
@@ -3229,8 +3260,35 @@
         fs.writeFileSync(path, Buffer.from(data, 'base64'));
     }
 
+    /**
+     * Block textures with see-through pixels (1.7.0). A full block's faces must be whole: a clear pixel shows as a hole. Only
+     * the blocks meant to be see-through (CLEAR_BLOCKS: frames, panes, glass, lattices) may have them; a new texture that does
+     * is refused by saveAll until it is named there on purpose. Returns "block/id: n pixels".
+     */
+    function clearPixels() {
+        const out = [];
+        for (const id of Object.keys(TEXTURES).filter(id => id.startsWith('block/'))) {
+            const canvas = TEXTURES[id]().canvas;
+            const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+            let clear = 0;
+            for (let i = 3; i < data.length; i += 4) {
+                if (data[i] < 255) {
+                    clear++;
+                }
+            }
+            if (clear > 0) {
+                out.push(id + ': ' + clear + ' pixels');
+            }
+        }
+        return out;
+    }
+
     function saveAll() {
         const ids = Object.keys(TEXTURES);
+        const holes = clearPixels().filter(line => !CLEAR_BLOCKS.has(line.slice(6, line.indexOf(':'))));
+        if (holes.length) {
+            throw new Error('Block textures with see-through pixels (holes on a full block; name them in CLEAR_BLOCKS if meant): ' + holes.join('; '));
+        }
         fs.mkdirSync(ASSETS + 'gui', {recursive: true});
         fs.mkdirSync(ASSETS + 'models/armor', {recursive: true});
         ids.forEach(id => {
@@ -3298,5 +3356,5 @@
         return {blocks: blocks.length, items: items.length};
     }
 
-    window.RebirthTextures = {TEXTURES, saveAll, sheet, showcase};
+    window.RebirthTextures = {TEXTURES, saveAll, sheet, showcase, clearPixels};
 })();

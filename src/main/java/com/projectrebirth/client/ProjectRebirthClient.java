@@ -108,6 +108,7 @@ public class ProjectRebirthClient {
     private void registerScreens(RegisterMenuScreensEvent event) {
         event.register(TechMenus.STATION.get(), StationScreen::new);
         event.register(TechMenus.MAINTENANCE.get(), MaintenanceScreen::new);
+        event.register(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_MOUNTING.get(), com.projectrebirth.client.screen.MachineMountingScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_MENU.get(), com.projectrebirth.client.screen.AirFiltrationScreen::new);
         event.register(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_MENU.get(), com.projectrebirth.client.screen.WaterPurifierScreen::new);
@@ -128,6 +129,8 @@ public class ProjectRebirthClient {
             event.registerEntityRenderer(BodyEntities.type(bodyClass), context -> new ArtificialBodyRenderer(context, bodyClass));
         }
         event.registerEntityRenderer(BodyEntities.HUMAN_SHELL.get(), HumanShellRenderer::new);
+        // the stand-in machine of the automated tests has no look of its own
+        event.registerEntityRenderer(com.projectrebirth.garrison.GarrisonRegistry.TEST_MACHINE.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.GUARD_TURRET.get(), com.projectrebirth.client.render.GuardTurretRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.PATROL_ROBOT.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::robot);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::mech);

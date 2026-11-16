@@ -178,9 +178,13 @@ public class UpgradeGameTests {
         assertRefused(helper, armor, stack(UpgradeRegistry.JETPACK.get()), ArmorSlot.CHEST_BACK, Upgrades.Problem.WRONG_HOST);
         assertRefused(helper, body, stack(UpgradeRegistry.ARMOR_COPPER_PLATING.get()), null, Upgrades.Problem.WRONG_HOST);
         assertRefused(helper, body, stack(UpgradeRegistry.COMPRESSED_AIR_MODULE.get()), null, Upgrades.Problem.WRONG_HOST);
-        // Every upgrade of the mod's data goes on one of the two, never on both.
-        access(helper).registryOrThrow(UpgradeRegistry.UPGRADES).forEach(definition ->
-                helper.assertTrue(definition.body().isPresent() != !definition.armorSlots().isEmpty(), "Exactly one host for " + definition.kind()));
+        // Every upgrade of the mod's data goes on one of the two, never on both; the armor's go on machines too (1.7.0), the bodies' not.
+        access(helper).registryOrThrow(UpgradeRegistry.UPGRADES).forEach(definition -> {
+            helper.assertTrue(definition.body().isPresent() != !definition.armorSlots().isEmpty(), "Exactly one host for " + definition.kind());
+            boolean onMachines = Upgrades.problem(stack -> java.util.Optional.empty(), definition, ItemStack.EMPTY, InstalledUpgrades.EMPTY,
+                    new com.projectrebirth.upgrades.UpgradeLayout.MachineSlots(4), null) != Upgrades.Problem.WRONG_HOST;
+            helper.assertTrue(onMachines == !definition.armorSlots().isEmpty(), "Armor upgrades and only they on machines: " + definition.kind());
+        });
         helper.succeed();
     }
 

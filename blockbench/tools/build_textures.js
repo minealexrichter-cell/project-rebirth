@@ -2489,6 +2489,85 @@
     item('gripper_manipulator', manipulatorIcon('#3a8fd0', ['kmmmk', 's.s.s', 's.s.s', 's...s']));
     item('screwdriver_manipulator', manipulatorIcon('#5aa04a', ['.kmk.', '.kak.', '..s..', '..s..']));
 
+    // 1.7.0, block C: the AI core and its parts. The core: a dark shell with a glowing cyan heart; damaged, cracked and dim.
+    item('neural_matrix', () => icon([
+        '................',
+        '...k.k.k.k.k....',
+        '..kkkkkkkkkkk...',
+        '.kkgggggggggkk..',
+        '..kgbgggbgbgk...',
+        '.kkggbgbggggkk..',
+        '..kgggbbbgbgk...',
+        '.kkgbgbBbggggkk.',
+        '..kggbbbbbgbgk..',
+        '.kkgbggbggbggkk.',
+        '..kgggbgbggggk..',
+        '.kkgbgggggbggkk.',
+        '..kkkkkkkkkkkkk.',
+        '...k.k.k.k.k.k..',
+        '................',
+        '................'].map(r => r.padEnd(16, '.').slice(0, 16)), {k: '#1e2228', g: '#2c3a4a', b: '#37c6e8', B: '#c8f4ff'}));
+    function coreIcon(glow, light, crack) {
+        return () => icon([
+            '................',
+            '.....kkkkkk.....',
+            '...kkmmmmmmkk...',
+            '..kmmssssssmmk..',
+            '..kmsggggggsmk..',
+            '.kmsggLLLLggsmk.',
+            '.kmsgLLWWLLgsmk.',
+            '.kmsgLWWWWLgsmk.',
+            '.kmsgLWWWWLgsmk.',
+            '.kmsgLLWWLLgsmk.',
+            '.kmsggLLLLggsmk.',
+            '..kmsggggggsmk..',
+            '..kmmssssssmmk..',
+            '...kkmmmmmmkk...',
+            '.....kkkkkk.....',
+            '................'].map((row, y) => crack ? [...row].map((ch, x) => (x === y || x === y + 1) && ch !== '.' && y > 2 && y < 13 ? 'c' : ch).join('') : row),
+            {k: '#1e2228', m: '#4a525c', s: '#2a3038', g: glow, L: light, W: crack ? '#8a9aa0' : '#f0fdff', c: '#14171b'});
+    }
+    item('ai_core', coreIcon('#1f8fb0', '#5fe3ff', false));
+    item('damaged_ai_core', coreIcon('#2a3a40', '#4a6a72', true));
+    function moduleIcon(board, mark) {
+        return () => icon([
+            '................',
+            '................',
+            '..kkkkkkkkkkkk..',
+            '.kbbbbbbbbbbbbk.',
+            '.kbppbbbbbbMbbk.',
+            '.kbppbbbbbMbbbk.',
+            '.kbbbbMbbMbbbbk.',
+            '.kbccbbMMbbbbbk.',
+            '.kbccbbMMbbbbbk.',
+            '.kbbbbMbbMbbbbk.',
+            '.kbbbbbbbbbbbbk.',
+            '..kkkkkkkkkkkk..',
+            '...y.y.y.y.y....',
+            '................',
+            '................',
+            '................'], {k: '#1e2228', b: board, p: '#2b2f36', c: '#c58a3a', M: mark, y: '#e0b84c'});
+    }
+    item('combat_module', moduleIcon('#7a2a24', '#ffb0a0'));
+    item('work_module', moduleIcon('#7a5a1a', '#ffe08a'));
+    item('test_machine', () => icon([
+        '................',
+        '................',
+        '....kkkkkkkk....',
+        '...kmmmmmmmmk...',
+        '...kmbbmmbbmk...',
+        '...kmmmmmmmmk...',
+        '...kmyyyyyymk...',
+        '...kmmmmmmmmk...',
+        '...kmmmmmmmmk...',
+        '...kmmmmmmmmk...',
+        '...kkkkkkkkkk...',
+        '....kk....kk....',
+        '................',
+        '................',
+        '................',
+        '................'], {k: '#1e2228', m: '#8a939c', b: '#37c6e8', y: '#e0b33a'}));
+
     // The bucket of polluted water is the game's bucket with a liquid layer over it: blockbench/tools/polluted_bucket.js.
 
     /** Airlock door: a heavy steel door, the lower half with a hazard band and a locking wheel, the upper with a thick window. */

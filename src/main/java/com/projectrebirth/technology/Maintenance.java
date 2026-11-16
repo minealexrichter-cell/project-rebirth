@@ -12,18 +12,21 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * Repair rules of the maintenance station for packed power armor and packed bodies. A missing integrity component
+ * Repair rules of the maintenance station for packed power armor, packed bodies and packed machines (1.7.0). A missing integrity component
  * means "undamaged", so a fully repaired item loses its components and stacks with new ones again.
  */
 public final class Maintenance {
     public enum Kind {
-        NONE, ARMOR, ROBOT_BODY, SYNTHETIC_BODY
+        NONE, ARMOR, ROBOT_BODY, SYNTHETIC_BODY, MACHINE
     }
 
     private Maintenance() {
     }
 
     public static Kind kind(ItemStack stack) {
+        if (stack.getItem() instanceof com.projectrebirth.garrison.PackedMachineItem) {
+            return Kind.MACHINE;
+        }
         if (stack.getItem() instanceof PowerArmorItem) {
             return Kind.ARMOR;
         }
@@ -78,8 +81,20 @@ public final class Maintenance {
         return kind(stack) == Kind.SYNTHETIC_BODY ? TechItems.CIRCUIT_BOARD.get() : TechItems.ACTUATOR.get();
     }
 
+    // ---------- packed machines (1.7.0): plates mend critical, iron structural, actuators take wear off
+
+    private static com.projectrebirth.garrison.MachineCore.Packed machine(ItemStack stack) {
+        return com.projectrebirth.garrison.PackedMachineItem.packed(stack);
+    }
+
+    private static boolean machineNeeds(ItemStack stack) {
+        var packed = machine(stack);
+        return packed.critical() < packed.kind().maxCritical() || packed.structural() < packed.kind().maxStructural() || packed.wear() > 0.0f;
+    }
+
     public static boolean needsRepair(ItemStack stack) {
         return switch (kind(stack)) {
+            case MACHINE -> machineNeeds(stack);
             case ARMOR -> armorCritical(stack) < maxCritical(stack) || armorStructural(stack) < maxStructural(stack);
             case ROBOT_BODY, SYNTHETIC_BODY -> bodyIntegrity(stack) < maxBodyIntegrity(stack) || bodyWear(stack) > 0.0f;
             case NONE -> false;
@@ -92,6 +107,19 @@ public final class Maintenance {
      */
     public static Item materialFor(ItemStack stack, MaterialSource materials) {
         switch (kind(stack)) {
+            case MACHINE -> {
+                var packed = machine(stack);
+                if (packed.critical() < packed.kind().maxCritical() && materials.has(PowerArmorRegistry.ARMOR_PLATE.get())) {
+                    return PowerArmorRegistry.ARMOR_PLATE.get();
+                }
+                if (packed.structural() < packed.kind().maxStructural() && materials.has(Items.IRON_INGOT)) {
+                    return Items.IRON_INGOT;
+                }
+                if (packed.wear() > 0.0f && materials.has(TechItems.ACTUATOR.get())) {
+                    return TechItems.ACTUATOR.get();
+                }
+                return null;
+            }
             case ARMOR -> {
                 if (armorCritical(stack) < maxCritical(stack) && materials.has(PowerArmorRegistry.ARMOR_PLATE.get())) {
                     return PowerArmorRegistry.ARMOR_PLATE.get();
@@ -122,6 +150,20 @@ public final class Maintenance {
 
     /** Applies one unit of the material (as chosen by {@link #materialFor}) to the item. */
     public static void apply(ItemStack stack, Item material) {
+        if (kind(stack) == Kind.MACHINE) {
+            var packed = machine(stack);
+            float structural = packed.structural(), critical = packed.critical(), wear = packed.wear();
+            if (material == PowerArmorRegistry.ARMOR_PLATE.get()) {
+                critical = Math.min(packed.kind().maxCritical(), critical + RebirthConfig.MACHINE_REPAIR_CRITICAL_PER_PLATE.get().floatValue());
+            } else if (material == Items.IRON_INGOT) {
+                structural = Math.min(packed.kind().maxStructural(), structural + RebirthConfig.MACHINE_REPAIR_PER_INGOT.get().floatValue());
+            } else {
+                wear = Math.max(0.0f, wear - RebirthConfig.MACHINE_WEAR_PER_ACTUATOR.get().floatValue());
+            }
+            stack.set(com.projectrebirth.garrison.GarrisonRegistry.PACKED_MACHINE.get(), new com.projectrebirth.garrison.MachineCore.Packed(
+                    packed.kind(), structural, critical, wear, packed.owner(), packed.ownerName(), packed.name()));
+            return;
+        }
         if (kind(stack) == Kind.ARMOR) {
             float structural = armorStructural(stack);
             float critical = armorCritical(stack);

@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 112,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 2
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 4
+    },
+    {
+      "item": "minecraft:iron_sword",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:combat_module",
+    "count": 1
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "icon": "projectrebirth:ai_core",
+  "x": 4,
+  "y": 0,
+  "parents": [
+    "body_workshop",
+    "heavy_dock"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.ai_core.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:neural_matrix",
+      "text": "codex.projectrebirth.ai_core.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:ai_core",
+      "text": "codex.projectrebirth.ai_core.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.ai_core.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:ai_core_restored",
+      "text": "codex.projectrebirth.ai_core.p5"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:combat_module",
+      "text": "codex.projectrebirth.ai_core.p6"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:work_module",
+      "text": "codex.projectrebirth.ai_core.p7"
+    }
+  ]
+}

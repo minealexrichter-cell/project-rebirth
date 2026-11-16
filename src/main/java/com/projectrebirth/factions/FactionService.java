@@ -95,7 +95,7 @@ public final class FactionService {
 
     /**
      * The player whose faction protects this entity, if any: the player itself, the pilot of a power armor (or its
-     * owner when empty), the owner of an artificial body or of a human body left in a capsule.
+     * owner when empty), the owner of an artificial body or of a human body left in a capsule, the owner of a machine (1.7.0).
      */
     @Nullable
     public static UUID ownerOf(Entity entity) {
@@ -111,6 +111,9 @@ public final class FactionService {
         }
         if (entity instanceof HumanShellEntity shell) {
             return shell.getOwnerId().orElse(null);
+        }
+        if (entity instanceof com.projectrebirth.garrison.GarrisonMachine machine) {
+            return machine.machineCore().owner();
         }
         return null;
     }

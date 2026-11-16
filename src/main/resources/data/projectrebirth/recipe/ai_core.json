@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 110,
+  "time": 800,
+  "ingredients": [
+    {
+      "item": "projectrebirth:neural_matrix",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:ai_core",
+    "count": 1
+  }
+}

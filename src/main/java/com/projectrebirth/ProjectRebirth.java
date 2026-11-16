@@ -80,6 +80,8 @@ public class ProjectRebirth {
         com.projectrebirth.monitoring.MonitoringRegistry.register(modEventBus);
         com.projectrebirth.scouting.Scouting.register(modEventBus);
         com.projectrebirth.multiblock.MultiblockRegistry.register(modEventBus);
+        com.projectrebirth.garrison.GarrisonRegistry.register(modEventBus);
+        com.projectrebirth.garrison.GarrisonEvents.register();
         com.projectrebirth.shelter.ShelterRegistry.register(modEventBus);
         com.projectrebirth.codex.CodexRegistry.register(modEventBus);
         Jetpack.register(modEventBus);

@@ -42,7 +42,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 /**
  * What is left of a destroyed machine or a dead brute (1.6.0, part B3): the same model, lying the way it fell (its "dead"
  * animation), with a battered texture. A patrol robot's and the mech's wreck stays like the wreck of a power armor and is taken
- * apart with the repair wrench held while sneaking, for parts (loot table entities/&lt;kind&gt;_wreck). A brute's body radiates
+ * apart with the repair wrench held while sneaking, for parts (loot table entities/&lt;kind&gt;_wreck) and, by chance, a damaged AI
+ * core (1.7.0). A brute's body radiates
  * (see {@link Auras}) and rots away after a while (config).
  */
 public class RemainsEntity extends Entity implements GeoEntity {
@@ -201,6 +202,12 @@ public class RemainsEntity extends Entity implements GeoEntity {
         }
         for (ItemStack drop : table.getRandomItems(params.create(LootContextParamSets.CHEST))) {
             spawnAtLocation(drop, 0.5f);
+        }
+        // 1.7.0: the machines of the ruins carry an AI core; taken apart, it may come out damaged (config by kind)
+        double coreChance = kind() == Kind.PATROL_ROBOT ? com.projectrebirth.config.RebirthConfig.DAMAGED_CORE_PATROL_ROBOT.get()
+                : kind() == Kind.MECH ? com.projectrebirth.config.RebirthConfig.DAMAGED_CORE_MECH.get() : 0.0;
+        if (coreChance > 0.0 && random.nextDouble() < coreChance) {
+            spawnAtLocation(new ItemStack(com.projectrebirth.garrison.GarrisonRegistry.DAMAGED_AI_CORE.get()), 0.5f);
         }
         server.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 0.5, getZ(), 10, 0.6, 0.3, 0.6, 0.02);
         server.playSound(null, getX(), getY(), getZ(), SoundEvents.ANVIL_DESTROY, SoundSource.PLAYERS, 0.7f, 1.2f);

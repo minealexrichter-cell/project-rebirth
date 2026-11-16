@@ -51,6 +51,14 @@ public enum FactionRole {
         return this == LEADER || this == OFFICER;
     }
 
+    /**
+     * Pack up, repair and command the machines of other members (1.7.0); by default leaders and officers
+     * ([garrison.machines] managerRoles). Factions made before 1.7.0 get it the same way: it goes by role.
+     */
+    public boolean canManageMachines() {
+        return com.projectrebirth.config.RebirthConfig.MACHINE_MANAGER_ROLES.get().contains(name().toLowerCase(java.util.Locale.ROOT));
+    }
+
     /** Chests, furnaces, stations and capsules on the faction's own territory. */
     public boolean canUseContainers() {
         return this != RECRUIT;

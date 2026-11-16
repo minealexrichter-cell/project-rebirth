@@ -237,6 +237,31 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_CAPACITY;
     public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_RECEIVE;
     public static final ModConfigSpec.IntValue MULTIBLOCK_HOLOGRAM_SECONDS;
+    // 1.7.0, block C: the AI core and the base of the player's machines
+    public static final ModConfigSpec.BooleanValue MACHINES_ENABLED;
+    public static final ModConfigSpec.DoubleValue DAMAGED_CORE_PATROL_ROBOT;
+    public static final ModConfigSpec.DoubleValue DAMAGED_CORE_MECH;
+    public static final ModConfigSpec.IntValue MACHINE_REGEN_DELAY_SECONDS;
+    public static final ModConfigSpec.DoubleValue MACHINE_REGEN_PER_SECOND;
+    public static final ModConfigSpec.DoubleValue MACHINE_CRITICAL_EXPLOSION;
+    public static final ModConfigSpec.DoubleValue MACHINE_CRITICAL_FIRE;
+    public static final ModConfigSpec.DoubleValue MACHINE_RESTART_FRACTION;
+    public static final ModConfigSpec.DoubleValue MACHINE_REPAIR_PER_INGOT;
+    public static final ModConfigSpec.DoubleValue MACHINE_REPAIR_CRITICAL_PER_PLATE;
+    public static final ModConfigSpec.DoubleValue MACHINE_WEAR_PER_ACTUATOR;
+    public static final ModConfigSpec.DoubleValue MACHINE_ACID_WEAR_PER_SECOND;
+    public static final ModConfigSpec.DoubleValue MACHINE_DUST_WEAR_PER_SECOND;
+    public static final ModConfigSpec.IntValue MACHINE_REGISTRY_SECONDS;
+    public static final ModConfigSpec.IntValue MACHINE_SERVER_LIMIT;
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> MACHINE_MANAGER_ROLES;
+    public static final java.util.Map<com.projectrebirth.garrison.MachineKind, ModConfigSpec.IntValue> MACHINE_PLAYER_LIMIT = new java.util.EnumMap<>(com.projectrebirth.garrison.MachineKind.class);
+    public static final java.util.Map<com.projectrebirth.garrison.MachineKind, ModConfigSpec.IntValue> MACHINE_FACTION_LIMIT = new java.util.EnumMap<>(com.projectrebirth.garrison.MachineKind.class);
+    public static final java.util.Map<com.projectrebirth.garrison.MachineKind, ModConfigSpec.DoubleValue> MACHINE_MAX_STRUCTURAL = new java.util.EnumMap<>(com.projectrebirth.garrison.MachineKind.class);
+    public static final java.util.Map<com.projectrebirth.garrison.MachineKind, ModConfigSpec.DoubleValue> MACHINE_MAX_CRITICAL = new java.util.EnumMap<>(com.projectrebirth.garrison.MachineKind.class);
+    public static final java.util.Map<com.projectrebirth.garrison.MachineKind, ModConfigSpec.IntValue> MACHINE_UPGRADE_SLOTS = new java.util.EnumMap<>(com.projectrebirth.garrison.MachineKind.class);
+    public static final ModConfigSpec.BooleanValue ALLOW_INTRUDER_MODE;
+    public static final ModConfigSpec.IntValue SELF_DEFENCE_SECONDS;
+    public static final ModConfigSpec.IntValue SELF_DEFENCE_RADIUS;
     public static final ModConfigSpec.BooleanValue SCOUTING_ENABLED;
     public static final ModConfigSpec.IntValue SCOUTING_UPDATE_SECONDS;
     public static final ModConfigSpec.IntValue ANALYZER_RADIUS;
@@ -865,6 +890,42 @@ public final class RebirthConfig {
         MULTIBLOCK_ENERGY_CAPACITY = builder.comment("Energy a controller holds").defineInRange("energyCapacity", 200000, 1, 1_000_000_000);
         MULTIBLOCK_ENERGY_RECEIVE = builder.comment("Energy a controller takes per tick through its energy ports").defineInRange("energyReceive", 2000, 1, 1_000_000_000);
         MULTIBLOCK_HOLOGRAM_SECONDS = builder.comment("Seconds the hologram of a construction stays on unless switched off").defineInRange("hologramSeconds", 60, 1, 3600);
+        builder.pop();
+        builder.comment("The player's machines (block C): the AI core, integrity, wrecks, packing, limits and the rules of targets.").push("machines");
+        MACHINES_ENABLED = builder.comment("Whether machines can be placed (packed ones stay items when off)").define("enabled", true);
+        DAMAGED_CORE_PATROL_ROBOT = builder.comment("Chance that the wreck of a patrol robot of the ruins gives a damaged AI core").defineInRange("damagedCorePatrolRobot", 0.1, 0.0, 1.0);
+        DAMAGED_CORE_MECH = builder.comment("Chance that the wreck of the mech of the ruins gives a damaged AI core").defineInRange("damagedCoreMech", 1.0, 0.0, 1.0);
+        MACHINE_REGEN_DELAY_SECONDS = builder.comment("Seconds without damage before structural integrity comes back by itself").defineInRange("regenDelaySeconds", 10, 0, 3600);
+        MACHINE_REGEN_PER_SECOND = builder.comment("Structural integrity that comes back per second after that (0: none)").defineInRange("regenPerSecond", 1.0, 0.0, 1000.0);
+        MACHINE_CRITICAL_EXPLOSION = builder.comment("Critical integrity an explosion takes per point of damage").defineInRange("criticalExplosion", 1.0, 0.0, 100.0);
+        MACHINE_CRITICAL_FIRE = builder.comment("Critical integrity fire takes per point of damage").defineInRange("criticalFire", 0.5, 0.0, 100.0);
+        MACHINE_RESTART_FRACTION = builder.comment("A shut-down machine starts again once its structural integrity is back to this share").defineInRange("restartFraction", 0.25, 0.0, 1.0);
+        MACHINE_REPAIR_PER_INGOT = builder.comment("Structural integrity one iron ingot gives (repair wrench, maintenance station)").defineInRange("repairPerIngot", 10.0, 0.1, 1000.0);
+        MACHINE_REPAIR_CRITICAL_PER_PLATE = builder.comment("Critical integrity one armor plate gives at the maintenance station").defineInRange("repairCriticalPerPlate", 10.0, 0.1, 1000.0);
+        MACHINE_WEAR_PER_ACTUATOR = builder.comment("Wear (percent) one actuator takes off at the maintenance station").defineInRange("wearPerActuator", 25.0, 0.1, 100.0);
+        MACHINE_ACID_WEAR_PER_SECOND = builder.comment("Wear (percent) per second per unit of acid rain on a machine outside").defineInRange("acidWearPerSecond", 0.02, 0.0, 100.0);
+        MACHINE_DUST_WEAR_PER_SECOND = builder.comment("Wear (percent) per second per unit of dust on a machine outside").defineInRange("dustWearPerSecond", 0.01, 0.0, 100.0);
+        MACHINE_REGISTRY_SECONDS = builder.comment("Seconds between two updates of a machine's line in the world's machine register").defineInRange("registrySeconds", 5, 1, 600);
+        MACHINE_SERVER_LIMIT = builder.comment("Machines of all players on the server at most").defineInRange("serverLimit", 200, 0, 100000);
+        MACHINE_MANAGER_ROLES = builder.comment("Faction roles that may pack up, repair and command the machines of other members (leader, officer, member, recruit)")
+                .defineListAllowEmpty("managerRoles", java.util.List.of("leader", "officer"), () -> "officer", value -> value instanceof String);
+        int[][] limits = {{6, 12}, {10, 20}, {1, 3}, {4, 8}};
+        double[][] integrity = {{30.0, 15.0}, {80.0, 40.0}, {250.0, 125.0}, {40.0, 20.0}};
+        int[] slots = {0, 4, 3, 3};
+        for (com.projectrebirth.garrison.MachineKind kind : com.projectrebirth.garrison.MachineKind.values()) {
+            builder.comment("Machines of this kind: " + kind.description()).push(kind.id());
+            MACHINE_PLAYER_LIMIT.put(kind, builder.comment("At most per player").defineInRange("playerLimit", limits[kind.ordinal()][0], 0, 10000));
+            MACHINE_FACTION_LIMIT.put(kind, builder.comment("At most per faction (its members together)").defineInRange("factionLimit", limits[kind.ordinal()][1], 0, 10000));
+            MACHINE_MAX_STRUCTURAL.put(kind, builder.comment("Structural integrity").defineInRange("maxStructural", integrity[kind.ordinal()][0], 1.0, 100000.0));
+            MACHINE_MAX_CRITICAL.put(kind, builder.comment("Critical integrity").defineInRange("maxCritical", integrity[kind.ordinal()][1], 1.0, 100000.0));
+            MACHINE_UPGRADE_SLOTS.put(kind, builder.comment("Upgrade slots (armor upgrades by the mounting tool; androids use their body's)").defineInRange("upgradeSlots", slots[kind.ordinal()], 0, 12));
+            builder.pop();
+        }
+        builder.pop();
+        builder.comment("The rules by which machines choose targets.").push("targeting");
+        ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);
+        SELF_DEFENCE_SECONDS = builder.comment("Seconds a machine remembers who attacked it, its owner or a member of its faction nearby").defineInRange("selfDefenceSeconds", 30, 1, 3600);
+        SELF_DEFENCE_RADIUS = builder.comment("Blocks around an attacked member within which machines of the faction take note").defineInRange("selfDefenceRadius", 24, 1, 128);
         builder.pop(2);
 
         builder.comment("Scouting in the field (1.6.0, block F): the field analyzer in hand, the sensor module of bodies and the sensor unit of",

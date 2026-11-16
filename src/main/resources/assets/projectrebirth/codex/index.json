@@ -125,7 +125,10 @@
       "entries": [
         "multiblocks",
         "body_workshop",
-        "heavy_dock"
+        "heavy_dock",
+        "ai_core",
+        "machine_integrity",
+        "target_rules"
       ]
     }
   ]

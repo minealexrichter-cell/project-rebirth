@@ -256,7 +256,7 @@ public class MultiblockGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE)
+    @GameTest(template = TEMPLATE, batch = "multiblock_territory")
     public static void aConstructionOnTheLandOfAnotherFactionDoesNotCount(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         FactionService.adminDisband(server, "Builders Mu");

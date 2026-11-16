@@ -628,6 +628,32 @@ category('garrison', P + 'body_workshop_controller', 'Garrison', 'Гарнизо
         recipe(P + 'dock_mobile_power_armor'),
         recipe(P + 'dock_worker_power_armor'),
         note('With multiblocks turned off in the server settings, the old station recipes of synthetic bodies and power armor come back.', 'Если мультиблоки выключены в настройках сервера, возвращаются старые рецепты синтетических тел и силовой брони на станциях.')
+    ]),
+    entry('ai_core', P + 'ai_core', 4, 0, ['body_workshop', 'heavy_dock'], 'AI Core', 'Ядро ИИ', [
+        text('The AI core is the mind of every machine of yours: an android, a turret, the mech. One core, one machine. It does not stack, and it serves the first player who carries it: the one who made or restored it, and their faction at that moment.',
+            'Ядро ИИ — разум любой вашей машины: андроида, турели, меха. Одно ядро — одна машина. Ядра не складываются в стопку; ядро служит первому игроку, который его взял (тому, кто его изготовил или восстановил), и его фракции на тот момент.'),
+        recipe(P + 'neural_matrix', 'The neural matrix, at the electronics fabricator: processors, silver, quartz, an echo shard and uranium.', 'Нейроматрица — в цехе электроники: процессоры, серебро, кварц, осколок эха и уран.'),
+        recipe(P + 'ai_core', 'The core itself, at the assembly station.', 'Само ядро — на сборочной станции.'),
+        text('The cheaper way is riskier: the wrecks of the patrol robots and of the mech in the ruins sometimes give a damaged AI core when taken apart with the wrench (the mech always). The electronics fabricator restores it, and the restored core serves whoever takes it.',
+            'Дешевле, но опаснее: остовы патрульных роботов и меха в руинах при разборке ключом иногда дают повреждённое ядро ИИ (мех — всегда). Цех электроники восстанавливает его, и восстановленное ядро служит тому, кто его взял.'),
+        recipe(P + 'ai_core_restored', 'Restoring a damaged core.', 'Восстановление повреждённого ядра.'),
+        recipe(P + 'combat_module', 'The combat module: guarding, patrols, fighting.', 'Боевой модуль: охрана, патруль, бой.'),
+        recipe(P + 'work_module', 'The work module: mining, cutting wood, farming.', 'Рабочий модуль: шахта, лес, ферма.')
+    ]),
+    entry('machine_integrity', P + 'repair_wrench', 6, -1, ['ai_core'], 'Machines: Integrity and Wrecks', 'Машины: целостность и остов', [
+        text('Every machine has two bars, like power armor. Structural integrity takes any damage and comes back by itself after a pause; critical integrity is lost to explosions and fire, and to any damage once structural is gone.\n\nNo structural integrity: the machine shuts down and stands still. No critical: it becomes a wreck.',
+            'У каждой машины две шкалы, как у силовой брони. Структурная принимает любой урон и сама восстанавливается после паузы; критическую отнимают взрывы и огонь, а когда структурной не осталось — любой урон.\n\nСтруктурная на нуле — машина отключается и замирает. Критическая на нуле — машина становится остовом.'),
+        text('The repair wrench mends structural integrity with iron and starts a shut-down machine again. With Shift it packs a machine into its item: only the owner, or a leader or officer of the owner\'s faction. Critical integrity and wear are mended only at the maintenance station: plates, iron and actuators.',
+            'Ремонтный ключ чинит структурную целостность железом и запускает отключённую машину снова. С Shift ключ упаковывает машину в предмет — только владелец или лидер и офицер его фракции. Критическую целостность и износ чинит только станция обслуживания: бронепластины, железо и приводы.'),
+        text('Anyone can take a wreck apart with the wrench and Shift: parts, its upgrades and a damaged AI core. Machines cannot be stolen: a stranger can only destroy one.\n\nAcid rain and dust wear machines outside; an electromagnetic storm disturbs them outside a shelter unless an EMI screen is installed.',
+            'Остов разбирает ключом с Shift кто угодно: детали, улучшения и повреждённое ядро ИИ. Украсть машину нельзя: чужой может её только уничтожить.\n\nКислотный дождь и пыль изнашивают машины снаружи; ЭМИ-буря сбивает их вне убежища, если не стоит ЭМИ-экран.'),
+        note('Limits: per player 6 androids, 10 turrets, 1 mech; per faction 12, 20 and 3 (server settings).', 'Лимиты: на игрока 6 андроидов, 10 турелей, 1 мех; на фракцию 12, 20 и 3 (настройки сервера).')
+    ]),
+    entry('target_rules', 'minecraft:target', 6, 1, ['ai_core'], 'Rules of Targets', 'Правила цели', [
+        text('Machines decide whom to attack by the rules of the factions.\n\nNever: you, your faction, your allies, players in creative mode, peaceful creatures.\nAlways: monsters, mutants and the machines of the ruins.\nNeutral creatures and other players: only if they attacked the machine, its owner or a member of its faction nearby.',
+            'Машины выбирают цель по правилам фракций.\n\nНикогда: вы, ваша фракция, союзники, игроки в творческом режиме, мирные существа.\nВсегда: монстры, мутанты и машины руин.\nНейтральные существа и чужие игроки — только если напали на машину, её владельца или участника фракции рядом.'),
+        text('In an active war, machines fight the players and machines of the enemy faction, but not on the enemy\'s land while none of them is online: the protection of territories holds for machines too.\n\nThe intruder mode (a switch on the console, off by default; the server may forbid it) attacks any outsider on your faction\'s land, in peace too, while the machine stands on that land.',
+            'Во время активной войны машины бьют игроков и машины враждебной фракции, но не на их земле, пока никого из них нет в сети: защита территорий действует и для машин.\n\nРежим «нарушители» (переключатель на пульте, по умолчанию выключен; сервер может его запретить) — бить любого чужого на земле своей фракции, в том числе в мирное время, пока машина стоит на этой земле.')
     ])
 ]);
 

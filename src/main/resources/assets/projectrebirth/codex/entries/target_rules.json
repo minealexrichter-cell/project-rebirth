@@ -1,0 +1,18 @@
+{
+  "icon": "minecraft:target",
+  "x": 6,
+  "y": 1,
+  "parents": [
+    "ai_core"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.target_rules.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.target_rules.p2"
+    }
+  ]
+}

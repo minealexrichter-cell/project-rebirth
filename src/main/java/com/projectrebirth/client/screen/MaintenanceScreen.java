@@ -97,6 +97,12 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
                 bar(graphics, BAR_Y + 10, Component.translatable("screen.projectrebirth.maintenance.wear"),
                         Maintenance.bodyWear(stack), 100.0f, 0xFFA1887F);
             }
+            case MACHINE -> {
+                // a packed machine (1.7.0): both bars of integrity; its wear shows in the status line
+                var packed = com.projectrebirth.garrison.PackedMachineItem.packed(stack);
+                bar(graphics, BAR_Y, Component.translatable("hud.projectrebirth.armor.structural"), packed.structural(), packed.kind().maxStructural(), 0xFF4FC3F7);
+                bar(graphics, BAR_Y + 10, Component.translatable("hud.projectrebirth.armor.critical"), packed.critical(), packed.kind().maxCritical(), 0xFFFFA726);
+            }
             default -> {
             }
         }
@@ -117,6 +123,7 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
         if (Maintenance.materialFor(stack, menu::hasMaterial) == null) {
             return Component.translatable(switch (kind) {
                 case ARMOR -> armorNeed(stack);
+                case MACHINE -> "screen.projectrebirth.maintenance.need_machine";
                 case SYNTHETIC_BODY -> Maintenance.bodyIntegrity(stack) < Maintenance.maxBodyIntegrity(stack)
                         ? "screen.projectrebirth.maintenance.need_fiber" : "screen.projectrebirth.maintenance.need_board";
                 default -> Maintenance.bodyIntegrity(stack) < Maintenance.maxBodyIntegrity(stack)

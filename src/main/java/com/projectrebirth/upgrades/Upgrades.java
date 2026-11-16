@@ -72,6 +72,7 @@ public final class Upgrades {
         Problem specific = switch (layout) {
             case UpgradeLayout.Counted counted -> bodyProblem(lookup, definition, stack, installed, counted, slot);
             case UpgradeLayout.ArmorParts parts -> armorProblem(definition, installed, slot);
+            case UpgradeLayout.MachineSlots machine -> machineProblem(lookup, definition, installed, machine);
         };
         if (specific != null) {
             return specific;
@@ -109,6 +110,21 @@ public final class Upgrades {
             return Problem.TOO_MANY;
         }
         return used + fit.slots() > layout.slots() ? Problem.NO_FREE_SLOTS : null;
+    }
+
+    /** A machine (1.7.0) takes armor upgrades, one of each kind, as many as it has slots. */
+    @Nullable
+    private static Problem machineProblem(Function<ItemStack, Optional<UpgradeDefinition>> lookup, UpgradeDefinition definition,
+                                          InstalledUpgrades installed, UpgradeLayout.MachineSlots layout) {
+        if (definition.armorSlots().isEmpty()) {
+            return Problem.WRONG_HOST;
+        }
+        for (InstalledUpgrades.Installed entry : installed.entries()) {
+            if (lookup.apply(entry.stack()).filter(other -> other.kind().equals(definition.kind())).isPresent()) {
+                return Problem.TOO_MANY;
+            }
+        }
+        return installed.entries().size() >= layout.slots() ? Problem.NO_FREE_SLOTS : null;
     }
 
     @Nullable

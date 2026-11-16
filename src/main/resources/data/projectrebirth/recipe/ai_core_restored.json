@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 111,
+  "time": 600,
+  "ingredients": [
+    {
+      "item": "projectrebirth:damaged_ai_core",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/silver",
+      "count": 1
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 4
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:ai_core",
+    "count": 1
+  }
+}

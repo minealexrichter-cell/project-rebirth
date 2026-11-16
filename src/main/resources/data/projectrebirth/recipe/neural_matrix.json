@@ -1,0 +1,32 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 110,
+  "time": 600,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 4
+    },
+    {
+      "tag": "c:ingots/silver",
+      "count": 1
+    },
+    {
+      "item": "minecraft:quartz",
+      "count": 1
+    },
+    {
+      "item": "minecraft:echo_shard",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:uranium_ingot",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:neural_matrix",
+    "count": 1
+  }
+}

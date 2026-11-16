@@ -91,6 +91,9 @@ public class RebirthJeiPlugin implements IModPlugin {
     public void onRuntimeAvailable(IJeiRuntime runtime) {
         runtime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, java.util.Arrays.stream(ArmorVariant.values())
                 .map(variant -> new ItemStack(PowerArmorRegistry.abilityItem(variant))).toList());
+        // the stand-in machine of the automated tests is not a thing to make
+        runtime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK,
+                java.util.List.of(new ItemStack(com.projectrebirth.garrison.GarrisonRegistry.TEST_MACHINE_ITEM.get())));
     }
 
     /** Clicking the progress arrow in a station window opens the recipes of that station. */

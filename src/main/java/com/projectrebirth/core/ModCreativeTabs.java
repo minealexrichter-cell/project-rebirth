@@ -109,6 +109,12 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.COMBAT_ARMOR_HULL.get());
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.MOBILE_ARMOR_HULL.get());
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.WORKER_ARMOR_HULL.get());
+                // 1.7.0, block C: the AI core and the behaviour modules
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.NEURAL_MATRIX.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.AI_CORE.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.DAMAGED_AI_CORE.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.COMBAT_MODULE.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.WORK_MODULE.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.BACKUP_BATTERY_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.SHELTER_CONTROL_PANEL_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.DECONTAMINATION_CHAMBER_ITEM.get());

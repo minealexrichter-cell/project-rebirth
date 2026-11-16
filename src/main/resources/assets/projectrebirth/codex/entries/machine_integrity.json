@@ -1,0 +1,26 @@
+{
+  "icon": "projectrebirth:repair_wrench",
+  "x": 6,
+  "y": -1,
+  "parents": [
+    "ai_core"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.machine_integrity.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.machine_integrity.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.machine_integrity.p3"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.machine_integrity.p4"
+    }
+  ]
+}

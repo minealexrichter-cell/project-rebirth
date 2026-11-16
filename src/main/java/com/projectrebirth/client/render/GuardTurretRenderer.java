@@ -29,7 +29,7 @@ public class GuardTurretRenderer extends GeoEntityRenderer<GuardTurretEntity> {
         flashes.clear();
         super.render(turret, entityYaw, partialTick, poseStack, buffers, light);
         for (com.mojang.blaze3d.vertex.PoseStack.Pose pose : flashes) {
-            MuzzleFlash.draw(pose, buffers, MuzzleFlash.age(turret.getId(), partialTick), MuzzleFlash.seed(turret.getId()), 0.6f);
+            MuzzleFlash.draw(pose, buffers, MuzzleFlash.age(turret.getId(), partialTick), MuzzleFlash.seed(turret.getId()), 0.8f);
         }
         flashes.clear();
     }

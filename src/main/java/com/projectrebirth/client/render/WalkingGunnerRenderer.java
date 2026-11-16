@@ -43,7 +43,7 @@ public class WalkingGunnerRenderer<T extends WalkingGunner> extends GeoEntityRen
         flashes.clear();
         super.render(entity, entityYaw, partialTick, poseStack, buffers, light);
         float age = MuzzleFlash.age(entity.getId(), partialTick);
-        float scale = entity instanceof com.projectrebirth.hostile.MechEntity ? 0.85f : 0.45f;
+        float scale = entity instanceof com.projectrebirth.hostile.MechEntity ? 1.0f : 0.7f;
         for (com.mojang.blaze3d.vertex.PoseStack.Pose pose : flashes) {
             MuzzleFlash.draw(pose, buffers, age, MuzzleFlash.seed(entity.getId()), scale);
         }

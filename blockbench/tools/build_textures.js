@@ -2137,6 +2137,60 @@
         '................'].map(r => r.slice(0, 16).padEnd(16, '.')), {k: '#1b2a1f', g: '#2f7a46', y: '#d9b44a', P: '#2b2f36', p: '#6f7884',
         c: '#c58a3a', W: '#d8dde2', w: '#eef2f5', b: SKY_BLUE}));
 
+    // ---------------------------------------------------------------- monitoring station (version 1.6.0, block E)
+
+    const MAP_GROUND = '#1c2328', MAP_RAD = '#e6d23a', MAP_TOX = '#5fbf3a', MAP_LINE = '#9fe8ff';
+    /** Monitoring station: a screen with a map of chunks, yellow and green blots, and a scan line running down it. */
+    function monitoringFront(frame, on) {
+        const p = casing(new Painter(181), '#5fbf3a');
+        p.inset(2, 2, 12, 12, MAP_GROUND, 0.02);
+        const blots = [[4, 4, MAP_RAD], [5, 4, MAP_RAD], [4, 5, shade(MAP_RAD, 0.7)], [9, 9, MAP_TOX], [10, 9, MAP_TOX], [10, 10, shade(MAP_TOX, 0.7)],
+            [9, 10, shade(MAP_TOX, 0.6)], [11, 5, shade(MAP_RAD, 0.5)], [6, 11, shade(MAP_TOX, 0.5)]];
+        blots.forEach(([x, y, c]) => p.px(on ? c : shade(c, 0.5), [x, y]));
+        for (let i = 3; i < 13; i += 3) {
+            p.rect(i, 3, 1, 10, '#2a333a');
+            p.rect(3, i, 10, 1, '#2a333a');
+        }
+        p.px('#ffffff', [7, 7]);
+        if (on) p.rect(3, 3 + frame, 10, 1, MAP_LINE);
+        return p;
+    }
+    block('monitoring_station_front', () => monitoringFront(0, false));
+    animated('monitoring_station_front_on', 10, 2, i => monitoringFront(i, true));
+    block('monitoring_station_side', () => {
+        const p = casing(new Painter(182), '#5fbf3a');
+        // the sample intake grille and a gauge
+        p.inset(4, 3, 8, 6, '#14181c', 0.02);
+        for (let y = 4; y < 8; y += 2) p.rect(5, y, 6, 1, STEEL);
+        p.bevel(4, 10, 8, 3, '#14181c', 0.02);
+        p.rect(5, 11, 3, 1, MAP_RAD).rect(8, 11, 2, 1, MAP_TOX);
+        return p;
+    });
+    block('monitoring_station_top', () => {
+        const p = casing(new Painter(183), '#5fbf3a');
+        p.bevel(4, 4, 8, 8, STEEL, 0.03);
+        p.inset(6, 6, 4, 4, DARK, 0.02);
+        return p;
+    });
+    // A printed contamination map: a sheet with a grid, yellow and green blots and the station's white mark.
+    item('contamination_map', () => icon([
+        '................',
+        '..pppppppppppp..',
+        '..pPPPPPPPPPPp..',
+        '..pPyyPPgPPPPp..',
+        '..pPyYPPPPPPPp..',
+        '..pPPPPlPPPPPp..',
+        '..pPPPPPPPggPp..',
+        '..pPPPwPPPgGPp..',
+        '..pPPPPPPPPPPp..',
+        '..pPgPPPPyPPPp..',
+        '..pPggPPPPPPPp..',
+        '..pPPPPPPPPPPp..',
+        '..pPPPPlPPPPPp..',
+        '..pppppppppppp..',
+        '................',
+        '................'], {p: '#b9ad8f', P: '#e8e0c8', y: '#e6d23a', Y: '#b8a42a', g: '#5fbf3a', G: '#3f8f2a', w: '#2b2f36', l: '#c9c0a6'}));
+
     // A bottle of polluted water: the game's glass bottle with murky green-brown water and a cork.
     item('polluted_water_bottle', () => icon([
         '................',

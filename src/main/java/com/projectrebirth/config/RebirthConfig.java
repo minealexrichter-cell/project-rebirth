@@ -231,6 +231,15 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PURIFIER_CARTRIDGE_SHARE;
     public static final ModConfigSpec.IntValue PURIFIER_BUCKET_BOTTLES;
     public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
+    public static final ModConfigSpec.BooleanValue MONITORING_ENABLED;
+    public static final ModConfigSpec.IntValue MONITORING_RADIUS;
+    public static final ModConfigSpec.IntValue MONITORING_SCAN_SECONDS;
+    public static final ModConfigSpec.IntValue MONITORING_HISTORY_DAYS;
+    public static final ModConfigSpec.IntValue MONITORING_COMPARATOR_CHUNKS;
+    public static final ModConfigSpec.DoubleValue MONITORING_COMPARATOR_FULL;
+    public static final ModConfigSpec.IntValue MONITORING_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue MONITORING_PRINT_ENERGY;
+    public static final ModConfigSpec.IntValue MONITORING_ENERGY_CAPACITY;
     public static final ModConfigSpec.BooleanValue WEATHER_STATION_ENABLED;
     public static final ModConfigSpec.IntValue WEATHER_STATION_FORECAST_MINUTES;
     public static final ModConfigSpec.IntValue WEATHER_STATION_ROUND_MINUTES;
@@ -832,6 +841,19 @@ public final class RebirthConfig {
         PURIFIER_CARTRIDGE_SHARE = builder.comment("Share of a filter cartridge's life one bottle uses (0.02: fifty bottles a cartridge)").defineInRange("cartridgePerBottle", 0.02, 0.0, 1.0);
         PURIFIER_BUCKET_BOTTLES = builder.comment("How many bottles of work one bucket is").defineInRange("bucketBottles", 3, 1, 64);
         builder.pop(2);
+
+        builder.comment("Environmental monitoring station (1.6.0, block E): with energy it scans the contamination of the chunks around",
+                "it, shows them on a map with the players and shelters, keeps the peaks of the last days and prints maps on paper.").push("monitoring_station");
+        MONITORING_ENABLED = builder.comment("Whether monitoring stations scan at all").define("enabled", true);
+        MONITORING_RADIUS = builder.comment("How many chunks around it a station scans, each way (8: a square of 17 by 17 chunks)").defineInRange("radiusChunks", 8, 1, 12);
+        MONITORING_SCAN_SECONDS = builder.comment("Seconds between two scans").defineInRange("scanSeconds", 5, 1, 600);
+        MONITORING_HISTORY_DAYS = builder.comment("How many game days of peaks the graph keeps").defineInRange("historyDays", 8, 1, 30);
+        MONITORING_COMPARATOR_CHUNKS = builder.comment("A comparator reads the strongest contamination this many chunks around the station, each way").defineInRange("comparatorChunks", 1, 0, 12);
+        MONITORING_COMPARATOR_FULL = builder.comment("At this much radiation or toxins the comparator gives 15").defineInRange("comparatorFull", 6.0, 0.1, 1000.0);
+        MONITORING_ENERGY_PER_TICK = builder.comment("Energy a monitoring station takes per tick").defineInRange("energyPerTick", 15, 0, 1_000_000);
+        MONITORING_PRINT_ENERGY = builder.comment("Energy one printed map takes").defineInRange("printEnergy", 500, 0, 1_000_000_000);
+        MONITORING_ENERGY_CAPACITY = builder.comment("Energy a monitoring station holds").defineInRange("energyCapacity", 20000, 1, 1_000_000_000);
+        builder.pop();
 
         builder.comment("Weather station (1.6.0, block D): with energy and the open sky above it, it foresees the next catastrophe of its",
                 "dimension and tells its owner, the owner's faction and the players around it in the HUD; it gives a redstone signal before",

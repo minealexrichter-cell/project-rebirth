@@ -90,6 +90,7 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.water.WaterRegistry.POLLUTED_WATER_BUCKET.get());
                 output.accept(com.projectrebirth.weather.WeatherRegistry.WEATHER_STATION_ITEM.get());
                 output.accept(com.projectrebirth.weather.WeatherRegistry.LONG_RANGE_MODULE.get());
+                output.accept(com.projectrebirth.monitoring.MonitoringRegistry.MONITORING_STATION_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.BACKUP_BATTERY_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.SHELTER_CONTROL_PANEL_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.DECONTAMINATION_CHAMBER_ITEM.get());

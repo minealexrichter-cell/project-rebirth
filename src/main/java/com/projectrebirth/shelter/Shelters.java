@@ -77,6 +77,11 @@ public final class Shelters {
         return found != null && found.level == level ? found : null;
     }
 
+    /** 1.6.0, block E: where the units of this level stand (each as {@link BlockPos#asLong}), for the monitoring map. */
+    public long[] unitPositions() {
+        return units.toLongArray();
+    }
+
     /** The sealed room around a place, if any. */
     @Nullable
     public static Room sealedRoomAt(ServerLevel level, BlockPos pos) {

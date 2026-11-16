@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:monitoring_station",
+  "x": 0,
+  "y": -4,
+  "parents": [
+    "contaminated_zones",
+    "weather_station"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:monitoring_station",
+      "text": "codex.projectrebirth.monitoring_station.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.monitoring_station.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:monitoring_station"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.monitoring_station.p4"
+    }
+  ]
+}

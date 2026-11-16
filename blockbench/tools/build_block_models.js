@@ -390,6 +390,23 @@
         };
     });
 
+    // Environmental monitoring station (1.6.0, block E): the machine body with a map screen, an air sampler and a sensor dish on top.
+    [false, true].forEach(on => {
+        MODELS['monitoring_station' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('monitoring_station', on, ['front', 'side', 'top'], ['front'], 'side'),
+            elements: [...machine('green'), ...screen(on, 'steel'),
+                // the air sampler: a column with an intake cap
+                box([2, 14, 10], [5, 15, 13], 'steel', {up: 'dark'}),
+                box([1, 15, 9], [6, 16, 14], 'gun', {up: 'green'}),
+                // the sensor dish on a short post
+                box([10, 14, 4], [12, 15, 6], 'gun'),
+                box([8, 15, 2], [14, 16, 8], 'white', {up: 'steel'}),
+                box([11, 14, 10], [13, 15, 12], on ? 'green' : 'dark', {}, on ? GLOW : undefined)
+            ]
+        };
+    });
+
     // Weather station (1.6.0, block D): the machine body with a radar screen, a louvred instrument box on top and a mast with a cup
     // anemometer and a wind vane, reaching up into the open air the station needs.
     [false, true].forEach(on => {
@@ -881,6 +898,12 @@
     Object.entries(ROTATIONS).forEach(([facing, y]) => {
         [false, true].forEach(working => {
             STATES.water_purifier.variants['facing=' + facing + ',working=' + working] = variant('water_purifier' + (working ? '_on' : ''), rotation(y));
+        });
+    });
+    STATES.monitoring_station = {variants: {}};
+    Object.entries(ROTATIONS).forEach(([facing, y]) => {
+        [false, true].forEach(working => {
+            STATES.monitoring_station.variants['facing=' + facing + ',working=' + working] = variant('monitoring_station' + (working ? '_on' : ''), rotation(y));
         });
     });
     STATES.weather_station = {variants: {}};

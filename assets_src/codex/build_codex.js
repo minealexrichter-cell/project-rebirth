@@ -481,6 +481,14 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'long_range_forecast_module'),
         note('Settings in the config ([weather_station]).', 'Настройки в конфиге ([weather_station]).')
     ]),
+    entry('monitoring_station', P + 'monitoring_station', 0, -4, ['contaminated_zones', 'weather_station'], 'Monitoring Station', 'Станция мониторинга', [
+        block(P + 'monitoring_station', 'The environmental monitoring station scans the contamination of the ground around it, eight chunks each way, every few seconds, as long as it has energy. Its window shows a map of the chunks: radiation yellow, toxins green, the brighter the stronger; the station, the shelters (air filtration units) and the players are marked. Point at a chunk for its numbers. Below, a graph of the peaks of the last game days.',
+            'Станция экологического мониторинга, пока у неё есть энергия, каждые несколько секунд сканирует заражение земли вокруг — по восемь чанков в каждую сторону. В её окне карта чанков: радиация жёлтым, токсины зелёным, чем ярче, тем сильнее; отмечены станция, убежища (установки фильтрации) и игроки. Наведите на чанк, чтобы увидеть числа. Ниже — график пиков за последние игровые дни.'),
+        text('Put paper in and press Print: the station prints the scan as a contamination map for an expedition. Used from the hand, the map shows the picture of the day it was printed; it does not change. A comparator next to the station reads the strongest contamination close to it.',
+            'Положите бумагу и нажмите «Печать»: станция напечатает скан как карту заражения для экспедиции. Если использовать карту из руки, она покажет снимок на день печати; со временем он не меняется. Компаратор рядом со станцией показывает самое сильное заражение возле неё.'),
+        recipe(P + 'monitoring_station'),
+        note('Settings in the config ([monitoring_station]).', 'Настройки в конфиге ([monitoring_station]).')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

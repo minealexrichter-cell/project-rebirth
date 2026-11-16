@@ -99,6 +99,7 @@
         "mutants",
         "polluted_water",
         "weather_station",
+        "monitoring_station",
         "dosimeter",
         "medicine",
         "machines_environment"

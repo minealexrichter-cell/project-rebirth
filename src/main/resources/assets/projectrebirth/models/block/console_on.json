@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "projectrebirth:block/console_front_on",
+    "side": "projectrebirth:block/console_side",
+    "top": "projectrebirth:block/console_top"
+  }
+}

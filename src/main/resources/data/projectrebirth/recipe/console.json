@@ -1,0 +1,36 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 114,
+  "time": 600,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 4
+    },
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "minecraft:glass_pane",
+      "count": 4
+    },
+    {
+      "item": "minecraft:redstone",
+      "count": 8
+    },
+    {
+      "item": "projectrebirth:neural_matrix",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:console",
+    "count": 1
+  }
+}

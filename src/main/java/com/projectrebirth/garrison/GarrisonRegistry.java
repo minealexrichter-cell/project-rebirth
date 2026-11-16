@@ -35,6 +35,9 @@ public final class GarrisonRegistry {
     private static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, ProjectRebirth.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(Registries.ENTITY_TYPE, ProjectRebirth.MOD_ID);
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ProjectRebirth.MOD_ID);
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(ProjectRebirth.MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.block.entity.BlockEntityType<?>> BLOCK_ENTITIES =
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ProjectRebirth.MOD_ID);
 
     /** The owner of an AI core: who it serves, their name and their faction's name when it was bound (for the tooltip). */
     public record CoreOwner(UUID id, String name, String faction) {
@@ -78,6 +81,22 @@ public final class GarrisonRegistry {
     public static final DeferredItem<PackedMachineItem> TEST_MACHINE_ITEM = ITEMS.register("test_machine",
             () -> new PackedMachineItem(MachineKind.TEST, TEST_MACHINE::get, new Item.Properties().stacksTo(1)));
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<TabletData>> TABLET_DATA = COMPONENTS.registerComponentType("tablet_data",
+            builder -> builder.persistent(TabletData.CODEC).networkSynchronized(TabletData.STREAM_CODEC));
+
+    /** Block D: the console and the tactical tablet. */
+    public static final net.neoforged.neoforge.registries.DeferredBlock<ConsoleBlock> CONSOLE = BLOCKS.register("console",
+            () -> new ConsoleBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
+                    .strength(3.5f, 6.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops()
+                    .lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 7 : 0)));
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> CONSOLE_ITEM = ITEMS.registerSimpleBlockItem(CONSOLE);
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<ConsoleBlockEntity>> CONSOLE_ENTITY =
+            BLOCK_ENTITIES.register("console", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(ConsoleBlockEntity::new, CONSOLE.get()).build(null));
+    public static final DeferredItem<TabletItem> TABLET = ITEMS.register("tactical_tablet", () -> new TabletItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<MenuType<?>, MenuType<ConsoleMenu>> CONSOLE_MENU =
+            MENUS.register("console", () -> IMenuTypeExtension.create(ConsoleMenu::new));
+
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMountingMenu>> MACHINE_MOUNTING =
             MENUS.register("machine_mounting", () -> IMenuTypeExtension.create(MachineMountingMenu::new));
 
@@ -89,7 +108,15 @@ public final class GarrisonRegistry {
         COMPONENTS.register(modEventBus);
         ENTITY_TYPES.register(modEventBus);
         MENUS.register(modEventBus);
+        BLOCKS.register(modEventBus);
+        BLOCK_ENTITIES.register(modEventBus);
+        ConsoleNetwork.register(modEventBus);
+        modEventBus.addListener(GarrisonRegistry::registerCapabilities);
         modEventBus.addListener(GarrisonRegistry::registerAttributes);
+    }
+
+    private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, CONSOLE_ENTITY.get(), (console, side) -> console.energy().inputOnly());
     }
 
     private static void registerAttributes(EntityAttributeCreationEvent event) {

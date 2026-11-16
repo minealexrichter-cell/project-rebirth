@@ -95,6 +95,11 @@ public class MachineCore {
     /** Not saved: what the environment did to it this second (an EMI storm disturbs it, dust blinds it). */
     private boolean emiFault;
     private boolean dusty;
+    /** Block D: the console this machine answers to (null: none), the order it follows, and whether it was hit by someone lately. */
+    @Nullable
+    private net.minecraft.core.GlobalPos console;
+    private MachineTask task = MachineTask.STAND_DOWN;
+    private boolean hitByAttacker;
 
     /** @param changed called whenever a value the clients see changes (the entity copies them into its synced data) */
     public MachineCore(MachineKind kind, Runnable changed) {
@@ -217,6 +222,7 @@ public class MachineCore {
         }
         if (source.getEntity() != null) {
             remember(source.getEntity(), self.level().getGameTime());
+            hitByAttacker = true;
         }
         float criticalLoss;
         if (structural <= 0.0f) {
@@ -272,6 +278,38 @@ public class MachineCore {
         return attackers.containsKey(target.getUUID()) || behind != null && attackers.containsKey(behind);
     }
 
+    // ------------------------------------------------------------------ the console (block D)
+
+    @Nullable
+    public net.minecraft.core.GlobalPos console() {
+        return console;
+    }
+
+    public void setConsole(@Nullable net.minecraft.core.GlobalPos console) {
+        this.console = console;
+    }
+
+    public MachineTask task() {
+        return task;
+    }
+
+    public void setTask(MachineTask task) {
+        this.task = task == null ? MachineTask.STAND_DOWN : task;
+    }
+
+    /** In a fight: hit by someone within the config's seconds. */
+    public boolean fighting() {
+        if (secondsSinceDamage >= RebirthConfig.CONSOLE_COMBAT_SECONDS.get()) {
+            hitByAttacker = false;
+        }
+        return hitByAttacker;
+    }
+
+    /** Seconds since the last damage (for tests and the console). */
+    public int secondsSinceDamage() {
+        return secondsSinceDamage;
+    }
+
     // ------------------------------------------------------------------ rights
 
     /**
@@ -279,6 +317,11 @@ public class MachineCore {
      * [garrison.machines] managerRoles, or a player in creative mode.
      */
     public boolean mayManage(Player player) {
+        return mayCommand(owner, player);
+    }
+
+    /** Whether this player may command what that player owns (machines, a console): see {@link #mayManage}. */
+    public static boolean mayCommand(@Nullable UUID owner, Player player) {
         if (player.isCreative() || owner == null || owner.equals(player.getUUID())) {
             return true;
         }
@@ -313,6 +356,7 @@ public class MachineCore {
             changed.run();
         }
         environment(self, level, upgrades);
+        ConsoleLink.second(self, this);
         if (--registryCountdown <= 0) {
             registryCountdown = RebirthConfig.MACHINE_REGISTRY_SECONDS.get();
             MachineRegistry.get(level.getServer()).update(self, this);
@@ -367,6 +411,11 @@ public class MachineCore {
         core.putFloat("wear", wear);
         core.putInt("state", state.ordinal());
         core.putBoolean("intruders", intruderMode);
+        if (console != null) {
+            core.putString("console_dimension", console.dimension().location().toString());
+            core.putLong("console", console.pos().asLong());
+        }
+        MachineTask.CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, task).result().ifPresent(found -> core.put("task", found));
         tag.put("machine", core);
     }
 
@@ -383,6 +432,10 @@ public class MachineCore {
         wear = core.getFloat("wear");
         state = State.byId(core.getInt("state"));
         intruderMode = core.getBoolean("intruders");
+        console = core.contains("console") ? net.minecraft.core.GlobalPos.of(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                net.minecraft.resources.ResourceLocation.parse(core.getString("console_dimension"))), net.minecraft.core.BlockPos.of(core.getLong("console"))) : null;
+        task = core.contains("task") ? MachineTask.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, core.get("task")).result().orElse(MachineTask.STAND_DOWN)
+                : MachineTask.STAND_DOWN;
         changed.run();
     }
 }

@@ -97,6 +97,7 @@ public class ProjectRebirthClient {
         MonitoringClient.register();
         ScoutingClient.register(modEventBus);
         com.projectrebirth.client.multiblock.MultiblockClient.register();
+        com.projectrebirth.client.garrison.TabletMarks.register();
         BodyHud.register(modEventBus);
         JetpackClient.register();
         TransferAnimation.register();
@@ -109,6 +110,7 @@ public class ProjectRebirthClient {
         event.register(TechMenus.STATION.get(), StationScreen::new);
         event.register(TechMenus.MAINTENANCE.get(), MaintenanceScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_MOUNTING.get(), com.projectrebirth.client.screen.MachineMountingScreen::new);
+        event.register(com.projectrebirth.garrison.GarrisonRegistry.CONSOLE_MENU.get(), com.projectrebirth.client.garrison.ConsoleScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_MENU.get(), com.projectrebirth.client.screen.AirFiltrationScreen::new);
         event.register(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_MENU.get(), com.projectrebirth.client.screen.WaterPurifierScreen::new);

@@ -260,6 +260,23 @@ public final class RebirthConfig {
     public static final java.util.Map<com.projectrebirth.garrison.MachineKind, ModConfigSpec.DoubleValue> MACHINE_MAX_CRITICAL = new java.util.EnumMap<>(com.projectrebirth.garrison.MachineKind.class);
     public static final java.util.Map<com.projectrebirth.garrison.MachineKind, ModConfigSpec.IntValue> MACHINE_UPGRADE_SLOTS = new java.util.EnumMap<>(com.projectrebirth.garrison.MachineKind.class);
     public static final ModConfigSpec.BooleanValue ALLOW_INTRUDER_MODE;
+    // 1.7.0, block D: the console and the tactical tablet
+    public static final ModConfigSpec.BooleanValue CONSOLE_ENABLED;
+    public static final ModConfigSpec.IntValue CONSOLE_RANGE;
+    public static final ModConfigSpec.IntValue CONSOLE_MAX_MACHINES;
+    public static final ModConfigSpec.IntValue CONSOLE_LINK_RADIUS;
+    public static final ModConfigSpec.IntValue CONSOLE_ENERGY_CAPACITY;
+    public static final ModConfigSpec.IntValue CONSOLE_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue CONSOLE_COMBAT_SECONDS;
+    public static final ModConfigSpec.IntValue CONSOLE_INTRUDER_RADIUS;
+    public static final ModConfigSpec.IntValue CONSOLE_WEATHER_RADIUS;
+    public static final ModConfigSpec.IntValue CONSOLE_WEATHER_SECONDS;
+    public static final ModConfigSpec.IntValue CONSOLE_MAP_STATION_RADIUS;
+    public static final ModConfigSpec.IntValue TABLET_ROUTE_POINTS;
+    public static final ModConfigSpec.IntValue WORK_AREA_MINE;
+    public static final ModConfigSpec.IntValue WORK_AREA_MINE_DEPTH;
+    public static final ModConfigSpec.IntValue WORK_AREA_LUMBER;
+    public static final ModConfigSpec.IntValue WORK_AREA_FARM;
     public static final ModConfigSpec.IntValue SELF_DEFENCE_SECONDS;
     public static final ModConfigSpec.IntValue SELF_DEFENCE_RADIUS;
     public static final ModConfigSpec.BooleanValue SCOUTING_ENABLED;
@@ -926,6 +943,24 @@ public final class RebirthConfig {
         ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);
         SELF_DEFENCE_SECONDS = builder.comment("Seconds a machine remembers who attacked it, its owner or a member of its faction nearby").defineInRange("selfDefenceSeconds", 30, 1, 3600);
         SELF_DEFENCE_RADIUS = builder.comment("Blocks around an attacked member within which machines of the faction take note").defineInRange("selfDefenceRadius", 24, 1, 128);
+        builder.pop();
+        builder.comment("The console and the tactical tablet (block D): linking machines, orders, groups, alarms.").push("console");
+        CONSOLE_ENABLED = builder.comment("Whether consoles work").define("enabled", true);
+        CONSOLE_RANGE = builder.comment("Blocks between a console and its machines (and a tablet giving orders) at most; the same dimension only").defineInRange("range", 256, 16, 4096);
+        CONSOLE_MAX_MACHINES = builder.comment("Machines one console commands at most").defineInRange("maxMachines", 64, 1, 1024);
+        CONSOLE_LINK_RADIUS = builder.comment("A machine set up this close to a console of its owner's (or faction's) links to it by itself").defineInRange("linkRadius", 32, 0, 256);
+        CONSOLE_ENERGY_CAPACITY = builder.comment("Energy a console holds").defineInRange("energyCapacity", 20000, 1, 1_000_000_000);
+        CONSOLE_ENERGY_PER_TICK = builder.comment("Energy a console uses per tick; without it no orders go out and the window shows the last known state").defineInRange("energyPerTick", 4, 0, 100000);
+        CONSOLE_COMBAT_SECONDS = builder.comment("Seconds without damage after which a machine's fight is over (the alarm ends)").defineInRange("combatSeconds", 20, 1, 3600);
+        CONSOLE_INTRUDER_RADIUS = builder.comment("Blocks around a machine on its faction's land in which an outsider raises the intruder alarm").defineInRange("intruderRadius", 16, 1, 128);
+        CONSOLE_WEATHER_RADIUS = builder.comment("Blocks around a console in which it finds a weather station (for its 'take cover' link)").defineInRange("weatherRadius", 48, 1, 256);
+        CONSOLE_WEATHER_SECONDS = builder.comment("Seconds before a forecast catastrophe the linked console orders its machines to take cover").defineInRange("weatherSeconds", 60, 0, 3600);
+        CONSOLE_MAP_STATION_RADIUS = builder.comment("Blocks around a console in which a monitoring station lends its contamination layer to the console's map").defineInRange("mapStationRadius", 64, 0, 512);
+        TABLET_ROUTE_POINTS = builder.comment("Points a patrol route holds at most").defineInRange("routePoints", 16, 2, 64);
+        WORK_AREA_MINE = builder.comment("A miner's area at most this many blocks each side").defineInRange("mineArea", 16, 1, 128);
+        WORK_AREA_MINE_DEPTH = builder.comment("A miner's area at most this many blocks deep").defineInRange("mineDepth", 64, 1, 384);
+        WORK_AREA_LUMBER = builder.comment("A lumberjack's area at most this many blocks each side").defineInRange("lumberArea", 32, 1, 128);
+        WORK_AREA_FARM = builder.comment("A farmer's area at most this many blocks each side").defineInRange("farmArea", 32, 1, 128);
         builder.pop(2);
 
         builder.comment("Scouting in the field (1.6.0, block F): the field analyzer in hand, the sensor module of bodies and the sensor unit of",

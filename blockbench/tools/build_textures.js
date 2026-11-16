@@ -2356,6 +2356,45 @@
         return p;
     });
     // The heavy dock's hall: thick dark armour plates with a red marker light and heavy rivets.
+    // The command console (1.7.0, block D): a tactical screen with the blips of the machines, a keyboard on top.
+    function consoleFront(on) {
+        const p = casing(new Painter(212), '#37c6e8');
+        p.inset(2, 2, 12, 9, '#0c1418', 0.02);
+        if (on) {
+            for (let x = 3; x < 13; x += 3) p.rect(x, 3, 1, 7, '#123040');
+            for (let y = 3; y < 10; y += 3) p.rect(3, y, 10, 1, '#123040');
+            p.px('#5fbf3a', [5, 4], [9, 6], [6, 8]).px('#e0a030', [11, 4]).px('#ff4a3d', [4, 9]).px('#ffffff', [8, 6]);
+        }
+        p.rect(3, 12, 2, 2, on ? '#5fbf3a' : '#2a3036').rect(6, 12, 2, 2, on ? '#e0a030' : '#2a3036').rect(9, 12, 4, 2, '#2a3036');
+        return p;
+    }
+    block('console_front', () => consoleFront(false));
+    block('console_front_on', () => consoleFront(true));
+    block('console_side', () => casing(new Painter(213), '#37c6e8'));
+    block('console_top', () => {
+        const p = casing(new Painter(214), '#37c6e8');
+        p.inset(3, 4, 10, 8, '#2a3036', 0.02);
+        for (let y = 5; y < 11; y += 2) for (let x = 4; x < 12; x += 2) p.px('#8c97a3', [x, y]);
+        p.px('#e0b33a', [11, 9]);
+        return p;
+    });
+    item('tactical_tablet', () => icon([
+        '................',
+        '..kkkkkkkkkkkk..',
+        '..kmmmmmmmmmmk..',
+        '..kmssssssssmk..',
+        '..kmsgsssbssmk..',
+        '..kmssssssssmk..',
+        '..kmssbsssssmk..',
+        '..kmsssssgssmk..',
+        '..kmsssrssssmk..',
+        '..kmssssssssmk..',
+        '..kmssssssssmk..',
+        '..kmmmmmmmmmmk..',
+        '..kmmmyymmmmmk..',
+        '..kkkkkkkkkkkk..',
+        '................',
+        '................'], {k: '#1e2228', m: '#59626c', s: '#0c1c24', g: '#5fbf3a', b: '#37c6e8', r: '#ff4a3d', y: '#e0b33a'}));
     block('dock_wall', () => {
         const p = new Painter(211);
         p.bevel(0, 0, 16, 16, '#4c535b', 0.05);

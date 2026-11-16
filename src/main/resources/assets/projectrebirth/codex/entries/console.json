@@ -1,0 +1,32 @@
+{
+  "icon": "projectrebirth:console",
+  "x": 8,
+  "y": 0,
+  "parents": [
+    "machine_integrity",
+    "target_rules"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.console.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:console",
+      "text": "codex.projectrebirth.console.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.console.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.console.p4"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.console.p5"
+    }
+  ]
+}

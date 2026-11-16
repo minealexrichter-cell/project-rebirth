@@ -1,0 +1,32 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 115,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 1
+    },
+    {
+      "item": "minecraft:glass_pane",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/aluminum",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:tactical_tablet",
+    "count": 1
+  }
+}

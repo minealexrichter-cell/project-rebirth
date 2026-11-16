@@ -1,0 +1,23 @@
+{
+  "icon": "projectrebirth:tactical_tablet",
+  "x": 10,
+  "y": 0,
+  "parents": [
+    "console"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.tactical_tablet.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.tactical_tablet.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:tactical_tablet",
+      "text": "codex.projectrebirth.tactical_tablet.p3"
+    }
+  ]
+}

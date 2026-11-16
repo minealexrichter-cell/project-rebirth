@@ -66,6 +66,8 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
 
     private final MachineCore core;
     private InstalledUpgrades upgrades = InstalledUpgrades.EMPTY;
+    /** Set while it is being packed up: going from the world then is not a loss. */
+    private boolean packing;
 
     protected MachineEntity(EntityType<? extends MachineEntity> type, Level level, MachineKind kind) {
         super(type, level);
@@ -203,6 +205,9 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
     public void remove(RemovalReason reason) {
         if (reason.shouldDestroy() && level() instanceof ServerLevel server) {
             MachineRegistry.get(server.getServer()).remove(getUUID());
+            if (!packing) {
+                ConsoleLink.lost(this, core);
+            }
         }
         super.remove(reason);
     }
@@ -297,6 +302,8 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
         stack.set(GarrisonRegistry.PACKED_MACHINE.get(), core.pack());
         Upgrades.putOnStack(stack, upgrades);
         upgrades = InstalledUpgrades.EMPTY;
+        ConsoleLink.packed(this, core);
+        packing = true;
         discard();
         ItemStack given = stack.copy();
         if (!player.getInventory().add(stack)) {

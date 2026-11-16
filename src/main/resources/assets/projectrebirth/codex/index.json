@@ -128,7 +128,9 @@
         "heavy_dock",
         "ai_core",
         "machine_integrity",
-        "target_rules"
+        "target_rules",
+        "console",
+        "tactical_tablet"
       ]
     }
   ]

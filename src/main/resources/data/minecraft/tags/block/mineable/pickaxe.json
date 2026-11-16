@@ -68,6 +68,7 @@
     "projectrebirth:multiblock_controller",
     "projectrebirth:energy_port",
     "projectrebirth:cargo_port",
+    "projectrebirth:console",
     "projectrebirth:assembly_plate",
     "projectrebirth:assembly_frame",
     "projectrebirth:heavy_frame",

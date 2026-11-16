@@ -94,6 +94,7 @@ public class PackedMachineItem extends Item {
         machine.setUpgrades(Upgrades.ofStack(stack));
         level.addFreshEntity(machine);
         MachineRegistry.get(level.getServer()).update(machine, core);
+        ConsoleLink.linkNearest(level, machine, core, player);
         level.gameEvent(player, GameEvent.ENTITY_PLACE, pos);
         stack.consume(1, player);
         return machine;

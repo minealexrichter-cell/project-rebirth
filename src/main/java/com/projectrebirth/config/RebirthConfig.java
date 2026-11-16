@@ -210,6 +210,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ZONES_MARK_THRESHOLD;
     public static final ModConfigSpec.BooleanValue SOURCES_ENABLED;
     public static final ModConfigSpec.BooleanValue STRUCTURES_ENABLED;
+    public static final ModConfigSpec.IntValue STRUCTURES_SAFE_RADIUS;
     public static final ModConfigSpec.BooleanValue STRUCTURES_LAB;
     public static final ModConfigSpec.BooleanValue STRUCTURES_RUINS;
     public static final ModConfigSpec.BooleanValue STRUCTURES_REACTOR;
@@ -821,6 +822,8 @@ public final class RebirthConfig {
                 "Switched off, none is placed in new chunks and /locate finds none; what was generated stays. How often and in which biomes: data",
                 "(worldgen/structure_set, tags/worldgen/biome/has_structure). A data pack can also remove a structure set.").push("structures");
         STRUCTURES_ENABLED = builder.comment("All the structures of 1.6.0").define("enabled", true);
+        STRUCTURES_SAFE_RADIUS = builder.comment("No structure of the mod starts within this many blocks of the middle of the world (x 0, z 0), where",
+                "the world spawn is: a new player does not walk into turrets, mutants or a reactor in the first minutes. 0 = anywhere").defineInRange("safeRadius", 256, 0, 10000);
         STRUCTURES_LAB = builder.comment("Abandoned laboratory (small)").define("abandonedLab", true);
         STRUCTURES_RUINS = builder.comment("Industrial ruins (medium)").define("industrialRuins", true);
         STRUCTURES_REACTOR = builder.comment("Ruined reactor (large, rare)").define("ruinedReactor", true);

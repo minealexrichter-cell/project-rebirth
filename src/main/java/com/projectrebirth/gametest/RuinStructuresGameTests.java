@@ -118,7 +118,7 @@ public class RuinStructuresGameTests {
                 helper.assertTrue(set.placement() instanceof SwitchableSpreadPlacement placement && placement.switchKey().equals(name),
                         name + " is placed by the switchable spread with its own switch");
                 SwitchableSpreadPlacement placement = (SwitchableSpreadPlacement) set.placement();
-                ChunkPos chunk = placement.getPotentialStructureChunk(state.getLevelSeed(), 3, 5);
+                ChunkPos chunk = placement.getPotentialStructureChunk(state.getLevelSeed(), 1003, 1005); // far from the safe middle of the world (block H)
                 RebirthConfig.STRUCTURES_ENABLED.set(true);
                 helper.assertTrue(placement.isStructureChunk(state, chunk.x, chunk.z), name + ": switched on, its chunk of the grid takes it");
                 RebirthConfig.STRUCTURES_ENABLED.set(false);
@@ -133,5 +133,16 @@ public class RuinStructuresGameTests {
     @SuppressWarnings("unused")
     private static ResourceLocation id(String path) {
         return ProjectRebirth.id(path);
+    }
+
+    /** 1.6.0, block H: no ruin starts close to the middle of the world, where new players appear. */
+    @GameTest(template = TEMPLATE, batch = "scouting_safe_spawn")
+    public static void noRuinStartsNearTheWorldSpawn(GameTestHelper helper) {
+        int radius = com.projectrebirth.config.RebirthConfig.STRUCTURES_SAFE_RADIUS.get();
+        helper.assertFalse(com.projectrebirth.structures.StructureSwitches.outsideSafeArea(0, 0), "Not at the middle");
+        helper.assertFalse(com.projectrebirth.structures.StructureSwitches.outsideSafeArea(-(radius / 16) + 2, 1), "Not inside the radius");
+        helper.assertTrue(com.projectrebirth.structures.StructureSwitches.outsideSafeArea(radius / 16 + 1, 0), "Beyond it, yes");
+        helper.assertTrue(com.projectrebirth.structures.StructureSwitches.outsideSafeArea(radius / 16, radius / 16), "Diagonally beyond it, yes");
+        helper.succeed();
     }
 }

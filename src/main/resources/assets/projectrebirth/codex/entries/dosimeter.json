@@ -18,6 +18,10 @@
     {
       "type": "note",
       "text": "codex.projectrebirth.dosimeter.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.dosimeter.p4"
     }
   ]
 }

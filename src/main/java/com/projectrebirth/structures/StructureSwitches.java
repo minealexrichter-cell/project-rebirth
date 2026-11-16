@@ -18,6 +18,15 @@ public final class StructureSwitches {
     }
 
     /** Whether a structure with this switch may be placed in newly generated chunks; an unknown name follows the main switch. */
+    /**
+     * 1.6.0, block H: whether a structure may start in this chunk, away from the middle of the world where new players appear.
+     */
+    public static boolean outsideSafeArea(int chunkX, int chunkZ) {
+        int radius = RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.STRUCTURES_SAFE_RADIUS.get() : 256;
+        double x = chunkX * 16.0 + 8.0, z = chunkZ * 16.0 + 8.0;
+        return x * x + z * z >= (double) radius * radius;
+    }
+
     public static boolean enabled(String key) {
         if (!RebirthConfig.SERVER_SPEC.isLoaded()) {
             return true;

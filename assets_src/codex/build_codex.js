@@ -36,6 +36,8 @@ category('basics', P + 'rebirth_codex', 'Basics', 'Основы', [
             'Мод развивается цепочкой: каждая следующая станция и каждое тело требуют того, что сделано на предыдущих.\n\n1. Добудьте новые руды: олово, алюминий, серебро, литий, титан. Из меди и олова — бронза.\n2. Цех электроники (верстак) делает платы, процессоры и энергоячейки.\n3. Сборочная станция — приводы, синтетическую ткань, капсулу переноса и первые искусственные тела.'),
         text('4. The armor workstation makes armor plates and power armor; then come the implant fabricator, the armor upgrade fabricator and the weapon workshop.\n5. Stations need energy: a combustion generator, solar panels, a battery, cable.\n6. The world is hostile from the first day: a respirator, filters and a roof at first, a sealed shelter with air filtration later.',
             '4. Станция брони — бронепластины и силовую броню; дальше цех имплантов, цех модулей брони и оружейная мастерская.\n5. Станциям нужна энергия: генератор на угле, солнечные панели, аккумулятор, кабель.\n6. Мир враждебен с первого дня: сначала респиратор, фильтры и крыша, позже — герметичное убежище с фильтрацией воздуха.'),
+        text('7. Catastrophes leave contaminated land and ruins full of loot, machines and mutants. Before an expedition, learn the way: a weather station foresees the next catastrophe, a monitoring station maps the contamination around and prints it on paper, and in the field the analyzer, the sensor module of a body or the sensor unit of armor show what is near. Clean water comes from the water purifier.',
+            '7. Катастрофы оставляют заражённые земли и руины с добычей, машинами и мутантами. Перед вылазкой разведайте путь: метеостанция предскажет следующую катастрофу, станция мониторинга составит карту заражения вокруг и напечатает её, а в поле покажут, что рядом, анализатор, сенсорный модуль тела или сенсорный блок брони. Чистую воду даёт водоочиститель.'),
         note('Each tab of this book is one branch of that chain.', 'Каждая вкладка этой книги — одна ветка этой цепочки.')
     ]),
     entry('keys', 'minecraft:compass', 2, 2, ['welcome'], 'Keys and Settings', 'Клавиши и настройки', [
@@ -347,6 +349,8 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
             'Катастрофы приходят сами, первая — не раньше чем через 40 минут нового мира. За две минуты предупреждают сообщение, сирена и строка в HUD.\n\nКислотный дождь: настоящий дождь; на открытом месте токсины и урон, изнашивает снаряжение и тела без модуля герметизации.'),
         text('Toxic storm: a thick yellow-green fog, toxins come fast; a respirator and a roof help.\n\nRadiation burst: the world turns brownish and grainy, more so the stronger it is, and the dose comes fast. A roof does not save you; a heavy suit and armor do, and in a shelter it is half as strong.',
             'Токсичный шторм: густой жёлто-зелёный туман, токсины набираются быстро; помогают респиратор и крыша.\n\nРадиационный выброс: мир становится коричневатым и зернистым, тем сильнее, чем сильнее выброс, и доза растёт быстро. Крыша не спасает; защищают тяжёлый костюм и броня, в убежище радиация вдвое слабее.'),
+        text('A weather station sees a catastrophe coming earlier than the warning: ten minutes ahead roughly, thirty minutes ahead exactly with its long range module, and gives a redstone signal before it comes.',
+            'Метеостанция видит катастрофу раньше предупреждения: за десять минут примерно, с модулем дальнего прогноза — за тридцать минут точно, и даёт сигнал красного камня до её начала.'),
         note('A radiation burst and a toxic storm leave residual spots in the world, see Contaminated Zones.',
             'Радиационный выброс и токсичный шторм оставляют в мире остаточные пятна, см. «Заражённые территории».')
     ]),
@@ -504,7 +508,9 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),
-        note('Nobody feels radiation. Without a dosimeter the HUD does not show the dose at all.', 'Радиацию никто не чувствует. Без дозиметра HUD дозу вовсе не показывает.')
+        note('Nobody feels radiation. Without a dosimeter the HUD does not show the dose at all.', 'Радиацию никто не чувствует. Без дозиметра HUD дозу вовсе не показывает.'),
+        text('The dosimeter tells what reaches you. Where it comes from, the field analyzer tells: held in hand, it shows the contamination of the ground and of the sources around you (see Scouting in the Field).',
+            'Дозиметр говорит, сколько радиации до вас доходит. Откуда она — скажет полевой анализатор: в руке он показывает заражение земли и источников вокруг (см. «Разведка в поле»).')
     ]),
     entry('medicine', P + 'antiradin', 1, -1, ['catastrophes'], 'Medicine', 'Лекарства', [
         item(P + 'antiradin', 'Antiradin: drink it to lose 80 of the dose.', 'Антирадин: выпейте, чтобы снять 80 единиц дозы.'),

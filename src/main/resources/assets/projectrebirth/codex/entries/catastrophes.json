@@ -15,8 +15,12 @@
       "text": "codex.projectrebirth.catastrophes.p2"
     },
     {
-      "type": "note",
+      "type": "text",
       "text": "codex.projectrebirth.catastrophes.p3"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.catastrophes.p4"
     }
   ]
 }

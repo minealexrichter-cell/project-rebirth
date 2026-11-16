@@ -361,7 +361,7 @@ public class LargeStructuresGameTests {
             helper.assertTrue(set.placement() instanceof SwitchableSpreadPlacement placement && placement.switchKey().equals(name),
                     name + " is placed by the switchable spread with its own switch");
             SwitchableSpreadPlacement placement = (SwitchableSpreadPlacement) set.placement();
-            ChunkPos chunk = placement.getPotentialStructureChunk(state.getLevelSeed(), 2, 4);
+            ChunkPos chunk = placement.getPotentialStructureChunk(state.getLevelSeed(), 1002, 1004); // far from the safe middle of the world (block H)
             helper.assertTrue(placement.isStructureChunk(state, chunk.x, chunk.z), name + ": switched on, its chunk of the grid takes it");
             var value = switchOf(name);
             boolean before = value.get();

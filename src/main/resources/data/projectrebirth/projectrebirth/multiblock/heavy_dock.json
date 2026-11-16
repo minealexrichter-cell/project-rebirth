@@ -109,5 +109,20 @@
     3,
     1,
     8
-  ]
+  ],
+  "shell": {
+    "hide": "HB",
+    "walls": "HMB",
+    "wall": "projectrebirth:block/dock_wall",
+    "glass": "projectrebirth:block/workshop_glass",
+    "post": "projectrebirth:block/workshop_post",
+    "front": "wall",
+    "windows": [
+      3,
+      5,
+      1,
+      5
+    ],
+    "supports": "M"
+  }
 }

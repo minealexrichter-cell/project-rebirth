@@ -50,15 +50,34 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
     /**
      * The hall drawn over a whole construction (1.7.0). {@code hide}: the keys whose blocks turn invisible while it stands;
      * {@code walls}: the keys whose cells get a thin wall on each outer side (the front one of glass) and the roof on top;
-     * the textures of the walls and roof, of the glass front and of the corner posts.
+     * the textures of the walls and roof, of the glass and of the corner posts and supports. {@code front}: "glass" or "wall";
+     * {@code windows}: glass in the side walls from layer to layer and row to row (four numbers, both ends included);
+     * {@code supports}: the keys whose cells stand on a pillar down through the hidden cells under them (the manipulators).
      */
-    public record Shell(String hide, String walls, ResourceLocation wall, ResourceLocation glass, ResourceLocation post) {
+    public record Shell(String hide, String walls, ResourceLocation wall, ResourceLocation glass, ResourceLocation post, String front,
+                        Optional<List<Integer>> windows, String supports) {
         public static final Codec<Shell> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("hide").forGetter(Shell::hide),
                 Codec.STRING.fieldOf("walls").forGetter(Shell::walls),
                 ResourceLocation.CODEC.fieldOf("wall").forGetter(Shell::wall),
                 ResourceLocation.CODEC.fieldOf("glass").forGetter(Shell::glass),
-                ResourceLocation.CODEC.fieldOf("post").forGetter(Shell::post)).apply(i, Shell::new));
+                ResourceLocation.CODEC.fieldOf("post").forGetter(Shell::post),
+                Codec.STRING.optionalFieldOf("front", "glass").forGetter(Shell::front),
+                Codec.INT.listOf().optionalFieldOf("windows").forGetter(Shell::windows),
+                Codec.STRING.optionalFieldOf("supports", "").forGetter(Shell::supports)).apply(i, Shell::new));
+
+        public boolean glassFront() {
+            return "glass".equals(front);
+        }
+
+        /** Whether the side wall of that cell is a window. */
+        public boolean window(int layer, int row) {
+            if (windows.isEmpty() || windows.get().size() != 4) {
+                return false;
+            }
+            List<Integer> w = windows.get();
+            return layer >= w.get(0) && layer <= w.get(1) && row >= w.get(2) && row <= w.get(3);
+        }
     }
 
     /** The key letter of a cell (a space: any block). */

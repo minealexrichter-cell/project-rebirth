@@ -87,10 +87,9 @@ public final class MultiblockRegistry {
 
     public static final DeferredBlock<net.minecraft.world.level.block.Block> ASSEMBLY_PLATE = BLOCKS.registerSimpleBlock("assembly_plate", machine());
     public static final DeferredBlock<FrameBlock> ASSEMBLY_FRAME = BLOCKS.register("assembly_frame", () -> new FrameBlock(machine().noOcclusion()));
-    public static final DeferredBlock<net.minecraft.world.level.block.Block> HEAVY_FRAME = BLOCKS.register("heavy_frame",
-            () -> new net.minecraft.world.level.block.Block(machine().strength(5.0f, 9.0f).noOcclusion()));
-    public static final DeferredBlock<net.minecraft.world.level.block.Block> CRANE_BEAM = BLOCKS.register("crane_beam",
-            () -> new net.minecraft.world.level.block.Block(machine().noOcclusion()));
+    public static final DeferredBlock<FrameBlock> HEAVY_FRAME = BLOCKS.register("heavy_frame",
+            () -> new FrameBlock(machine().strength(5.0f, 9.0f).noOcclusion()));
+    public static final DeferredBlock<FrameBlock> CRANE_BEAM = BLOCKS.register("crane_beam", () -> new FrameBlock(machine().noOcclusion()));
     public static final DeferredBlock<ManipulatorBlock> WELDING_MANIPULATOR = manipulator(ManipulatorBlock.Tool.WELDER);
     public static final DeferredBlock<ManipulatorBlock> GRIPPER_MANIPULATOR = manipulator(ManipulatorBlock.Tool.GRIPPER);
     public static final DeferredBlock<ManipulatorBlock> SCREWDRIVER_MANIPULATOR = manipulator(ManipulatorBlock.Tool.SCREWDRIVER);

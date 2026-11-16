@@ -62,6 +62,8 @@
     "walls": "FMZ",
     "wall": "projectrebirth:block/workshop_wall",
     "glass": "projectrebirth:block/workshop_glass",
-    "post": "projectrebirth:block/workshop_post"
+    "post": "projectrebirth:block/workshop_post",
+    "front": "glass",
+    "supports": "M"
   }
 }

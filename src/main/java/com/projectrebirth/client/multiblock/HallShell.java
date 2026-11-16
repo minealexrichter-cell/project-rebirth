@@ -56,14 +56,15 @@ public final class HallShell {
                         out.add(new Box(c, y, r, c + 1, yTop, r + T, WALL, c, y, r));
                     }
                     if (front) {
-                        out.add(new Box(c, y, r + 1 - T, c + 1, yTop, r + 1, GLASS, c, y, r));
+                        out.add(new Box(c, y, r + 1 - T, c + 1, yTop, r + 1, shell.glassFront() ? GLASS : WALL, c, y, r));
                     }
+                    int side = shell.window(y, r) ? GLASS : WALL;
                     double z0 = r + (back ? T : 0), z1 = r + 1 - (front ? T : 0);
                     if (left) {
-                        out.add(new Box(c, y, z0, c + T, yTop, z1, WALL, c, y, r));
+                        out.add(new Box(c, y, z0, c + T, yTop, z1, side, c, y, r));
                     }
                     if (right) {
-                        out.add(new Box(c + 1 - T, y, z0, c + 1, yTop, z1, WALL, c, y, r));
+                        out.add(new Box(c + 1 - T, y, z0, c + 1, yTop, z1, side, c, y, r));
                     }
                     if (top) {
                         out.add(new Box(c, y + 1 - T, r, c + 1, y + 1, r + 1, WALL, c, y, r));
@@ -73,6 +74,27 @@ public final class HallShell {
                         double pz0 = back ? r - POST_OUT : r + 1 - POST + POST_OUT;
                         out.add(new Box(px0, y, pz0, px0 + POST, y + 1 + (top ? POST_OUT : 0), pz0 + POST, POST_KIND, c, y, r));
                     }
+                }
+            }
+        }
+        // pillars: a cell that must stand on something (a manipulator) gets a pillar down through the hidden cells under it, with
+        // a wider cap under its foot; they stand a little off the wall panels so that no two faces meet in one plane
+        for (int y = 1; y < h; y++) {
+            for (int r = 0; r < d; r++) {
+                for (int c = 0; c < w; c++) {
+                    if (shell.supports().isEmpty() || shell.supports().indexOf(schema.letter(y, r, c)) < 0) {
+                        continue;
+                    }
+                    int bottom = y;
+                    while (bottom > 0 && shell.hide().indexOf(schema.letter(bottom - 1, r, c)) >= 0) {
+                        bottom--;
+                    }
+                    if (bottom == y) {
+                        continue;
+                    }
+                    double in = 2.5 / 16.0, cap = 1.5 / 16.0;
+                    out.add(new Box(c + in, bottom, r + in, c + 1 - in, y - 1.0 / 16.0, r + 1 - in, POST_KIND, c, y - 1, r));
+                    out.add(new Box(c + cap, y - 1.0 / 16.0, r + cap, c + 1 - cap, y, r + 1 - cap, POST_KIND, c, y - 1, r));
                 }
             }
         }

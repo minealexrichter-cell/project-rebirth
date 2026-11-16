@@ -2355,6 +2355,16 @@
         p.px('#e0b33a', [7, 0], [8, 0], [7, 15], [8, 15]);
         return p;
     });
+    // The heavy dock's hall: thick dark armour plates with a red marker light and heavy rivets.
+    block('dock_wall', () => {
+        const p = new Painter(211);
+        p.bevel(0, 0, 16, 16, '#4c535b', 0.05);
+        p.inset(2, 2, 12, 12, '#3d434a', 0.04);
+        p.rect(2, 10, 12, 1, '#2e3338').rect(2, 5, 12, 1, '#2e3338');
+        p.rivets('#8c97a3', 1).px('#8c97a3', [7, 1], [8, 14]);
+        p.px('#c9352b', [12, 3]).px('#ff6a5a', [12, 2]);
+        return p;
+    });
     block('workshop_post', () => {
         const p = new Painter(209);
         p.bevel(0, 0, 16, 16, '#40464d', 0.05);

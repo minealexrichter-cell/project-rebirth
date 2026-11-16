@@ -279,8 +279,13 @@
         for (const id of Object.keys(SPECS)) {
             const spec = SPECS[id];
             const cubes = allCubes(spec);
+            // packing gives the cubes their places: put everything back afterwards, so that a build after the check is the same
+            const before = cubes.map(c => [c, 'uv' in c, c.uv]);
+            const texRes = spec.texRes;
             spec.texRes = pack(cubes, spec.res);
             const holes = textureHoles(cubes, paintTexture(spec, cubes), spec);
+            before.forEach(([c, had, uv]) => { if (had) { c.uv = uv; } else { delete c.uv; } });
+            spec.texRes = texRes;
             if (holes.length) {
                 out.push(id + ': ' + holes.length + ' — ' + holes.slice(0, 6).join(', '));
             }
@@ -302,6 +307,19 @@
                 paintFace(ctx, net[face], c.p, face, rand);
             }
         }
+        // 1.7.0: GeckoLib reads a part's faces by its sizes rounded down; for a part with a fractional size those faces fall partly
+        // on the empty corners of the net painted above, which show as holes. Paint them again where the game reads them, with
+        // a random of their own so that nothing else changes (whole-size parts are left exactly as they were).
+        cubes.forEach((c, index) => {
+            if (c.share || c.s.every(v => Number.isInteger(v))) {
+                return;
+            }
+            const own = random((spec.seed || 12345) * 31 + index);
+            const net = netOf(c.uv[0], c.uv[1], c.s.map(Math.floor));
+            for (const face of Object.keys(net)) {
+                paintFace(ctx, net[face], c.p, face, own);
+            }
+        });
         return canvas;
     }
 
@@ -570,8 +588,7 @@
 
     const SPECS = {};
     /** Models made before the hole check (1.7.0) that still have holes; empty is the goal. Filled from checkAll(). */
-    const KNOWN_HOLES = new Set(['basic_robot_body', 'improved_robot_body', 'advanced_synthetic_body', 'hightech_synthetic_body',
-        'premium_synthetic_body', 'power_armor', 'mobile_power_armor', 'worker_power_armor', 'glowing_ghoul', 'brute']);
+    const KNOWN_HOLES = new Set([]);
 
     // 1. Basic robot: a cheap welded machine. Scratched grey steel, rust, one amber eye slot, exposed joints.
     (function () {

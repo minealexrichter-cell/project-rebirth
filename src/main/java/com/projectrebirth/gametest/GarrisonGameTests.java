@@ -156,6 +156,18 @@ public class GarrisonGameTests {
     public static void theHeavyDockIsWholeWhenBuiltByItsPlan(GameTestHelper helper) {
         MultiblockControllerBlockEntity entity = build(helper, MultiblockRegistry.HEAVY_DOCK, MultiblockRegistry.DOCK_CONTROLLER.get());
         wholeWithManipulators(helper, entity, 150, 2, 2, 4);
+        // its hall: the heavy frames and the crane beams hide under the walls
+        helper.assertTrue(entity.formed(), "The dock's hall stands");
+        MultiblockSchema.Check check = entity.revalidate();
+        long hidden = 0, shown = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(check.bounds().minX(), check.bounds().minY(), check.bounds().minZ(),
+                check.bounds().maxX(), check.bounds().maxY(), check.bounds().maxZ())) {
+            BlockState state = helper.getLevel().getBlockState(pos);
+            if (state.getBlock() instanceof com.projectrebirth.multiblock.FrameBlock) {
+                if (state.getValue(com.projectrebirth.multiblock.FrameBlock.FORMED)) hidden++; else shown++;
+            }
+        }
+        helper.assertTrue(hidden > 100 && shown == 0, "Every frame and beam hidden: " + hidden + " hidden, " + shown + " shown");
         helper.succeed();
     }
 

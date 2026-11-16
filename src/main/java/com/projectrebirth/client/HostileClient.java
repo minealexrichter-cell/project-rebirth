@@ -28,6 +28,7 @@ public final class HostileClient {
         if (level == null) {
             return;
         }
+        com.projectrebirth.client.render.MuzzleFlash.onShot(shot.shooter(), level.getGameTime());
         Vec3 from = new Vec3(shot.sx(), shot.sy(), shot.sz()), to = new Vec3(shot.ex(), shot.ey(), shot.ez());
         Vec3 dir = to.subtract(from).normalize();
         level.addParticle(ParticleTypes.SMALL_FLAME, from.x, from.y, from.z, dir.x * 0.08, dir.y * 0.08, dir.z * 0.08);

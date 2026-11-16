@@ -53,6 +53,9 @@ public class MechEntity extends WalkingGunner {
     private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> PHASE =
             net.minecraft.network.syncher.SynchedEntityData.defineId(MechEntity.class, net.minecraft.network.syncher.EntityDataSerializers.INT);
     private static final int TRANSFORM_TICKS = 60;
+    private static final RawAnimation GATLING_SPIN = RawAnimation.begin().thenLoop("animation.mech.gatling_spin");
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Boolean> FIRING =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(MechEntity.class, net.minecraft.network.syncher.EntityDataSerializers.BOOLEAN);
     private static final RawAnimation FOLDED = RawAnimation.begin().thenLoop("animation.mech.folded");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.mech.fly");
     private static final RawAnimation GATLING = RawAnimation.begin().thenPlay("animation.mech.gatling");
@@ -72,6 +75,7 @@ public class MechEntity extends WalkingGunner {
     private int dash;
     private int dashCooldown = 40;
     private int flight;
+    private int firingUntil;
     private int flightCooldown = 60;
     private double orbit;
     private Vec3 dashDirection = Vec3.ZERO;
@@ -114,6 +118,7 @@ public class MechEntity extends WalkingGunner {
         super.defineSynchedData(builder);
         builder.define(PHASE, 0);
         builder.define(FLYING, false);
+        builder.define(FIRING, false);
     }
 
     private void beginTransform() {
@@ -348,6 +353,8 @@ public class MechEntity extends WalkingGunner {
     @Override
     protected void onShot() {
         triggerAnim("action", phase() == 2 ? "gatling" : "shot");
+        firingUntil = tickCount + 8;
+        entityData.set(FIRING, true);
     }
 
     @Override
@@ -490,6 +497,9 @@ public class MechEntity extends WalkingGunner {
         if (phase() == 1) {
             tickTransform();
         }
+        if (entityData.get(FIRING) && tickCount > firingUntil) {
+            entityData.set(FIRING, false);
+        }
         if (isFlying() && (getTarget() == null || phase() != 2)) {
             land();
         }
@@ -565,5 +575,7 @@ public class MechEntity extends WalkingGunner {
                 .triggerableAnim("gatling", GATLING));
         // the gatling stays folded behind the back until the transform raises it
         controllers.add(new AnimationController<>(this, "gun", 0, state -> phase() == 0 ? state.setAndContinue(FOLDED) : PlayState.STOP));
+        // its barrels spin up while it fires
+        controllers.add(new AnimationController<>(this, "spin", 2, state -> phase() == 2 && entityData.get(FIRING) ? state.setAndContinue(GATLING_SPIN) : PlayState.STOP));
     }
 }

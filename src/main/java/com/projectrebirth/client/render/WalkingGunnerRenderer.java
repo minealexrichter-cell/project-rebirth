@@ -35,6 +35,35 @@ public class WalkingGunnerRenderer<T extends WalkingGunner> extends GeoEntityRen
         return new WalkingGunnerRenderer<>(context, "mech", "torso", false, 1.4f, true);
     }
 
+    /** The muzzle whose flash shows: the robot's gun; the mech's machine gun, or its gatling in the second phase. */
+    private final java.util.List<com.mojang.blaze3d.vertex.PoseStack.Pose> flashes = new java.util.ArrayList<>();
+
+    @Override
+    public void render(T entity, float entityYaw, float partialTick, com.mojang.blaze3d.vertex.PoseStack poseStack, net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        flashes.clear();
+        super.render(entity, entityYaw, partialTick, poseStack, buffers, light);
+        float age = MuzzleFlash.age(entity.getId(), partialTick);
+        float scale = entity instanceof com.projectrebirth.hostile.MechEntity ? 0.85f : 0.45f;
+        for (com.mojang.blaze3d.vertex.PoseStack.Pose pose : flashes) {
+            MuzzleFlash.draw(pose, buffers, age, MuzzleFlash.seed(entity.getId()), scale);
+        }
+        flashes.clear();
+    }
+
+    @Override
+    public void renderRecursively(com.mojang.blaze3d.vertex.PoseStack poseStack, T entity, GeoBone bone, net.minecraft.client.renderer.RenderType renderType,
+                                  net.minecraft.client.renderer.MultiBufferSource bufferSource, com.mojang.blaze3d.vertex.VertexConsumer buffer, boolean isReRender,
+                                  float partialTick, int packedLight, int packedOverlay, int colour) {
+        if (!isReRender && MuzzleFlash.age(entity.getId(), partialTick) < 1.0f) {
+            String name = bone.getName();
+            boolean second = entity instanceof com.projectrebirth.hostile.MechEntity mech && mech.phase() == 2;
+            if (name.equals("muzzle") || name.equals(second ? "gatling_muzzle" : "gun_muzzle")) {
+                flashes.add(MuzzleFlash.capture(poseStack, bone));
+            }
+        }
+        super.renderRecursively(poseStack, entity, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    }
+
     @Override
     protected float getDeathMaxRotation(T animatable) {
         return 0.0f;
@@ -73,6 +102,11 @@ public class WalkingGunnerRenderer<T extends WalkingGunner> extends GeoEntityRen
             if (entity instanceof com.projectrebirth.hostile.MechEntity mech) {
                 // the second phase: the chest plate and the rocket pod are gone (they fly off in the transform animation)
                 boolean stripped = mech.phase() == 2;
+                // the gatling exists only from the transform on
+                GeoBone gatling = getAnimationProcessor().getBone("gatling_mount");
+                if (gatling != null) {
+                    gatling.setHidden(mech.phase() == 0);
+                }
                 for (String part : new String[] {"plate_front", "left_pod"}) {
                     GeoBone piece = getAnimationProcessor().getBone(part);
                     if (piece != null) {

@@ -75,5 +75,64 @@
         return kept;
     }
 
-    window.RebirthDerived = {wreck, glowmask};
+    /**
+     * An inventory icon from a side view of a weapon model (a Blockbench capture, its ground clear): the ground made clear,
+     * the weapon turned to point up and right as the game's own weapons do, and brought down to 16x16 a pixel at a time
+     * (a pixel is kept where the weapon covers enough of it, in the average of its colours).
+     */
+    async function icon(capturePath, outPath, angle) {
+        const img = new Image();
+        await new Promise(r => { img.onload = r; img.src = 'data:image/png;base64,' + fs.readFileSync(capturePath).toString('base64'); });
+        const c = document.createElement('canvas');
+        c.width = img.width; c.height = img.height;
+        const x = c.getContext('2d');
+        x.drawImage(img, 0, 0);
+        const d = x.getImageData(0, 0, c.width, c.height);
+        let minX = 1e9, minY = 1e9, maxX = -1, maxY = -1;
+        for (let y = 0; y < c.height; y++) for (let i = 0; i < c.width; i++) {
+            const k = (y * c.width + i) * 4;
+            if (d.data[k + 3] < 10) { d.data[k + 3] = 0; continue; }
+            minX = Math.min(minX, i); maxX = Math.max(maxX, i); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+        }
+        x.putImageData(d, 0, 0);
+        const w = maxX - minX + 1, h = maxY - minY + 1;
+        const big = document.createElement('canvas');
+        big.width = big.height = 128;
+        const b = big.getContext('2d');
+        b.imageSmoothingEnabled = false;
+        b.translate(64, 64);
+        b.rotate(-(angle || 40) * Math.PI / 180);
+        b.scale(-1, 1);
+        const fit = 128 / w;
+        b.drawImage(c, minX, minY, w, h, -w * fit / 2, -h * fit / 2, w * fit, h * fit);
+        const bd = b.getImageData(0, 0, 128, 128).data;
+        const out = document.createElement('canvas');
+        out.width = out.height = 16;
+        const o = out.getContext('2d');
+        const od = o.createImageData(16, 16);
+        for (let py = 0; py < 16; py++) for (let px = 0; px < 16; px++) {
+            let n = 0, r = 0, g = 0, bl = 0;
+            for (let yy = 0; yy < 8; yy++) for (let xx = 0; xx < 8; xx++) {
+                const k = ((py * 8 + yy) * 128 + px * 8 + xx) * 4;
+                if (bd[k + 3] > 128) { n++; r += bd[k]; g += bd[k + 1]; bl += bd[k + 2]; }
+            }
+            const k = (py * 16 + px) * 4;
+            if (n >= 22) { od.data[k] = Math.min(255, r / n * 1.35); od.data[k + 1] = Math.min(255, g / n * 1.35); od.data[k + 2] = Math.min(255, bl / n * 1.35); od.data[k + 3] = 255; }
+        }
+        // a dark outline round the weapon, as the game's items have
+        const solid = (px, py) => px >= 0 && py >= 0 && px < 16 && py < 16 && od.data[(py * 16 + px) * 4 + 3] === 255;
+        const edge = [];
+        for (let py = 0; py < 16; py++) for (let px = 0; px < 16; px++) {
+            if (!solid(px, py) && (solid(px - 1, py) || solid(px + 1, py) || solid(px, py - 1) || solid(px, py + 1))) edge.push([px, py]);
+        }
+        for (const [px, py] of edge) {
+            const k = (py * 16 + px) * 4;
+            od.data[k] = 24; od.data[k + 1] = 25; od.data[k + 2] = 28; od.data[k + 3] = 255;
+        }
+        o.putImageData(od, 0, 0);
+        fs.writeFileSync(outPath, Buffer.from(out.toDataURL('image/png').split(',')[1], 'base64'));
+        return [w, h];
+    }
+
+    window.RebirthDerived = {wreck, glowmask, icon};
 })();

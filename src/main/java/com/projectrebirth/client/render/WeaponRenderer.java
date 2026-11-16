@@ -95,54 +95,13 @@ public final class WeaponRenderer extends GeoObjectRenderer<WeaponView> {
         super.renderRecursively(poseStack, view, bone, renderType, bufferSource, buffer, isReRender, partialTick, light, packedOverlay, colour);
     }
 
-    private static final ResourceLocation FLASH_TEXTURE = ProjectRebirth.id("textures/effect/muzzle_flash.png");
-
-    /**
-     * The muzzle flash, after the way gun mods such as TACZ draw it: a bright star facing forward and two crossed tongues of
-     * flame along the barrel, glowing by adding light (black is see-through), turned at random for each shot, big at the moment
-     * of the shot and shrinking away within two ticks.
-     */
+    /** The flash of the shot, at the flash bone (see MuzzleFlash). */
     private void drawFlash(PoseStack poseStack, WeaponView view, GeoBone bone, MultiBufferSource buffers) {
-        float age = Math.max(0.0f, view.flashAge());
-        java.util.Random random = new java.util.Random(view.flashSeed());
-        float size = (0.9f + random.nextFloat() * 0.35f) * (1.0f - age * 0.55f);
-        float bright = 1.0f - age * age;
-        int c = (int) (255 * Math.max(0.0f, Math.min(1.0f, bright)));
         poseStack.pushPose();
         software.bernie.geckolib.util.RenderUtil.prepMatrixForBone(poseStack, bone);
         software.bernie.geckolib.util.RenderUtil.translateToPivotPoint(poseStack, bone);
-        VertexConsumer vc = buffers.getBuffer(RenderType.eyes(FLASH_TEXTURE));
-        // the star, facing along the barrel (the weapon points to -Z), turned about the barrel at random
-        poseStack.pushPose();
-        poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(random.nextFloat() * 360.0f));
-        float star = 0.55f * size;
-        quad(vc, poseStack, -star, -star, -0.02f, star, -star, -0.02f, star, star, -0.02f, -star, star, -0.02f, 0.0f, 0.0f, 0.5f, 1.0f, c);
+        MuzzleFlash.draw(poseStack, buffers, view.flashAge(), view.flashSeed(), 1.0f);
         poseStack.popPose();
-        // the tongues of flame, two crossed planes reaching forward
-        float length = 1.3f * size, width = 0.36f * size;
-        float turn = random.nextFloat() * 90.0f;
-        for (int i = 0; i < 2; i++) {
-            poseStack.pushPose();
-            poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(turn + i * 90.0f));
-            quad(vc, poseStack, 0.0f, -width, 0.0f, 0.0f, -width, -length, 0.0f, width, -length, 0.0f, width, 0.0f, 0.5f, 0.0f, 1.0f, 1.0f, c);
-            poseStack.popPose();
-        }
-        poseStack.popPose();
-    }
-
-    /** A quad seen from both sides; corners a b c d, the texture from (u0, v0) at a to (u1, v1) at c. */
-    private static void quad(VertexConsumer vc, PoseStack poseStack, float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz,
-                             float dx, float dy, float dz, float u0, float v0, float u1, float v1, int c) {
-        PoseStack.Pose pose = poseStack.last();
-        float[][] corners = {{ax, ay, az, u0, v0}, {bx, by, bz, u1, v0}, {cx, cy, cz, u1, v1}, {dx, dy, dz, u0, v1}};
-        for (int side = 0; side < 2; side++) {
-            for (int k = 0; k < 4; k++) {
-                float[] p = corners[side == 0 ? k : 3 - k];
-                vc.addVertex(pose, p[0], p[1], p[2]).setColor(c, c, c, 255).setUv(p[3], p[4])
-                        .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
-                        .setNormal(pose, 0.0f, 0.0f, side == 0 ? -1.0f : 1.0f);
-            }
-        }
     }
 
     private void track(PoseStack poseStack, WeaponView view, GeoBone bone, boolean muzzle) {

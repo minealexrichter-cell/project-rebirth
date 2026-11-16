@@ -113,6 +113,11 @@
 					]
 				},
 				{
+					"name": "muzzle",
+					"parent": "right_forearm",
+					"pivot": [-11, 17, -16.2]
+				},
+				{
 					"name": "left_arm",
 					"parent": "torso",
 					"pivot": [8.5, 26, 0],

@@ -20,6 +20,30 @@ public class GuardTurretRenderer extends GeoEntityRenderer<GuardTurretEntity> {
         this.shadowRadius = 0.6f;
     }
 
+    private final java.util.List<com.mojang.blaze3d.vertex.PoseStack.Pose> flashes = new java.util.ArrayList<>();
+
+    /** The flash of its shot, drawn at the muzzle bone after the model (see MuzzleFlash). */
+    @Override
+    public void render(GuardTurretEntity turret, float entityYaw, float partialTick, com.mojang.blaze3d.vertex.PoseStack poseStack,
+                       net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        flashes.clear();
+        super.render(turret, entityYaw, partialTick, poseStack, buffers, light);
+        for (com.mojang.blaze3d.vertex.PoseStack.Pose pose : flashes) {
+            MuzzleFlash.draw(pose, buffers, MuzzleFlash.age(turret.getId(), partialTick), MuzzleFlash.seed(turret.getId()), 0.6f);
+        }
+        flashes.clear();
+    }
+
+    @Override
+    public void renderRecursively(com.mojang.blaze3d.vertex.PoseStack poseStack, GuardTurretEntity turret, GeoBone bone, net.minecraft.client.renderer.RenderType renderType,
+                                  net.minecraft.client.renderer.MultiBufferSource bufferSource, com.mojang.blaze3d.vertex.VertexConsumer buffer, boolean isReRender,
+                                  float partialTick, int packedLight, int packedOverlay, int colour) {
+        if (!isReRender && bone.getName().equals("muzzle") && MuzzleFlash.age(turret.getId(), partialTick) < 1.0f) {
+            flashes.add(MuzzleFlash.capture(poseStack, bone));
+        }
+        super.renderRecursively(poseStack, turret, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+    }
+
     private static class TurretModel extends GeoModel<GuardTurretEntity> {
         @Override
         public ResourceLocation getModelResource(GuardTurretEntity turret) {

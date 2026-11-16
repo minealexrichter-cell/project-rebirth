@@ -1923,7 +1923,8 @@
                     out[b] = pv[b] + x * s + y * co;
                     return out;
                 };
-                const lo = c.o, hi = [0, 1, 2].map(k => c.o[k] + c.s[k]);
+                const inf = c.inflate || 0; // a cube drawn bigger or smaller than its texture size
+                const lo = c.o.map(v => v - inf), hi = [0, 1, 2].map(k => c.o[k] + c.s[k] + inf);
                 for (let axis = 0; axis < 3; axis++) {
                     const [u, v] = [0, 1, 2].filter(k => k !== axis);
                     for (const side of [lo[axis], hi[axis]]) {
@@ -2307,7 +2308,8 @@
             bones: [
                 {name: 'base', parent: undefined, pivot: [0, 0, 0], cubes: base},
                 {name: 'head', parent: 'base', pivot: [0, 19, 0], cubes: head},
-                {name: 'barrel', parent: 'head', pivot: [0, 23, -8], cubes: barrel}
+                {name: 'barrel', parent: 'head', pivot: [0, 23, -8], cubes: barrel},
+                {name: 'muzzle', parent: 'barrel', pivot: [0, 23, -25.2], cubes: []}
             ],
             animations: {
                 'animation.guard_turret.idle': {length: 2, loop: 'loop', bones: {barrel: {p: {'0.000': [0, 0, 0], '2.000': [0, 0, 0]}}}},
@@ -2677,6 +2679,7 @@
                     C([-13.5, 14, -11], [6, 6, 12], cs({sd: [[2, 1, 9, 1, EDGE], [2, 3, 9, 1, DARK]]})),
                     C([-12, 15, -16], [4, 4, 6], {c: '#3c3e40', n: 0.1, f: [[1, 1, 2, 2, '#0a0a0b']]}),
                     C([-11.5, 11, -6], [3, 4, 3], fr({f: [[1, 1, 1, 2, AMBER]]}))]},
+                {name: 'muzzle', parent: 'right_forearm', pivot: [-11, 17, -16.2], cubes: []},
                 {name: 'left_arm', parent: 'torso', pivot: [8.5, 26, 0], cubes: [
                     C([6, 23, -3.5], [8, 6, 7], cs({tp: hazard(0, 0, 8, 7, AMBER, DARK, 2)})),
                     C([8.5, 17, -2], [3, 7, 4], fr())]},
@@ -2771,21 +2774,24 @@
                 // the jetpack: a frame on the back, two fuel tanks and two nozzles glowing inside
                 {name: 'jetpack', parent: 'torso', pivot: [0, 38, 11], cubes: [
                     F([-7.5, 34, 10], [15, 9, 2]),
-                    P([-8.5, 32, 11.5], [5, 12, 4.5], {sd: [[1, 2, 3, 1, LIGHT], [1, 8, 3, 1, EDGE]], k: hazard(0, 9, 5, 2, AMBER, DARK, 2)}),
-                    P([3.5, 32, 11.5], [5, 12, 4.5], {sd: [[1, 2, 3, 1, LIGHT], [1, 8, 3, 1, EDGE]], k: hazard(0, 9, 5, 2, AMBER, DARK, 2)})]},
+                    P([-8.5, 32, 11.5], [5, 12, 5], {sd: [[1, 2, 3, 1, LIGHT], [1, 8, 3, 1, EDGE]], k: hazard(0, 9, 5, 2, AMBER, DARK, 2)}),
+                    P([3.5, 32, 11.5], [5, 12, 5], {sd: [[1, 2, 3, 1, LIGHT], [1, 8, 3, 1, EDGE]], k: hazard(0, 9, 5, 2, AMBER, DARK, 2)})]},
                 {name: 'jet_right', parent: 'jetpack', pivot: [-6, 31, 13.75], cubes: [F([-7.5, 29.5, 12.25], [3, 3, 3], {bt: [[0, 0, 3, 3, CORE]], edge: false})]},
                 {name: 'jet_left', parent: 'jetpack', pivot: [6, 31, 13.75], cubes: [F([4.5, 29.5, 12.25], [3, 3, 3], {bt: [[0, 0, 3, 3, CORE]], edge: false})]},
                 // the gatling: on a swinging arm at the back of the left shoulder; folded down behind the back until the second phase
-                {name: 'gatling_mount', parent: 'torso', pivot: [9.5, 48, 6], cubes: [F([8, 46.2, 4], [3, 5, 4.5])]},
+                {name: 'gatling_mount', parent: 'torso', pivot: [9.5, 48, 6], cubes: [C([8, 46.2, 3.75], [3, 5, 5], Object.assign({}, FRAME), {inflate: -0.25})]},
                 {name: 'gatling', parent: 'gatling_mount', pivot: [9.5, 53, 0], cubes: [
-                    P([6.5, 50, -9], [6, 6, 11.8], {sd: [[1, 1, 10, 1, LIGHT], [1, 4, 10, 1, EDGE]], tp: hazard(0, 9, 6, 2, AMBER, DARK, 2)}),
-                    F([7.7, 51.4, 2.5], [3.6, 3.2, 2])]},
+                    P([6.5, 50, -9], [6, 6, 12], {sd: [[1, 1, 10, 1, LIGHT], [1, 4, 10, 1, EDGE]], tp: hazard(0, 9, 6, 2, AMBER, DARK, 2), f: [[1, 1, 4, 4, DARK]]}),
+                    C([7.5, 51.5, 2.6], [4, 3, 2], Object.assign({}, FRAME), {inflate: -0.2})]},
+                // the barrels turn about the gun's axis while it fires; whole pixels on the texture (thin by inflate), so they keep their paint
                 {name: 'gatling_barrels', parent: 'gatling', pivot: [9.5, 53, -9], cubes: [
-                    F([7.8, 51.3, -21.5], [1.2, 1.2, 12.7], {f: [[0, 0, 1, 1, '#050505']], edge: false}),
-                    F([10.0, 51.3, -21.5], [1.2, 1.2, 12.7], {f: [[0, 0, 1, 1, '#050505']], edge: false}),
-                    F([7.8, 53.5, -21.5], [1.2, 1.2, 12.7], {f: [[0, 0, 1, 1, '#050505']], edge: false}),
-                    F([10.0, 53.5, -21.5], [1.2, 1.2, 12.7], {f: [[0, 0, 1, 1, '#050505']], edge: false}),
-                    F([8.3, 51.8, -16], [2.4, 2.4, 1]), F([8.3, 51.8, -20.6], [2.4, 2.4, 0.8])]}
+                    ...[[8.4, 51.9], [10.6, 51.9], [8.4, 54.1], [10.6, 54.1]].map(([x, y]) => C([x - 1, y - 1, -21.6], [2, 2, 14], {c: '#2e302c', n: 0.08, edge: false,
+                        tp: [[0, 0, 2, 14, '#4a4d47']], f: [[0, 0, 2, 2, '#050505']]}, {inflate: -0.4})),
+                    C([8, 51.5, -16.3], [3, 3, 1], {c: '#3a3c37', n: 0.08, edge: false}, {inflate: -0.25}),
+                    C([8, 51.5, -21.3], [3, 3, 1], {c: '#3a3c37', n: 0.08, edge: false}, {inflate: -0.3})]},
+                // where the flashes of its guns are drawn
+                {name: 'gun_muzzle', parent: 'right_gun', pivot: [-14.5, 35.5, -29.2], cubes: []},
+                {name: 'gatling_muzzle', parent: 'gatling', pivot: [9.5, 53, -21.4], cubes: []}
             ],
             animations: (() => {
                 const heavy = (length, stride, lean, bob) => ikGait({length, thigh: 13, shin: 13, rest: 26, hip: 24.6, stride, lift: 4.5, stance: 0.62,
@@ -2848,8 +2854,9 @@
                         gatling_mount: {r: K([0, [GATLING_FOLDED, 0, 0]], [2.1, [GATLING_FOLDED, 0, 0]], [2.6, [-12, 0, 0]], [2.8, [4, 0, 0]], [3.0, [0, 0, 0]])}}),
                     'animation.mech.folded': {length: 1, loop: 'loop', bones: {gatling_mount: {r: {'0.000': [GATLING_FOLDED, 0, 0], '1.000': [GATLING_FOLDED, 0, 0]}}}},
                     'animation.mech.gatling': {length: 0.1, loop: 'once', bones: {
-                        gatling_barrels: {r: {'0.000': [0, 0, 0], '0.100': [0, 0, 90]}},
                         gatling: {p: {'0.000': [0, 0, 0], '0.030': [0, 0, 0.8], '0.100': [0, 0, 0]}}}},
+                    'animation.mech.gatling_spin': {length: 0.25, loop: 'loop', bones: {
+                        gatling_barrels: {r: {'0.000': [0, 0, 0], '0.125': [0, 0, 180], '0.250': [0, 0, 360]}}}},
                     'animation.mech.fly': {length: 1.2, loop: 'loop', bones: {
                         hips: {p: loopOf(1.2, t => [0, R2(1.2 * Math.sin(2 * Math.PI * t)), 0])},
                         right_leg: {r: loopOf(1.2, t => [R2(12 + 4 * Math.sin(2 * Math.PI * t)), 0, 6])},
@@ -2929,6 +2936,13 @@
         const SKIN = {base: '#76584e', dark: '#5e443c', light: '#8e6c5e', vein: '#6a2420', spots: ['#8a2c28']};
         const BONE = {base: '#d8cfb5', dark: '#a89e84', light: '#efe8d4', n: 0.06};
         const TEETH = '#efe8d4', MAW = '#2a0808', EYE = '#e8d050';
+        /**
+         * A tooth: white enamel with a grain like the game's bone and quartz (part B3f). Whole pixels on the texture, made thin by a
+         * negative inflate, so it never takes in the colour of its neighbours on the texture (that was the red line). cx, cz: its
+         * middle; ya: its lower end; h: its visible length.
+         */
+        const FANG = {c: '#ece6d2', n: 0.11, edge: false};
+        const fang = (cx, ya, h, cz) => C([cx - 0.5, ya - 0.25, cz - 0.5], [1, Math.max(1, Math.round(h + 0.5)), 1], FANG, {inflate: -0.25});
 
         // the hound: a skinned, starving dog; its jaw splits open; a fleshy growth over the right shoulder, bone spikes on the back
         SPECS.mutated_hound = {
@@ -2943,11 +2957,11 @@
                 {name: 'head', parent: 'body', pivot: [0, 10, -6], cubes: [
                     O([-2.5, 8, -11], [5, 4.5, 5], SKIN, {f: [[0, 1, 1, 1, EYE], [4, 1, 1, 1, EYE], [2, 0, 1, 1, EYE]]}),
                     O([-2, 9, -15.5], [4, 2, 5], RAW, {bt: [[0, 0, 4, 5, MAW]]}),
-                    ...[[-1.75, 1.3], [-0.85, 0.9], [0.05, 1.4], [0.85, 1.0], [1.45, 1.2]].map(([x, h]) => C([x, 9.2 - h, -15.25], [0.45, h + 0.1, 0.5], {c: TEETH, n: 0.04, edge: false})),
-                    C([-1.8, 7.9, -13.6], [0.5, 1.4, 0.5], {c: TEETH, n: 0.04, edge: false}), C([1.3, 8.0, -13.4], [0.5, 1.3, 0.5], {c: TEETH, n: 0.04, edge: false}),
+                    ...[[-1.5, 1.5], [-0.6, 0.5], [0.3, 1.5], [1.2, 0.5]].map(([x, h]) => fang(x, 9.25 - h, h, -15.0)),
+                    fang(-1.55, 7.75, 1.5, -13.35), fang(1.55, 7.75, 1.5, -13.15),
                     O([-3, 12, -9], [1, 3, 1], BONE), O([2, 11.5, -8.5], [1, 2, 1], BONE)]},
                 {name: 'jaw', parent: 'head', pivot: [0, 8.5, -11], cubes: [O([-2, 6.9, -15], [4, 2, 5], RAW, {tp: [[0, 0, 4, 5, MAW]]}),
-                    ...[[-1.4, 1.0], [-0.4, 1.2], [0.6, 0.9], [1.3, 1.1]].map(([x, h]) => C([x, 8.7, -14.7], [0.5, h, 0.5], {c: TEETH, n: 0.04, edge: false}))]},
+                    ...[[-1.15, 0.5], [-0.15, 1.5], [0.85, 0.5], [1.55, 1.5]].map(([x, h]) => fang(x, 8.65, h, -14.45))]},
                 {name: 'front_right_leg', parent: 'body', pivot: [-2, 8, -4], cubes: [O([-3, 0, -5], [2, 8, 2], SKIN, {f: [[0, 6, 2, 2, '#2a1a16']]})]},
                 {name: 'front_left_leg', parent: 'body', pivot: [2, 8, -4], cubes: [O([1, 0, -5], [2, 8, 2], RAW, {f: [[0, 6, 2, 2, '#2a1a16']]})]},
                 {name: 'back_right_leg', parent: 'body', pivot: [-2, 8, 3], cubes: [O([-3, 0, 2], [2, 8, 2], SKIN, {f: [[0, 6, 2, 2, '#2a1a16']]})]},
@@ -2995,10 +3009,10 @@
                     O([-3, 19, 1.5], [4, 4.5, 3], SICK, {k: [[1, 1, 2, 2, GLOW]], tp: [[1, 1, 1, 1, GLOW]]})]},
                 {name: 'head', parent: 'body', pivot: [0, 22, -1], cubes: [
                     O([-3.5, 22, -4.5], [7, 7, 7], SICK, {f: [[1, 2, 2, 1, GLOW], [5, 2, 1, 1, GLOW], [1, 4, 5, 3, MAW]], tp: [[3, 1, 1, 5, GLOW]]}),
-                    ...[[-2.3, 1.2], [-1.2, 0.8], [-0.1, 1.4], [1.0, 0.9], [1.9, 1.1]].map(([x, h]) => C([x, 25.4 - h, -4.9], [0.6, h, 0.6], {c: TEETH, n: 0.04, edge: false})),
+                    ...[[-2.0, 1.5], [-0.9, 0.5], [0.2, 1.5], [1.3, 0.5], [2.2, 1.5]].map(([x, h]) => fang(x, 25.45 - h, h, -4.6)),
                     O([-2.5, 28.5, -3.5], [2, 2, 3], SICK, {tp: [[0, 0, 2, 3, GLOW]]})]},
                 {name: 'jaw', parent: 'head', pivot: [0, 23, -3], cubes: [O([-2.5, 20.8, -5], [5, 2, 4], SICK, {tp: [[0, 0, 5, 2, MAW]]}),
-                    ...[[-2.2, 0.9], [-1.1, 1.3], [0.1, 0.8], [1.2, 1.2]].map(([x, h]) => C([x, 22.6, -4.8], [0.6, h, 0.6], {c: TEETH, n: 0.04, edge: false}))]},
+                    ...[[-1.9, 0.5], [-0.8, 1.5], [0.4, 0.5], [1.5, 1.5]].map(([x, h]) => fang(x, 22.55, h, -4.5))]},
                 {name: 'right_arm', parent: 'body', pivot: [-5, 21, 0], cubes: [O([-6.5, 9, -1.5], [3, 13, 3], SUIT, {f: [[0, 9, 3, 4, '#7a8a6a'], [1, 11, 1, 1, GLOW]]})]},
                 {name: 'left_arm', parent: 'body', pivot: [5, 21, 0], cubes: [O([3.5, 15, -2.5], [4, 7, 5], SICK, {f: [[1, 2, 1, 1, GLOW]], sd: [[2, 1, 1, 1, GLOW]]})]},
                 {name: 'left_forearm', parent: 'left_arm', pivot: [5.5, 15.5, 0], cubes: [
@@ -3041,7 +3055,7 @@
         const PALE = {base: '#857068', dark: '#6a544c', light: '#9c8880', vein: '#5a1e22', spots: ['#8a2c28', '#6e2c26']};
         const MUSCLE = {base: '#8a2c28', dark: '#6c1f1d', light: '#a4423a', vein: '#4a1214', spots: ['#c25a4c']};
         const TUMOR = {base: '#9a4a3e', dark: '#74342c', light: '#b86a58', vein: '#5a1e22', spots: ['#c8b84a', '#d8c86a'], spotChance: 0.5};
-        const tooth = (x, y, z, h, w) => C([x, y, z], [w || 0.6, h, 0.6], {c: TEETH, n: 0.04, edge: false});
+        const tooth = (x, y, z, h) => fang(x + 0.3, y, Math.round(h + 0.5) - 0.5, z + 0.3);
         const bone = (o, s, rot, pivot) => C(o, s, {c: '#d8cfb5', n: 0.06, edge: false}, rot ? {rot, pivot} : undefined);
         SPECS.brute = {
             res: 128, seed: 1653, noCoplanarFaces: true,
@@ -3189,6 +3203,102 @@
                 };
             })()
         };
+    })();
+
+    // ------------------------------------------------------------------ pilot weapons, second version (1.6.0, part B3f)
+    // After the owner's reference: dark gunmetal parts set apart from each other, the sides banded lighter and darker in rows,
+    // a top rail with notches, vents in the handguards, a skeleton stock, real sights, a glowing ammo counter on the shotgun.
+    // Whole pixels everywhere (fractional sizes take in their neighbours' colours on the texture). Same bones as before, so the
+    // animations and the code keep working.
+    (() => {
+        const GM = '#5a5e64', GL = '#8d9299', GD = '#35383c', GS = '#a6acb3', BORE = '#0a0a0b', GLOW = '#dff4ff', LENS = '#7fd8ff', RED = '#d23a2e';
+        const M = (base, more) => Object.assign({c: base, n: 0.07}, more || {});
+        /** Rows of light and dark along a side, as on the reference: the top lit, a dark seam, a lighter band. */
+        const bands = (len, h) => {
+            const ops = [[0, 0, len, 1, GL]];
+            if (h >= 3) ops.push([0, h - 1, len, 1, GD]);
+            if (h >= 4) ops.push([0, Math.floor(h / 2), len, 1, '#70747a']);
+            return ops;
+        };
+        const notches = (len, w) => Array.from({length: Math.floor(len / 2)}, (_, i) => [0, i * 2, w, 1, GL]);
+        const vent = (x0, count, y) => Array.from({length: count}, (_, i) => [x0 + i * 2, y, 1, 1, GD]);
+
+        SPECS.assault_rifle = Object.assign(weaponSpec(911, {
+            body: [
+                C([-1.5, 0, -6], [3, 4, 13], M(GM, {sd: [...bands(13, 4), [6, 1, 3, 1, GD], [7, 2, 1, 1, GS]], tp: [[1, 0, 1, 13, GD]]})),
+                C([-1, 3, -15], [2, 2, 20], M(GD, {tp: notches(20, 2), sd: [[0, 0, 20, 1, GL]]})),
+                C([-2, 0.5, -16], [4, 3, 11], M(GM, {sd: [...bands(11, 3), ...vent(1, 5, 1)], bt: [[1, 1, 2, 9, GD]]})),
+                C([-0.5, 1.5, -22], [1, 1, 7], M(GD, {edge: false})),
+                C([-1.5, 0.5, -25], [3, 3, 4], M(GM, {f: [[1, 1, 1, 1, BORE]], sd: [[1, 1, 2, 1, GD]], edge: false})),
+                C([-1, -5, 1], [2, 5, 3], M(GD, {sd: [[0, 1, 3, 1, '#45484d'], [0, 3, 3, 1, '#45484d']]}), {rot: [15, 0, 0], pivot: [0, 0, 2.5]}),
+                C([-1.5, -2, -2], [3, 1, 4], M(GD, {edge: false})),
+                C([-1, -4, -13], [2, 5, 2], M(GD, {sd: [[0, 1, 2, 1, '#45484d'], [0, 3, 2, 1, '#45484d']]})),
+                C([-1, 1, 6], [2, 2, 5], M(GM, {sd: bands(5, 2)})),
+                C([-0.5, 2.2, 10], [1, 1, 7], M(GD)),
+                C([-0.5, -2.2, 10], [1, 1, 7], M(GD)),
+                C([-1, -1, 15.5], [2, 3, 1], M(GM)),
+                C([-1.5, -3, 16], [3, 6, 2], M(GD, {k: [[1, 1, 1, 4, '#45484d']]}))
+            ],
+            magazine: {pivot: [0, 0, -3.5], cubes: [C([-1, -7, -5], [2, 7, 3], M(GD, {sd: [[0, 0, 3, 1, GL], [0, 3, 3, 1, '#45484d'], [0, 5, 3, 1, '#45484d']]}), {rot: [-15, 0, 0], pivot: [0, 0, -3.5], inflate: -0.1})]},
+            bolt: {pivot: [-2.5, 2.5, 0], cubes: [C([-2.4, 2, -1], [1, 1, 2], M(GS, {edge: false}))]},
+            sight: {pivot: [0, 5, -2], cubes: [
+                C([-1.5, 4.5, -4], [3, 3, 4], M(GM, {f: [[1, 1, 1, 1, LENS]], k: [[1, 1, 1, 1, LENS]], tp: [[1, 1, 1, 2, GD]]})),
+                C([-0.5, 4.5, -13], [1, 2, 1], M(GL, {edge: false}))]},
+            muzzle: [0, 2, -25],
+            ejection: [-2, 3, 1]
+        }, magazineAnimations(2.5, 2.5, 0.8)), {res: 128});
+
+        SPECS.battle_rifle = Object.assign(weaponSpec(912, {
+            body: [
+                C([-1.5, 0, -8], [3, 4, 16], M(GM, {sd: [...bands(16, 4), [8, 1, 3, 1, GD]], tp: [[1, 0, 1, 16, GD]]})),
+                C([-1, 3, -16], [2, 2, 20], M(GD, {tp: notches(20, 2), sd: [[0, 0, 20, 1, GL]]})),
+                C([-2, 0.5, -20], [4, 3, 13], M(GM, {sd: [...bands(13, 3), ...vent(1, 6, 1)], bt: [[1, 1, 2, 11, GD]]})),
+                C([-0.5, 1.5, -30], [1, 1, 11], M(GD, {edge: false})),
+                C([-1.5, 0.5, -35], [3, 3, 6], M(GM, {f: [[1, 1, 1, 1, BORE]], sd: [[1, 1, 1, 1, GD], [3, 1, 1, 1, GD]], edge: false})),
+                C([-1, -5, 2], [2, 5, 3], M(GD, {sd: [[0, 1, 3, 1, '#45484d'], [0, 3, 3, 1, '#45484d']]}), {rot: [15, 0, 0], pivot: [0, 0, 3.5]}),
+                C([-1.5, -2, -0.8], [3, 1, 4], M(GD, {edge: false})),
+                // the folded bipod under the handguard
+                C([-2.5, -1, -19], [1, 1, 8], M(GD, {edge: false})),
+                C([1.5, -1, -19], [1, 1, 8], M(GD, {edge: false})),
+                C([-1, -0.7, -20], [2, 1, 2], M(GM, {edge: false})),
+                // the solid stock with a cheek rest
+                C([-1.5, -1, 7], [3, 4, 10], M(GM, {sd: bands(10, 4)}), {inflate: -0.1}),
+                C([-1, 2.5, 9], [2, 2, 5], M(GD, {edge: false})),
+                C([-1.5, -4, 16], [3, 8, 2], M(GD, {k: [[1, 1, 1, 6, '#45484d']]}))
+            ],
+            magazine: {pivot: [0, 0, -2], cubes: [C([-1, -5, -5], [2, 6, 4], M(GD, {sd: [[0, 0, 4, 1, GL], [0, 3, 4, 1, '#45484d']]}))]},
+            bolt: {pivot: [-2.5, 2.5, 2], cubes: [C([-2.4, 2, 1], [1, 1, 3], M(GS, {edge: false}))]},
+            sight: {pivot: [0, 6, -2], cubes: [
+                C([-1.5, 6, -8.5], [3, 3, 12], M(GD, {sd: [[0, 0, 12, 1, GL]], tp: [[1, 3, 1, 2, GM], [1, 7, 1, 2, GM]]})),
+                C([-2, 5.5, -11], [4, 4, 3], M(GM, {f: [[1, 1, 2, 2, LENS], [1, 1, 1, 1, '#c8f6ff']]})),
+                C([-2, 5.5, 3], [4, 4, 2], M(GM, {k: [[1, 1, 2, 2, '#2a5a6a']]})),
+                C([-0.5, 4.2, -5], [1, 3, 1], M(GM, {edge: false})),
+                C([-0.5, 4.2, 1], [1, 3, 1], M(GM, {edge: false}))]},
+            muzzle: [0, 2, -35],
+            ejection: [-2, 3, 0]
+        }, magazineAnimations(2.5, 3, 1.4)), {res: 128});
+
+        // the shotgun: a box with a glowing ammo counter on each side and a red shell light, a pump under the barrel
+        const counter = [[3, 1, 6, 3, '#0c0e10'], [4, 2, 1, 1, GLOW], [6, 2, 1, 1, GLOW], [4, 1, 1, 1, '#9fb4c0'], [6, 1, 1, 1, '#9fb4c0'], [11, 1, 1, 1, RED]];
+        const oldShotgun = SPECS.combat_shotgun.animations;
+        SPECS.combat_shotgun = Object.assign(weaponSpec(913, {
+            body: [
+                C([-2, 0, -7], [4, 5, 13], M(GM, {sd: [...bands(13, 5), ...counter], tp: [[1, 0, 2, 13, GD]]})),
+                C([-1, 4, -10], [2, 2, 14], M(GD, {tp: notches(14, 2), sd: [[0, 0, 14, 1, GL]]})),
+                C([-1, 1.8, -18], [2, 2, 12], M(GD, {sd: [[0, 0, 12, 1, GL]]})),
+                C([-1, -1, -16], [2, 2, 10], M(GM, {sd: [[0, 1, 10, 1, GD]]})),
+                C([-1.5, 1.5, -20], [3, 3, 3], M(GM, {f: [[1, 1, 1, 1, BORE]], edge: false})),
+                C([-1, -5, 1], [2, 5, 3], M(GD, {sd: [[0, 1, 3, 1, '#45484d'], [0, 3, 3, 1, '#45484d']]}), {rot: [15, 0, 0], pivot: [0, 0, 2.5]}),
+                C([-1.5, -2, -1], [3, 1, 4], M(GD, {edge: false})),
+                C([-1.5, 0.3, 5], [3, 3, 10], M(GM, {sd: bands(10, 3)})),
+                C([-2, -2, 14], [4, 6, 2], M(GD, {k: [[1, 1, 2, 4, '#45484d']]}))
+            ],
+            magazine: {pivot: [0, -0.5, -8], cubes: [C([-0.5, -0.8, -9.3], [1, 1, 2], {c: '#c9352b', n: 0.03, k: [[0, 0, 1, 1, GL]], edge: false})]},
+            bolt: {pivot: [0, 0, -11], cubes: [C([-1.5, -1.5, -14], [3, 3, 6], M(GM, {sd: [[1, 0, 1, 3, GD], [3, 0, 1, 3, GD], [5, 0, 1, 3, GD]], bt: [[1, 1, 1, 4, GD]]}))]},
+            sight: {pivot: [0, 6, -9], cubes: [C([-0.5, 5.8, -9], [1, 1, 1], M(GL, {edge: false})), C([-1.5, 5.8, 2], [3, 1, 1], M(GD, {edge: false}))]},
+            muzzle: [0, 3, -20],
+            ejection: [-2.5, 3, 1]
+        }, oldShotgun), {res: 128});
     })();
 
     window.RebirthModels = {build, save, SPECS, coplanarFaces};

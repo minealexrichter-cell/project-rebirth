@@ -8753,16 +8753,6 @@
 		"animation.mech.gatling": {
 			"animation_length": 0.1,
 			"bones": {
-				"gatling_barrels": {
-					"rotation": {
-						"0.0": {
-							"vector": [0, 0, 0]
-						},
-						"0.1": {
-							"vector": [0, 0, 90]
-						}
-					}
-				},
 				"gatling": {
 					"position": {
 						"0.0": {
@@ -8773,6 +8763,25 @@
 						},
 						"0.1": {
 							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"animation.mech.gatling_spin": {
+			"loop": true,
+			"animation_length": 0.25,
+			"bones": {
+				"gatling_barrels": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.15": {
+							"vector": [0, 0, 180]
+						},
+						"0.25": {
+							"vector": [0, 0, 360]
 						}
 					}
 				}

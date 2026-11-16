@@ -36,7 +36,7 @@ public final class WaterRegistry {
             () -> new BucketItem(Fluids.WATER, new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)));
 
     public static final DeferredBlock<WaterPurifierBlock> WATER_PURIFIER = BLOCKS.registerBlock("water_purifier", WaterPurifierBlock::new,
-            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredItem<BlockItem> WATER_PURIFIER_ITEM = ITEMS.registerSimpleBlockItem(WATER_PURIFIER);
 
     @SuppressWarnings("DataFlowIssue")

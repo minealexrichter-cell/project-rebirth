@@ -33,7 +33,7 @@ public final class MonitoringRegistry {
             "contamination_snapshot", builder -> builder.persistent(Snapshot.CODEC).networkSynchronized(Snapshot.STREAM_CODEC));
 
     public static final DeferredBlock<MonitoringStationBlock> MONITORING_STATION = BLOCKS.registerBlock("monitoring_station", MonitoringStationBlock::new,
-            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops());
+            BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredItem<BlockItem> MONITORING_STATION_ITEM = ITEMS.registerSimpleBlockItem(MONITORING_STATION);
     public static final DeferredItem<ContaminationMapItem> CONTAMINATION_MAP = ITEMS.register("contamination_map",
             () -> new ContaminationMapItem(new Item.Properties().stacksTo(1)));

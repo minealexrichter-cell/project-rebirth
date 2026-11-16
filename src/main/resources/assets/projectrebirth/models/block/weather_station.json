@@ -1,5 +1,6 @@
 {
   "parent": "minecraft:block/block",
+  "ambientocclusion": false,
   "textures": {
     "front": "projectrebirth:block/weather_station_front",
     "side": "projectrebirth:block/weather_station_side",

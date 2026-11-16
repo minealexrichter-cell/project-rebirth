@@ -412,6 +412,8 @@
     [false, true].forEach(on => {
         MODELS['weather_station' + (on ? '_on' : '')] = {
             parent: 'minecraft:block/block',
+            // the mast stands above the block: shading by the blocks around the station's foot would darken it in patches
+            ambientocclusion: false,
             textures: shelterTextures('weather_station', on, ['front', 'side', 'top'], ['front'], 'side'),
             elements: [...machine('cyan'), ...screen(on, 'steel'),
                 // the instrument box

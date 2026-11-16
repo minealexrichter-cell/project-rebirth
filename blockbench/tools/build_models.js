@@ -3008,12 +3008,13 @@
                     O([1, 17, -3], [3.5, 4, 1.5], SICK, {f: [[1, 1, 1, 1, GLOW]]}),
                     O([-3, 19, 1.5], [4, 4.5, 3], SICK, {k: [[1, 1, 2, 2, GLOW]], tp: [[1, 1, 1, 1, GLOW]]})]},
                 {name: 'head', parent: 'body', pivot: [0, 22, -1], cubes: [
-                    // the head ends above the mouth; the lower face is the jaw, which drops open (part B3g)
-                    O([-3.5, 23.2, -4.5], [7, 6, 7], SICK, {f: [[1, 1, 2, 1, GLOW], [5, 1, 1, 1, GLOW], [1, 5, 5, 1, '#4e5a42']], tp: [[3, 1, 1, 5, GLOW]], bt: [[1, 1, 5, 4, MAW]]}),
-                    ...[[-2.0, 1.5], [-0.9, 0.5], [0.2, 1.5], [1.3, 0.5], [2.2, 1.5]].map(([x, h]) => fang(x, 23.65 - h, h, -4.3)),
-                    O([-2.5, 28.5, -3.5], [2, 2, 3], SICK, {tp: [[0, 0, 2, 3, GLOW]]})]},
-                {name: 'jaw', parent: 'head', pivot: [0, 23, -0.5], cubes: [O([-3, 20.5, -4.2], [6, 3, 4], SICK, {tp: [[1, 0, 4, 3, MAW]], f: [[0, 0, 6, 1, '#4e5a42'], [4, 1, 1, 1, GLOW]]}),
-                    ...[[-1.9, 0.5], [-0.8, 1.5], [0.4, 0.5], [1.5, 1.5]].map(([x, h]) => fang(x, 23.25, h, -3.85))]},
+                    // like the brute's (part B3h): a skull pushed forward with three glowing eyes and a dark maw in the lower face, a row of
+                    // upper teeth before it, a growth on top; the jaw under it drops open
+                    O([-3.5, 23.2, -5], [7, 6, 7], SICK, {f: [[1, 1, 1, 1, GLOW], [4, 0, 1, 1, GLOW], [5, 2, 1, 1, GLOW], [1, 4, 5, 2, MAW]], tp: [[3, 1, 1, 4, GLOW]]}),
+                    ...[[-2.0, 1.5], [-0.9, 1.0], [0.2, 1.5], [1.3, 1.0], [2.2, 1.5]].map(([x, h]) => fang(x, 25.15 - h, h, -5.1)),
+                    O([1, 28.6, -4], [3, 2, 3], SICK, {tp: [[1, 1, 1, 1, GLOW]], f: [[1, 0, 1, 1, GLOW]]})]},
+                {name: 'jaw', parent: 'head', pivot: [0, 23.4, -1], cubes: [O([-3, 21.6, -5.5], [6, 2, 5], SICK, {tp: [[1, 0, 4, 3, MAW]], f: [[4, 1, 1, 1, GLOW]]}),
+                    ...[[-1.9, 1.0], [-0.8, 0.5], [0.4, 1.0], [1.5, 0.5]].map(([x, h]) => fang(x, 23.45, h, -5.15))]},
                 {name: 'right_arm', parent: 'body', pivot: [-5, 21, 0], cubes: [O([-6.5, 9, -1.5], [3, 13, 3], SUIT, {f: [[0, 9, 3, 4, '#7a8a6a'], [1, 11, 1, 1, GLOW]]})]},
                 {name: 'left_arm', parent: 'body', pivot: [5, 21, 0], cubes: [O([3.5, 15, -2.5], [4, 7, 5], SICK, {f: [[1, 2, 1, 1, GLOW]], sd: [[2, 1, 1, 1, GLOW]]})]},
                 {name: 'left_forearm', parent: 'left_arm', pivot: [5.5, 15.5, 0], cubes: [

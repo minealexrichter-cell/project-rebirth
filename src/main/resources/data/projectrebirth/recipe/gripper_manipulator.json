@@ -1,7 +1,7 @@
 {
   "type": "projectrebirth:fabrication",
   "station": "assembly_station",
-  "sort": 101,
+  "sort": 108,
   "time": 300,
   "ingredients": [
     {
@@ -19,10 +19,14 @@
     {
       "item": "projectrebirth:circuit_board",
       "count": 1
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 1
     }
   ],
   "result": {
-    "id": "projectrebirth:manipulator",
+    "id": "projectrebirth:gripper_manipulator",
     "count": 1
   }
 }

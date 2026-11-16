@@ -83,7 +83,7 @@ category('technology', P + 'electronics_fabricator', 'Technology', 'Технол
         recipe(P + 'power_cell', 'Power cells: lithium, aluminum, copper and redstone. They store energy in bodies, armor and batteries.', 'Энергоячейки: литий, алюминий, медь и красная пыль. Хранят энергию в телах, броне и аккумуляторах.')
     ]),
     entry('assembly_station', P + 'assembly_station', 2, 0, ['electronics_fabricator'], 'Assembly Station', 'Сборочная станция', [
-        block(P + 'assembly_station', 'Actuators, synthetic fiber, the transfer capsule, robot bodies, the heavy actuator and the manipulator. Synthetic bodies are assembled in the body workshop (Garrison tab).', 'Приводы, синтетическая ткань, капсула переноса, тела-роботы, тяжёлый привод и манипулятор. Синтетические тела собираются в сборочном цехе тел (вкладка «Гарнизон»).'),
+        block(P + 'assembly_station', 'Actuators, synthetic fiber, the transfer capsule, robot bodies, the heavy actuator and the manipulators. Synthetic bodies are assembled in the body workshop (Garrison tab).', 'Приводы, синтетическая ткань, капсула переноса, тела-роботы, тяжёлый привод и манипуляторы. Синтетические тела собираются в сборочном цехе тел (вкладка «Гарнизон»).'),
         recipe(P + 'assembly_station', 'Aluminum, circuit boards, a crafting table and iron.', 'Алюминий, платы, верстак и железо.'),
         recipe(P + 'actuator', 'Actuators: bronze, iron and redstone.', 'Приводы: бронза, железо и красная пыль.'),
         recipe(P + 'synthetic_fiber', 'Synthetic fiber, the skin of synthetic bodies: string and a slime ball.', 'Синтетическая ткань — кожа синтетических тел: нитки и слизь.')
@@ -597,7 +597,11 @@ category('garrison', P + 'body_workshop_controller', 'Garrison', 'Гарнизо
         recipe(P + 'assembly_frame', 'Assembly frames: the walls and roof of the body workshop.', 'Сборочные рамы: стены и крыша цеха тел.'),
         recipe(P + 'heavy_frame', 'Heavy frames: the walls of the heavy dock.', 'Тяжёлые рамы: стены тяжёлого дока.'),
         recipe(P + 'crane_beam', 'Crane beams: the roof of the heavy dock.', 'Крановые балки: крыша тяжёлого дока.'),
-        recipe(P + 'manipulator', 'The manipulator: a robot arm that turns to the machine under assembly and works while the assembly goes.', 'Манипулятор: рука-робот, которая поворачивается к собираемой машине и работает, пока идёт сборка.')
+        text('Manipulators are robot arms with a telescopic forearm. While the assembly goes, each reaches the machine with its tool: the welder runs its torch over it in sparks, the gripper brings the parts of the current stage and sets them in place, the screwdriver drives screws into it. Any kind fits any manipulator place of a plan; mix them as you like.',
+            'Манипуляторы — руки-роботы с телескопическим предплечьем. Пока идёт сборка, каждый дотягивается до машины своим инструментом: сварочный водит горелкой по корпусу в искрах, захват подносит детали текущего этапа и ставит их на место, шуруповёрт закручивает винты. Любой вид подходит на любое место манипулятора в схеме — сочетайте как хотите.'),
+        recipe(P + 'welding_manipulator', 'The welding manipulator.', 'Сварочный манипулятор.'),
+        recipe(P + 'gripper_manipulator', 'The gripper manipulator: three fingers.', 'Манипулятор-захват: три пальца.'),
+        recipe(P + 'screwdriver_manipulator', 'The screwdriver manipulator.', 'Манипулятор-шуруповёрт.')
     ]),
     entry('body_workshop', P + 'body_workshop_controller', 2, -1, ['multiblocks'], 'Body Workshop', 'Сборочный цех тел', [
         text('The body workshop is 3×3 and 4 high. A body grows in its middle part by part as the stages go.\n\nSynthetic bodies (advanced, high-tech, premium) are assembled only here, each from the body before it. Robot bodies can be made here cheaper than at the assembly station. Upgrades of the old body go over to the new one.',
@@ -611,8 +615,8 @@ category('garrison', P + 'body_workshop_controller', 'Garrison', 'Гарнизо
         recipe(P + 'workshop_premium_synthetic_body')
     ]),
     entry('heavy_dock', P + 'heavy_dock_controller', 2, 1, ['multiblocks'], 'Heavy Assembly Dock', 'Тяжёлый сборочный док', [
-        text('The heavy dock is 7×7 and 7 high, with a gate 5×5 in front. Power armor of all three kinds is assembled here from a power frame, heavy actuators, a processor, power cells and a hull of its kind.\n\nThe armor workstation makes the power frame and the hulls; the assembly station makes heavy actuators.',
-            'Тяжёлый сборочный док — 7×7 и 7 в высоту, спереди ворота 5×5. Здесь собирается силовая броня всех трёх видов: силовой каркас, тяжёлые приводы, процессор, энергоячейки и корпус своего вида.\n\nСиловой каркас и корпуса делает станция брони, тяжёлые приводы — сборочная станция.'),
+        text('The heavy dock is 7×7 and 7 high, with a gate 5×5 in front. Power armor of all three kinds is assembled here from a power frame, heavy actuators, a processor, power cells and a hull of its kind. A finished armor does not go into the window: it rolls out through the gate by itself and stands in front of the dock, ready to climb in.\n\nThe armor workstation makes the power frame and the hulls; the assembly station makes heavy actuators.',
+            'Тяжёлый сборочный док — 7×7 и 7 в высоту, спереди ворота 5×5. Здесь собирается силовая броня всех трёх видов: силовой каркас, тяжёлые приводы, процессор, энергоячейки и корпус своего вида. Готовая броня не попадает в окно: она сама выезжает через ворота и встаёт перед доком — можно садиться.\n\nСиловой каркас и корпуса делает станция брони, тяжёлые приводы — сборочная станция.'),
         multiblock(P + 'heavy_dock', 'Heavy frames, crane beams on top, four manipulators; the controller left of the gate.', 'Тяжёлые рамы, сверху балки, четыре манипулятора; контроллер слева от ворот.'),
         recipe(P + 'heavy_dock_controller', 'The controller: at the armor workstation.', 'Контроллер: на станции брони.'),
         recipe(P + 'heavy_actuator'),

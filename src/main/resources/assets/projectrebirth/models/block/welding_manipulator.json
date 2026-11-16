@@ -1,0 +1,192 @@
+{
+  "__comment": "A still copy of the GeckoLib arm for the plans: the hologram, the Codex and JEI draw block models, not the animated one.",
+  "textures": {
+    "particle": "projectrebirth:block/welding_manipulator",
+    "base": "projectrebirth:block/assembly_plate",
+    "arm": "projectrebirth:block/crane_beam",
+    "dark": "projectrebirth:block/crane_beam_end",
+    "tool": "minecraft:block/copper_block"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        0,
+        2
+      ],
+      "to": [
+        14,
+        3,
+        14
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base"
+        },
+        "south": {
+          "texture": "#base"
+        },
+        "east": {
+          "texture": "#base"
+        },
+        "west": {
+          "texture": "#base"
+        },
+        "up": {
+          "texture": "#base"
+        },
+        "down": {
+          "texture": "#base"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        3,
+        4.5
+      ],
+      "to": [
+        11.5,
+        8,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#arm"
+        },
+        "south": {
+          "texture": "#arm"
+        },
+        "east": {
+          "texture": "#arm"
+        },
+        "west": {
+          "texture": "#arm"
+        },
+        "up": {
+          "texture": "#arm"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        8,
+        6.5
+      ],
+      "to": [
+        9.5,
+        17,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#arm"
+        },
+        "south": {
+          "texture": "#arm"
+        },
+        "east": {
+          "texture": "#arm"
+        },
+        "west": {
+          "texture": "#arm"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        15,
+        6
+      ],
+      "to": [
+        10,
+        18,
+        10
+      ],
+      "faces": {
+        "north": {
+          "texture": "#dark"
+        },
+        "south": {
+          "texture": "#dark"
+        },
+        "east": {
+          "texture": "#dark"
+        },
+        "west": {
+          "texture": "#dark"
+        },
+        "up": {
+          "texture": "#dark"
+        },
+        "down": {
+          "texture": "#dark"
+        }
+      }
+    },
+    {
+      "from": [
+        7,
+        15.5,
+        -3
+      ],
+      "to": [
+        9,
+        17.5,
+        6
+      ],
+      "faces": {
+        "north": {
+          "texture": "#arm"
+        },
+        "east": {
+          "texture": "#arm"
+        },
+        "west": {
+          "texture": "#arm"
+        },
+        "up": {
+          "texture": "#arm"
+        },
+        "down": {
+          "texture": "#arm"
+        }
+      }
+    },
+    {
+      "from": [
+        6.5,
+        12.5,
+        -3.5
+      ],
+      "to": [
+        9.5,
+        15.5,
+        -0.5
+      ],
+      "faces": {
+        "north": {
+          "texture": "#tool"
+        },
+        "south": {
+          "texture": "#tool"
+        },
+        "east": {
+          "texture": "#tool"
+        },
+        "west": {
+          "texture": "#tool"
+        },
+        "up": {
+          "texture": "#tool"
+        },
+        "down": {
+          "texture": "#tool"
+        }
+      }
+    }
+  ]
+}

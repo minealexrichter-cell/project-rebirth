@@ -15,7 +15,7 @@
           "count": 4
         }
       ],
-      "time": 140,
+      "time": 700,
       "energy": 40,
       "model_stage": 1
     },
@@ -31,7 +31,7 @@
           "count": 1
         }
       ],
-      "time": 160,
+      "time": 800,
       "energy": 40,
       "model_stage": 3
     },
@@ -43,14 +43,14 @@
           "count": 4
         }
       ],
-      "time": 180,
+      "time": 800,
       "energy": 40,
       "model_stage": 4
     },
     {
       "name": "calibration",
       "materials": [],
-      "time": 120,
+      "time": 600,
       "energy": 40,
       "model_stage": 5
     }

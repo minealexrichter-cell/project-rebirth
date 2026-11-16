@@ -124,6 +124,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     private int shownStage = -1;
     /** On the client: the machine under assembly as the server told it. */
     private ItemStack previewResult = ItemStack.EMPTY;
+    /** The part of the current stage the grippers carry: on the server as last sent, on the client as heard. */
+    private ItemStack shownPart = ItemStack.EMPTY;
+    private ItemStack previewPart = ItemStack.EMPTY;
     private int previewStage = -1;
 
     private final ContainerData data = new ContainerData() {
@@ -203,6 +206,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         if (!shownResult.isEmpty()) {
             tag.put("preview_result", shownResult.save(registries));
         }
+        if (!shownPart.isEmpty()) {
+            tag.put("preview_part", shownPart.save(registries));
+        }
         return tag;
     }
 
@@ -213,6 +219,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         }
         previewStage = tag.contains("preview_stage") ? tag.getInt("preview_stage") : -1;
         previewResult = tag.contains("preview_result") ? ItemStack.parseOptional(registries, tag.getCompound("preview_result")) : ItemStack.EMPTY;
+        previewPart = tag.contains("preview_part") ? ItemStack.parseOptional(registries, tag.getCompound("preview_part")) : ItemStack.EMPTY;
     }
 
     @Override
@@ -369,6 +376,18 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
 
     /** The manipulators inside a whole construction, each turned to face the machine under assembly. */
     private void findManipulators(MultiblockSchema schema) {
+        // the arms of the construction as it was let go first: stopped and unlinked (the whole ones are linked again below)
+        if (level != null) {
+            for (BlockPos pos : manipulators) {
+                BlockState old = level.getBlockState(pos);
+                if (old.getBlock() instanceof ManipulatorBlock && old.getValue(TechSounds.WORKING)) {
+                    level.setBlock(pos, old.setValue(TechSounds.WORKING, false), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+                if (level.getBlockEntity(pos) instanceof ManipulatorBlockEntity arm && worldPosition.equals(arm.controller())) {
+                    arm.setController(null);
+                }
+            }
+        }
         manipulators.clear();
         manipulatorsWorking = false;
         if (level == null || check == null || !check.complete()) {
@@ -387,6 +406,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
                     level.setBlock(pos, turned, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
                 }
                 manipulators.add(pos.immutable());
+                if (level.getBlockEntity(pos) instanceof ManipulatorBlockEntity arm) {
+                    arm.setController(worldPosition);
+                }
             }
         }
     }
@@ -409,13 +431,24 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         AssemblyRecipe recipe = stage >= 0 ? recipe(running) : null;
         ItemStack result = recipe == null ? ItemStack.EMPTY : recipe.result();
         int modelStage = recipe == null ? -1 : recipe.stages().get(stage).modelStage();
-        if (modelStage != shownStage || !ItemStack.isSameItem(result, shownResult)) {
+        ItemStack part = ItemStack.EMPTY;
+        if (recipe != null && !recipe.stages().get(stage).materials().isEmpty()) {
+            ItemStack[] options = recipe.stages().get(stage).materials().get(0).ingredient().getItems();
+            part = options.length > 0 ? options[0].copyWithCount(1) : ItemStack.EMPTY;
+        }
+        if (modelStage != shownStage || !ItemStack.isSameItem(result, shownResult) || !ItemStack.isSameItem(part, shownPart)) {
             shownStage = modelStage;
             shownResult = result.copy();
+            shownPart = part;
             if (level != null) {
                 level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
             }
         }
+    }
+
+    /** On the client: the part the grippers carry in this stage, or empty. */
+    public ItemStack previewPart() {
+        return previewPart;
     }
 
     /** On the client: the result of the recipe under assembly, or empty. */
@@ -566,7 +599,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             }
         }
         ItemStack output = items.getStackInSlot(OUTPUT_SLOT);
-        if (output.isEmpty()) {
+        if (rollOut(result)) {
+            // it left the dock on its own
+        } else if (output.isEmpty()) {
             items.setStackInSlot(OUTPUT_SLOT, result);
         } else {
             output.grow(result.getCount());
@@ -579,6 +614,43 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         stage = -1;
         ticks = 0;
         setChanged();
+    }
+
+    /**
+     * A finished power armor in a plan with an exit (the heavy dock) is not put into the output slot: it stands where it was
+     * assembled, facing the gate, and rolls out by itself. Returns false when it cannot (no exit, not armor, no room).
+     */
+    private boolean rollOut(ItemStack result) {
+        MultiblockSchema schema = schema();
+        if (!(level instanceof ServerLevel server) || schema == null
+                || !(result.getItem() instanceof com.projectrebirth.powerarmor.PowerArmorItem armorItem)) {
+            return false;
+        }
+        net.minecraft.world.phys.Vec3 exit = schema.exitPoint(worldPosition, facing());
+        if (exit == null) {
+            return false;
+        }
+        net.minecraft.world.phys.Vec3 at = schema.displayPoint(worldPosition, facing());
+        com.projectrebirth.powerarmor.PowerArmorEntity armor = com.projectrebirth.powerarmor.PowerArmorRegistry.POWER_ARMOR.get().create(server);
+        if (armor == null) {
+            return false;
+        }
+        float yaw = facing().toYRot();
+        armor.setVariant(armorItem.variant());
+        armor.moveTo(at.x, at.y, at.z, yaw, 0.0f);
+        armor.setYHeadRot(yaw);
+        armor.setYBodyRot(yaw);
+        if (!server.noCollision(armor)) {
+            return false;
+        }
+        if (owner != null) {
+            armor.setOwner(owner);
+        }
+        armor.setUpgrades(Upgrades.ofStack(result));
+        server.addFreshEntity(armor);
+        armor.setIntegrity(armor.getMaxStructural(), armor.getMaxCritical());
+        armor.rollOutTo(exit);
+        return true;
     }
 
     private boolean outputTakes(ItemStack result) {

@@ -11,8 +11,8 @@
           "count": 1
         }
       ],
-      "time": 160,
-      "energy": 120,
+      "time": 800,
+      "energy": 80,
       "model_stage": 1
     },
     {
@@ -23,8 +23,8 @@
           "count": 2
         }
       ],
-      "time": 160,
-      "energy": 120,
+      "time": 800,
+      "energy": 80,
       "model_stage": 2
     },
     {
@@ -39,8 +39,8 @@
           "count": 2
         }
       ],
-      "time": 160,
-      "energy": 120,
+      "time": 800,
+      "energy": 80,
       "model_stage": 3
     },
     {
@@ -51,15 +51,15 @@
           "count": 1
         }
       ],
-      "time": 240,
-      "energy": 120,
+      "time": 1000,
+      "energy": 80,
       "model_stage": 4
     },
     {
       "name": "calibration",
       "materials": [],
-      "time": 120,
-      "energy": 120,
+      "time": 600,
+      "energy": 80,
       "model_stage": 5
     }
   ],

@@ -1,0 +1,85 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.welding_manipulator",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 3.5,
+				"visible_bounds_height": 4,
+				"visible_bounds_offset": [0, 2, 0]
+			},
+			"bones": [
+				{
+					"name": "base",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-6, 0, -6], "size": [12, 3, 12], "uv": [0, 0]},
+						{"origin": [-4, 2, -4], "size": [8, 3, 8], "uv": [80, 15]}
+					]
+				},
+				{
+					"name": "turret",
+					"parent": "base",
+					"pivot": [0, 4, 0],
+					"cubes": [
+						{"origin": [-3.5, 4, -3.5], "size": [7, 4, 7], "uv": [52, 16]}
+					]
+				},
+				{
+					"name": "lower_arm",
+					"parent": "turret",
+					"pivot": [0, 9, 0],
+					"cubes": [
+						{"origin": [-3, 6, -2.5], "size": [6, 6, 5], "uv": [80, 26]},
+						{"origin": [-1.5, 9, -1.5], "size": [3, 9.25, 3], "uv": [109, 0]}
+					]
+				},
+				{
+					"name": "forearm",
+					"parent": "lower_arm",
+					"pivot": [0, 21, 0],
+					"cubes": [
+						{"origin": [-3, 18, -2], "size": [6, 6, 4], "uv": [102, 26]},
+						{"origin": [-2.5, 18.5, -10], "size": [5, 5, 11], "uv": [48, 0]}
+					]
+				},
+				{
+					"name": "extension_1",
+					"parent": "forearm",
+					"pivot": [0, 21, 0],
+					"cubes": [
+						{"origin": [-2, 19, -10.5], "size": [4, 4, 10.5], "uv": [80, 0]}
+					]
+				},
+				{
+					"name": "extension_2",
+					"parent": "extension_1",
+					"pivot": [0, 21, 0],
+					"cubes": [
+						{"origin": [-1.5, 19.5, -11], "size": [3, 3, 10.5], "uv": [0, 15]}
+					]
+				},
+				{
+					"name": "extension_3",
+					"parent": "extension_2",
+					"pivot": [0, 21, 0],
+					"cubes": [
+						{"origin": [-1, 20, -11.5], "size": [2, 2, 10.5], "uv": [27, 16]}
+					]
+				},
+				{
+					"name": "wrist",
+					"parent": "extension_3",
+					"pivot": [0, 21, -11.5],
+					"cubes": [
+						{"origin": [-1.75, 19.25, -14], "size": [3.5, 3.5, 3.25], "uv": [112, 13]},
+						{"origin": [-1, 20, -17.5], "size": [2, 2, 4], "uv": [112, 20]},
+						{"origin": [-0.5, 20.5, -18.5], "size": [1, 1, 1.5], "uv": [121, 0]}
+					]
+				}
+			]
+		}
+	]
+}

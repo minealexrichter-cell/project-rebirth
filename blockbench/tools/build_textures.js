@@ -2367,7 +2367,7 @@
         hazard(p, 3, 6, 10, 4);
         return p;
     });
-    // Parts: the heavy actuator, the power frame, the three armor hulls and the manipulator's icon.
+    // Parts: the heavy actuator, the power frame, the three armor hulls and the manipulators' icons.
     item('heavy_actuator', () => icon([
         '................',
         '..kkkk..........',
@@ -2424,23 +2424,29 @@
     item('combat_armor_hull', hull(205, '#6b737c', '#c9352b'));
     item('mobile_armor_hull', hull(206, '#a7b0b8', '#37c6e8'));
     item('worker_armor_hull', hull(207, '#d9a62e', '#23262b'));
-    item('manipulator', () => icon([
-        '................',
-        '.....kkkkkkkkk..',
-        '....kmyyyyyyyyk.',
-        '....kmkkkkkkkmk.',
-        '....kyk.....kmk.',
-        '....kyk.....kbk.',
-        '....kyk......k..',
-        '....kyk.........',
-        '....kyk.........',
-        '...kmmmk........',
-        '..kyyyyyk.......',
-        '..kyyyyyk.......',
-        '.kkkkkkkkk......',
-        '.kmmmmmmmk......',
-        '.kkkkkkkkk......',
-        '................'], {k: '#1e2228', m: '#4a4f56', y: '#d9a62e', b: '#9fd8ff'}));
+    // The manipulators' icons: the same arm, the turret in the colour of the kind and its tool at the end.
+    function manipulatorIcon(accent, tip) {
+        return () => icon([
+            '................',
+            '.....kkkkkkkkk..',
+            '....kmyyyyyyyyk.',
+            '....kmkkkkkkkmk.',
+            '....kyk....' + tip[0],
+            '....kyk....' + tip[1],
+            '....kyk....' + tip[2],
+            '....kyk....' + tip[3],
+            '....kyk.........',
+            '...kmmmk........',
+            '..kaaaaak.......',
+            '..kaaaaak.......',
+            '.kkkkkkkkk......',
+            '.kmmmmmmmk......',
+            '.kkkkkkkkk......',
+            '................'], {k: '#1e2228', m: '#4a4f56', y: '#d9a62e', a: accent, b: '#9fd8ff', o: '#b06a3a', s: '#c3c8cd'});
+    }
+    item('welding_manipulator', manipulatorIcon('#e07a24', ['.kmk.', '.kok.', '.kok.', '..b..']));
+    item('gripper_manipulator', manipulatorIcon('#3a8fd0', ['kmmmk', 's.s.s', 's.s.s', 's...s']));
+    item('screwdriver_manipulator', manipulatorIcon('#5aa04a', ['.kmk.', '.kak.', '..s..', '..s..']));
 
     // The bucket of polluted water is the game's bucket with a liquid layer over it: blockbench/tools/polluted_bucket.js.
 

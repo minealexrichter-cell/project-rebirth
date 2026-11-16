@@ -72,7 +72,9 @@
     "projectrebirth:assembly_frame",
     "projectrebirth:heavy_frame",
     "projectrebirth:crane_beam",
-    "projectrebirth:manipulator",
+    "projectrebirth:welding_manipulator",
+    "projectrebirth:gripper_manipulator",
+    "projectrebirth:screwdriver_manipulator",
     "projectrebirth:body_workshop_controller",
     "projectrebirth:heavy_dock_controller"
   ]

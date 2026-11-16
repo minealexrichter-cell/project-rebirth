@@ -3431,44 +3431,66 @@
         }, shotgunAnims), {res: 128});
     })();
 
-    // ------------------------------------------------------------------ manipulator (1.7.0, block B)
-    // A robot arm of the multiblock workshops, a GeckoLib block: a round base on the floor, a turret that turns, an upright
-    // lower arm, a forearm reaching forward (-Z, toward the machine under assembly) and a welding head pointing down. The
-    // code turns the block to face the assembly zone; "work" swings the arm and shakes the head, "idle" sways the turret.
+    // ------------------------------------------------------------------ manipulators (1.7.0, block B)
+    // Robot arms of the multiblock workshops, GeckoLib blocks in three kinds: a welder, a three-finger gripper and a
+    // screwdriver. They share the arm: a base, a turret that turns (bone "turret"), an upright upper arm ("lower_arm", 12 px
+    // from the shoulder at y 9 to the elbow at y 21), a forearm sleeve ("forearm") with three telescopic stages
+    // ("extension_1..3", each slides up to 9 px forward) and a wrist ("wrist") at 11.5 px in front of the elbow, holding the
+    // tool pointing forward (-Z). The code (ManipulatorPose) turns and bends them every frame so that the tool's tip touches
+    // the machine under assembly; the numbers there must match these. The tips: welder 7 px, gripper 6.5 px, screwdriver 8 px
+    // in front of the wrist.
     (() => {
-        const CASE = {c: '#d9a62e', n: 0.07, tp: [[1, 1, 2, 2, '#2a2d31']]};
         const FRAME = {c: '#4a4f56', n: 0.08};
         const DARK = {c: '#2a2d31', n: 0.06, edge: false};
-        const TIP = {c: '#9fd8ff', n: 0.02, edge: false};
-        SPECS.manipulator = {
-            res: 64, seed: 1701, block: true, noCoplanarFaces: true,
-            bones: [
+        const ARM = {c: '#d9a62e', n: 0.07};
+        const STEEL = {c: '#9aa3ad', n: 0.06};
+        function arm(accent) {
+            const turret = Object.assign({}, ARM, {c: accent, tp: [[1, 1, 2, 2, '#2a2d31']]});
+            return [
                 {name: 'base', parent: undefined, pivot: [0, 0, 0], cubes: [
-                    C([-6, 0, -6], [12, 3, 12], Object.assign({}, FRAME, {tp: [[0, 0, 12, 1, '#d9a62e'], [0, 11, 12, 1, '#d9a62e']]})),
+                    C([-6, 0, -6], [12, 3, 12], Object.assign({}, FRAME, {tp: [[0, 0, 12, 1, accent], [0, 11, 12, 1, accent]]})),
                     C([-4, 2, -4], [8, 3, 8], DARK)]},
-                {name: 'turret', parent: 'base', pivot: [0, 4, 0], cubes: [
-                    C([-3.5, 4, -3.5], [7, 4, 7], CASE)]},
-                {name: 'lower_arm', parent: 'turret', pivot: [0, 7, 0], cubes: [
-                    C([-2.5, 6, -2], [5, 3, 4], FRAME),
-                    C([-1.5, 7, -1.5], [3, 10, 3], CASE)]},
-                {name: 'forearm', parent: 'lower_arm', pivot: [0, 16, 0], cubes: [
-                    C([-2, 15, -2], [4, 3, 4], FRAME),
-                    C([-1, 15.5, -11], [2, 2, 10], CASE)]},
-                {name: 'tool', parent: 'forearm', pivot: [0, 16.5, -10], cubes: [
-                    C([-1.5, 13, -11.5], [3, 3.5, 3], FRAME),
-                    C([-0.5, 11, -10.5], [1, 2.5, 1], TIP)]}
-            ],
-            animations: {
-                'animation.manipulator.idle': {length: 4, loop: 'loop', bones: {
-                    turret: {r: {'0.000': [0, 0, 0], '2.000': [0, 8, 0], '4.000': [0, 0, 0]}},
-                    lower_arm: {r: {'0.000': [-5, 0, 0], '2.000': [-8, 0, 0], '4.000': [-5, 0, 0]}}}},
-                'animation.manipulator.work': {length: 2, loop: 'loop', bones: {
-                    turret: {r: {'0.000': [0, -20, 0], '0.500': [0, 0, 0], '1.000': [0, 20, 0], '1.500': [0, 0, 0], '2.000': [0, -20, 0]}},
-                    lower_arm: {r: {'0.000': [-10, 0, 0], '0.500': [-25, 0, 0], '1.000': [-10, 0, 0], '1.500': [-25, 0, 0], '2.000': [-10, 0, 0]}},
-                    forearm: {r: {'0.000': [10, 0, 0], '0.500': [25, 0, 0], '1.000': [10, 0, 0], '1.500': [25, 0, 0], '2.000': [10, 0, 0]}},
-                    tool: {p: {'0.000': [0, 0, 0], '0.250': [0, -0.5, 0], '0.500': [0, 0, 0], '0.750': [0, -0.5, 0], '1.000': [0, 0, 0],
-                        '1.250': [0, -0.5, 0], '1.500': [0, 0, 0], '1.750': [0, -0.5, 0], '2.000': [0, 0, 0]}}}}
-            }
+                {name: 'turret', parent: 'base', pivot: [0, 4, 0], cubes: [C([-3.5, 4, -3.5], [7, 4, 7], turret)]},
+                {name: 'lower_arm', parent: 'turret', pivot: [0, 9, 0], cubes: [
+                    C([-3, 6, -2.5], [6, 6, 5], FRAME),
+                    C([-1.5, 9, -1.5], [3, 9.25, 3], ARM)]},
+                {name: 'forearm', parent: 'lower_arm', pivot: [0, 21, 0], cubes: [
+                    C([-3, 18, -2], [6, 6, 4], FRAME),
+                    C([-2.5, 18.5, -10], [5, 5, 11], ARM)]},
+                {name: 'extension_1', parent: 'forearm', pivot: [0, 21, 0], cubes: [C([-2, 19, -10.5], [4, 4, 10.5], STEEL)]},
+                {name: 'extension_2', parent: 'extension_1', pivot: [0, 21, 0], cubes: [C([-1.5, 19.5, -11], [3, 3, 10.5], STEEL)]},
+                {name: 'extension_3', parent: 'extension_2', pivot: [0, 21, 0], cubes: [C([-1, 20, -11.5], [2, 2, 10.5], STEEL)]}
+            ];
+        }
+        const idle = {'animation.manipulator.idle': {length: 1, loop: 'loop', bones: {turret: {r: {'0.000': [0, 0, 0], '1.000': [0, 0, 0]}}}}};
+        SPECS.welding_manipulator = {
+            res: 128, seed: 1701, block: true, noCoplanarFaces: true,
+            bones: [...arm('#e07a24'),
+                {name: 'wrist', parent: 'extension_3', pivot: [0, 21, -11.5], cubes: [
+                    C([-1.75, 19.25, -14], [3.5, 3.5, 3.25], FRAME),
+                    C([-1, 20, -17.5], [2, 2, 4], {c: '#b06a3a', n: 0.05}),
+                    C([-0.5, 20.5, -18.5], [1, 1, 1.5], {c: '#9fd8ff', n: 0.02, edge: false})]}],
+            animations: idle
+        };
+        const FINGER = {c: '#c3c8cd', n: 0.05, edge: false};
+        SPECS.gripper_manipulator = {
+            res: 128, seed: 1702, block: true, noCoplanarFaces: true,
+            bones: [...arm('#3a8fd0'),
+                {name: 'wrist', parent: 'extension_3', pivot: [0, 21, -11.5], cubes: [C([-2, 19, -13.5], [4, 4, 2.75], FRAME)]},
+                {name: 'finger_top', parent: 'wrist', pivot: [0, 22, -13], cubes: [C([-0.5, 21.5, -18], [1, 1, 5.5], FINGER)]},
+                {name: 'finger_left', parent: 'wrist', pivot: [1.3, 20.1, -13], cubes: [C([0.8, 19.6, -18], [1, 1, 5.5], FINGER)]},
+                {name: 'finger_right', parent: 'wrist', pivot: [-1.3, 20.1, -13], cubes: [C([-1.8, 19.6, -18], [1, 1, 5.5], FINGER)]}],
+            animations: idle
+        };
+        SPECS.screwdriver_manipulator = {
+            res: 128, seed: 1703, block: true, noCoplanarFaces: true,
+            bones: [...arm('#5aa04a'),
+                {name: 'wrist', parent: 'extension_3', pivot: [0, 21, -11.5], cubes: [
+                    C([-1.75, 19.25, -15], [3.5, 3.5, 4.25], Object.assign({}, FRAME, {sd: [[1, 1, 2, 1, '#5aa04a']]})),
+                    C([-1, 20, -16], [2, 2, 1.5], DARK)]},
+                {name: 'bit', parent: 'wrist', pivot: [0, 21, -16], cubes: [
+                    C([-0.5, 20.5, -19.5], [1, 1, 4], {c: '#c3c8cd', n: 0.04, edge: false, f: [[0, 0, 1, 1, '#3a3f46']]})]}],
+            animations: idle
         };
     })();
 

@@ -99,7 +99,9 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.ASSEMBLY_FRAME_ITEM.get());
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.HEAVY_FRAME_ITEM.get());
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.CRANE_BEAM_ITEM.get());
-                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.MANIPULATOR_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.WELDING_MANIPULATOR_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.GRIPPER_MANIPULATOR_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.SCREWDRIVER_MANIPULATOR_ITEM.get());
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.ENERGY_PORT_ITEM.get());
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.CARGO_PORT_ITEM.get());
                 output.accept(com.projectrebirth.multiblock.MultiblockRegistry.HEAVY_ACTUATOR.get());

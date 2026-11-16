@@ -100,6 +100,12 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
     private static final EntityDataAccessor<Byte> SHELL = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BYTE);
     /** The worker is breaking a block (1.5.2): its arms hammer like a jackhammer for everybody to see. */
     private static final EntityDataAccessor<Boolean> MINING = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 1.7.0: rolling out of the heavy dock on its own, standing still (no walk). */
+    private static final EntityDataAccessor<Boolean> ROLLING_OUT = SynchedEntityData.defineId(PowerArmorEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final double ROLL_SPEED = 0.04;
+    @Nullable
+    private Vec3 rolloutTarget;
+    private int rolloutStuck;
     /** Without a swing of the pilot for this long, the mining stops (a creative break sends no "stopped"). */
     private static final int MINING_GRACE_TICKS = 10;
     /** The pilot's seat in the cab, over the armor's feet, in blocks: up, and back from the middle. See PowerArmorClient.CAB_PILOT_SCALE. */
@@ -192,6 +198,38 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         builder.define(WEAPON_RELOAD_END, 0L);
         builder.define(SHELL, SHELL_CLOSED);
         builder.define(MINING, false);
+        builder.define(ROLLING_OUT, false);
+    }
+
+    /** 1.7.0: the armor just assembled in a dock rolls out to that point by itself (server). */
+    public void rollOutTo(Vec3 target) {
+        rolloutTarget = target;
+        rolloutStuck = 0;
+        entityData.set(ROLLING_OUT, true);
+        level().playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.PISTON_EXTEND, net.minecraft.sounds.SoundSource.BLOCKS, 0.8f, 0.6f);
+    }
+
+    public boolean isRollingOut() {
+        return entityData.get(ROLLING_OUT);
+    }
+
+    /** One step toward the place outside the dock; it stops there, when a pilot gets in, or when it is stuck. */
+    private void tickRollout() {
+        if (rolloutTarget == null) {
+            return;
+        }
+        Vec3 left = new Vec3(rolloutTarget.x - getX(), 0.0, rolloutTarget.z - getZ());
+        if (isVehicle() || left.length() < 0.03 || rolloutStuck > 40) {
+            rolloutTarget = null;
+            entityData.set(ROLLING_OUT, false);
+            setDeltaMovement(Vec3.ZERO);
+            level().playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE, net.minecraft.sounds.SoundSource.BLOCKS, 0.7f, 0.7f);
+            return;
+        }
+        Vec3 step = left.length() > ROLL_SPEED ? left.normalize().scale(ROLL_SPEED) : left;
+        Vec3 before = position();
+        move(net.minecraft.world.entity.MoverType.SELF, step);
+        rolloutStuck = position().distanceToSqr(before) < 1.0e-6 ? rolloutStuck + 1 : 0;
     }
 
     public boolean isMining() {
@@ -611,6 +649,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         if (level().isClientSide) {
             return;
         }
+        tickRollout();
         if (Floodlight.timeToUpdate(this)) {
             floodlightPos = Floodlight.update(this, floodlightPos);
         }
@@ -1148,6 +1187,11 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         tag.putFloat("Structural", getStructural());
         tag.putFloat("Critical", getCritical());
         tag.putByte("ArmorState", entityData.get(STATE));
+        if (rolloutTarget != null) {
+            tag.putDouble("RolloutX", rolloutTarget.x);
+            tag.putDouble("RolloutY", rolloutTarget.y);
+            tag.putDouble("RolloutZ", rolloutTarget.z);
+        }
         tag.putBoolean("Initialized", initialized);
         tag.putString("Variant", getVariant().id());
         tag.putBoolean("WideMining", isWideMining());
@@ -1164,6 +1208,10 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         entityData.set(STRUCTURAL, tag.getFloat("Structural"));
         entityData.set(CRITICAL, tag.getFloat("Critical"));
         entityData.set(STATE, tag.getByte("ArmorState"));
+        if (tag.contains("RolloutX")) {
+            rolloutTarget = new Vec3(tag.getDouble("RolloutX"), tag.getDouble("RolloutY"), tag.getDouble("RolloutZ"));
+            entityData.set(ROLLING_OUT, true);
+        }
         initialized = tag.getBoolean("Initialized");
         // Armors from 0.1.0 have no variant: they are combat armors.
         setVariant(ArmorVariant.byId(tag.getString("Variant")));
@@ -1182,7 +1230,7 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
             if (isDisabled()) {
                 return state.setAndContinue(SHUTDOWN);
             }
-            return state.setAndContinue(state.isMoving() ? WALK : IDLE);
+            return state.setAndContinue(state.isMoving() && !isRollingOut() ? WALK : IDLE);
         }));
         // The shell: opens and holds open, then closes; shut, it does nothing (the parts rest closed).
         controllers.add(new AnimationController<>(this, "shell", 0, state -> switch (shellState()) {

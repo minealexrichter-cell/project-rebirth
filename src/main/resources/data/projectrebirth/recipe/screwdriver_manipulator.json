@@ -1,0 +1,32 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 109,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:actuator",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:screwdriver_manipulator",
+    "count": 1
+  }
+}

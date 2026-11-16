@@ -39,8 +39,11 @@ import net.neoforged.neoforge.gametest.GameTestHooks;
  * @param key      what each key stands for
  * @param testOnly a plan of the automated tests: it exists only while game tests are enabled (never in a released game)
  * @param display  the cell (column, layer, row) where the machine under assembly stands (block B); the middle of the zone without it
+ * @param exit     the cell (column, layer, row, may lie outside the plan) a finished machine rolls out to on its own (the heavy dock's
+ *                 power armor); without it every result goes into the output slot
  */
-public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key, boolean testOnly, Optional<List<Integer>> display) {
+public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key, boolean testOnly, Optional<List<Integer>> display,
+                               Optional<List<Integer>> exit) {
     /**
      * What a cell of the plan takes.
      *
@@ -112,7 +115,8 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
             Codec.STRING.listOf().listOf().fieldOf("layers").forGetter(MultiblockSchema::layers),
             Codec.unboundedMap(Codec.STRING, Cell.CODEC).fieldOf("key").forGetter(MultiblockSchema::key),
             Codec.BOOL.optionalFieldOf("test_only", false).forGetter(MultiblockSchema::testOnly),
-            Codec.INT.listOf().optionalFieldOf("display").forGetter(MultiblockSchema::display)).apply(i, MultiblockSchema::new))
+            Codec.INT.listOf().optionalFieldOf("display").forGetter(MultiblockSchema::display),
+            Codec.INT.listOf().optionalFieldOf("exit").forGetter(MultiblockSchema::exit)).apply(i, MultiblockSchema::new))
             .validate(MultiblockSchema::validate);
 
     private static DataResult<MultiblockSchema> validate(MultiblockSchema schema) {
@@ -244,6 +248,15 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
      * Where the machine under assembly stands: the bottom middle of the display cell (or of the lowest cells of the zone), in the
      * world, for a controller at that place facing that way.
      */
+    /** Where a finished machine rolls out to (the bottom middle of the exit cell), or null if the plan has none. */
+    @Nullable
+    public net.minecraft.world.phys.Vec3 exitPoint(BlockPos controller, Direction facing) {
+        if (exit.isEmpty() || exit.get().size() != 3) {
+            return null;
+        }
+        return net.minecraft.world.phys.Vec3.atBottomCenterOf(worldPos(controller, facing, exit.get().get(0), exit.get().get(1), exit.get().get(2)));
+    }
+
     public net.minecraft.world.phys.Vec3 displayPoint(BlockPos controller, Direction facing) {
         if (display.isPresent() && display.get().size() == 3) {
             BlockPos pos = worldPos(controller, facing, display.get().get(0), display.get().get(1), display.get().get(2));

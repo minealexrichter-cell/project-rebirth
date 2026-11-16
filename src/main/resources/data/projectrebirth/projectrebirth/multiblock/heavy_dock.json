@@ -82,7 +82,9 @@
     },
     "M": {
       "blocks": [
-        "projectrebirth:manipulator"
+        "projectrebirth:welding_manipulator",
+        "projectrebirth:gripper_manipulator",
+        "projectrebirth:screwdriver_manipulator"
       ]
     },
     "Z": {
@@ -102,5 +104,10 @@
     3,
     1,
     3
+  ],
+  "exit": [
+    3,
+    1,
+    8
   ]
 }

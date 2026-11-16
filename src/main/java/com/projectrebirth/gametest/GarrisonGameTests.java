@@ -48,7 +48,7 @@ public class GarrisonGameTests {
     }
 
     /**
-     * Builds a whole construction facing south with its lowest layer at y 1 and its corner at x 1, z 1 of the test area; returns
+     * Builds a whole construction facing south with its lowest layer at y 1 and its corner at x 0, z 0 of the test area; returns
      * its controller, the plan already set.
      */
     private static MultiblockControllerBlockEntity build(GameTestHelper helper, ResourceLocation id, Block controllerBlock) {
@@ -74,7 +74,7 @@ public class GarrisonGameTests {
         }
         helper.assertTrue(controllerCell != null, "The plan has a controller");
         BlockPos lowest = schema.worldPos(BlockPos.ZERO, facing, controllerCell[0], 0, controllerCell[2]);
-        BlockPos controller = helper.absolutePos(new BlockPos(1 - minX, 1 + controllerCell[1] - lowest.getY(), 1 - minZ));
+        BlockPos controller = helper.absolutePos(new BlockPos(-minX, 1 + controllerCell[1] - lowest.getY(), -minZ));
         for (int y = 0; y < schema.height(); y++) {
             for (int z = 0; z < schema.depth(); z++) {
                 for (int x = 0; x < schema.width(); x++) {
@@ -105,7 +105,7 @@ public class GarrisonGameTests {
         for (BlockPos pos : BlockPos.betweenClosed(check.bounds().minX(), check.bounds().minY(), check.bounds().minZ(),
                 check.bounds().maxX(), check.bounds().maxY(), check.bounds().maxZ())) {
             BlockState state = helper.getLevel().getBlockState(pos);
-            if (state.is(MultiblockRegistry.MANIPULATOR.get())) {
+            if (state.getBlock() instanceof com.projectrebirth.multiblock.ManipulatorBlock) {
                 found++;
                 Vec3 here = Vec3.atCenterOf(pos), ahead = Vec3.atCenterOf(pos.relative(state.getValue(HorizontalDirectionalBlock.FACING)));
                 helper.assertTrue(ahead.distanceToSqr(target.x, here.y, target.z) < here.distanceToSqr(target.x, here.y, target.z),
@@ -145,7 +145,7 @@ public class GarrisonGameTests {
         entity.energy().load(entity.energy().getMaxEnergyStored());
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 400)
+    @GameTest(template = TEMPLATE, timeoutTicks = 1600)
     public static void theWorkshopMakesACheaperRobotAndTheStationKeepsItsOwn(GameTestHelper helper) {
         AssemblyRecipe workshop = MultiblockRegistry.recipesFor(helper.getLevel(), MultiblockRegistry.BODY_WORKSHOP).stream()
                 .filter(holder -> holder.id().equals(ProjectRebirth.id("workshop_basic_robot_body"))).findFirst().orElseThrow().value();
@@ -168,13 +168,15 @@ public class GarrisonGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 500)
+    @GameTest(template = TEMPLATE, timeoutTicks = 2000)
     public static void aBodyOverABodyKeepsItsUpgrades(GameTestHelper helper) {
         MultiblockControllerBlockEntity entity = build(helper, MultiblockRegistry.BODY_WORKSHOP, MultiblockRegistry.WORKSHOP_CONTROLLER.get());
         ItemStack body = new ItemStack(item("basic_robot_body"));
         Upgrades.putOnStack(body, InstalledUpgrades.EMPTY.with(new InstalledUpgrades.Installed(Optional.empty(), new ItemStack(UpgradeRegistry.COPPER_PLATING.get()))));
         start(entity, "workshop_improved_robot_body", body);
-        helper.runAfterDelay(340, () -> {
+        int time = MultiblockRegistry.recipesFor(helper.getLevel(), MultiblockRegistry.BODY_WORKSHOP).stream()
+                .filter(holder -> holder.id().equals(ProjectRebirth.id("workshop_improved_robot_body"))).findFirst().orElseThrow().value().totalTime();
+        helper.runAfterDelay(time + 40, () -> {
             ItemStack out = entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT);
             helper.assertTrue(out.is(item("improved_robot_body")), "The improved body: " + out);
             helper.assertTrue(Upgrades.ofStack(out).entries().stream().anyMatch(e -> e.stack().is(UpgradeRegistry.COPPER_PLATING.get())),
@@ -183,15 +185,36 @@ public class GarrisonGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 1000)
-    public static void theHeavyDockAssemblesPowerArmor(GameTestHelper helper) {
+    /** The dock builds power armor and it rolls out through the gate on its own, not into the output slot. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 4600)
+    public static void theHeavyDockAssemblesPowerArmorThatRollsOut(GameTestHelper helper) {
         MultiblockControllerBlockEntity entity = build(helper, MultiblockRegistry.HEAVY_DOCK, MultiblockRegistry.DOCK_CONTROLLER.get());
         start(entity, "dock_power_armor", ItemStack.EMPTY);
+        // a long assembly takes more energy than the dock holds: the generators keep feeding it
+        helper.onEachTick(() -> entity.energy().load(entity.energy().getMaxEnergyStored()));
+        int time = MultiblockRegistry.recipesFor(helper.getLevel(), MultiblockRegistry.HEAVY_DOCK).stream()
+                .filter(holder -> holder.id().equals(ProjectRebirth.id("dock_power_armor"))).findFirst().orElseThrow().value().totalTime();
+        Vec3 exit = entity.schema().exitPoint(entity.getBlockPos(), entity.facing());
+        Vec3 inside = entity.schema().displayPoint(entity.getBlockPos(), entity.facing());
+        helper.assertTrue(exit != null, "The dock has an exit");
         helper.runAfterDelay(20, () -> helper.assertTrue(entity.state() == MultiblockControllerBlockEntity.STATE_WORKING,
                 "Working: " + entity.state()));
-        helper.runAfterDelay(880, () -> {
-            ItemStack out = entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT);
-            helper.assertTrue(out.is(item("power_armor")), "Power armor from the dock: " + out);
+        helper.runAfterDelay(time + 10, () -> {
+            var found = helper.getLevel().getEntitiesOfClass(com.projectrebirth.powerarmor.PowerArmorEntity.class,
+                    new net.minecraft.world.phys.AABB(inside, exit).inflate(2.0));
+            helper.assertTrue(found.size() == 1 && found.get(0).isRollingOut(), "The armor stands in the dock and starts to roll: " + found.size());
+            helper.assertTrue(entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT).isEmpty(), "Nothing in the output slot");
+        });
+        helper.runAfterDelay(time + 250, () -> {
+            var found = helper.getLevel().getEntitiesOfClass(com.projectrebirth.powerarmor.PowerArmorEntity.class,
+                    new net.minecraft.world.phys.AABB(inside, exit).inflate(2.0));
+            helper.assertTrue(found.size() == 1, "One armor");
+            var armor = found.get(0);
+            helper.assertTrue(!armor.isRollingOut() && armor.position().distanceTo(new Vec3(exit.x, armor.getY(), exit.z)) < 0.2,
+                    "It rolled out to the exit: " + armor.position() + " / " + exit);
+            helper.assertTrue(armor.getVariant() == com.projectrebirth.powerarmor.ArmorVariant.COMBAT && armor.getStructural() == armor.getMaxStructural(),
+                    "Combat armor, whole");
+            armor.discard();
             helper.succeed();
         });
     }

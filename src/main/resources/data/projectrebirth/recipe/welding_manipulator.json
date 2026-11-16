@@ -1,0 +1,32 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 101,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:actuator",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 1
+    },
+    {
+      "item": "minecraft:blaze_powder",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:welding_manipulator",
+    "count": 1
+  }
+}

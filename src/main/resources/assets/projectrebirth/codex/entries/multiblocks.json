@@ -42,9 +42,23 @@
       "text": "codex.projectrebirth.multiblocks.p8"
     },
     {
-      "type": "recipe",
-      "value": "projectrebirth:manipulator",
+      "type": "text",
       "text": "codex.projectrebirth.multiblocks.p9"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:welding_manipulator",
+      "text": "codex.projectrebirth.multiblocks.p10"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:gripper_manipulator",
+      "text": "codex.projectrebirth.multiblocks.p11"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:screwdriver_manipulator",
+      "text": "codex.projectrebirth.multiblocks.p12"
     }
   ]
 }

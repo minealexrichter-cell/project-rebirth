@@ -34,7 +34,9 @@
     },
     "M": {
       "blocks": [
-        "projectrebirth:manipulator"
+        "projectrebirth:welding_manipulator",
+        "projectrebirth:gripper_manipulator",
+        "projectrebirth:screwdriver_manipulator"
       ]
     },
     "Z": {

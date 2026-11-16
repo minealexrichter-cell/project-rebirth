@@ -69,6 +69,10 @@ public final class MultiblockRegistry {
         return BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(3.5f, 6.0f).sound(SoundType.METAL).requiresCorrectToolForDrops();
     }
 
+    private static DeferredBlock<ManipulatorBlock> manipulator(ManipulatorBlock.Tool tool) {
+        return BLOCKS.register(tool.blockId(), () -> new ManipulatorBlock(tool, machine().noOcclusion()));
+    }
+
     /** The controller without a plan of its own: only the automated tests use it (no item, no recipe). */
     public static final DeferredBlock<MultiblockControllerBlock> CONTROLLER = BLOCKS.register("multiblock_controller",
             () -> new MultiblockControllerBlock(null, machine()));
@@ -88,7 +92,9 @@ public final class MultiblockRegistry {
             () -> new net.minecraft.world.level.block.Block(machine().strength(5.0f, 9.0f).noOcclusion()));
     public static final DeferredBlock<net.minecraft.world.level.block.Block> CRANE_BEAM = BLOCKS.register("crane_beam",
             () -> new net.minecraft.world.level.block.Block(machine().noOcclusion()));
-    public static final DeferredBlock<ManipulatorBlock> MANIPULATOR = BLOCKS.register("manipulator", () -> new ManipulatorBlock(machine().noOcclusion()));
+    public static final DeferredBlock<ManipulatorBlock> WELDING_MANIPULATOR = manipulator(ManipulatorBlock.Tool.WELDER);
+    public static final DeferredBlock<ManipulatorBlock> GRIPPER_MANIPULATOR = manipulator(ManipulatorBlock.Tool.GRIPPER);
+    public static final DeferredBlock<ManipulatorBlock> SCREWDRIVER_MANIPULATOR = manipulator(ManipulatorBlock.Tool.SCREWDRIVER);
     public static final DeferredBlock<MultiblockControllerBlock> WORKSHOP_CONTROLLER = BLOCKS.register("body_workshop_controller",
             () -> new MultiblockControllerBlock(BODY_WORKSHOP, machine().lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 10 : 0)));
     public static final DeferredBlock<MultiblockControllerBlock> DOCK_CONTROLLER = BLOCKS.register("heavy_dock_controller",
@@ -97,7 +103,9 @@ public final class MultiblockRegistry {
     public static final DeferredItem<BlockItem> ASSEMBLY_FRAME_ITEM = ITEMS.registerSimpleBlockItem(ASSEMBLY_FRAME);
     public static final DeferredItem<BlockItem> HEAVY_FRAME_ITEM = ITEMS.registerSimpleBlockItem(HEAVY_FRAME);
     public static final DeferredItem<BlockItem> CRANE_BEAM_ITEM = ITEMS.registerSimpleBlockItem(CRANE_BEAM);
-    public static final DeferredItem<BlockItem> MANIPULATOR_ITEM = ITEMS.registerSimpleBlockItem(MANIPULATOR);
+    public static final DeferredItem<BlockItem> WELDING_MANIPULATOR_ITEM = ITEMS.registerSimpleBlockItem(WELDING_MANIPULATOR);
+    public static final DeferredItem<BlockItem> GRIPPER_MANIPULATOR_ITEM = ITEMS.registerSimpleBlockItem(GRIPPER_MANIPULATOR);
+    public static final DeferredItem<BlockItem> SCREWDRIVER_MANIPULATOR_ITEM = ITEMS.registerSimpleBlockItem(SCREWDRIVER_MANIPULATOR);
     public static final DeferredItem<BlockItem> WORKSHOP_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(WORKSHOP_CONTROLLER);
     public static final DeferredItem<BlockItem> DOCK_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(DOCK_CONTROLLER);
 
@@ -118,7 +126,8 @@ public final class MultiblockRegistry {
                     WORKSHOP_CONTROLLER.get(), DOCK_CONTROLLER.get()).build(null));
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ManipulatorBlockEntity>> MANIPULATOR_ENTITY =
-            BLOCK_ENTITIES.register("manipulator", () -> BlockEntityType.Builder.of(ManipulatorBlockEntity::new, MANIPULATOR.get()).build(null));
+            BLOCK_ENTITIES.register("manipulator", () -> BlockEntityType.Builder.of(ManipulatorBlockEntity::new, WELDING_MANIPULATOR.get(),
+                    GRIPPER_MANIPULATOR.get(), SCREWDRIVER_MANIPULATOR.get()).build(null));
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> PORT_ENTITY =
             BLOCK_ENTITIES.register("multiblock_port", () -> BlockEntityType.Builder.of(PortBlockEntity::new, ENERGY_PORT.get(), CARGO_PORT.get()).build(null));

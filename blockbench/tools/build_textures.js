@@ -2209,6 +2209,65 @@
         '.....kkkkkk.....',
         '................',
         '................'], {k: '#2b3236', c: '#8a6a44', w: '#cfe0e0', m: MURK, M: MURK_DARK, g: MURK_FOAM}));
+    // ---------------------------------------------------------------- scouting in the field (version 1.6.0, block F)
+
+    // The field analyzer: a hand-held box with a screen showing a grid of yellow and green, a probe on top and a grip.
+    item('field_analyzer', () => icon([
+        '..........ss....',
+        '..........sS....',
+        '....kkkkkkkSk...',
+        '...kmmmmmmmmmk..',
+        '...kmddddddddmk.',
+        '...kmdgdyYdddmk.',
+        '...kmddddydgdmk.',
+        '...kmdgGdddddmk.',
+        '...kmddddddyYmk.',
+        '...kmddddddddmk.',
+        '...kmmmmmmmmmmk.',
+        '...kmrmbmmmmmmk.',
+        '....kmmmmmmmmk..',
+        '.....kGGGGGGk...',
+        '.....kGGGGGGk...',
+        '......kkkkkk....'], {k: '#1e2228', m: '#59626c', d: '#14181c', g: '#3f8f2a', G: '#343a42', y: '#b8a42a', Y: '#e6d23a',
+        s: '#8c97a3', S: '#c3c8cd', r: '#ff4a3d', b: '#37c6e8'}));
+    // The sensor module of bodies: a small board with a dish antenna and a green lens.
+    item('sensor_module', () => icon([
+        '................',
+        '.........WWW....',
+        '........WwwwW...',
+        '........WwbwW...',
+        '.........WwW....',
+        '..........k.....',
+        '..kkkkkkkkkkkk..',
+        '..kgggggggggk...',
+        '..kgPPPgLLgggk..',
+        '..kgPpPgLlggk...',
+        '..kgPPPgLLgggk..',
+        '..kgggggggggk...',
+        '..kgcgcgcgcgk...',
+        '..kkkkkkkkkkkk..',
+        '................',
+        '................'].map(r => r.padEnd(16, '.').slice(0, 16)), {k: '#1b2a1f', g: '#2f7a46', P: '#2b2f36', p: '#6f7884', L: '#5fbf3a', l: '#b6f28a',
+        c: '#c58a3a', W: '#d8dde2', w: '#eef2f5', b: '#37c6e8'}));
+    // The sensor unit of power armor: a helmet-mounted block with two lenses and a short antenna.
+    item('sensor_unit', () => icon([
+        '................',
+        '...........s....',
+        '...........s....',
+        '..........sss...',
+        '...kkkkkkkkkkk..',
+        '..kmmmmmmmmmmmk.',
+        '..kmLLmmmmLLmmk.',
+        '..kLllLmmLllLmk.',
+        '..kLllLmmLllLmk.',
+        '..kmLLmmmmLLmmk.',
+        '..kmmmmmmmmmmmk.',
+        '..kGGGGGGGGGGGk.',
+        '..kGyGyGyGyGyGk.',
+        '...kkkkkkkkkkk..',
+        '................',
+        '................'], {k: '#1e2228', m: '#59626c', G: '#343a42', L: '#2f7a46', l: '#5fbf3a', s: '#8c97a3', y: '#e6d23a'}));
+
     // The bucket of polluted water is the game's bucket with a liquid layer over it: blockbench/tools/polluted_bucket.js.
 
     /** Airlock door: a heavy steel door, the lower half with a hazard band and a locking wheel, the upper with a thick window. */

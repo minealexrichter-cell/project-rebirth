@@ -489,6 +489,18 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'monitoring_station'),
         note('Settings in the config ([monitoring_station]).', 'Настройки в конфиге ([monitoring_station]).')
     ]),
+    entry('field_scouting', P + 'field_analyzer', 2, -4, ['monitoring_station'], 'Scouting in the Field', 'Разведка в поле', [
+        item(P + 'field_analyzer', 'The field analyzer, held in either hand, shows under the status panel how much radiation and toxins the ground of your chunk holds and what the sources around you (radioactive blocks, uranium ore, creatures) give, with a small map of the chunks around. Near a source it clicks, the faster the stronger.',
+            'Полевой анализатор, если держать его в любой руке, показывает под панелью статуса, сколько радиации и токсинов в земле вашего чанка и сколько дают источники рядом (радиоактивные блоки, урановая руда, существа), и небольшую карту чанков вокруг. Возле источника он щёлкает — чем сильнее, тем чаще.'),
+        recipe(P + 'field_analyzer'),
+        item(P + 'sensor_module', 'The sensor module is a gadget of artificial bodies: the body shows a map of the contamination around, with the source blocks (violet crosses) and the ruins of the mod (brown squares) marked. Its reach grows with the class of the body: from two chunks each way for the basic robot to six for the premium body.',
+            'Сенсорный модуль — гаджет искусственных тел: тело показывает карту заражения вокруг с отметками блоков-источников (фиолетовые крестики) и руин мода (коричневые квадраты). Дальность растёт с классом тела: от двух чанков в каждую сторону у базового робота до шести у премиального тела.'),
+        recipe(P + 'sensor_module'),
+        item(P + 'sensor_unit', 'The sensor unit does the same for the pilot of power armor; it goes on the helmet and reaches five chunks each way.',
+            'Сенсорный блок делает то же для пилота силовой брони; ставится на шлем и видит на пять чанков в каждую сторону.'),
+        recipe(P + 'sensor_unit'),
+        note('Settings in the config ([scouting]).', 'Настройки в конфиге ([scouting]).')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

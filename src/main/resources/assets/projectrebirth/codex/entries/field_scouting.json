@@ -1,0 +1,41 @@
+{
+  "icon": "projectrebirth:field_analyzer",
+  "x": 2,
+  "y": -4,
+  "parents": [
+    "monitoring_station"
+  ],
+  "pages": [
+    {
+      "type": "item",
+      "value": "projectrebirth:field_analyzer",
+      "text": "codex.projectrebirth.field_scouting.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:field_analyzer"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:sensor_module",
+      "text": "codex.projectrebirth.field_scouting.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:sensor_module"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:sensor_unit",
+      "text": "codex.projectrebirth.field_scouting.p5"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:sensor_unit"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.field_scouting.p7"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "items": "projectrebirth:sensor_unit",
+  "kind": "sensor",
+  "armor_slots": [
+    "head"
+  ]
+}

@@ -77,6 +77,9 @@ public final class UpgradeRegistry {
     public static final DeferredItem<Item> COOLING_MODULE = upgradeItem("cooling_module", 1);
     public static final DeferredItem<Item> EMI_SHIELDING = upgradeItem("emi_shielding", 1);
     public static final DeferredItem<Item> EMI_SCREEN = upgradeItem("emi_screen", 1);
+    /** 1.6.0, block F: the sensor module of bodies and the sensor unit of power armor. */
+    public static final DeferredItem<Item> SENSOR_MODULE = upgradeItem("sensor_module", 1);
+    public static final DeferredItem<Item> SENSOR_UNIT = upgradeItem("sensor_unit", 1);
 
     private UpgradeRegistry() {
     }

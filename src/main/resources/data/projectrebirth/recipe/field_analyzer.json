@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "tools",
+  "pattern": [
+    " G ",
+    "IDI",
+    "ICI"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "D": {
+      "item": "projectrebirth:dosimeter"
+    },
+    "C": {
+      "item": "projectrebirth:circuit_board"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:field_analyzer",
+    "count": 1
+  }
+}

@@ -31,6 +31,9 @@ public record Snapshot(int centerX, int centerZ, int radius, byte[] radiation, b
     public static final int STATION = 0;
     public static final int SHELTER = 1;
     public static final int PLAYER = 2;
+    /** 1.6.0, block F: a radiation or toxin source block, and a ruin of the mod (the sensors mark them). */
+    public static final int SOURCE = 3;
+    public static final int STRUCTURE = 4;
 
     /** A mark on the map: its kind, block coordinates, a name for a player. */
     public record Marker(int kind, int x, int z, String name) {

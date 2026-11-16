@@ -231,6 +231,12 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PURIFIER_CARTRIDGE_SHARE;
     public static final ModConfigSpec.IntValue PURIFIER_BUCKET_BOTTLES;
     public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
+    public static final ModConfigSpec.BooleanValue SCOUTING_ENABLED;
+    public static final ModConfigSpec.IntValue SCOUTING_UPDATE_SECONDS;
+    public static final ModConfigSpec.IntValue ANALYZER_RADIUS;
+    public static final ModConfigSpec.DoubleValue ANALYZER_CLICK_FROM;
+    public static final java.util.Map<com.projectrebirth.bodies.BodyClass, ModConfigSpec.IntValue> BODY_SENSOR_RANGE = new java.util.EnumMap<>(com.projectrebirth.bodies.BodyClass.class);
+    public static final ModConfigSpec.IntValue ARMOR_SENSOR_RANGE;
     public static final ModConfigSpec.BooleanValue MONITORING_ENABLED;
     public static final ModConfigSpec.IntValue MONITORING_RADIUS;
     public static final ModConfigSpec.IntValue MONITORING_SCAN_SECONDS;
@@ -842,6 +848,21 @@ public final class RebirthConfig {
         PURIFIER_CARTRIDGE_SHARE = builder.comment("Share of a filter cartridge's life one bottle uses (0.02: fifty bottles a cartridge)").defineInRange("cartridgePerBottle", 0.02, 0.0, 1.0);
         PURIFIER_BUCKET_BOTTLES = builder.comment("How many bottles of work one bucket is").defineInRange("bucketBottles", 3, 1, 64);
         builder.pop(2);
+
+        builder.comment("Scouting in the field (1.6.0, block F): the field analyzer in hand, the sensor module of bodies and the sensor unit of",
+                "power armor show the contamination around on a small map; the sensors also mark radiation sources and ruins.").push("scouting");
+        SCOUTING_ENABLED = builder.comment("Whether the analyzer and the sensors work at all").define("enabled", true);
+        SCOUTING_UPDATE_SECONDS = builder.comment("Seconds between two readings sent to a player").defineInRange("updateSeconds", 2, 1, 60);
+        ANALYZER_RADIUS = builder.comment("Chunks each way the field analyzer shows around the player (2: a grid of 5 by 5)").defineInRange("analyzerRadius", 2, 0, 6);
+        ANALYZER_CLICK_FROM = builder.comment("From this much radiation of sources (blocks, ore, creatures) at the player the analyzer clicks").defineInRange("analyzerClickFrom", 0.05, 0.0, 1000.0);
+        builder.comment("Chunks each way the sensor module of a body shows, by body class, from the worst to the best").push("body_sensor_range");
+        int[] ranges = {2, 3, 4, 5, 6};
+        for (com.projectrebirth.bodies.BodyClass bodyClass : com.projectrebirth.bodies.BodyClass.values()) {
+            BODY_SENSOR_RANGE.put(bodyClass, builder.defineInRange(bodyClass.getSerializedName(), ranges[Math.min(bodyClass.ordinal(), ranges.length - 1)], 1, 8));
+        }
+        builder.pop();
+        ARMOR_SENSOR_RANGE = builder.comment("Chunks each way the sensor unit of power armor shows").defineInRange("armorSensorRange", 5, 1, 8);
+        builder.pop();
 
         builder.comment("Environmental monitoring station (1.6.0, block E): with energy it scans the contamination of the chunks around",
                 "it, shows them on a map with the players and shelters, keeps the peaks of the last days and prints maps on paper.").push("monitoring_station");

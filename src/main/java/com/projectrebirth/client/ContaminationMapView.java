@@ -26,6 +26,8 @@ public final class ContaminationMapView {
     public static final int SHELTER = 0xFF37C6E8;
     public static final int PLAYER = 0xFFFF5555;
     public static final int YOU = 0xFFFFAA00;
+    public static final int SOURCE = 0xFFB04CFF;
+    public static final int RUIN = 0xFFB8875A;
     private static final int GROUND = 0xFF20262B;
     private static final int GAP = 0xFF101316;
     /** At this much the colour is full. */
@@ -73,6 +75,15 @@ public final class ContaminationMapView {
                 case Snapshot.STATION -> {
                     graphics.fill(mx - 2, my - 2, mx + 3, my + 3, 0xFF000000);
                     graphics.fill(mx - 1, my - 1, mx + 2, my + 2, STATION);
+                }
+                case Snapshot.SOURCE -> {
+                    graphics.fill(mx - 1, my - 1, mx + 2, my + 2, 0xFF000000);
+                    graphics.fill(mx, my - 1, mx + 1, my + 2, SOURCE);
+                    graphics.fill(mx - 1, my, mx + 2, my + 1, SOURCE);
+                }
+                case Snapshot.STRUCTURE -> {
+                    graphics.fill(mx - 2, my - 2, mx + 3, my + 3, 0xFF000000);
+                    graphics.fill(mx - 1, my - 1, mx + 2, my + 2, RUIN);
                 }
                 case Snapshot.SHELTER -> {
                     graphics.fill(mx - 2, my - 2, mx + 2, my + 2, 0xFF000000);

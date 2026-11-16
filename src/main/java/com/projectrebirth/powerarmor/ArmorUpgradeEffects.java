@@ -68,6 +68,11 @@ public final class ArmorUpgradeEffects {
                 + count(armor.registryAccess(), armor.upgrades(), COMPRESSED_AIR) * RebirthConfig.ARMOR_SAFE_FALL_PER_AIR_MODULE.get();
     }
 
+    /** 1.6.0, block F: the sensor unit on the helmet. */
+    public static boolean hasSensor(PowerArmorEntity armor) {
+        return count(armor.registryAccess(), armor.upgrades(), com.projectrebirth.scouting.Scouting.SENSOR) > 0;
+    }
+
     public static boolean hasFloodlight(PowerArmorEntity armor) {
         return count(armor.registryAccess(), armor.upgrades(), FLOODLIGHT) > 0;
     }

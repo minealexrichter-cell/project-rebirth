@@ -91,6 +91,7 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.weather.WeatherRegistry.WEATHER_STATION_ITEM.get());
                 output.accept(com.projectrebirth.weather.WeatherRegistry.LONG_RANGE_MODULE.get());
                 output.accept(com.projectrebirth.monitoring.MonitoringRegistry.MONITORING_STATION_ITEM.get());
+                output.accept(com.projectrebirth.scouting.Scouting.FIELD_ANALYZER.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.BACKUP_BATTERY_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.SHELTER_CONTROL_PANEL_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.DECONTAMINATION_CHAMBER_ITEM.get());
@@ -131,6 +132,8 @@ public final class ModCreativeTabs {
                 output.accept(UpgradeRegistry.COMPRESSED_AIR_MODULE.get());
                 output.accept(UpgradeRegistry.FLOODLIGHT.get());
                 output.accept(UpgradeRegistry.EMI_SCREEN.get());
+                output.accept(UpgradeRegistry.SENSOR_MODULE.get());
+                output.accept(UpgradeRegistry.SENSOR_UNIT.get());
                 output.accept(WeaponRegistry.ASSAULT_RIFLE.get());
                 output.accept(WeaponRegistry.BATTLE_RIFLE.get());
                 output.accept(WeaponRegistry.COMBAT_SHOTGUN.get());

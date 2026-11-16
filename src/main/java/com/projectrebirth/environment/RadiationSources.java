@@ -65,6 +65,24 @@ public final class RadiationSources {
         }
     }
 
+    /** 1.6.0, block F: the source blocks in a square of chunks, for the sensors' marks. */
+    public static java.util.List<BlockPos> sourcesNear(ServerLevel level, int chunkX, int chunkZ, int radius) {
+        java.util.List<BlockPos> out = new java.util.ArrayList<>();
+        Map<Long, Map<BlockPos, SourceKind>> chunks = INDEX.get(level);
+        if (chunks == null || !enabled()) {
+            return out;
+        }
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                Map<BlockPos, SourceKind> inChunk = chunks.get(ChunkPos.asLong(chunkX + dx, chunkZ + dz));
+                if (inChunk != null) {
+                    out.addAll(inChunk.keySet());
+                }
+            }
+        }
+        return out;
+    }
+
     /** How many source blocks the level knows of. */
     public static int count(ServerLevel level) {
         Map<Long, Map<BlockPos, SourceKind>> chunks = INDEX.get(level);

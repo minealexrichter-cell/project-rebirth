@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_upgrade_fabricator",
+  "sort": 98,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:dosimeter",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 2
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:sensor_unit",
+    "count": 1
+  }
+}

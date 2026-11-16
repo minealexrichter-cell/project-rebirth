@@ -95,6 +95,7 @@ public class ProjectRebirthClient {
         CatastropheClient.register(modEventBus);
         ForecastClient.register();
         MonitoringClient.register();
+        ScoutingClient.register(modEventBus);
         BodyHud.register(modEventBus);
         JetpackClient.register();
         TransferAnimation.register();

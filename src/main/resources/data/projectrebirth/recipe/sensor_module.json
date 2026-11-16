@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 97,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:dosimeter",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 2
+    },
+    {
+      "tag": "c:ingots/silver",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:sensor_module",
+    "count": 1
+  }
+}

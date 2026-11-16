@@ -3096,7 +3096,7 @@
                 {name: 'tendril_2', parent: 'torso', pivot: [3, 27, 6], cubes: [O([2.5, 26.5, 6.2], [1, 1, 5], MUSCLE, {}, {rot: [-20, -15, 0], pivot: [3, 27, 6]})]},
                 {name: 'head', parent: 'torso', pivot: [0, 27, -5], cubes: [
                     // whole pixels (part B3k): a head of 6.5 left a row of its texture empty, seen in game as a hole
-                    O([-3.5, 24, -11], [7, 7, 7], PALE, {f: [[1, 1, 1, 1, EYE], [4, 0, 1, 1, EYE], [5, 2, 1, 1, EYE], [1, 4, 5, 3, MAW]], tp: [[2, 1, 2, 2, '#a4423a']]}),
+                    O([-3.5, 24, -11], [7, 7, 7], PALE, {f: [[1, 1, 1, 1, EYE], [4, 0, 1, 1, EYE], [5, 2, 1, 1, EYE]], tp: [[2, 1, 2, 2, '#a4423a']]}),
                     O([1.5, 29.5, -9.5], [3, 2.5, 3], TUMOR),
                     tooth(-2.8, 23.7, -11.4, 1.5), tooth(-1.6, 23.9, -11.4, 1.1), tooth(-0.3, 23.5, -11.4, 1.7), tooth(1.0, 23.8, -11.4, 1.2), tooth(2.2, 23.6, -11.4, 1.5)]},
                 {name: 'jaw', parent: 'head', pivot: [0, 25, -6], cubes: [

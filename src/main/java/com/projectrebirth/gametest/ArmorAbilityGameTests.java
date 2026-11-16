@@ -127,6 +127,11 @@ public class ArmorAbilityGameTests {
             pilot.getInventory().selected = round == 0 ? 0 : ArmorAbility.SLOT;
             target.setHealth(target.getMaxHealth());
             target.invulnerableTime = 0;
+            // since 1.5.2 the armored hands wait a sword's cooldown between strikes: let them charge fully before each one
+            // (a mock player is not ticked by a connection, so its time is counted here)
+            for (int i = 0; i < 60 && pilot.getAttackStrengthScale(0.5f) < 1.0f; i++) {
+                pilot.doTick();
+            }
             pilot.attack(target);
             damage[round] = target.getMaxHealth() - target.getHealth();
         }

@@ -173,7 +173,7 @@ public class ArmorMountingGameTests {
         station.items().setStackInSlot(0, new ItemStack(Items.COPPER_INGOT, 8));
         station.items().setStackInSlot(1, new ItemStack(com.projectrebirth.technology.TechItems.BRONZE_INGOT.get(), 2));
         var recipes = TechRecipes.recipesFor(helper.getLevel(), Station.ARMOR_UPGRADE_FABRICATOR);
-        helper.assertTrue(recipes.size() == 6, "Six recipes (the EMI screen since 1.5.0), got " + recipes.size());
+        helper.assertTrue(recipes.size() == 7, "Seven recipes (the EMI screen since 1.5.0, the sensor unit since 1.6.0), got " + recipes.size());
         int index = -1;
         for (int i = 0; i < recipes.size(); i++) {
             if (recipes.get(i).value().result().is(UpgradeRegistry.ARMOR_COPPER_PLATING.get())) {

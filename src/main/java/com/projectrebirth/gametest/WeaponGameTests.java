@@ -411,10 +411,13 @@ public class WeaponGameTests {
     }
 
     @GameTest(template = TEMPLATE)
-    public static void noWeaponKillsAPlayerInIronArmorWithinASecond(GameTestHelper helper) {
-        for (String id : List.of("assault_rifle", "battle_rifle", "combat_shotgun")) {
+    public static void noRifleKillsAPlayerInIronArmorWithinHalfASecond(GameTestHelper helper) {
+        // Owner's decision (1.7.0 start, 2026-11-16): the guns hit 1.5 times harder since 1.6.0; the rule of 1.2.0 "no weapon
+        // kills a player in iron armor within a second" is eased to half a second for the rifles, and the shotgun, which kills
+        // such a player with all its pellets at point blank, is left out of it.
+        for (String id : List.of("assault_rifle", "battle_rifle")) {
             double seconds = secondsToKill(helper, stats(id), IRON_ARMOR_POINTS);
-            helper.assertTrue(seconds >= 1.0, id + " kills in " + seconds + " s, all shots hitting");
+            helper.assertTrue(seconds >= 0.5, id + " kills in " + seconds + " s, all shots hitting");
         }
         helper.succeed();
     }

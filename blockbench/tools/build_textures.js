@@ -2209,24 +2209,7 @@
         '.....kkkkkk.....',
         '................',
         '................'], {k: '#2b3236', c: '#8a6a44', w: '#cfe0e0', m: MURK, M: MURK_DARK, g: MURK_FOAM}));
-    // A bucket of polluted water: the game's bucket, murky water to the brim.
-    item('polluted_water_bucket', () => icon([
-        '................',
-        '................',
-        '................',
-        '....kkkkkkkk....',
-        '..kkmmmgmmmmkk..',
-        '..kSmmMmmmgmSk..',
-        '..kSSmmmmmmSSk..',
-        '..kSSSSSSSSSSk..',
-        '...kSssssssSk...',
-        '...kSssssssSk...',
-        '...kSSssssSSk...',
-        '....kSssssSk....',
-        '....kSSSSSSk....',
-        '.....kkkkkk.....',
-        '................',
-        '................'], {k: '#2e3338', S: '#c6ccd2', s: '#9aa1a8', m: MURK, M: MURK_DARK, g: MURK_FOAM}));
+    // The bucket of polluted water is the game's bucket with a liquid layer over it: blockbench/tools/polluted_bucket.js.
 
     /** Airlock door: a heavy steel door, the lower half with a hazard band and a locking wheel, the upper with a thick window. */
     block('airlock_door_bottom', () => {

@@ -399,7 +399,17 @@ public final class CatastropheClient {
 
     private static void renderWarning(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.options.hideGui || !HudLayout.enabled() || state.phase() == EventPhase.CALM || state.event().isEmpty()) {
+        if (minecraft.options.hideGui || !HudLayout.enabled()) {
+            return;
+        }
+        // 1.6.0, block D: a weather station's forecast, before the catastrophe and (long range) in place of the rough warning
+        com.projectrebirth.weather.ForecastPayload forecast = ForecastClient.current();
+        boolean calm = state.phase() == EventPhase.CALM || state.event().isEmpty();
+        if (forecast != null && (calm || state.phase() == EventPhase.WARNING && forecast.exact() && forecast.event().equals(state.event()))) {
+            renderLine(graphics, minecraft, ForecastClient.line(), forecast.event(), calm ? 0xFF8FD3F5 : (ticks() / 10) % 2 == 0 ? 0xFFFFFF55 : 0xFFFF8A24);
+            return;
+        }
+        if (calm) {
             return;
         }
         Component name = Component.translatable("environment.projectrebirth.event." + state.event());
@@ -413,7 +423,11 @@ public final class CatastropheClient {
         };
         boolean blink = state.phase() == EventPhase.WARNING && (ticks() / 10) % 2 == 0;
         int color = state.phase() == EventPhase.AFTERMATH ? 0xFFCCCCCC : blink ? 0xFFFFFF55 : 0xFFFF8A24;
-        com.projectrebirth.environment.Hazard hazard = hazardOf(state.event());
+        renderLine(graphics, minecraft, text, state.event(), color);
+    }
+
+    private static void renderLine(GuiGraphics graphics, Minecraft minecraft, Component text, String event, int color) {
+        com.projectrebirth.environment.Hazard hazard = hazardOf(event);
         int textX = hazard == null ? 0 : 11;
         int width = textX + minecraft.font.width(text);
         // The last line of the status panel, the same for a human, a body and a pilot; the mark tells the kind of catastrophe.

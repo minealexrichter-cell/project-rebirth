@@ -1,0 +1,35 @@
+{
+  "icon": "projectrebirth:weather_station",
+  "x": 1,
+  "y": -3,
+  "parents": [
+    "catastrophes"
+  ],
+  "pages": [
+    {
+      "type": "block",
+      "value": "projectrebirth:weather_station",
+      "text": "codex.projectrebirth.weather_station.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.weather_station.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:weather_station"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.weather_station.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:long_range_forecast_module"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.weather_station.p6"
+    }
+  ]
+}

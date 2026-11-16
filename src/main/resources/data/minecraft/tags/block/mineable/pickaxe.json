@@ -62,6 +62,7 @@
     "projectrebirth:rusted_heater",
     "projectrebirth:rusted_backup_battery",
     "projectrebirth:turret",
-    "projectrebirth:water_purifier"
+    "projectrebirth:water_purifier",
+    "projectrebirth:weather_station"
   ]
 }

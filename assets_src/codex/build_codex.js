@@ -470,6 +470,17 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'water_purifier'),
         note('Settings in the config ([water]).', 'Настройки в конфиге ([water]).')
     ]),
+    entry('weather_station', P + 'weather_station', 1, -3, ['catastrophes'], 'Weather Station', 'Метеостанция', [
+        block(P + 'weather_station', 'The weather station foresees the next catastrophe of its dimension, earlier than the usual warning: ten minutes ahead it knows the kind and the time within five minutes. It needs energy and the open sky right above it. Its window shows the forecast, the sky now and the last catastrophes.',
+            'Метеостанция заранее видит следующую катастрофу своего измерения, раньше обычного предупреждения: за десять минут она знает её вид и время с точностью до пяти минут. Ей нужны энергия и открытое небо прямо над ней. В окне — прогноз, состояние неба сейчас и последние катастрофы.'),
+        text('Whoever placed the station, the members of their faction (anywhere in the dimension) and every player within 64 blocks of it see the forecast in the HUD, in place of the line of the warning.\n\nThe station gives a redstone signal five minutes before a catastrophe it foresees and while one goes on: close the airlock, start the reserve. A comparator reads how close the catastrophe is (stronger as it comes nearer, 15 during it).',
+            'Тот, кто поставил станцию, участники его фракции (где угодно в измерении) и все игроки в 64 блоках от неё видят прогноз в HUD вместо строки предупреждения.\n\nСтанция даёт сигнал красного камня за пять минут до катастрофы, которую видит, и пока та идёт: закройте шлюз, включите резерв. Компаратор показывает, насколько близко катастрофа (чем ближе, тем сильнее, во время неё — 15).'),
+        recipe(P + 'weather_station'),
+        text('The long range forecast module, put into the station, sees thirty minutes ahead and tells the exact time, the intensity and the length of the catastrophe. It takes more energy.',
+            'Модуль дальнего прогноза, вставленный в станцию, видит на тридцать минут вперёд и сообщает точное время, интенсивность и длительность катастрофы. Он потребляет больше энергии.'),
+        recipe(P + 'long_range_forecast_module'),
+        note('Settings in the config ([weather_station]).', 'Настройки в конфиге ([weather_station]).')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

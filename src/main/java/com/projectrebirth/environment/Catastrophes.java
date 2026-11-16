@@ -46,6 +46,10 @@ public final class Catastrophes {
             }
             case ACTIVE -> {
                 tellAll(level, Component.translatable("message.projectrebirth.environment.began", name(event)));
+                if (event != null) {
+                    // 1.6.0: for the history of the weather stations
+                    state.remember(event, state.intensity(), state.phaseSeconds(), level.getDayTime() / 24000L + 1L);
+                }
                 if (Environment.ACID_RAIN.equals(event)) {
                     rain(level, state.secondsLeft() + RebirthConfig.ENVIRONMENT_AFTERMATH_SECONDS.get());
                 }

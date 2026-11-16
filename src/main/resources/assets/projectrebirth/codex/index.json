@@ -98,6 +98,7 @@
         "mech",
         "mutants",
         "polluted_water",
+        "weather_station",
         "dosimeter",
         "medicine",
         "machines_environment"

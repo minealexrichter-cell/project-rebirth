@@ -390,6 +390,38 @@
         };
     });
 
+    // Weather station (1.6.0, block D): the machine body with a radar screen, a louvred instrument box on top and a mast with a cup
+    // anemometer and a wind vane, reaching up into the open air the station needs.
+    [false, true].forEach(on => {
+        MODELS['weather_station' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('weather_station', on, ['front', 'side', 'top'], ['front'], 'side'),
+            elements: [...machine('cyan'), ...screen(on, 'steel'),
+                // the instrument box
+                box([2, 14, 9], [7, 19, 14], 'white', {up: 'white'}),
+                box([2, 19, 8], [7, 20, 15], 'steel'),
+                box([3, 15, 8], [6, 16, 9], 'gun'),
+                box([3, 17, 8], [6, 18, 9], 'gun'),
+                // the mast
+                box([10, 15, 3], [12, 29, 5], 'steel', {up: 'dark'}),
+                box([9, 14, 2], [13, 15, 6], 'gun'),
+                // the anemometer: two crossed arms round the mast with a cup at each end
+                box([6, 26, 3], [10, 27, 5], 'gun'),
+                box([12, 26, 3], [14, 27, 5], 'gun'),
+                box([10, 27, 1], [12, 28, 3], 'gun'),
+                box([10, 27, 5], [12, 28, 7], 'gun'),
+                box([4, 25, 2], [6, 27, 4], 'white'),
+                box([14, 25, 4], [16, 27, 6], 'white'),
+                box([8, 26, 0], [10, 28, 2], 'white'),
+                box([12, 26, 6], [14, 28, 8], 'white'),
+                // the wind vane on top and the lamp of the mast
+                box([10, 29, 1], [12, 30, 7], 'steel'),
+                box([10, 30, 5], [12, 31, 7], 'red'),
+                box([10, 22, 2], [12, 23, 3], on ? 'green' : 'dark', {}, on ? GLOW : undefined)
+            ]
+        };
+    });
+
     // Backup battery: a cell with a charge window on every side, posts, a plinth and a top plate with terminals.
     [false, true].forEach(on => {
         const side = tex('side', [2, 2, 14, 14]);
@@ -851,6 +883,12 @@
             STATES.water_purifier.variants['facing=' + facing + ',working=' + working] = variant('water_purifier' + (working ? '_on' : ''), rotation(y));
         });
     });
+    STATES.weather_station = {variants: {}};
+    Object.entries(ROTATIONS).forEach(([facing, y]) => {
+        [false, true].forEach(working => {
+            STATES.weather_station.variants['facing=' + facing + ',working=' + working] = variant('weather_station' + (working ? '_on' : ''), rotation(y));
+        });
+    });
     STATES.backup_battery = {variants: {'working=false': variant('backup_battery'), 'working=true': variant('backup_battery_on')}};
     STATES.radiation_purge_station = {variants: {'working=false': variant('radiation_purge_station'), 'working=true': variant('radiation_purge_station_on')}};
     STATES.charging_pad = {variants: {'working=false': variant('charging_pad'), 'working=true': variant('charging_pad_on')}};
@@ -912,7 +950,8 @@
     function problems(id, model) {
         const out = [];
         const axes = {west: [0, 1, 2, 0], east: [0, 1, 2, 1], down: [1, 0, 2, 0], up: [1, 0, 2, 1], north: [2, 0, 1, 0], south: [2, 0, 1, 1]};
-        const capsule = id.startsWith('transfer_capsule') || id === 'emergency_lamp_post' || id.endsWith('turret_barrel') || id.endsWith('turret_item');
+        const capsule = id.startsWith('transfer_capsule') || id === 'emergency_lamp_post' || id.endsWith('turret_barrel') || id.endsWith('turret_item')
+            || id.startsWith('weather_station');
         model.elements.forEach((e, i) => {
             if (!capsule && [...e.from, ...e.to].some(v => v < 0 || v > 16)) {
                 out.push(id + ': part ' + i + ' is outside the block');

@@ -121,7 +121,7 @@
     const TEXTURES = {};
     const block = (id, make) => { TEXTURES['block/' + id] = make; };
     // The weapon icons are made from the models since 1.6.0 (derive_textures.js, RebirthDerived.icon): left alone here.
-    const DRAWN_FROM_MODELS = new Set(['assault_rifle', 'battle_rifle', 'combat_shotgun']);
+    const DRAWN_FROM_MODELS = new Set(['assault_rifle', 'battle_rifle', 'combat_shotgun', 'power_armor', 'mobile_power_armor', 'worker_power_armor']);
     const item = (id, make) => { if (!DRAWN_FROM_MODELS.has(id)) TEXTURES['item/' + id] = make; };
 
     // ---------------------------------------------------------------- ores
@@ -2074,6 +2074,69 @@
         p.px('#37c6e8', [7, 13], [8, 13]);
         return p;
     });
+    // ---------------------------------------------------------------- weather station (version 1.6.0, block D)
+
+    const SKY_BLUE = '#4fa3ff', RADAR_DARK = '#08170f', RADAR_RING = '#1d4f30', RADAR_SWEEP = '#5dff9a', STORM_BLIP = '#ffb13d';
+    /** Weather station: a round radar screen with rings, a sweeping beam and the blip of a storm coming. */
+    function stationFront(frame, on) {
+        const p = casing(new Painter(171), SKY_BLUE);
+        p.inset(2, 2, 12, 12, RADAR_DARK, 0.02);
+        const cx = 7.5, cy = 7.5;
+        for (let y = 3; y < 13; y++) {
+            for (let x = 3; x < 13; x++) {
+                const d = Math.hypot(x - cx, y - cy);
+                if (Math.abs(d - 4.6) < 0.5 || Math.abs(d - 2.2) < 0.45) p.px(RADAR_RING, [x, y]);
+            }
+        }
+        p.px(RADAR_RING, [7, 3], [8, 3], [7, 12], [8, 12], [3, 7], [3, 8], [12, 7], [12, 8]);
+        if (on) {
+            const angle = frame * Math.PI / 4 - Math.PI / 2;
+            for (let r = 1; r <= 5; r++) {
+                p.px(RADAR_SWEEP, [Math.round(cx + Math.cos(angle) * r), Math.round(cy + Math.sin(angle) * r)]);
+            }
+            p.px(STORM_BLIP, [10, 5], [11, 5], [10, 4]);
+        }
+        p.px(LIGHT, [7, 7], [8, 8]);
+        return p;
+    }
+    block('weather_station_front', () => stationFront(0, false));
+    animated('weather_station_front_on', 8, 2, i => stationFront(i, true));
+    block('weather_station_side', () => {
+        const p = casing(new Painter(172), SKY_BLUE);
+        // a barometer dial and a strip of louvres
+        p.bevel(4, 3, 8, 8, '#d8dde2', 0.03);
+        p.inset(5, 4, 6, 6, '#eef2f5', 0.02);
+        p.px('#c0392b', [8, 6], [9, 5]);
+        p.px(DARK, [7, 7]);
+        for (let y = 12; y < 14; y++) p.rect(4, y, 8, 1, y % 2 ? GUN : STEEL);
+        return p;
+    });
+    block('weather_station_top', () => {
+        const p = casing(new Painter(173), SKY_BLUE);
+        p.bevel(5, 5, 6, 6, STEEL, 0.03);
+        p.rect(7, 7, 2, 2, DARK);
+        return p;
+    });
+    // The long range forecast module: a board with a processor and a small dish antenna.
+    item('long_range_forecast_module', () => icon([
+        '................',
+        '..........WWW...',
+        '.........WwwwW..',
+        '.........WwbwW..',
+        '..........WwwW..',
+        '...........kk...',
+        '.kkkkkkkkkkkkkk.',
+        '.kggggggggggggk.',
+        '.kgyygPPPPgyygk.',
+        '.kgggggPpPPggggk',
+        '.kgyygPPPPgyygk.',
+        '.kggggggggggggk.',
+        '.kgcgcgcgcgcgck.',
+        '.kkkkkkkkkkkkkk.',
+        '................',
+        '................'].map(r => r.slice(0, 16).padEnd(16, '.')), {k: '#1b2a1f', g: '#2f7a46', y: '#d9b44a', P: '#2b2f36', p: '#6f7884',
+        c: '#c58a3a', W: '#d8dde2', w: '#eef2f5', b: SKY_BLUE}));
+
     // A bottle of polluted water: the game's glass bottle with murky green-brown water and a cork.
     item('polluted_water_bottle', () => icon([
         '................',

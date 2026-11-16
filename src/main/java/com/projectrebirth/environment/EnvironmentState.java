@@ -1,6 +1,9 @@
 package com.projectrebirth.environment;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -10,6 +13,8 @@ import com.projectrebirth.config.RebirthConfig;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -31,6 +36,18 @@ public class EnvironmentState extends SavedData {
     private int pendingActiveSeconds;
     /** Whether the calm has its length. A new world, and a world from before 1.3.0, first waits a whole pause. */
     private boolean scheduled;
+    /** 1.6.0, block D: the catastrophe that ends the calm, chosen when the calm begins, so that a weather station can foresee it. */
+    @Nullable
+    private String plannedEvent;
+    private float plannedIntensity;
+    private int plannedActiveSeconds;
+    /** 1.6.0, block D: the last catastrophes, the newest first. */
+    private final List<Past> history = new ArrayList<>();
+    public static final int HISTORY = 5;
+
+    /** A catastrophe that came: what, how strong, how long, on which game day. */
+    public record Past(String event, float intensity, int seconds, long day) {
+    }
 
     /** What one second changed, so that players can be told. */
     public enum Change {
@@ -79,12 +96,66 @@ public class EnvironmentState extends SavedData {
         return scheduled;
     }
 
+    /** The catastrophe that ends this calm, if it is decided (null outside the calm and where none can come). */
+    @Nullable
+    public String plannedEvent() {
+        return phase == EventPhase.CALM ? plannedEvent : null;
+    }
+
+    public float plannedIntensity() {
+        return plannedIntensity;
+    }
+
+    public int plannedActiveSeconds() {
+        return plannedActiveSeconds;
+    }
+
+    /**
+     * The next catastrophe as a forecast can see it: in the calm the planned one, in the warning the announced one; null when
+     * none is coming (or one is already going on).
+     */
+    @Nullable
+    public String comingEvent() {
+        return phase == EventPhase.WARNING ? event : plannedEvent();
+    }
+
+    /** Seconds until the coming catastrophe begins: the rest of the calm and the whole warning, or the rest of the warning. */
+    public int secondsUntilComing() {
+        return switch (phase) {
+            case CALM -> secondsLeft + RebirthConfig.ENVIRONMENT_WARNING_SECONDS.get();
+            case WARNING -> secondsLeft;
+            default -> 0;
+        };
+    }
+
+    public float comingIntensity() {
+        return phase == EventPhase.WARNING ? intensity : plannedIntensity;
+    }
+
+    public int comingActiveSeconds() {
+        return phase == EventPhase.WARNING ? pendingActiveSeconds : plannedActiveSeconds;
+    }
+
+    public List<Past> history() {
+        return Collections.unmodifiableList(history);
+    }
+
+    /** A catastrophe began: remembered for the weather stations. */
+    public void remember(String newEvent, float newIntensity, int seconds, long day) {
+        history.add(0, new Past(newEvent, newIntensity, seconds, day));
+        while (history.size() > HISTORY) {
+            history.remove(history.size() - 1);
+        }
+        setDirty();
+    }
+
     /** Announces a catastrophe: it comes after the warning. */
     public void startWarning(String newEvent, float newIntensity, int activeSeconds, int warningSeconds) {
         event = newEvent;
         intensity = newIntensity;
         pendingActiveSeconds = activeSeconds;
         scheduled = true;
+        plannedEvent = null;
         enter(EventPhase.WARNING, warningSeconds);
     }
 
@@ -93,6 +164,7 @@ public class EnvironmentState extends SavedData {
         event = null;
         intensity = 0.0f;
         scheduled = true;
+        plannedEvent = null;
         enter(EventPhase.CALM, seconds);
     }
 
@@ -101,6 +173,7 @@ public class EnvironmentState extends SavedData {
         event = newEvent;
         intensity = newIntensity;
         scheduled = true;
+        plannedEvent = null;
         enter(EventPhase.ACTIVE, seconds);
     }
 
@@ -109,6 +182,7 @@ public class EnvironmentState extends SavedData {
         event = null;
         intensity = 0.0f;
         scheduled = false;
+        plannedEvent = null;
         enter(EventPhase.CALM, 0);
     }
 
@@ -141,6 +215,11 @@ public class EnvironmentState extends SavedData {
                 startCalm(calmSeconds(random));
                 return Change.NONE;
             }
+            if (!catastrophes) {
+                plannedEvent = null;
+            } else if (plannedEvent == null || weight(plannedEvent, id -> true) <= 0) {
+                plan(random);
+            }
             if (secondsLeft > 0) {
                 secondsLeft--;
                 setDirty();
@@ -148,14 +227,12 @@ public class EnvironmentState extends SavedData {
             if (secondsLeft > 0) {
                 return Change.NONE;
             }
-            String next = catastrophes ? chooseEvent(random, id -> true) : null;
+            String next = catastrophes ? plannedEvent : null;
             if (next == null) {
                 startCalm(calmSeconds(random));
                 return Change.NONE;
             }
-            RebirthConfig.EnvironmentEventStats stats = RebirthConfig.environmentEvent(next);
-            startWarning(next, between(random, stats.minIntensity().get().floatValue(), stats.maxIntensity().get().floatValue()),
-                    between(random, stats.minActiveSeconds().get(), stats.maxActiveSeconds().get()), RebirthConfig.ENVIRONMENT_WARNING_SECONDS.get());
+            startWarning(next, plannedIntensity, plannedActiveSeconds, RebirthConfig.ENVIRONMENT_WARNING_SECONDS.get());
             return Change.WARNING;
         }
         secondsLeft--;
@@ -177,6 +254,17 @@ public class EnvironmentState extends SavedData {
                 return Change.ENDED;
             }
         }
+    }
+
+    /** Decides the catastrophe that will end this calm, with its strength and length. */
+    private void plan(RandomSource random) {
+        plannedEvent = chooseEvent(random, id -> true);
+        if (plannedEvent != null) {
+            RebirthConfig.EnvironmentEventStats stats = RebirthConfig.environmentEvent(plannedEvent);
+            plannedIntensity = between(random, stats.minIntensity().get().floatValue(), stats.maxIntensity().get().floatValue());
+            plannedActiveSeconds = between(random, stats.minActiveSeconds().get(), stats.maxActiveSeconds().get());
+        }
+        setDirty();
     }
 
     private static int calmSeconds(RandomSource random) {
@@ -234,6 +322,21 @@ public class EnvironmentState extends SavedData {
         tag.putInt("PhaseSeconds", phaseSeconds);
         tag.putInt("PendingActiveSeconds", pendingActiveSeconds);
         tag.putBoolean("Scheduled", scheduled);
+        if (plannedEvent != null) {
+            tag.putString("PlannedEvent", plannedEvent);
+            tag.putFloat("PlannedIntensity", plannedIntensity);
+            tag.putInt("PlannedActiveSeconds", plannedActiveSeconds);
+        }
+        ListTag past = new ListTag();
+        for (Past one : history) {
+            CompoundTag entry = new CompoundTag();
+            entry.putString("Event", one.event());
+            entry.putFloat("Intensity", one.intensity());
+            entry.putInt("Seconds", one.seconds());
+            entry.putLong("Day", one.day());
+            past.add(entry);
+        }
+        tag.put("History", past);
         return tag;
     }
 
@@ -253,6 +356,18 @@ public class EnvironmentState extends SavedData {
         state.pendingActiveSeconds = tag.getInt("PendingActiveSeconds");
         // A world from before 1.3.0 has no such key: it first waits a whole pause.
         state.scheduled = tag.getBoolean("Scheduled");
+        if (tag.contains("PlannedEvent") && Environment.EVENTS.contains(tag.getString("PlannedEvent"))) {
+            state.plannedEvent = tag.getString("PlannedEvent");
+            state.plannedIntensity = tag.getFloat("PlannedIntensity");
+            state.plannedActiveSeconds = tag.getInt("PlannedActiveSeconds");
+        }
+        ListTag past = tag.getList("History", Tag.TAG_COMPOUND);
+        for (int i = 0; i < past.size() && i < HISTORY; i++) {
+            CompoundTag entry = past.getCompound(i);
+            if (Environment.EVENTS.contains(entry.getString("Event"))) {
+                state.history.add(new Past(entry.getString("Event"), entry.getFloat("Intensity"), entry.getInt("Seconds"), entry.getLong("Day")));
+            }
+        }
         return state;
     }
 }

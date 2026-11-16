@@ -61,6 +61,9 @@ public final class EnvironmentCommands {
                                                 .executes(ctx -> warnEvent(ctx, StringArgumentType.getString(ctx, "type"),
                                                         FloatArgumentType.getFloat(ctx, "intensity"))))))
                         .then(Commands.literal("clear").executes(EnvironmentCommands::clear))
+                        .then(Commands.literal("next")
+                                .then(Commands.argument("seconds", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1))
+                                        .executes(ctx -> next(ctx, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "seconds")))))
                         .then(Commands.literal("room")
                                 .then(Commands.argument("unit", net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos())
                                         .executes(EnvironmentCommands::room)))
@@ -254,6 +257,19 @@ public final class EnvironmentCommands {
         }
         Catastrophes.onSecond(level, state, warn ? EnvironmentState.Change.WARNING : EnvironmentState.Change.ACTIVE, event);
         source.sendSuccess(() -> Component.translatable(warn ? "message.projectrebirth.environment.warned" : "message.projectrebirth.environment.started", eventName(event), number(intensity), seconds), true);
+        return 1;
+    }
+
+    /** 1.6.0: the calm ends so that the next catastrophe (chosen as usual) begins in about this many seconds, the warning included. */
+    private static int next(CommandContext<CommandSourceStack> ctx, int seconds) {
+        ServerLevel level = ctx.getSource().getLevel();
+        EnvironmentState state = EnvironmentState.get(level);
+        String was = state.event();
+        int calm = Math.max(1, seconds - RebirthConfig.ENVIRONMENT_WARNING_SECONDS.get());
+        state.startCalm(calm);
+        Catastrophes.cleared(level, was);
+        int begins = calm + RebirthConfig.ENVIRONMENT_WARNING_SECONDS.get();
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.environment.next", begins), true);
         return 1;
     }
 

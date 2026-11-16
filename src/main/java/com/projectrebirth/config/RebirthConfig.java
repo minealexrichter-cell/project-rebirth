@@ -231,6 +231,15 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue PURIFIER_CARTRIDGE_SHARE;
     public static final ModConfigSpec.IntValue PURIFIER_BUCKET_BOTTLES;
     public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
+    public static final ModConfigSpec.BooleanValue WEATHER_STATION_ENABLED;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_FORECAST_MINUTES;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_ROUND_MINUTES;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_LONG_FORECAST_MINUTES;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_RADIUS;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_SIGNAL_MINUTES;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_MODULE_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue WEATHER_STATION_ENERGY_CAPACITY;
     public static final ModConfigSpec.IntValue POTION_STACK;
     public static final ModConfigSpec.BooleanValue TURRET_ENABLED;
     public static final ModConfigSpec.DoubleValue TURRET_HEALTH;
@@ -823,6 +832,20 @@ public final class RebirthConfig {
         PURIFIER_CARTRIDGE_SHARE = builder.comment("Share of a filter cartridge's life one bottle uses (0.02: fifty bottles a cartridge)").defineInRange("cartridgePerBottle", 0.02, 0.0, 1.0);
         PURIFIER_BUCKET_BOTTLES = builder.comment("How many bottles of work one bucket is").defineInRange("bucketBottles", 3, 1, 64);
         builder.pop(2);
+
+        builder.comment("Weather station (1.6.0, block D): with energy and the open sky above it, it foresees the next catastrophe of its",
+                "dimension and tells its owner, the owner's faction and the players around it in the HUD; it gives a redstone signal before",
+                "and during a catastrophe.").push("weather_station");
+        WEATHER_STATION_ENABLED = builder.comment("Whether weather stations forecast at all").define("enabled", true);
+        WEATHER_STATION_FORECAST_MINUTES = builder.comment("How many minutes ahead a station foresees the kind of the next catastrophe (its time only roughly)").defineInRange("forecastMinutes", 10, 1, 600);
+        WEATHER_STATION_ROUND_MINUTES = builder.comment("How rough the time of a forecast without the long range module is: a span of this many minutes").defineInRange("roughMinutes", 5, 1, 60);
+        WEATHER_STATION_LONG_FORECAST_MINUTES = builder.comment("How many minutes ahead a station with the long range forecast module foresees the catastrophe, with its exact time, intensity and length").defineInRange("longForecastMinutes", 30, 1, 600);
+        WEATHER_STATION_RADIUS = builder.comment("Players this many blocks around a station see its forecast in the HUD (its owner and the owner's faction anywhere in the dimension)").defineInRange("radius", 64, 0, 4096);
+        WEATHER_STATION_SIGNAL_MINUTES = builder.comment("A station gives a full redstone signal this many minutes before a catastrophe it foresees, and during it").defineInRange("signalMinutes", 5, 0, 600);
+        WEATHER_STATION_ENERGY_PER_TICK = builder.comment("Energy a weather station takes per tick").defineInRange("energyPerTick", 10, 0, 1_000_000);
+        WEATHER_STATION_MODULE_ENERGY_PER_TICK = builder.comment("Energy the long range forecast module takes on top, per tick").defineInRange("moduleEnergyPerTick", 20, 0, 1_000_000);
+        WEATHER_STATION_ENERGY_CAPACITY = builder.comment("Energy a weather station holds").defineInRange("energyCapacity", 20000, 1, 1_000_000_000);
+        builder.pop();
 
         builder.comment("Hostile mechanisms and creatures (1.6.0, part B3): guard turrets of the ruins, sentries, mutants.",
                 "Switched off, a mechanism standing in a ruin turns into its broken block and creatures do not appear.").push("hostile");

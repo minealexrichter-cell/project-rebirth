@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "TPT",
+    "SYS",
+    "TCT"
+  ],
+  "key": {
+    "T": {
+      "item": "projectrebirth:titanium_ingot"
+    },
+    "P": {
+      "item": "projectrebirth:processor"
+    },
+    "S": {
+      "item": "projectrebirth:silver_ingot"
+    },
+    "Y": {
+      "item": "minecraft:spyglass"
+    },
+    "C": {
+      "item": "projectrebirth:circuit_board"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:long_range_forecast_module",
+    "count": 1
+  }
+}

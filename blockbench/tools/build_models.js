@@ -3058,7 +3058,12 @@
         const MUSCLE = {base: '#8a2c28', dark: '#6c1f1d', light: '#a4423a', vein: '#4a1214', spots: ['#c25a4c']};
         const TUMOR = {base: '#9a4a3e', dark: '#74342c', light: '#b86a58', vein: '#5a1e22', spots: ['#c8b84a', '#d8c86a'], spotChance: 0.5};
         const tooth = (x, y, z, h) => fang(x + 0.3, y, Math.round(h + 0.5) - 0.5, z + 0.3);
-        const bone = (o, s, rot, pivot) => C(o, s, {c: '#d8cfb5', n: 0.06, edge: false}, rot ? {rot, pivot} : undefined);
+        /** A bone, claw or tooth-like growth: whole pixels on the texture (part B3i), kept where it was by its middle. */
+        const bone = (o, s, rot, pivot) => {
+            const size = s.map(v => Math.max(1, Math.round(v)));
+            const origin = o.map((v, k) => v + (s[k] - size[k]) / 2);
+            return C(origin, size, {c: '#d8cfb5', n: 0.09, edge: false}, rot ? {rot, pivot} : undefined);
+        };
         SPECS.brute = {
             res: 128, seed: 1653, noCoplanarFaces: true,
             bones: [
@@ -3068,11 +3073,11 @@
                 {name: 'right_leg', parent: 'hips', pivot: [-4, 12, 0], cubes: [O([-7, 5.5, -2.5], [5.5, 7, 5.5], PALE)]},
                 {name: 'right_shin', parent: 'right_leg', pivot: [-4.25, 6, 0], cubes: [O([-6.5, 1, -2.25], [4.5, 5.5, 5], PALE)]},
                 {name: 'right_foot', parent: 'right_shin', pivot: [-4.25, 1.5, 0], cubes: [O([-7, 0.2, -4.5], [5.5, 2, 6.5], PALE),
-                    bone([-6.8, 0.1, -5.6], [1, 1.2, 1.5]), bone([-4.75, 0.1, -5.8], [1, 1.2, 1.7]), bone([-2.7, 0.1, -5.6], [1, 1.2, 1.5])]},
+                    bone([-6.8, 0, -5.6], [1, 1.2, 1.5]), bone([-4.75, 0, -5.8], [1, 1.2, 1.7]), bone([-2.7, 0, -5.6], [1, 1.2, 1.5])]},
                 {name: 'left_leg', parent: 'hips', pivot: [4, 12, 0], cubes: [O([1.5, 5.5, -2.5], [5.5, 7, 5.5], MUSCLE)]},
                 {name: 'left_shin', parent: 'left_leg', pivot: [4.25, 6, 0], cubes: [O([2, 1, -2.25], [4.5, 5.5, 5], PALE)]},
                 {name: 'left_foot', parent: 'left_shin', pivot: [4.25, 1.5, 0], cubes: [O([1.5, 0.2, -4.5], [5.5, 2, 6.5], PALE),
-                    bone([1.8, 0.1, -5.6], [1, 1.2, 1.5]), bone([3.75, 0.1, -5.8], [1, 1.2, 1.7]), bone([5.8, 0.1, -5.6], [1, 1.2, 1.5])]},
+                    bone([1.8, 0, -5.6], [1, 1.2, 1.5]), bone([3.75, 0, -5.8], [1, 1.2, 1.7]), bone([5.8, 0, -5.6], [1, 1.2, 1.5])]},
                 {name: 'torso', parent: 'hips', pivot: [0, 15, 0], cubes: [
                     O([-8, 15, -5], [16, 13, 10], PALE, {f: [[4, 3, 2, 1, '#a4423a'], [9, 6, 3, 1, '#6c1f1d']], k: [[3, 4, 1, 3, '#a4423a'], [11, 7, 2, 1, '#a4423a']]}),
                     O([-7, 26, -2], [14, 6, 9], MUSCLE),

@@ -140,7 +140,7 @@ public class PatrolRobotEntity extends WalkingGunner {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 4,
-                state -> state.setAndContinue(state.isMoving() ? WALK : IDLE)));
+                state -> state.setAndContinue(walking(state) ? WALK : IDLE)));
         controllers.add(new AnimationController<>(this, "action", 0, state -> software.bernie.geckolib.animation.PlayState.STOP)
                 .triggerableAnim("shot", SHOT)
                 .triggerableAnim("melee", MELEE));

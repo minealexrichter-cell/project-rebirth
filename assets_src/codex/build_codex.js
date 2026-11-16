@@ -294,13 +294,13 @@ category('armor', P + 'power_armor', 'Power Armor', 'Силовая броня',
     entry('weapons', P + 'assault_rifle', 1, 3, ['variants'], 'Weapons', 'Оружие', [
         text('Guns fire only from working power armor: left click fires, right click aims, R reloads. Without armor a gun can be carried, but it is a heavy load and does not fire. Each gun has its own rounds, made at the weapon workshop.',
             'Оружие стреляет только из работающей силовой брони: ЛКМ — огонь, ПКМ — прицеливание, R — перезарядка. Без брони его можно носить, но это тяжёлый груз, и оно не стреляет. У каждого оружия свои патроны, они делаются в оружейной мастерской.'),
-        item(P + 'assault_rifle', 'Assault rifle: automatic, 30 rounds, 4 damage a bullet, 64 blocks.', 'Автоматическая винтовка: очередями, 30 патронов, 4 урона за пулю, 64 блока.'),
+        item(P + 'assault_rifle', 'Assault rifle: automatic, 30 rounds, 6 damage a bullet, 64 blocks.', 'Автоматическая винтовка: очередями, 30 патронов, 6 урона за пулю, 64 блока.'),
         recipe(P + 'assault_rifle'),
         recipe(P + 'assault_rifle_ammo'),
-        item(P + 'battle_rifle', 'Battle rifle: one shot at a time with a scope, 10 rounds, 13 damage, 128 blocks.', 'Полуавтоматическая винтовка: по одному выстрелу, с прицелом, 10 патронов, 13 урона, 128 блоков.'),
+        item(P + 'battle_rifle', 'Battle rifle: one shot at a time with a scope, 10 rounds, 18 damage, 128 blocks.', 'Полуавтоматическая винтовка: по одному выстрелу, с прицелом, 10 патронов, 18 урона, 128 блоков.'),
         recipe(P + 'battle_rifle'),
         recipe(P + 'battle_rifle_ammo'),
-        item(P + 'combat_shotgun', 'Combat shotgun: 6 shells, 8 pellets of 2.8 damage, 24 blocks; reloaded a shell at a time.', 'Боевой дробовик: 6 патронов, 8 дробин по 2,8 урона, 24 блока; заряжается по одному патрону.'),
+        item(P + 'combat_shotgun', 'Combat shotgun: 6 shells, 8 pellets of 4 damage, 24 blocks; reloaded a shell at a time.', 'Боевой дробовик: 6 патронов, 8 дробин по 4 урона, 24 блока; заряжается по одному патрону.'),
         recipe(P + 'combat_shotgun'),
         recipe(P + 'shotgun_shell')
     ])

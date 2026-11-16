@@ -238,7 +238,8 @@ public class MechEntity extends WalkingGunner {
                 Vec3 away = hit.position().subtract(position()).multiply(1.0, 0.0, 1.0).normalize();
                 hit.setDeltaMovement(away.x * 1.8, 0.7, away.z * 1.8);
                 hit.hurtMarked = true;
-                playSound(SoundEvents.ANVIL_LAND, 1.5f, 0.5f);
+                playSound(SoundEvents.RAVAGER_ATTACK, 2.0f, 0.6f);
+                playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.5f, 0.6f);
                 dash = 0;
             }
             if (horizontalCollision) {
@@ -475,7 +476,8 @@ public class MechEntity extends WalkingGunner {
     @Override
     protected void playStepSound(BlockPos pos, BlockState state) {
         playSound(SoundEvents.IRON_GOLEM_STEP, 2.0f, 0.5f);
-        playSound(SoundEvents.ANVIL_LAND, 0.25f, 0.5f);
+        // the hiss of the leg's hydraulics
+        playSound(SoundEvents.PISTON_CONTRACT, 0.35f, 0.5f);
     }
 
     @Override
@@ -518,6 +520,9 @@ public class MechEntity extends WalkingGunner {
             }
         }
         bossBar.setProgress(Mth.clamp(getHealth() / getMaxHealth(), 0.0f, 1.0f));
+        if (tickCount % 10 == 0) {
+            updateBossBarViewers();
+        }
         if (getTarget() == null) {
             warning = -1;
             stompWindup = -1;
@@ -538,10 +543,20 @@ public class MechEntity extends WalkingGunner {
         setNoGravity(false); // a flight is not saved: it comes down where it was
     }
 
-    @Override
-    public void startSeenByPlayer(ServerPlayer player) {
-        super.startSeenByPlayer(player);
-        bossBar.addPlayer(player);
+    /** The health bar only for the players close to it, not for everyone the mech is sent to. */
+    private void updateBossBarViewers() {
+        if (!(level() instanceof ServerLevel server)) {
+            return;
+        }
+        double range = RebirthConfig.MECH_BOSS_BAR_RANGE.get();
+        for (ServerPlayer player : server.players()) {
+            boolean near = isAlive() && player.distanceToSqr(this) <= range * range;
+            if (near && !bossBar.getPlayers().contains(player)) {
+                bossBar.addPlayer(player);
+            } else if (!near && bossBar.getPlayers().contains(player)) {
+                bossBar.removePlayer(player);
+            }
+        }
     }
 
     @Override
@@ -565,7 +580,7 @@ public class MechEntity extends WalkingGunner {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 5,
-                state -> state.setAndContinue(isFlying() ? FLY : state.isMoving() ? (phase() == 2 ? RUN : WALK) : (phase() == 2 ? IDLE_BERSERK : IDLE))));
+                state -> state.setAndContinue(isFlying() ? FLY : walking(state) ? (phase() == 2 ? RUN : WALK) : (phase() == 2 ? IDLE_BERSERK : IDLE))));
         controllers.add(new AnimationController<>(this, "action", 0, state -> PlayState.STOP)
                 .triggerableAnim("shot", SHOT)
                 .triggerableAnim("rockets", ROCKETS)

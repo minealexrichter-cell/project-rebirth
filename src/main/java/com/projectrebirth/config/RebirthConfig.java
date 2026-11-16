@@ -290,6 +290,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue MECH_ROCKET_POWER;
     public static final ModConfigSpec.BooleanValue MECH_ROCKETS_BREAK;
     public static final ModConfigSpec.DoubleValue MECH_STOMP_DAMAGE;
+    public static final ModConfigSpec.IntValue MECH_BOSS_BAR_RANGE;
     public static final ModConfigSpec.DoubleValue MECH_STOMP_RADIUS;
     public static final ModConfigSpec.BooleanValue MUTANTS_ENABLED;
     public static final ModConfigSpec.IntValue MUTANTS_INTERVAL;
@@ -916,6 +917,7 @@ public final class RebirthConfig {
         MECH_ROCKETS = builder.comment("Rockets in a salvo").defineInRange("rockets", 2, 1, 10);
         MECH_ROCKET_POWER = builder.comment("Explosion power of a rocket (a creeper has 3)").defineInRange("rocketPower", 2.0, 0.0, 10.0);
         MECH_ROCKETS_BREAK = builder.comment("Whether the rockets break blocks").define("rocketsBreakBlocks", false);
+        MECH_BOSS_BAR_RANGE = builder.comment("Players within this many blocks of the mech see its health bar").defineInRange("bossBarRange", 32, 1, 256);
         MECH_STOMP_DAMAGE = builder.comment("Damage of its stomp to players close by").defineInRange("stompDamage", 10.0, 0.0, 1000.0);
         MECH_STOMP_RADIUS = builder.comment("Reach of the stomp in blocks").defineInRange("stompRadius", 3.5, 0.5, 16.0);
         builder.pop();
@@ -1115,9 +1117,9 @@ public final class RebirthConfig {
                 .defineInRange("heavyHintIntervalTicks", 60, 1, 72000);
         WEAPON_HEAVY_WALK_MULTIPLIER = builder.comment("Outside power armor: walking speed is multiplied by this while a weapon is in hand; 1.0 = no slower")
                 .defineInRange("heavyWalkSpeedMultiplier", 1.0, 0.1, 1.0);
-        defineWeapon(builder, "assault_rifle", 30, 4.0, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50, 0.6, 0.3, 0.05, 0.3);
-        defineWeapon(builder, "battle_rifle", 10, 13.0, 128.0, 10, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50, 0.5, 1.8, 0.0, 0.0);
-        defineWeapon(builder, "combat_shotgun", 6, 2.8, 24.0, 20, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16, 0.6, 3.5, 0.0, 0.0);
+        defineWeapon(builder, "assault_rifle", 30, 6.0, 64.0, 3, 1, 1.5, 0.6, 6.0, 0.25, 0.4, 64.0, 1.0, 50, 0.6, 0.3, 0.05, 0.3);
+        defineWeapon(builder, "battle_rifle", 10, 18.0, 128.0, 10, 1, 0.5, 0.0, 0.0, 0.25, 0.2, 128.0, 1.0, 50, 0.5, 1.8, 0.0, 0.0);
+        defineWeapon(builder, "combat_shotgun", 6, 4.0, 24.0, 20, 8, 6.0, 0.0, 0.0, 0.25, 0.7, 6.0, 0.25, 16, 0.6, 3.5, 0.0, 0.0);
         builder.pop();
 
         builder.comment("What the upgrades of power armor do").push("armor_upgrades");

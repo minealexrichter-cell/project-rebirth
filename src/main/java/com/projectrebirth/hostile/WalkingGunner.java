@@ -375,4 +375,13 @@ public abstract class WalkingGunner extends Monster implements GeoEntity {
     protected static boolean hostileOn() {
         return !RebirthConfig.SERVER_SPEC.isLoaded() || RebirthConfig.HOSTILE_ENABLED.get();
     }
+
+    /**
+     * Whether the walk should play: GeckoLib's own test needs a stride faster than a slow patrol's, so the walk stopped while a
+     * machine paced its post; any step since the last tick counts here.
+     */
+    protected boolean walking(software.bernie.geckolib.animation.AnimationState<?> state) {
+        double dx = getX() - xo, dz = getZ() - zo;
+        return state.isMoving() || dx * dx + dz * dz > 1.0E-5;
+    }
 }

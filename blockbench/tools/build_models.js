@@ -3008,11 +3008,12 @@
                     O([1, 17, -3], [3.5, 4, 1.5], SICK, {f: [[1, 1, 1, 1, GLOW]]}),
                     O([-3, 19, 1.5], [4, 4.5, 3], SICK, {k: [[1, 1, 2, 2, GLOW]], tp: [[1, 1, 1, 1, GLOW]]})]},
                 {name: 'head', parent: 'body', pivot: [0, 22, -1], cubes: [
-                    O([-3.5, 22, -4.5], [7, 7, 7], SICK, {f: [[1, 2, 2, 1, GLOW], [5, 2, 1, 1, GLOW], [1, 4, 5, 3, MAW]], tp: [[3, 1, 1, 5, GLOW]]}),
-                    ...[[-2.0, 1.5], [-0.9, 0.5], [0.2, 1.5], [1.3, 0.5], [2.2, 1.5]].map(([x, h]) => fang(x, 25.45 - h, h, -4.6)),
+                    // the head ends above the mouth; the lower face is the jaw, which drops open (part B3g)
+                    O([-3.5, 23.2, -4.5], [7, 6, 7], SICK, {f: [[1, 1, 2, 1, GLOW], [5, 1, 1, 1, GLOW], [1, 5, 5, 1, '#4e5a42']], tp: [[3, 1, 1, 5, GLOW]], bt: [[1, 1, 5, 4, MAW]]}),
+                    ...[[-2.0, 1.5], [-0.9, 0.5], [0.2, 1.5], [1.3, 0.5], [2.2, 1.5]].map(([x, h]) => fang(x, 23.65 - h, h, -4.3)),
                     O([-2.5, 28.5, -3.5], [2, 2, 3], SICK, {tp: [[0, 0, 2, 3, GLOW]]})]},
-                {name: 'jaw', parent: 'head', pivot: [0, 23, -3], cubes: [O([-2.5, 20.8, -5], [5, 2, 4], SICK, {tp: [[0, 0, 5, 2, MAW]]}),
-                    ...[[-1.9, 0.5], [-0.8, 1.5], [0.4, 0.5], [1.5, 1.5]].map(([x, h]) => fang(x, 22.55, h, -4.5))]},
+                {name: 'jaw', parent: 'head', pivot: [0, 23, -0.5], cubes: [O([-3, 20.5, -4.2], [6, 3, 4], SICK, {tp: [[1, 0, 4, 3, MAW]], f: [[0, 0, 6, 1, '#4e5a42'], [4, 1, 1, 1, GLOW]]}),
+                    ...[[-1.9, 0.5], [-0.8, 1.5], [0.4, 0.5], [1.5, 1.5]].map(([x, h]) => fang(x, 23.25, h, -3.85))]},
                 {name: 'right_arm', parent: 'body', pivot: [-5, 21, 0], cubes: [O([-6.5, 9, -1.5], [3, 13, 3], SUIT, {f: [[0, 9, 3, 4, '#7a8a6a'], [1, 11, 1, 1, GLOW]]})]},
                 {name: 'left_arm', parent: 'body', pivot: [5, 21, 0], cubes: [O([3.5, 15, -2.5], [4, 7, 5], SICK, {f: [[1, 2, 1, 1, GLOW]], sd: [[2, 1, 1, 1, GLOW]]})]},
                 {name: 'left_forearm', parent: 'left_arm', pivot: [5.5, 15.5, 0], cubes: [
@@ -3299,6 +3300,109 @@
             muzzle: [0, 3, -20],
             ejection: [-2.5, 3, 1]
         }, oldShotgun), {res: 128});
+    })();
+
+    // ------------------------------------------------------------------ pilot weapons, third version (1.6.0, part B3g)
+    // The owner: bigger, so they feel big and heavy; the assault rifle's stock must be one piece with the gun. About half as big
+    // again as before, thicker everywhere; the sides banded from the size of each part. Same bones as before.
+    (() => {
+        const GM = '#5a5e64', GL = '#8d9299', GD = '#35383c', GS = '#a6acb3', BORE = '#0a0a0b', GLOW = '#dff4ff', LENS = '#7fd8ff', RED = '#d23a2e';
+        const SEAM = '#45484d', MID = '#70747a';
+        const bands = (len, h) => {
+            const ops = [[0, 0, len, 1, GL]];
+            if (h >= 3) ops.push([0, h - 1, len, 1, GD]);
+            if (h >= 4) ops.push([0, Math.floor(h / 2), len, 1, MID]);
+            if (h >= 6) ops.push([0, Math.floor(h / 2) + 1, len, 1, SEAM]);
+            return ops;
+        };
+        /** A part whose sides are banded to its own size; more: extra paint (its sd is added to the bands); opts: rot, pivot, inflate. */
+        const part = (o, s, base, more, opts) => {
+            const p = Object.assign({c: base, n: 0.07}, more || {});
+            p.sd = bands(s[2], s[1]).concat((more && more.sd) || []);
+            return C(o, s, p, opts);
+        };
+        const plain = (o, s, base, more, opts) => C(o, s, Object.assign({c: base, n: 0.07}, more || {}), opts);
+        const notches = (len, w) => Array.from({length: Math.floor(len / 2)}, (_, i) => [0, i * 2, w, 1, GL]);
+        const vents = (x0, count, y, h) => Array.from({length: count}, (_, i) => [x0 + i * 2, y, 1, h || 2, GD]);
+        const grip = (z, pivotZ) => plain([-1.5, -7, z], [3, 7, 4], GD, {sd: [[0, 1, 4, 1, SEAM], [0, 3, 4, 1, SEAM], [0, 5, 4, 1, SEAM]]}, {rot: [15, 0, 0], pivot: [0, 0, pivotZ]});
+
+        SPECS.assault_rifle = Object.assign(weaponSpec(921, {
+            body: [
+                part([-2.5, 0, -9], [5, 6, 20], GM, {sd: [[9, 1, 4, 2, GD], [10, 2, 2, 1, GS]], tp: [[2, 0, 1, 20, GD]]}),
+                plain([-1.5, 4.8, -22], [3, 2, 29], GD, {tp: notches(29, 3), sd: [[0, 0, 29, 1, GL]]}),
+                part([-3, 1, -24], [6, 4, 16], GM, {sd: vents(2, 6, 1), bt: [[2, 1, 2, 14, GD]]}),
+                plain([-1, 2, -33], [2, 2, 10], GD, {edge: false}),
+                plain([-2, 1, -37], [4, 4, 5], GM, {f: [[1, 1, 2, 2, BORE]], sd: [[1, 1, 3, 1, GD], [1, 2, 3, 1, GD]]}),
+                grip(2, 4),
+                plain([-2, -3, -2], [4, 1, 6], GD, {edge: false}),
+                plain([-1.5, -6, -20], [3, 8, 3], GD, {sd: [[0, 1, 3, 1, SEAM], [0, 3, 3, 1, SEAM], [0, 5, 3, 1, SEAM]]}),
+                // the stock, one piece with the receiver: a neck out of its back, the body, a cheek riser and a rubber butt
+                part([-2, 0.5, 10], [4, 5, 5], GM),
+                part([-2.5, -2.5, 14], [5, 7, 8], GM, {tp: [[1, 1, 3, 6, GD]]}),
+                plain([-1.5, 4, 15.3], [3, 1, 5], GD, {edge: false}),
+                plain([-3, -4.5, 21], [6, 10, 2], GD, {k: [[1, 1, 4, 8, SEAM]]})
+            ],
+            magazine: {pivot: [0, 0, -5], cubes: [plain([-1.5, -10, -7], [3, 10, 4], GD, {sd: [[0, 0, 4, 1, GL], [0, 3, 4, 1, SEAM], [0, 6, 4, 1, SEAM]]}, {rot: [-15, 0, 0], pivot: [0, 0, -5], inflate: -0.1})]},
+            bolt: {pivot: [-3.5, 3.5, 0], cubes: [plain([-3.4, 3, -1], [1, 1, 3], GS, {edge: false})]},
+            sight: {pivot: [0, 7, -3], cubes: [
+                plain([-2, 6.6, -6], [4, 4, 5], GM, {f: [[1, 1, 2, 2, LENS]], k: [[1, 1, 2, 2, LENS]], tp: [[1, 1, 2, 3, GD]]}),
+                plain([-0.5, 6.6, -20], [1, 2, 1], GL, {edge: false})]},
+            muzzle: [0, 3, -37],
+            ejection: [-3, 4.5, 1]
+        }, magazineAnimations(2.5, 3.5, 1.2)), {res: 128});
+
+        SPECS.battle_rifle = Object.assign(weaponSpec(922, {
+            body: [
+                part([-2.5, 0, -12], [5, 6, 24], GM, {sd: [[12, 1, 4, 2, GD]], tp: [[2, 0, 1, 24, GD]]}),
+                plain([-1.5, 4.8, -24], [3, 2, 30], GD, {tp: notches(30, 3), sd: [[0, 0, 30, 1, GL]]}),
+                part([-3, 1, -30], [6, 4, 19], GM, {sd: vents(2, 8, 1), bt: [[2, 1, 2, 17, GD]]}),
+                plain([-1, 2, -45], [2, 2, 16], GD, {edge: false}),
+                plain([-2, 1, -52], [4, 4, 8], GM, {f: [[1, 1, 2, 2, BORE]], sd: [[1, 1, 1, 2, GD], [3, 1, 1, 2, GD], [5, 1, 1, 2, GD]]}),
+                grip(3, 5),
+                plain([-2, -3, -1], [4, 1, 6], GD, {edge: false}),
+                // the folded bipod under the handguard
+                plain([-4, -1.2, -29], [2, 2, 12], GD, {edge: false}),
+                plain([2, -1.2, -29], [2, 2, 12], GD, {edge: false}),
+                plain([-1.5, -1.2, -31], [3, 2, 3], GM, {edge: false}),
+                // the solid stock with a cheek rest
+                part([-2.5, -2, 11], [5, 6, 15], GM, {}, {inflate: -0.1}),
+                plain([-1.5, 3.5, 13], [3, 3, 8], GD, {edge: false}),
+                plain([-2.5, -6, 25], [5, 12, 3], GD, {k: [[1, 1, 3, 10, SEAM]]})
+            ],
+            magazine: {pivot: [0, 0, -5], cubes: [plain([-1.5, -8, -8], [3, 9, 6], GD, {sd: [[0, 0, 6, 1, GL], [0, 3, 6, 1, SEAM], [0, 6, 6, 1, SEAM]]})]},
+            bolt: {pivot: [-3.5, 3.5, 3], cubes: [plain([-3.4, 3, 1], [1, 1, 4], GS, {edge: false})]},
+            sight: {pivot: [0, 9, -3], cubes: [
+                plain([-2, 9, -11.5], [4, 4, 18], GD, {sd: [[0, 0, 18, 1, GL]], tp: [[1, 4, 2, 3, GM], [1, 11, 2, 3, GM]]}),
+                plain([-3, 8, -16], [6, 6, 4], GM, {f: [[1, 1, 4, 4, LENS], [1, 1, 2, 2, '#c8f6ff']]}),
+                plain([-3, 8, 5], [6, 6, 3], GM, {k: [[1, 1, 4, 4, '#2a5a6a']]}),
+                plain([-1, 6.6, -7], [2, 3, 2], GM, {edge: false}),
+                plain([-1, 6.6, 1], [2, 3, 2], GM, {edge: false})]},
+            muzzle: [0, 3, -52],
+            ejection: [-3, 4.5, 0]
+        }, magazineAnimations(2.5, 4, 1.8)), {res: 128});
+
+        // the shotgun: a heavy box with a glowing ammo counter on each side and a red shell light, a big pump under the barrel
+        const counter = [[4, 2, 9, 4, '#0c0e10'], [5, 3, 3, 1, GLOW], [5, 4, 1, 1, GLOW], [7, 4, 1, 1, GLOW], [9, 3, 3, 1, GLOW], [9, 4, 1, 1, GLOW], [11, 4, 1, 1, GLOW],
+            [5, 5, 3, 1, '#9fb4c0'], [9, 5, 3, 1, '#9fb4c0'], [15, 2, 2, 1, RED]];
+        const shotgunAnims = SPECS.combat_shotgun.animations;
+        SPECS.combat_shotgun = Object.assign(weaponSpec(923, {
+            body: [
+                part([-3, 0, -10], [6, 8, 19], GM, {sd: counter, tp: [[2, 0, 2, 19, GD]]}),
+                plain([-1.5, 7, -15], [3, 2, 21], GD, {tp: notches(21, 3), sd: [[0, 0, 21, 1, GL]]}),
+                plain([-1.5, 3, -27], [3, 3, 18], GD, {sd: [[0, 0, 18, 1, GL]]}),
+                plain([-1.5, -1.5, -24], [3, 3, 15], GM, {sd: [[0, 2, 15, 1, GD]]}),
+                plain([-2, 2.5, -30], [4, 4, 4], GM, {f: [[1, 1, 2, 2, BORE]], edge: false}),
+                grip(1, 3),
+                plain([-2, -3, -2], [4, 1, 6], GD, {edge: false}),
+                part([-2, 0.3, 8], [4, 5, 14], GM),
+                plain([-3, -3, 21], [6, 9, 3], GD, {k: [[1, 1, 4, 7, SEAM]]})
+            ],
+            magazine: {pivot: [0, -0.5, -12], cubes: [C([-1, -1.3, -14.3], [2, 2, 3], {c: '#c9352b', n: 0.03, k: [[0, 0, 2, 2, GL]], edge: false})]},
+            bolt: {pivot: [0, 0, -16], cubes: [plain([-2.5, -2.5, -21], [5, 5, 9], GM, {sd: [[1, 0, 1, 5, GD], [3, 0, 1, 5, GD], [5, 0, 1, 5, GD], [7, 0, 1, 5, GD]], bt: [[1, 1, 3, 7, GD]]})]},
+            sight: {pivot: [0, 9, -14], cubes: [plain([-0.5, 8.8, -14], [1, 2, 1], GL, {edge: false}), plain([-2, 8.8, 3], [4, 1, 2], GD, {edge: false})]},
+            muzzle: [0, 4.5, -30],
+            ejection: [-3.5, 5, 1]
+        }, shotgunAnims), {res: 128});
     })();
 
     window.RebirthModels = {build, save, SPECS, coplanarFaces};

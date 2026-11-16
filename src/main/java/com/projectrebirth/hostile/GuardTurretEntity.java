@@ -106,6 +106,12 @@ public class GuardTurretEntity extends Monster implements GeoEntity {
 
     // a machine bolted to the ground: no pushing, no fall damage, no leash, no despawning
 
+    /** Solid: one bumps into a turret instead of walking through it. */
+    @Override
+    public boolean canBeCollidedWith() {
+        return isAlive();
+    }
+
     @Override
     public boolean isPushable() {
         return false;

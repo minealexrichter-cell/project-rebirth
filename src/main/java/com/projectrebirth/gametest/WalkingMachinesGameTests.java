@@ -148,4 +148,37 @@ public class WalkingMachinesGameTests {
             helper.succeed();
         });
     }
+
+    @GameTest(template = TEMPLATE, batch = "scouting_machines_solid")
+    public static void theMachinesAreSolid(GameTestHelper helper) {
+        PatrolRobotEntity robot = helper.spawnWithNoFreeWill(HostileRegistry.PATROL_ROBOT.get(), new BlockPos(2, 2, 2));
+        MechEntity mech = helper.spawnWithNoFreeWill(HostileRegistry.MECH.get(), new BlockPos(6, 2, 6));
+        com.projectrebirth.hostile.GuardTurretEntity turret = helper.spawnWithNoFreeWill(HostileRegistry.GUARD_TURRET.get(), new BlockPos(6, 2, 2));
+        helper.assertTrue(robot.canBeCollidedWith() && mech.canBeCollidedWith() && turret.canBeCollidedWith(), "One bumps into them");
+        helper.assertFalse(robot.isPushable() || mech.isPushable() || turret.isPushable(), "And cannot push them about");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 260, batch = "scouting_mech_flight")
+    public static void inTheSecondPhaseTheMechFliesToATargetOutOfReach(GameTestHelper helper) {
+        MechEntity mech = helper.spawn(HostileRegistry.MECH.get(), new BlockPos(4, 2, 4));
+        ServerPlayer player = GuardTurretGameTests.player(helper, GameType.SURVIVAL);
+        net.minecraft.world.phys.Vec3 high = helper.absoluteVec(new net.minecraft.world.phys.Vec3(4.5, 7.0, 8.5));
+        for (int x = 3; x <= 5; x++) {
+            for (int z = 7; z <= 9; z++) {
+                helper.setBlock(new BlockPos(x, 6, z), net.minecraft.world.level.block.Blocks.STONE);
+            }
+        }
+        player.moveTo(high.x, high.y, high.z, 180.0f, 0.0f);
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, 400, 4));
+        helper.runAfterDelay(2, () -> mech.setHealth(mech.getMaxHealth() * 0.45f));
+        helper.succeedWhen(() -> {
+            if (mech.isFlying()) {
+                helper.getLevel().getServer().getPlayerList().remove(player);
+                mech.discard();
+                return;
+            }
+            helper.assertTrue(false, "Not flying yet (phase " + mech.phase() + ")");
+        });
+    }
 }

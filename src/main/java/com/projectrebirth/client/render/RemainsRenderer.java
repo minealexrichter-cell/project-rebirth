@@ -50,6 +50,11 @@ public class RemainsRenderer extends GeoEntityRenderer<RemainsEntity> {
 
     @Override
     protected void applyRotations(RemainsEntity remains, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
+        // a brute's body sinks into the ground in the last fifth of its time
+        float sink = Math.max(0.0f, (remains.decay() - 0.8f) / 0.2f);
+        if (sink > 0.0f) {
+            poseStack.translate(0.0f, -sink * 1.1f, 0.0f);
+        }
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0f - remains.getYRot()));
     }
 }

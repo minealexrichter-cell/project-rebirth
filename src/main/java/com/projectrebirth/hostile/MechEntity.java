@@ -53,6 +53,15 @@ public class MechEntity extends WalkingGunner {
     private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> PHASE =
             net.minecraft.network.syncher.SynchedEntityData.defineId(MechEntity.class, net.minecraft.network.syncher.EntityDataSerializers.INT);
     private static final int TRANSFORM_TICKS = 60;
+    private static final RawAnimation FOLDED = RawAnimation.begin().thenLoop("animation.mech.folded");
+    private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.mech.fly");
+    private static final RawAnimation GATLING = RawAnimation.begin().thenPlay("animation.mech.gatling");
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Boolean> FLYING =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(MechEntity.class, net.minecraft.network.syncher.EntityDataSerializers.BOOLEAN);
+    /** Flight in the second phase: how long it stays up, the rest between flights, how high over its target it hovers. */
+    private static final int FLIGHT_TICKS = 160;
+    private static final int FLIGHT_REST = 220;
+    private static final double HOVER_HEIGHT = 5.0;
     private static final DustParticleOptions MARK = new DustParticleOptions(new Vector3f(1.0f, 0.1f, 0.05f), 1.6f);
     /** Ticks from the start of the stomp to the blow. */
     private static final int STOMP_WINDUP = 12;
@@ -62,6 +71,9 @@ public class MechEntity extends WalkingGunner {
     private int transform;
     private int dash;
     private int dashCooldown = 40;
+    private int flight;
+    private int flightCooldown = 60;
+    private double orbit;
     private Vec3 dashDirection = Vec3.ZERO;
     private int warning = -1;
     private final List<Vec3> marks = new ArrayList<>();
@@ -101,6 +113,7 @@ public class MechEntity extends WalkingGunner {
     protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(PHASE, 0);
+        builder.define(FLYING, false);
     }
 
     private void beginTransform() {
@@ -139,8 +152,73 @@ public class MechEntity extends WalkingGunner {
         }
     }
 
+    public boolean isFlying() {
+        return entityData.get(FLYING);
+    }
+
+    @Override
+    protected boolean hovering() {
+        return isFlying();
+    }
+
+    /**
+     * Flight on the jetpack: it rises over its target and circles it there, firing the gatling, then comes down with a shock
+     * that hurts and throws whoever stands below. It takes off when its target climbs out of reach or now and then anyway.
+     */
+    private boolean fly(LivingEntity target, boolean sees) {
+        if (isFlying()) {
+            flight--;
+            orbit += 0.035;
+            Vec3 goal = target.position().add(Math.cos(orbit) * 6.0, HOVER_HEIGHT, Math.sin(orbit) * 6.0);
+            Vec3 to = goal.subtract(position());
+            Vec3 velocity = getDeltaMovement().scale(0.85).add(to.scale(0.025));
+            double speed = velocity.length();
+            if (speed > 0.45) {
+                velocity = velocity.scale(0.45 / speed);
+            }
+            setDeltaMovement(velocity);
+            getLookControl().setLookAt(target, 30.0f, 30.0f);
+            yBodyRot = yHeadRot;
+            setYRot(yHeadRot);
+            fallDistance = 0.0f;
+            if (flight <= 0 || !target.isAlive()) {
+                land();
+            }
+            return false;
+        }
+        if (flightCooldown > 0) {
+            flightCooldown--;
+            return false;
+        }
+        boolean outOfReach = target.getY() - getY() > 2.5;
+        if (outOfReach || sees && random.nextInt(60) == 0) {
+            entityData.set(FLYING, true);
+            setNoGravity(true);
+            flight = FLIGHT_TICKS;
+            orbit = Math.atan2(getZ() - target.getZ(), getX() - target.getX());
+            setDeltaMovement(getDeltaMovement().add(0.0, 0.7, 0.0));
+            getNavigation().stop();
+            playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 3.0f, 0.5f);
+            playSound(SoundEvents.BLAZE_SHOOT, 2.0f, 0.5f);
+        }
+        return false;
+    }
+
+    private void land() {
+        entityData.set(FLYING, false);
+        setNoGravity(false);
+        flightCooldown = FLIGHT_REST;
+        landing = true;
+    }
+
+    private boolean landing;
+
     /** In the second phase it closes in, sprays long bursts and rams its target. */
     private boolean berserk(LivingEntity target, double distance, boolean sees) {
+        fly(target, sees);
+        if (isFlying()) {
+            return false;
+        }
         if (dash > 0) {
             dash--;
             setDeltaMovement(dashDirection.x * 0.62, getDeltaMovement().y, dashDirection.z * 0.62);
@@ -248,9 +326,12 @@ public class MechEntity extends WalkingGunner {
         return phase() == 2 ? 5.0 : range() * 0.5;
     }
 
-    /** The machine gun under its right arm. */
+    /** The machine gun under its right arm; in the second phase the gatling over its left shoulder. */
     @Override
     protected Vec3 muzzle() {
+        if (phase() == 2) {
+            return position().add(0.0, 3.31, 0.0).add(right().scale(-0.59)).add(forward().scale(1.35));
+        }
         return position().add(0.0, 2.22, 0.0).add(right().scale(0.9)).add(forward().scale(1.8));
     }
 
@@ -266,7 +347,7 @@ public class MechEntity extends WalkingGunner {
 
     @Override
     protected void onShot() {
-        triggerAnim("action", "shot");
+        triggerAnim("action", phase() == 2 ? "gatling" : "shot");
     }
 
     @Override
@@ -283,7 +364,7 @@ public class MechEntity extends WalkingGunner {
             }
             return true;
         }
-        if (distance <= RebirthConfig.MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5 && stompCooldown <= 0) {
+        if (!isFlying() && distance <= RebirthConfig.MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5 && stompCooldown <= 0) {
             stompWindup = STOMP_WINDUP;
             stompCooldown = phase() == 2 ? 30 : 60;
             triggerAnim("action", "stomp");
@@ -401,11 +482,6 @@ public class MechEntity extends WalkingGunner {
     }
 
     @Override
-    public boolean isPushable() {
-        return false;
-    }
-
-    @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
         if (phase() == 0 && getHealth() <= getMaxHealth() * 0.5f && isAlive()) {
@@ -413,6 +489,23 @@ public class MechEntity extends WalkingGunner {
         }
         if (phase() == 1) {
             tickTransform();
+        }
+        if (isFlying() && (getTarget() == null || phase() != 2)) {
+            land();
+        }
+        if (landing && onGround()) {
+            landing = false;
+            stomp();
+        }
+        if (isFlying() && level() instanceof ServerLevel server && tickCount % 2 == 0) {
+            for (int side = -1; side <= 1; side += 2) {
+                Vec3 jet = position().add(0.0, 1.85, 0.0).add(forward().scale(-0.85)).add(right().scale(side * 0.37));
+                server.sendParticles(ParticleTypes.FLAME, jet.x, jet.y, jet.z, 3, 0.05, 0.05, 0.05, 0.02);
+                server.sendParticles(ParticleTypes.LARGE_SMOKE, jet.x, jet.y - 0.3, jet.z, 1, 0.1, 0.1, 0.1, 0.01);
+            }
+            if (tickCount % 10 == 0) {
+                playSound(SoundEvents.BLAZE_BURN, 1.5f, 0.5f);
+            }
         }
         bossBar.setProgress(Mth.clamp(getHealth() / getMaxHealth(), 0.0f, 1.0f));
         if (getTarget() == null) {
@@ -432,6 +525,7 @@ public class MechEntity extends WalkingGunner {
     public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         entityData.set(PHASE, tag.getInt("Phase"));
+        setNoGravity(false); // a flight is not saved: it comes down where it was
     }
 
     @Override
@@ -461,12 +555,15 @@ public class MechEntity extends WalkingGunner {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 5,
-                state -> state.setAndContinue(state.isMoving() ? (phase() == 2 ? RUN : WALK) : (phase() == 2 ? IDLE_BERSERK : IDLE))));
+                state -> state.setAndContinue(isFlying() ? FLY : state.isMoving() ? (phase() == 2 ? RUN : WALK) : (phase() == 2 ? IDLE_BERSERK : IDLE))));
         controllers.add(new AnimationController<>(this, "action", 0, state -> PlayState.STOP)
                 .triggerableAnim("shot", SHOT)
                 .triggerableAnim("rockets", ROCKETS)
                 .triggerableAnim("stomp", STOMP)
                 .triggerableAnim("transform", TRANSFORM)
-                .triggerableAnim("dash", DASH));
+                .triggerableAnim("dash", DASH)
+                .triggerableAnim("gatling", GATLING));
+        // the gatling stays folded behind the back until the transform raises it
+        controllers.add(new AnimationController<>(this, "gun", 0, state -> phase() == 0 ? state.setAndContinue(FOLDED) : PlayState.STOP));
     }
 }

@@ -88,6 +88,11 @@ public abstract class WalkingGunner extends Monster implements GeoEntity {
         return false;
     }
 
+    /** Whether it moves by itself now (the mech in flight) rather than by walking. */
+    protected boolean hovering() {
+        return false;
+    }
+
     /** At this distance and closer it stops to shoot; further it walks closer. */
     protected double shootingDistance() {
         return range() * 0.6;
@@ -102,6 +107,21 @@ public abstract class WalkingGunner extends Monster implements GeoEntity {
         goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 10.0f));
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this));
+    }
+
+    /** A machine is solid: players and mobs bump into it instead of walking through, and it is not pushed about. */
+    @Override
+    public boolean canBeCollidedWith() {
+        return isAlive();
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    protected void doPush(net.minecraft.world.entity.Entity entity) {
     }
 
     @Override
@@ -234,7 +254,9 @@ public abstract class WalkingGunner extends Monster implements GeoEntity {
                 return;
             }
             boolean inPost = post == null || target.distanceToSqr(Vec3.atCenterOf(post)) <= (double) postRadius() * postRadius();
-            if (!sees || distance > shootingDistance()) {
+            if (hovering()) {
+                getNavigation().stop();
+            } else if (!sees || distance > shootingDistance()) {
                 if (inPost || !sees) {
                     getNavigation().moveTo(target, 1.0);
                 } else {

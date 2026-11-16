@@ -132,4 +132,22 @@ public class MutantsGameTests {
             helper.succeed();
         });
     }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 120, batch = "scouting_mutants_body_rots")
+    public static void aBrutesBodyRotsAway(GameTestHelper helper) {
+        int before = RebirthConfig.CORPSE_LIFETIME.get();
+        RebirthConfig.CORPSE_LIFETIME.set(40);
+        com.projectrebirth.hostile.BruteEntity brute = helper.spawnWithNoFreeWill(HostileRegistry.BRUTE.get(), new BlockPos(4, 2, 4));
+        brute.kill();
+        AABB around = new AABB(helper.absolutePos(new BlockPos(4, 2, 4))).inflate(3.0);
+        helper.runAfterDelay(5, () -> helper.assertTrue(!helper.getLevel().getEntitiesOfClass(com.projectrebirth.hostile.RemainsEntity.class, around).isEmpty(), "The body lies there"));
+        helper.runAfterDelay(80, () -> {
+            try {
+                helper.assertTrue(helper.getLevel().getEntitiesOfClass(com.projectrebirth.hostile.RemainsEntity.class, around).isEmpty(), "After its time it is gone");
+            } finally {
+                RebirthConfig.CORPSE_LIFETIME.set(before);
+            }
+            helper.succeed();
+        });
+    }
 }

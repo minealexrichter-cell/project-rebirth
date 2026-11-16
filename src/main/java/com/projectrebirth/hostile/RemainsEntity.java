@@ -68,6 +68,8 @@ public class RemainsEntity extends Entity implements GeoEntity {
     }
 
     private static final EntityDataAccessor<Integer> KIND = SynchedEntityData.defineId(RemainsEntity.class, EntityDataSerializers.INT);
+    /** For a brute's body: how much of it has rotted away, 0..1, for the client to sink it into the ground at the end. */
+    private static final EntityDataAccessor<Float> DECAY = SynchedEntityData.defineId(RemainsEntity.class, EntityDataSerializers.FLOAT);
     private static final DustParticleOptions GLOW = new DustParticleOptions(new Vector3f(0.5f, 1.0f, 0.3f), 1.0f);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int age;
@@ -86,6 +88,11 @@ public class RemainsEntity extends Entity implements GeoEntity {
         return remains;
     }
 
+    /** 0 fresh, 1 rotted away (a brute's body only). */
+    public float decay() {
+        return entityData.get(DECAY);
+    }
+
     public Kind kind() {
         return Kind.of(entityData.get(KIND));
     }
@@ -93,6 +100,7 @@ public class RemainsEntity extends Entity implements GeoEntity {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         builder.define(KIND, 0);
+        builder.define(DECAY, 0.0f);
     }
 
     @Override
@@ -118,6 +126,9 @@ public class RemainsEntity extends Entity implements GeoEntity {
         }
         Kind kind = kind();
         if (level().isClientSide) {
+            if (kind == Kind.BRUTE && decay() > 0.8f && random.nextInt(2) == 0) {
+                level().addParticle(ParticleTypes.SMOKE, getRandomX(1.2), getY() + 0.2, getRandomZ(1.2), 0.0, 0.03, 0.0);
+            }
             if (kind == Kind.BRUTE && random.nextInt(4) == 0) {
                 level().addParticle(GLOW, getRandomX(1.0), getY() + random.nextDouble() * getBbHeight(), getRandomZ(1.0), 0.0, 0.02, 0.0);
             } else if (kind.machine && random.nextInt(kind == Kind.MECH ? 3 : 8) == 0) {
@@ -127,7 +138,11 @@ public class RemainsEntity extends Entity implements GeoEntity {
             return;
         }
         age++;
-        if (kind == Kind.BRUTE && age > (RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.CORPSE_LIFETIME.get() : 6000)) {
+        int lifetime = RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.CORPSE_LIFETIME.get() : 6000;
+        if (kind == Kind.BRUTE && age % 10 == 0) {
+            entityData.set(DECAY, Math.min(1.0f, age / (float) lifetime));
+        }
+        if (kind == Kind.BRUTE && age > lifetime) {
             if (level() instanceof ServerLevel server) {
                 server.sendParticles(ParticleTypes.SMOKE, getX(), getY() + 0.4, getZ(), 20, 0.8, 0.3, 0.8, 0.01);
             }

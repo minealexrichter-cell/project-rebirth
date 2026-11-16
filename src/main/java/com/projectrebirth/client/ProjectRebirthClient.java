@@ -106,6 +106,7 @@ public class ProjectRebirthClient {
         event.register(TechMenus.MAINTENANCE.get(), MaintenanceScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_MENU.get(), com.projectrebirth.client.screen.AirFiltrationScreen::new);
+        event.register(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_MENU.get(), com.projectrebirth.client.screen.WaterPurifierScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.SHELTER_PANEL_MENU.get(), com.projectrebirth.client.screen.ShelterPanelScreen::new);
         event.register(TechMenus.BODY_MODIFICATION.get(), BodyModificationScreen::new);
         event.register(TechMenus.ARMOR_MOUNTING.get(), ArmorMountingScreen::new);

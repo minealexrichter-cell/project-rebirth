@@ -220,6 +220,16 @@ public final class RebirthConfig {
     public static final ModConfigSpec.BooleanValue STRUCTURES_OUTPOST;
     public static final ModConfigSpec.BooleanValue STRUCTURES_ZONE;
     public static final ModConfigSpec.BooleanValue HOSTILE_ENABLED;
+    public static final ModConfigSpec.BooleanValue WATER_ENABLED;
+    public static final ModConfigSpec.DoubleValue WATER_SWIM_TOXIN;
+    public static final ModConfigSpec.DoubleValue WATER_SWIM_CONTAMINATION;
+    public static final ModConfigSpec.DoubleValue WATER_DRINK_TOXIN;
+    public static final ModConfigSpec.BooleanValue WATER_STORMS;
+    public static final ModConfigSpec.IntValue PURIFIER_TICKS;
+    public static final ModConfigSpec.IntValue PURIFIER_ENERGY_PER_TICK;
+    public static final ModConfigSpec.IntValue PURIFIER_ENERGY_CAPACITY;
+    public static final ModConfigSpec.DoubleValue PURIFIER_CARTRIDGE_SHARE;
+    public static final ModConfigSpec.IntValue PURIFIER_BUCKET_BOTTLES;
     public static final ModConfigSpec.BooleanValue TURRET_ENABLED;
     public static final ModConfigSpec.DoubleValue TURRET_HEALTH;
     public static final ModConfigSpec.DoubleValue TURRET_ARMOR;
@@ -794,6 +804,21 @@ public final class RebirthConfig {
         STRUCTURES_OUTPOST = builder.comment("Defensive outpost (medium-large, walls and two towers)").define("defensiveOutpost", true);
         STRUCTURES_ZONE = builder.comment("Contamination zone (large, an ancient arch over irradiated sludge)").define("contaminationZone", true);
         builder.pop();
+
+        builder.comment("Polluted water (1.6.0, block C): water in contaminated chunks, and under the open sky during a toxic storm or acid rain,",
+                "is polluted. Swimming in it poisons; bottles and buckets filled there hold polluted water; a water purifier cleans it.").push("water");
+        WATER_ENABLED = builder.comment("Polluted water at all").define("enabled", true);
+        WATER_STORMS = builder.comment("Whether water under the open sky is polluted during a toxic storm or acid rain").define("stormsPollute", true);
+        WATER_SWIM_TOXIN = builder.comment("Toxic load a person takes per second of swimming in polluted water (less through a protective suit)").defineInRange("swimToxin", 4.0, 0.0, 1000.0);
+        WATER_SWIM_CONTAMINATION = builder.comment("External contamination gathered per second of swimming in polluted water").defineInRange("swimContamination", 2.0, 0.0, 1000.0);
+        WATER_DRINK_TOXIN = builder.comment("Toxic load of one drunk bottle of polluted water").defineInRange("drinkToxin", 15.0, 0.0, 1000.0);
+        builder.push("purifier");
+        PURIFIER_TICKS = builder.comment("Ticks a water purifier needs to clean one bottle").defineInRange("ticksPerBottle", 80, 1, 24000);
+        PURIFIER_ENERGY_PER_TICK = builder.comment("Energy a water purifier takes per tick of work").defineInRange("energyPerTick", 15, 0, 1_000_000);
+        PURIFIER_ENERGY_CAPACITY = builder.comment("Energy a water purifier holds").defineInRange("energyCapacity", 10000, 1, 1_000_000_000);
+        PURIFIER_CARTRIDGE_SHARE = builder.comment("Share of a filter cartridge's life one bottle uses (0.02: fifty bottles a cartridge)").defineInRange("cartridgePerBottle", 0.02, 0.0, 1.0);
+        PURIFIER_BUCKET_BOTTLES = builder.comment("How many bottles of work one bucket is").defineInRange("bucketBottles", 3, 1, 64);
+        builder.pop(2);
 
         builder.comment("Hostile mechanisms and creatures (1.6.0, part B3): guard turrets of the ruins, sentries, mutants.",
                 "Switched off, a mechanism standing in a ruin turns into its broken block and creatures do not appear.").push("hostile");

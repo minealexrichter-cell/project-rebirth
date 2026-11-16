@@ -85,6 +85,9 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.environment.TemperatureRegistry.THERMAL_LINER.get());
                 output.accept(com.projectrebirth.environment.TemperatureRegistry.HEATER_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_UNIT_ITEM.get());
+                output.accept(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_ITEM.get());
+                output.accept(com.projectrebirth.water.WaterRegistry.POLLUTED_WATER_BOTTLE.get());
+                output.accept(com.projectrebirth.water.WaterRegistry.POLLUTED_WATER_BUCKET.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.BACKUP_BATTERY_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.SHELTER_CONTROL_PANEL_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.DECONTAMINATION_CHAMBER_ITEM.get());

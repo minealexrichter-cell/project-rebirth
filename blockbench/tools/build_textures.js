@@ -120,7 +120,9 @@
 
     const TEXTURES = {};
     const block = (id, make) => { TEXTURES['block/' + id] = make; };
-    const item = (id, make) => { TEXTURES['item/' + id] = make; };
+    // The weapon icons are made from the models since 1.6.0 (derive_textures.js, RebirthDerived.icon): left alone here.
+    const DRAWN_FROM_MODELS = new Set(['assault_rifle', 'battle_rifle', 'combat_shotgun']);
+    const item = (id, make) => { if (!DRAWN_FROM_MODELS.has(id)) TEXTURES['item/' + id] = make; };
 
     // ---------------------------------------------------------------- ores
 
@@ -2028,6 +2030,86 @@
         p.px(YELLOW, [7, 12], [8, 12]);
         return p;
     });
+
+
+    // ---------------------------------------------------------------- polluted water (version 1.6.0, block C)
+
+    const MURK = '#6b7a3c', MURK_DARK = '#4f5a2b', MURK_FOAM = '#a7b456', CLEAN = '#3f9fd8', CLEAN_LIGHT = '#8fd3f5';
+    /** Water purifier: two glass tanks behind the front, the murky one on the left, the clean one on the right, a filter between. */
+    function purifierFront(frame) {
+        const p = casing(new Painter(161), '#37c6e8');
+        p.inset(2, 2, 12, 12, '#14171b', 0.02);
+        // the tanks
+        p.inset(3, 3, 4, 10, MURK, 0.06).inset(9, 3, 4, 10, CLEAN, 0.04);
+        p.rect(3, 3, 4, 1, MURK_DARK).rect(9, 3, 4, 1, shade(CLEAN, 0.8));
+        // the filter between them, a tan cartridge in a frame
+        p.rect(7, 3, 2, 10, '#2a3036');
+        for (let y = 4; y < 12; y += 2) p.rect(7, y, 2, 1, FILTER_TAN);
+        // bubbles rising in the murky tank and in the clean one
+        const rise = y => 3 + ((y - frame * 2) % 10 + 10) % 10;
+        p.px(MURK_FOAM, [4, rise(11)], [5, rise(7)], [4, rise(4)]);
+        p.px(CLEAN_LIGHT, [10, rise(9)], [11, rise(5)], [10, rise(2)]);
+        // glass shine
+        p.px(LIGHT, [3, 4], [9, 4], [3, 5], [9, 5]);
+        return p;
+    }
+    block('water_purifier_front', () => purifierFront(0));
+    animated('water_purifier_front_on', 5, 2, i => purifierFront(i));
+    block('water_purifier_side', () => {
+        const p = casing(new Painter(162), '#37c6e8');
+        // a window onto the cartridge, and a gauge of the clean water
+        p.inset(4, 3, 8, 7, '#0c1e26', 0.02);
+        for (let x = 5; x < 11; x++) p.rect(x, 4, 1, 5, x % 2 ? FILTER_TAN : shade(FILTER_TAN, 1.2));
+        p.bevel(4, 11, 8, 2, '#0c1e26', 0.02);
+        p.rect(5, 11, 4, 1, CLEAN).rect(9, 11, 2, 1, shade(CLEAN, 0.5));
+        return p;
+    });
+    block('water_purifier_top', () => {
+        const p = casing(new Painter(163), '#37c6e8');
+        // the inlet: a round hatch with water under a grille
+        p.bevel(4, 4, 8, 8, shade(STEEL, 0.9), 0.03);
+        p.inset(5, 5, 6, 6, MURK, 0.05);
+        [6, 8].forEach(x => p.rect(x, 5, 1, 6, DARK));
+        [6, 8].forEach(y => p.rect(5, y, 6, 1, DARK));
+        p.px('#37c6e8', [7, 13], [8, 13]);
+        return p;
+    });
+    // A bottle of polluted water: the game's glass bottle with murky green-brown water and a cork.
+    item('polluted_water_bottle', () => icon([
+        '................',
+        '.......cc.......',
+        '......kcck......',
+        '......kwwk......',
+        '......kwwk......',
+        '.....kwwwwk.....',
+        '....kwmmmmwk....',
+        '...kwmmgmmmwk...',
+        '...kmmmmmMmmk...',
+        '...kmMmmmmmmk...',
+        '...kmmmmgmMmk...',
+        '...kmmgmmmmmk...',
+        '....kmmmMmmk....',
+        '.....kkkkkk.....',
+        '................',
+        '................'], {k: '#2b3236', c: '#8a6a44', w: '#cfe0e0', m: MURK, M: MURK_DARK, g: MURK_FOAM}));
+    // A bucket of polluted water: the game's bucket, murky water to the brim.
+    item('polluted_water_bucket', () => icon([
+        '................',
+        '................',
+        '................',
+        '....kkkkkkkk....',
+        '..kkmmmgmmmmkk..',
+        '..kSmmMmmmgmSk..',
+        '..kSSmmmmmmSSk..',
+        '..kSSSSSSSSSSk..',
+        '...kSssssssSk...',
+        '...kSssssssSk...',
+        '...kSSssssSSk...',
+        '....kSssssSk....',
+        '....kSSSSSSk....',
+        '.....kkkkkk.....',
+        '................',
+        '................'], {k: '#2e3338', S: '#c6ccd2', s: '#9aa1a8', m: MURK, M: MURK_DARK, g: MURK_FOAM}));
 
     /** Airlock door: a heavy steel door, the lower half with a hazard band and a locking wheel, the upper with a thick window. */
     block('airlock_door_bottom', () => {

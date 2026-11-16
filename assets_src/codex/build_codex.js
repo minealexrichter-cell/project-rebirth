@@ -462,6 +462,14 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         note('Mutants do not burn in the sun and do not come in peaceful. Settings in the config ([hostile.mutants]).',
             'Мутанты не горят на солнце и не появляются на мирной сложности. Настройки в конфиге ([hostile.mutants]).')
     ]),
+    entry('polluted_water', P + 'polluted_water_bottle', -1, -3, ['contaminated_zones'], 'Polluted Water', 'Загрязнённая вода', [
+        text('Water is polluted where the ground is contaminated (a contaminated zone on the HUD), and during a toxic storm or acid rain wherever it lies under the open sky. It looks like any water. Swimming in it gives a person toxins (less in a protective suit) and soils whoever swims, so a decontamination is due afterwards.\n\nA glass bottle or a bucket filled there holds polluted water. Drunk, a bottle of it gives toxins; it is no potion, so neither the brewing stand nor any recipe takes it. Poured from the bucket, it is just water again.',
+            'Вода загрязнена там, где заражена земля (в HUD — «заражённая зона»), а во время токсичного шторма и кислотного дождя — везде, где она лежит под открытым небом. На вид это обычная вода. Купание в ней даёт человеку токсины (в защитном костюме меньше) и пачкает того, кто плавает, — после этого нужна дезактивация.\n\nБутылка или ведро, наполненные там, содержат загрязнённую воду. Выпитая бутылка такой воды даёт токсины; это не зелье, поэтому её не принимает ни варочная стойка, ни один рецепт. Вылитая из ведра, она снова просто вода.'),
+        block(P + 'water_purifier', 'The water purifier cleans it: polluted water in, a filter cartridge of the air filtration unit, clean water out (a bottle into a water bottle, a bucket into a water bucket). It needs energy; each bottle wears the cartridge a little (fifty bottles a cartridge), a used one turns spent. Hoppers bring water and cartridges and take the clean water away.',
+            'Водоочиститель очищает её: загрязнённая вода на входе, фильтрующий картридж установки фильтрации воздуха, чистая вода на выходе (бутылка — в бутылку воды, ведро — в ведро воды). Нужна энергия; каждая бутылка немного изнашивает картридж (пятьдесят бутылок на картридж), израсходованный становится отработанным. Воронки подают воду и картриджи и забирают чистую воду.'),
+        recipe(P + 'water_purifier'),
+        note('Settings in the config ([water]).', 'Настройки в конфиге ([water]).')
+    ]),
     entry('dosimeter', P + 'dosimeter', 1, 1, ['protection'], 'Dosimeter', 'Дозиметр', [
         item(P + 'dosimeter', 'Carried, it shows your dose and the radiation, and clicks.', 'В инвентаре показывает дозу и радиацию и щёлкает.'),
         recipe(P + 'dosimeter'),

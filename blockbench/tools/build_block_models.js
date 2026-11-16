@@ -378,6 +378,18 @@
         };
     });
 
+    // Water purifier (1.6.0, block C): the machine body with its two tanks behind glass, a hatch and a pipe on top.
+    [false, true].forEach(on => {
+        MODELS['water_purifier' + (on ? '_on' : '')] = {
+            parent: 'minecraft:block/block',
+            textures: shelterTextures('water_purifier', on, ['front', 'side', 'top'], ['front'], 'side'),
+            elements: [...machine('cyan'), ...screen(on, 'steel'),
+                box([10, 14, 10], [14, 16, 14], 'steel', {up: 'dark'}),
+                box([2, 14, 11], [10, 15, 13], 'copper', {up: 'copper'})
+            ]
+        };
+    });
+
     // Backup battery: a cell with a charge window on every side, posts, a plinth and a top plate with terminals.
     [false, true].forEach(on => {
         const side = tex('side', [2, 2, 14, 14]);
@@ -831,6 +843,12 @@
         [false, true].forEach(working => {
             STATES.air_filtration_unit.variants['facing=' + facing + ',working=' + working] = variant('air_filtration_unit' + (working ? '_on' : ''), rotation(y));
             STATES.shelter_control_panel.variants['facing=' + facing + ',working=' + working] = variant('shelter_control_panel' + (working ? '_on' : ''), rotation(y));
+        });
+    });
+    STATES.water_purifier = {variants: {}};
+    Object.entries(ROTATIONS).forEach(([facing, y]) => {
+        [false, true].forEach(working => {
+            STATES.water_purifier.variants['facing=' + facing + ',working=' + working] = variant('water_purifier' + (working ? '_on' : ''), rotation(y));
         });
     });
     STATES.backup_battery = {variants: {'working=false': variant('backup_battery'), 'working=true': variant('backup_battery_on')}};

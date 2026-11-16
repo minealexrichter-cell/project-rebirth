@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:polluted_water_bottle",
+  "x": -1,
+  "y": -3,
+  "parents": [
+    "contaminated_zones"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.polluted_water.p1"
+    },
+    {
+      "type": "block",
+      "value": "projectrebirth:water_purifier",
+      "text": "codex.projectrebirth.polluted_water.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:water_purifier"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.polluted_water.p4"
+    }
+  ]
+}

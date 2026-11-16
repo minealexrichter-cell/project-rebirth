@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "IBI",
+    "FCF",
+    "IRI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "F": {
+      "item": "projectrebirth:filter"
+    },
+    "C": {
+      "item": "minecraft:cauldron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:water_purifier",
+    "count": 1
+  }
+}

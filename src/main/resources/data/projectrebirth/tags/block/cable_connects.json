@@ -32,6 +32,7 @@
     "projectrebirth:rusted_air_filtration_unit",
     "projectrebirth:rusted_shelter_control_panel",
     "projectrebirth:rusted_heater",
-    "projectrebirth:rusted_backup_battery"
+    "projectrebirth:rusted_backup_battery",
+    "projectrebirth:water_purifier"
   ]
 }

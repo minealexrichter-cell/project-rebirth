@@ -108,8 +108,13 @@
 					]
 				},
 				{
-					"name": "right_gun",
+					"name": "gun_mount",
 					"parent": "torso",
+					"pivot": [-14, 40, 0]
+				},
+				{
+					"name": "right_gun",
+					"parent": "gun_mount",
 					"pivot": [-14, 40, 0],
 					"cubes": [
 						{"origin": [-18, 36, -5], "size": [7, 9, 10], "uv": [0, 32]},
@@ -168,8 +173,13 @@
 					]
 				},
 				{
-					"name": "gatling",
+					"name": "gatling_aim",
 					"parent": "gatling_mount",
+					"pivot": [9.5, 53, 0]
+				},
+				{
+					"name": "gatling",
+					"parent": "gatling_aim",
 					"pivot": [9.5, 53, 0],
 					"cubes": [
 						{"origin": [6.5, 50, -9], "size": [6, 6, 12], "uv": [82, 27]},

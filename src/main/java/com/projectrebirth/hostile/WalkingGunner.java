@@ -43,6 +43,32 @@ public abstract class WalkingGunner extends Monster implements GeoEntity {
     private int shotsLeft;
     private int lockTicks;
     private LivingEntity lastTarget;
+    /** Whether it is aiming at a target now (part B3j): the client raises the gun and follows the target with it. */
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Boolean> AIMING =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(WalkingGunner.class, net.minecraft.network.syncher.EntityDataSerializers.BOOLEAN);
+    /** Client only: how far the gun is raised, 0 lowered .. 1 on target, and its value a tick before. */
+    private float aim, aimO;
+
+    @Override
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(AIMING, false);
+    }
+
+    /** How far the gun is raised toward its target, smoothly; client side. */
+    public float aimAmount(float partialTick) {
+        return aimO + (aim - aimO) * partialTick;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (level().isClientSide) {
+            aimO = aim;
+            float goal = entityData.get(AIMING) ? 1.0f : 0.0f;
+            aim += Math.max(-0.12f, Math.min(0.12f, goal - aim));
+        }
+    }
 
     protected WalkingGunner(EntityType<? extends Monster> type, Level level) {
         super(type, level);
@@ -228,7 +254,13 @@ public abstract class WalkingGunner extends Monster implements GeoEntity {
         }
 
         @Override
+        public void start() {
+            entityData.set(AIMING, true);
+        }
+
+        @Override
         public void stop() {
+            entityData.set(AIMING, false);
             lastTarget = null;
             lockTicks = 0;
             shotsLeft = 0;

@@ -2675,7 +2675,9 @@
                 {name: 'right_arm', parent: 'torso', pivot: [-8.5, 26, 0], cubes: [
                     C([-14, 23, -3.5], [8, 6, 7], cs({tp: hazard(0, 0, 8, 7, AMBER, DARK, 2)})),
                     C([-12, 17, -2], [4, 7, 4], fr())]},
-                {name: 'right_forearm', parent: 'right_arm', pivot: [-10, 18, 0], cubes: [
+                // aiming (part B3j): the code turns this joint at the elbow toward the target; the animations never touch it
+                {name: 'gun_mount', parent: 'right_arm', pivot: [-10, 18, 0], cubes: []},
+                {name: 'right_forearm', parent: 'gun_mount', pivot: [-10, 18, 0], cubes: [
                     C([-13.5, 14, -11], [6, 6, 12], cs({sd: [[2, 1, 9, 1, EDGE], [2, 3, 9, 1, DARK]]})),
                     C([-12, 15, -16], [4, 4, 6], {c: '#3c3e40', n: 0.1, f: [[1, 1, 2, 2, '#0a0a0b']]}),
                     C([-11.5, 11, -6], [3, 4, 3], fr({f: [[1, 1, 1, 2, AMBER]]}))]},
@@ -2761,7 +2763,8 @@
                 // the reactor core behind the chest plate: hidden at first, laid bare in the second phase
                 {name: 'core', parent: 'torso', pivot: [0, 36, -9], cubes: [C([-4, 34, -10.5], [8, 4, 2], {c: CORE, n: 0.06, f: [[1, 1, 6, 2, '#ffd27a']], edge: false})]},
                 {name: 'plate_front', parent: 'torso', pivot: [0, 36, -10], cubes: [P([-9, 32, -11], [18, 7, 3], {f: [[1, 1, 16, 1, LIGHT], [2, 3, 3, 2, AMBER], [13, 3, 3, 2, AMBER], [1, 5, 16, 1, EDGE]]})]},
-                {name: 'right_gun', parent: 'torso', pivot: [-14, 40, 0], cubes: [
+                {name: 'gun_mount', parent: 'torso', pivot: [-14, 40, 0], cubes: []},
+                {name: 'right_gun', parent: 'gun_mount', pivot: [-14, 40, 0], cubes: [
                     F([-18, 36, -5], [7, 9, 10]),
                     P([-19, 32, -16], [9, 7, 20], {sd: [[2, 1, 16, 1, LIGHT], [2, 4, 16, 1, EDGE]], tp: [[1, 2, 7, 1, EDGE]]}),
                     F([-18, 34, -21], [3, 3, 6], {f: [[1, 1, 1, 1, '#050505']], edge: false}),
@@ -2780,7 +2783,8 @@
                 {name: 'jet_left', parent: 'jetpack', pivot: [6, 31, 13.75], cubes: [F([4.5, 29.5, 12.25], [3, 3, 3], {bt: [[0, 0, 3, 3, CORE]], edge: false})]},
                 // the gatling: on a swinging arm at the back of the left shoulder; folded down behind the back until the second phase
                 {name: 'gatling_mount', parent: 'torso', pivot: [9.5, 48, 6], cubes: [C([8, 46.2, 3.75], [3, 5, 5], Object.assign({}, FRAME), {inflate: -0.25})]},
-                {name: 'gatling', parent: 'gatling_mount', pivot: [9.5, 53, 0], cubes: [
+                {name: 'gatling_aim', parent: 'gatling_mount', pivot: [9.5, 53, 0], cubes: []},
+                {name: 'gatling', parent: 'gatling_aim', pivot: [9.5, 53, 0], cubes: [
                     P([6.5, 50, -9], [6, 6, 12], {sd: [[1, 1, 10, 1, LIGHT], [1, 4, 10, 1, EDGE]], tp: hazard(0, 9, 6, 2, AMBER, DARK, 2), f: [[1, 1, 4, 4, DARK]]}),
                     C([7.5, 51.5, 2.6], [4, 3, 2], Object.assign({}, FRAME), {inflate: -0.2})]},
                 // the barrels turn about the gun's axis while it fires; whole pixels on the texture (thin by inflate), so they keep their paint

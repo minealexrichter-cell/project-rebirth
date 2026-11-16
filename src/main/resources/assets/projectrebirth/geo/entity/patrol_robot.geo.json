@@ -103,8 +103,13 @@
 					]
 				},
 				{
-					"name": "right_forearm",
+					"name": "gun_mount",
 					"parent": "right_arm",
+					"pivot": [-10, 18, 0]
+				},
+				{
+					"name": "right_forearm",
+					"parent": "gun_mount",
 					"pivot": [-10, 18, 0],
 					"cubes": [
 						{"origin": [-13.5, 14, -11], "size": [6, 6, 12], "uv": [44, 0]},

@@ -97,6 +97,32 @@ public class WalkingGunnerRenderer<T extends WalkingGunner> extends GeoEntityRen
             return animation;
         }
 
+        /**
+         * Aiming (part B3j): with a target the gun comes up and follows it up and down and to the sides (it turns at its own joint,
+         * which the animations never touch); without one it hangs lowered. The robot turns its gun at the elbow; the mech its
+         * machine gun at the shoulder and its gatling on its mount, while its torso already turns toward the target.
+         */
+        private void aim(T entity, EntityModelData data, double partialTick) {
+            if (data == null) {
+                return;
+            }
+            float aim = entity.aimAmount((float) partialTick);
+            float pitch = Mth.clamp(data.headPitch(), -60.0f, 60.0f) * Mth.DEG_TO_RAD;
+            boolean mech = entity instanceof com.projectrebirth.hostile.MechEntity;
+            // the robot's head turns fully, its body follows later: the gun takes up the rest of the turn
+            float yaw = mech ? 0.0f : Mth.clamp(data.netHeadYaw(), -45.0f, 45.0f) * Mth.DEG_TO_RAD;
+            float lowered = mech ? 0.3f : 0.55f;
+            for (String name : new String[] {"gun_mount", "gatling_aim"}) {
+                GeoBone joint = getAnimationProcessor().getBone(name);
+                if (joint == null) {
+                    continue;
+                }
+                float down = name.equals("gatling_aim") ? 0.0f : lowered * (1.0f - aim);
+                joint.setRotX(joint.getInitialSnapshot().getRotX() + down + pitch * aim);
+                joint.setRotY(joint.getInitialSnapshot().getRotY() + yaw * aim);
+            }
+        }
+
         @Override
         public void setCustomAnimations(T entity, long instanceId, AnimationState<T> state) {
             if (entity instanceof com.projectrebirth.hostile.MechEntity mech) {
@@ -115,6 +141,7 @@ public class WalkingGunnerRenderer<T extends WalkingGunner> extends GeoEntityRen
                 }
             }
             EntityModelData data = state.getData(DataTickets.ENTITY_MODEL_DATA);
+            aim(entity, data, state.getPartialTick());
             GeoBone bone = getAnimationProcessor().getBone(turning);
             if (data == null || bone == null) {
                 return;

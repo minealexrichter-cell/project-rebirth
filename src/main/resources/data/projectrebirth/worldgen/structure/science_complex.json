@@ -108,6 +108,24 @@
       "x": 43,
       "z": 15,
       "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/hound_pack",
+      "x": 24,
+      "z": 30,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/ghoul_0",
+      "x": 30,
+      "z": 46,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/science_complex/ghoul_1",
+      "x": 40,
+      "z": 24,
+      "follow": true
     }
   ]
 }

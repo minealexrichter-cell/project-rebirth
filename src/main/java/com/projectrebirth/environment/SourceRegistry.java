@@ -45,6 +45,18 @@ public final class SourceRegistry {
                     .noOcclusion()
                     .lightLevel(state -> 8));
 
+    public static final DeferredBlock<ToxicPuddleBlock> TOXIC_PUDDLE = BLOCKS.registerBlock("toxic_puddle",
+            ToxicPuddleBlock::new,
+            BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_GREEN)
+                    .strength(0.1f)
+                    .sound(SoundType.SLIME_BLOCK)
+                    .noCollission()
+                    .replaceable()
+                    .noLootTable()
+                    .noOcclusion()
+                    .lightLevel(state -> 5));
+
     public static final DeferredItem<BlockItem> RADIOACTIVE_DEBRIS_ITEM = ITEMS.registerSimpleBlockItem(RADIOACTIVE_DEBRIS);
     public static final DeferredItem<BlockItem> LEAKING_WASTE_BARREL_ITEM = ITEMS.registerSimpleBlockItem(LEAKING_WASTE_BARREL);
     public static final DeferredItem<BlockItem> IRRADIATED_SLUDGE_ITEM = ITEMS.registerSimpleBlockItem(IRRADIATED_SLUDGE);
@@ -52,7 +64,7 @@ public final class SourceRegistry {
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SourceBlockEntity>> SOURCE_ENTITY =
             BLOCK_ENTITIES.register("radiation_source", () -> BlockEntityType.Builder.of(SourceBlockEntity::new,
-                    RADIOACTIVE_DEBRIS.get(), LEAKING_WASTE_BARREL.get(), IRRADIATED_SLUDGE.get()).build(null));
+                    RADIOACTIVE_DEBRIS.get(), LEAKING_WASTE_BARREL.get(), IRRADIATED_SLUDGE.get(), TOXIC_PUDDLE.get()).build(null));
 
     private SourceRegistry() {
     }

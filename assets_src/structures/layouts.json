@@ -304,6 +304,24 @@
         "x": 43,
         "z": 15,
         "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/hound_pack",
+        "x": 24,
+        "z": 30,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/ghoul_0",
+        "x": 30,
+        "z": 46,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/science_complex/ghoul_1",
+        "x": 40,
+        "z": 24,
+        "follow": true
       }
     ]
   },
@@ -401,6 +419,24 @@
         "x": 52,
         "z": 46,
         "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/robot_post_0",
+        "x": 36,
+        "z": 43,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/robot_post_1",
+        "x": 6,
+        "z": 47,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/abandoned_factory/ghoul_0",
+        "x": 24,
+        "z": 44,
+        "follow": true
       }
     ]
   },
@@ -491,6 +527,18 @@
         "template": "projectrebirth:ruins/comm_station/lamp_post_3",
         "x": 27,
         "z": 27,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/robot_post_0",
+        "x": 34,
+        "z": 28,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/comm_station/robot_post_1",
+        "x": 44,
+        "z": 30,
         "follow": true
       }
     ]
@@ -758,6 +806,30 @@
         "x": 40,
         "z": 24,
         "floor": 2
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/ghoul_0",
+        "x": 10,
+        "z": 30,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/ghoul_1",
+        "x": 32,
+        "z": 14,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/hound_pack",
+        "x": 30,
+        "z": 24,
+        "follow": true
+      },
+      {
+        "template": "projectrebirth:ruins/contamination_zone/brute_post",
+        "x": 8,
+        "z": 18,
+        "follow": true
       }
     ]
   }

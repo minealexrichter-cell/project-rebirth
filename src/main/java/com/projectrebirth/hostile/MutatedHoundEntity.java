@@ -23,8 +23,8 @@ public class MutatedHoundEntity extends MutantEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 14.0)
-                .add(Attributes.ATTACK_DAMAGE, 3.0)
+                .add(Attributes.MAX_HEALTH, 24.0)
+                .add(Attributes.ATTACK_DAMAGE, 5.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.36)
                 .add(Attributes.FOLLOW_RANGE, 24.0);
     }
@@ -33,6 +33,20 @@ public class MutatedHoundEntity extends MutantEntity {
     protected void registerGoals() {
         super.registerGoals();
         goalSelector.addGoal(1, new LeapAtTargetGoal(this, 0.4f));
+    }
+
+    /** The pack hunts together: when one picks a player, the hounds about that have nobody go for the same one. */
+    @Override
+    public void setTarget(net.minecraft.world.entity.LivingEntity target) {
+        boolean fresh = target != null && target != getTarget();
+        super.setTarget(target);
+        if (fresh && !level().isClientSide && target instanceof net.minecraft.world.entity.player.Player) {
+            for (MutatedHoundEntity other : level().getEntitiesOfClass(MutatedHoundEntity.class, getBoundingBox().inflate(24.0),
+                    h -> h != this && h.isAlive() && h.getTarget() == null)) {
+                other.setTarget(target);
+            }
+            playSound(SoundEvents.WOLF_HOWL, 1.2f, 0.7f);
+        }
     }
 
     @Override

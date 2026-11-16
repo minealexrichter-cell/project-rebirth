@@ -56,15 +56,39 @@ public class WalkingMachinesGameTests {
     }
 
     @GameTest(template = TEMPLATE, batch = "scouting_robot_dead")
-    public static void aDestroyedRobotDropsParts(GameTestHelper helper) {
+    public static void aDestroyedRobotLeavesAWreckThatComesApartForParts(GameTestHelper helper) {
         PatrolRobotEntity robot = helper.spawn(HostileRegistry.PATROL_ROBOT.get(), new BlockPos(4, 2, 4));
-        ServerPlayer player = GuardTurretGameTests.player(helper, GameType.SURVIVAL);
-        robot.hurt(helper.getLevel().damageSources().playerAttack(player), 10000.0f);
-        helper.getLevel().getServer().getPlayerList().remove(player);
-        helper.runAfterDelay(25, () -> {
+        robot.kill();
+        helper.runAfterDelay(3, () -> {
             helper.assertFalse(robot.isAlive(), "The robot is destroyed");
             AABB around = new AABB(helper.absolutePos(new BlockPos(4, 2, 4))).inflate(3.0);
-            helper.assertTrue(!helper.getLevel().getEntitiesOfClass(ItemEntity.class, around).isEmpty(), "It drops parts");
+            java.util.List<com.projectrebirth.hostile.RemainsEntity> wrecks = helper.getLevel().getEntitiesOfClass(com.projectrebirth.hostile.RemainsEntity.class, around);
+            helper.assertTrue(wrecks.size() == 1 && wrecks.get(0).kind() == com.projectrebirth.hostile.RemainsEntity.Kind.PATROL_ROBOT, "Its wreck lies where it stood");
+            helper.getLevel().getEntitiesOfClass(ItemEntity.class, around).forEach(net.minecraft.world.entity.Entity::discard);
+            wrecks.get(0).dismantle(helper.getLevel(), null);
+            helper.assertFalse(wrecks.get(0).isAlive(), "Taken apart, the wreck is gone");
+            helper.assertTrue(!helper.getLevel().getEntitiesOfClass(ItemEntity.class, around).isEmpty(), "And gives its parts");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 140, batch = "scouting_mech_phase")
+    public static void atHalfHealthTheMechShedsItsArmor(GameTestHelper helper) {
+        MechEntity mech = helper.spawn(HostileRegistry.MECH.get(), new BlockPos(4, 2, 4));
+        helper.runAfterDelay(2, () -> {
+            helper.assertTrue(mech.phase() == 0, "It starts armored");
+            mech.setHealth(mech.getMaxHealth() * 0.45f);
+        });
+        helper.runAfterDelay(6, () -> {
+            helper.assertTrue(mech.phase() == 1, "Below half it sheds its armor");
+            float before = mech.getHealth();
+            helper.assertFalse(mech.hurt(helper.getLevel().damageSources().generic(), 10.0f), "While it does, it takes no damage");
+            helper.assertTrue(mech.getHealth() == before, "Its health is kept");
+        });
+        helper.runAfterDelay(80, () -> {
+            helper.assertTrue(mech.phase() == 2, "Then it fights stripped");
+            helper.assertTrue(mech.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) > RebirthConfig.MECH_SPEED.get(), "And faster");
+            mech.discard();
             helper.succeed();
         });
     }

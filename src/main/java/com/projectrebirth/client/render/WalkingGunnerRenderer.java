@@ -19,17 +19,20 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
  * "torso" turns on the legs to where it looks). The machines do not fall over sideways when destroyed.
  */
 public class WalkingGunnerRenderer<T extends WalkingGunner> extends GeoEntityRenderer<T> {
-    private WalkingGunnerRenderer(EntityRendererProvider.Context context, String name, String turning, boolean tilts, float shadow) {
+    private WalkingGunnerRenderer(EntityRendererProvider.Context context, String name, String turning, boolean tilts, float shadow, boolean glows) {
         super(context, new Model<>(name, turning, tilts));
         this.shadowRadius = shadow;
+        if (glows) {
+            addRenderLayer(new software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer<>(this));
+        }
     }
 
     public static <T extends WalkingGunner> WalkingGunnerRenderer<T> robot(EntityRendererProvider.Context context) {
-        return new WalkingGunnerRenderer<>(context, "patrol_robot", "head", true, 0.5f);
+        return new WalkingGunnerRenderer<>(context, "patrol_robot", "head", true, 0.5f, false);
     }
 
     public static <T extends WalkingGunner> WalkingGunnerRenderer<T> mech(EntityRendererProvider.Context context) {
-        return new WalkingGunnerRenderer<>(context, "mech", "torso", false, 1.4f);
+        return new WalkingGunnerRenderer<>(context, "mech", "torso", false, 1.4f, true);
     }
 
     @Override
@@ -67,6 +70,16 @@ public class WalkingGunnerRenderer<T extends WalkingGunner> extends GeoEntityRen
 
         @Override
         public void setCustomAnimations(T entity, long instanceId, AnimationState<T> state) {
+            if (entity instanceof com.projectrebirth.hostile.MechEntity mech) {
+                // the second phase: the chest plate and the rocket pod are gone (they fly off in the transform animation)
+                boolean stripped = mech.phase() == 2;
+                for (String part : new String[] {"plate_front", "left_pod"}) {
+                    GeoBone piece = getAnimationProcessor().getBone(part);
+                    if (piece != null) {
+                        piece.setHidden(stripped);
+                    }
+                }
+            }
             EntityModelData data = state.getData(DataTickets.ENTITY_MODEL_DATA);
             GeoBone bone = getAnimationProcessor().getBone(turning);
             if (data == null || bone == null) {

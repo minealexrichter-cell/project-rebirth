@@ -96,4 +96,40 @@ public class MutantsGameTests {
             helper.succeed();
         });
     }
+
+    @GameTest(template = TEMPLATE, batch = "scouting_mutants_ghoul_toxin")
+    public static void aGhoulPollutesTheAirAndLeavesAToxicPuddle(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        GlowingGhoulEntity ghoul = helper.spawnWithNoFreeWill(HostileRegistry.GLOWING_GHOUL.get(), new BlockPos(4, 2, 4));
+        helper.assertTrue(RadiationSources.readingAt(level, helper.absolutePos(new BlockPos(5, 2, 4))).toxin() > 1.0f, "Next to the ghoul the air is polluted");
+        ghoul.kill();
+        helper.runAfterDelay(2, () -> {
+            int puddles = 0;
+            for (BlockPos pos : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(2, 1, 2)), helper.absolutePos(new BlockPos(6, 4, 6)))) {
+                if (level.getBlockState(pos).is(com.projectrebirth.environment.SourceRegistry.TOXIC_PUDDLE.get())) {
+                    puddles++;
+                }
+            }
+            helper.assertTrue(puddles > 0, "Dead, it leaves a toxic puddle");
+            helper.assertTrue(RadiationSources.readingAt(level, helper.absolutePos(new BlockPos(4, 2, 4))).toxin() > 1.0f, "Which pollutes the air");
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, batch = "scouting_mutants_brute_body")
+    public static void aDeadBruteLeavesABodyThatRadiates(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        com.projectrebirth.hostile.BruteEntity brute = helper.spawnWithNoFreeWill(HostileRegistry.BRUTE.get(), new BlockPos(4, 2, 4));
+        float before = RadiationSources.readingAt(level, helper.absolutePos(new BlockPos(6, 2, 4))).radiation();
+        brute.kill();
+        helper.runAfterDelay(3, () -> {
+            java.util.List<com.projectrebirth.hostile.RemainsEntity> bodies = level.getEntitiesOfClass(com.projectrebirth.hostile.RemainsEntity.class,
+                    new AABB(helper.absolutePos(new BlockPos(4, 2, 4))).inflate(3.0));
+            helper.assertTrue(bodies.size() == 1 && bodies.get(0).kind() == com.projectrebirth.hostile.RemainsEntity.Kind.BRUTE, "Its body lies there");
+            float after = RadiationSources.readingAt(level, helper.absolutePos(new BlockPos(6, 2, 4))).radiation();
+            helper.assertTrue(after > before + 1.0f, "And radiates: " + before + " -> " + after);
+            bodies.get(0).discard();
+            helper.succeed();
+        });
+    }
 }

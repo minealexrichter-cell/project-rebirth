@@ -108,6 +108,30 @@
       "x": 40,
       "z": 24,
       "floor": 2
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/ghoul_0",
+      "x": 10,
+      "z": 30,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/ghoul_1",
+      "x": 32,
+      "z": 14,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/hound_pack",
+      "x": 30,
+      "z": 24,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/contamination_zone/brute_post",
+      "x": 8,
+      "z": 18,
+      "follow": true
     }
   ]
 }

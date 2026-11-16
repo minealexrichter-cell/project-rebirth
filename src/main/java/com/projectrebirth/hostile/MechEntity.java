@@ -46,12 +46,23 @@ public class MechEntity extends WalkingGunner {
     private static final RawAnimation SHOT = RawAnimation.begin().thenPlay("animation.mech.shot");
     private static final RawAnimation ROCKETS = RawAnimation.begin().thenPlay("animation.mech.rockets");
     private static final RawAnimation STOMP = RawAnimation.begin().thenPlay("animation.mech.stomp");
+    private static final RawAnimation TRANSFORM = RawAnimation.begin().thenPlay("animation.mech.transform");
+    private static final RawAnimation DASH = RawAnimation.begin().thenPlay("animation.mech.dash");
+    private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.mech.run");
+    private static final RawAnimation IDLE_BERSERK = RawAnimation.begin().thenLoop("animation.mech.idle_berserk");
+    private static final net.minecraft.network.syncher.EntityDataAccessor<Integer> PHASE =
+            net.minecraft.network.syncher.SynchedEntityData.defineId(MechEntity.class, net.minecraft.network.syncher.EntityDataSerializers.INT);
+    private static final int TRANSFORM_TICKS = 60;
     private static final DustParticleOptions MARK = new DustParticleOptions(new Vector3f(1.0f, 0.1f, 0.05f), 1.6f);
     /** Ticks from the start of the stomp to the blow. */
     private static final int STOMP_WINDUP = 12;
 
     private final ServerBossEvent bossBar = new ServerBossEvent(getDisplayName(), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
     private int rocketCooldown = 100;
+    private int transform;
+    private int dash;
+    private int dashCooldown = 40;
+    private Vec3 dashDirection = Vec3.ZERO;
     private int warning = -1;
     private final List<Vec3> marks = new ArrayList<>();
     private int stompCooldown;
@@ -75,6 +86,106 @@ public class MechEntity extends WalkingGunner {
     }
 
     @Override
+    protected RemainsEntity.Kind remainsKind() {
+        return RemainsEntity.Kind.MECH;
+    }
+
+    // ---------------------------------------------------------------- the second phase
+
+    /** 0: armored, with the rocket pod; 1: shedding its armor (invulnerable for the while); 2: stripped, fast and furious. */
+    public int phase() {
+        return entityData.get(PHASE);
+    }
+
+    @Override
+    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(PHASE, 0);
+    }
+
+    private void beginTransform() {
+        entityData.set(PHASE, 1);
+        transform = TRANSFORM_TICKS;
+        warning = -1;
+        marks.clear();
+        stompWindup = -1;
+        getNavigation().stop();
+        triggerAnim("action", "transform");
+        playSound(SoundEvents.IRON_GOLEM_DAMAGE, 3.0f, 0.4f);
+        bossBar.setColor(BossEvent.BossBarColor.YELLOW);
+    }
+
+    private void tickTransform() {
+        getNavigation().stop();
+        setDeltaMovement(0.0, getDeltaMovement().y, 0.0);
+        if (level() instanceof ServerLevel server) {
+            if (transform % 6 == 0) {
+                server.sendParticles(ParticleTypes.ELECTRIC_SPARK, getX(), getY() + 2.5, getZ(), 12, 1.0, 0.8, 1.0, 0.3);
+                server.sendParticles(ParticleTypes.LARGE_SMOKE, getX(), getY() + 2.5, getZ(), 4, 0.8, 0.6, 0.8, 0.02);
+            }
+            if (transform == TRANSFORM_TICKS - 30) {
+                // the plates and the rocket pod blow off
+                server.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 2.6, getZ(), 4, 1.0, 0.6, 1.0, 0.0);
+                playSound(SoundEvents.GENERIC_EXPLODE.value(), 2.5f, 0.8f);
+            }
+        }
+        if (--transform <= 0) {
+            entityData.set(PHASE, 2);
+            bossBar.setColor(BossEvent.BossBarColor.RED);
+            double speed = RebirthConfig.MECH_SPEED.get() * 1.5;
+            getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed);
+            getAttribute(Attributes.ARMOR).setBaseValue(Math.max(0.0, RebirthConfig.MECH_ARMOR.get() - 7.0));
+            playSound(SoundEvents.WARDEN_ROAR, 2.5f, 1.4f);
+        }
+    }
+
+    /** In the second phase it closes in, sprays long bursts and rams its target. */
+    private boolean berserk(LivingEntity target, double distance, boolean sees) {
+        if (dash > 0) {
+            dash--;
+            setDeltaMovement(dashDirection.x * 0.62, getDeltaMovement().y, dashDirection.z * 0.62);
+            setYRot((float) (Math.atan2(-dashDirection.x, dashDirection.z) * Mth.RAD_TO_DEG));
+            yBodyRot = getYRot();
+            if (tickCount % 3 == 0) {
+                playSound(SoundEvents.IRON_GOLEM_STEP, 2.0f, 0.6f);
+            }
+            for (LivingEntity hit : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(0.5),
+                    e -> e != this && Gunnery.fair(e))) {
+                hit.hurt(damageSources().mobAttack(this), RebirthConfig.MECH_STOMP_DAMAGE.get().floatValue() * 1.2f);
+                Vec3 away = hit.position().subtract(position()).multiply(1.0, 0.0, 1.0).normalize();
+                hit.setDeltaMovement(away.x * 1.8, 0.7, away.z * 1.8);
+                hit.hurtMarked = true;
+                playSound(SoundEvents.ANVIL_LAND, 1.5f, 0.5f);
+                dash = 0;
+            }
+            if (horizontalCollision) {
+                dash = 0;
+            }
+            return true;
+        }
+        if (dashCooldown > 0) {
+            dashCooldown--;
+        } else if (sees && distance > 6.0 && distance < 20.0 && onGround()) {
+            Vec3 to = target.position().subtract(position()).multiply(1.0, 0.0, 1.0);
+            dashDirection = to.normalize();
+            dash = 22;
+            dashCooldown = 120;
+            triggerAnim("action", "dash");
+            playSound(SoundEvents.WARDEN_SONIC_CHARGE, 2.0f, 0.8f);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        if (phase() == 1 && !source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            return false;
+        }
+        return super.hurt(source, amount);
+    }
+
+    @Override
     protected boolean enabled() {
         return hostileOn() && (!RebirthConfig.SERVER_SPEC.isLoaded() || RebirthConfig.MECH_ENABLED.get());
     }
@@ -86,6 +197,10 @@ public class MechEntity extends WalkingGunner {
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(RebirthConfig.MECH_SPEED.get());
         getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(RebirthConfig.MECH_STOMP_DAMAGE.get());
         getAttribute(Attributes.FOLLOW_RANGE).setBaseValue(RebirthConfig.MECH_RANGE.get() + 8.0);
+        if (phase() == 2) {
+            getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(RebirthConfig.MECH_SPEED.get() * 1.5);
+            getAttribute(Attributes.ARMOR).setBaseValue(Math.max(0.0, RebirthConfig.MECH_ARMOR.get() - 7.0));
+        }
     }
 
     @Override
@@ -110,17 +225,17 @@ public class MechEntity extends WalkingGunner {
 
     @Override
     protected int burst() {
-        return RebirthConfig.MECH_BURST.get();
+        return phase() == 2 ? RebirthConfig.MECH_BURST.get() * 2 : RebirthConfig.MECH_BURST.get();
     }
 
     @Override
     protected int shotInterval() {
-        return RebirthConfig.MECH_SHOT_INTERVAL.get();
+        return phase() == 2 ? Math.max(1, RebirthConfig.MECH_SHOT_INTERVAL.get() - 1) : RebirthConfig.MECH_SHOT_INTERVAL.get();
     }
 
     @Override
     protected int burstPause() {
-        return RebirthConfig.MECH_BURST_PAUSE.get();
+        return phase() == 2 ? RebirthConfig.MECH_BURST_PAUSE.get() / 2 : RebirthConfig.MECH_BURST_PAUSE.get();
     }
 
     @Override
@@ -130,7 +245,7 @@ public class MechEntity extends WalkingGunner {
 
     @Override
     protected double shootingDistance() {
-        return range() * 0.5;
+        return phase() == 2 ? 5.0 : range() * 0.5;
     }
 
     /** The machine gun under its right arm. */
@@ -156,6 +271,9 @@ public class MechEntity extends WalkingGunner {
 
     @Override
     protected boolean closeCombat(LivingEntity target, double distance, boolean sees) {
+        if (phase() == 1) {
+            return true;
+        }
         if (stompCooldown > 0) {
             stompCooldown--;
         }
@@ -167,10 +285,13 @@ public class MechEntity extends WalkingGunner {
         }
         if (distance <= RebirthConfig.MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5 && stompCooldown <= 0) {
             stompWindup = STOMP_WINDUP;
-            stompCooldown = 60;
+            stompCooldown = phase() == 2 ? 30 : 60;
             triggerAnim("action", "stomp");
             playSound(SoundEvents.IRON_GOLEM_REPAIR, 1.5f, 0.5f);
             return true;
+        }
+        if (phase() == 2) {
+            return berserk(target, distance, sees);
         }
         rockets(target, sees);
         return false;
@@ -287,12 +408,30 @@ public class MechEntity extends WalkingGunner {
     @Override
     protected void customServerAiStep() {
         super.customServerAiStep();
+        if (phase() == 0 && getHealth() <= getMaxHealth() * 0.5f && isAlive()) {
+            beginTransform();
+        }
+        if (phase() == 1) {
+            tickTransform();
+        }
         bossBar.setProgress(Mth.clamp(getHealth() / getMaxHealth(), 0.0f, 1.0f));
         if (getTarget() == null) {
             warning = -1;
             stompWindup = -1;
             marks.clear();
         }
+    }
+
+    @Override
+    public void addAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putInt("Phase", phase() == 1 ? 2 : phase());
+    }
+
+    @Override
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        entityData.set(PHASE, tag.getInt("Phase"));
     }
 
     @Override
@@ -322,10 +461,12 @@ public class MechEntity extends WalkingGunner {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 5,
-                state -> state.setAndContinue(state.isMoving() ? WALK : IDLE)));
+                state -> state.setAndContinue(state.isMoving() ? (phase() == 2 ? RUN : WALK) : (phase() == 2 ? IDLE_BERSERK : IDLE))));
         controllers.add(new AnimationController<>(this, "action", 0, state -> PlayState.STOP)
                 .triggerableAnim("shot", SHOT)
                 .triggerableAnim("rockets", ROCKETS)
-                .triggerableAnim("stomp", STOMP));
+                .triggerableAnim("stomp", STOMP)
+                .triggerableAnim("transform", TRANSFORM)
+                .triggerableAnim("dash", DASH));
     }
 }

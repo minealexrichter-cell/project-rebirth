@@ -37,23 +37,45 @@
           1,
           1
         ]
+      },
+      "ground": {
+        "rotation": [
+          0,
+          90,
+          0
+        ],
+        "translation": [
+          0,
+          4,
+          0
+        ],
+        "scale": [
+          0.55,
+          0.55,
+          0.55
+        ]
+      },
+      "fixed": {
+        "rotation": [
+          0,
+          90,
+          0
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.8,
+          0.8,
+          0.8
+        ]
       }
     }
   },
   "perspectives": {
     "gui": {
-      "parent": "minecraft:item/generated",
-      "textures": {
-        "layer0": "projectrebirth:item/combat_shotgun"
-      }
-    },
-    "fixed": {
-      "parent": "minecraft:item/generated",
-      "textures": {
-        "layer0": "projectrebirth:item/combat_shotgun"
-      }
-    },
-    "ground": {
       "parent": "minecraft:item/generated",
       "textures": {
         "layer0": "projectrebirth:item/combat_shotgun"

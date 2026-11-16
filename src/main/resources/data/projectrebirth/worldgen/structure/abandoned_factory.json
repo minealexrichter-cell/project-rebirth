@@ -102,6 +102,24 @@
       "x": 52,
       "z": 46,
       "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/robot_post_0",
+      "x": 36,
+      "z": 43,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/robot_post_1",
+      "x": 6,
+      "z": 47,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/abandoned_factory/ghoul_0",
+      "x": 24,
+      "z": 44,
+      "follow": true
     }
   ]
 }

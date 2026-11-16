@@ -70,12 +70,15 @@ function turretAt(b, x, y, z, f, active) {
  * A guard post of the yard (part B3 of 1.6.0): a patch of trodden ground and a walking machine on it looking toward f, 'patrol_robot'
  * or 'mech'. It keeps to this place and walks round it (see WalkingGunner).
  */
-function guardPost(kind, f, seed) {
-    const n = kind === 'mech' ? 3 : 1;
+function guardPost(kind, f, seed, count) {
+    const n = kind === 'mech' || count > 1 ? 3 : 1;
     const b = new Build(n, 2, n, seed);
     for (let x = 0; x < n; x++) for (let z = 0; z < n; z++) b.set(x, 0, z, b.pick(['minecraft:gravel', 'minecraft:coarse_dirt', 'minecraft:packed_mud']));
     const c = (n - 1) / 2;
-    b.entity(c, 1, c, compound({id: str(P + kind), Rotation: list(T.FLOAT, [float(YAW[f]), float(0)]), PersistenceRequired: byte(1)}));
+    const spots = [[c, c], [0, 2], [2, 0], [2, 2], [0, 0]];
+    for (let i = 0; i < (count || 1); i++) {
+        b.entity(spots[i][0], 1, spots[i][1], compound({id: str(P + kind), Rotation: list(T.FLOAT, [float(YAW[f]), float(0)]), PersistenceRequired: byte(1)}));
+    }
     return b;
 }
 
@@ -932,6 +935,9 @@ function scienceComplex() {
         L.rigid('dish', b, 51, 43);
     })();
     [[18, 32], [22, 38], [18, 44], [36, 15], [43, 15]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(652 + i), x, z));
+    // what came out of the labs: a pack of hounds and ghouls in the grounds
+    L.follow('hound_pack', guardPost('mutated_hound', 'west', 657, 3), 24, 30);
+    [[30, 46], [40, 24]].forEach(([x, z], i) => L.follow('ghoul_' + i, guardPost('glowing_ghoul', 'south', 658 + i), x, z));
     return L;
 }
 
@@ -1079,6 +1085,9 @@ function abandonedFactory() {
     L.follow('path_yard', pathStrip(30, 4, 'x', 670), 22, 47);
     L.follow('path_door', pathStrip(4, 3, 'x', 671), 0, 19);
     [[25, 40], [30, 45], [40, 51], [52, 46]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(672 + i), x, z));
+    // the factory's guards and a ghoul by the waste dump
+    [[36, 43, 'west'], [6, 47, 'east']].forEach(([x, z, f], i) => L.follow('robot_post_' + i, guardPost('patrol_robot', f, 676 + i), x, z));
+    L.follow('ghoul_0', guardPost('glowing_ghoul', 'south', 678), 24, 44);
     return L;
 }
 
@@ -1187,6 +1196,7 @@ function commStation() {
     L.follow('path_door', pathStrip(5, 3, 'z', 689), 12, 47);
     L.follow('path_yard', pathStrip(20, 3, 'x', 690), 14, 24);
     [[11, 47], [15, 47], [20, 23], [27, 27]].forEach(([x, z], i) => L.follow('lamp_post_' + i, lampPost(691 + i), x, z));
+    [[34, 28, 'west'], [44, 30, 'north']].forEach(([x, z, f], i) => L.follow('robot_post_' + i, guardPost('patrol_robot', f, 695 + i), x, z));
     return L;
 }
 
@@ -1376,6 +1386,10 @@ function contaminationZone() {
         b.set(5, F + 1, 0, crate('south'));
         L.rigid('camp', b, 40, 24);
     })();
+    // the zone's dwellers: ghouls by the pools, a pack of hounds, a brute at the old debris
+    [[10, 30], [32, 14]].forEach(([x, z], i) => L.follow('ghoul_' + i, guardPost('glowing_ghoul', 'south', 747 + i), x, z));
+    L.follow('hound_pack', guardPost('mutated_hound', 'north', 749, 3), 30, 24);
+    L.follow('brute_post', guardPost('brute', 'east', 750), 8, 18);
     return L;
 }
 

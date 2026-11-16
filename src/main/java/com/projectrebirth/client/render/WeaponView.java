@@ -108,6 +108,16 @@ public final class WeaponView implements GeoAnimatable {
         return now - lastShotAt < FLASH_TICKS;
     }
 
+    /** 0 at the moment of the shot, 1 when the flash is over; above 1 when there is none. */
+    public float flashAge() {
+        return (now + partialNow - lastShotAt) / FLASH_TICKS;
+    }
+
+    /** A number of its own for each shot, so that every flash is turned differently. */
+    public long flashSeed() {
+        return lastShotAt * 31L + hashCode();
+    }
+
     /** 1 right after a shot, down to 0 over a few ticks. */
     public float kick() {
         float age = now + partialNow - lastShotAt;

@@ -28,6 +28,7 @@ public class SourceBlock extends BaseEntityBlock {
             .apply(instance, SourceBlock::new));
     private static final VoxelShape BARREL_SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
     private static final VoxelShape SLUDGE_SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
+    private static final VoxelShape PUDDLE_SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
 
     private final SourceKind kind;
 
@@ -55,6 +56,7 @@ public class SourceBlock extends BaseEntityBlock {
         return switch (kind) {
             case WASTE_BARREL -> BARREL_SHAPE;
             case SLUDGE -> SLUDGE_SHAPE;
+            case TOXIC_PUDDLE -> PUDDLE_SHAPE;
             default -> super.getShape(state, level, pos, context);
         };
     }
@@ -81,6 +83,8 @@ public class SourceBlock extends BaseEntityBlock {
                     pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0.0, 0.0, 0.0);
         } else if (kind == SourceKind.SLUDGE && random.nextInt(10) == 0) {
             level.addParticle(ParticleTypes.SPORE_BLOSSOM_AIR, pos.getX() + random.nextDouble(), pos.getY() + 0.15, pos.getZ() + random.nextDouble(), 0.0, 0.01, 0.0);
+        } else if (kind == SourceKind.TOXIC_PUDDLE && random.nextInt(4) == 0) {
+            level.addParticle(net.minecraft.core.particles.ParticleTypes.SNEEZE, pos.getX() + random.nextDouble(), pos.getY() + 0.1, pos.getZ() + random.nextDouble(), 0.0, 0.03, 0.0);
         } else if (kind == SourceKind.DEBRIS && random.nextInt(12) == 0) {
             level.addParticle(ParticleTypes.ASH, pos.getX() + random.nextDouble(), pos.getY() + 1.0, pos.getZ() + random.nextDouble(), 0.0, 0.02, 0.0);
         }

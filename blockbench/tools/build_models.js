@@ -2574,5 +2574,524 @@
         };
     })();
 
+    /** Thigh and shin angles that put the ankle at (forward, below) from the hip, knee bending forward. */
+    const solve = (thigh, shin, forward, below) => {
+        const reach = Math.min(Math.hypot(forward, below), thigh + shin - 0.02);
+        const aim = Math.atan2(forward, below);
+        const hip = Math.acos((thigh * thigh + reach * reach - shin * shin) / (2 * thigh * reach));
+        const knee = Math.PI - Math.acos((thigh * thigh + shin * shin - reach * reach) / (2 * thigh * shin));
+        return [-(aim + hip) * DEG, knee * DEG];
+    };
+    /**
+     * A two-legged walk by inverse kinematics. c: length, thigh, shin (pixels), rest (hip height over the ankle when standing),
+     * hip (hip height while walking), stride, lift, stance (part of the cycle a foot is down), bob, sway (hips roll toward the
+     * standing leg), lean, twist (shoulders against hips), feet (the sole stays level), arms: {bone: [swing, base, side, lag]},
+     * forearms: {bone: [bend, extra when forward]}, hips/torso: bone names.
+     */
+    function ikGait(c) {
+        const S = c.stride, st = c.stance || 0.55;
+        const foot = f => {
+            f = ((f % 1) + 1) % 1;
+            if (f < st) {
+                return [S * (1 - 2 * f / st), 0];
+            }
+            const u = (f - st) / (1 - st);
+            return [-S + 2 * S * u * u * (3 - 2 * u), c.lift * Math.sin(Math.PI * Math.pow(u, 0.75))];
+        };
+        const hip = t => c.hip - c.bob * (1 + Math.cos(4 * Math.PI * (t - 0.08))) / 2;
+        const leg = (t, side) => {
+            const [x, y] = foot(t + (side > 0 ? 0 : 0.5));
+            const [a, k] = solve(c.thigh, c.shin, x, hip(t) - y);
+            const lifted = y > 0.2;
+            return [a, k, -(a + k) + (lifted ? (c.toe || 12) * Math.sin(Math.PI * Math.min(1, y / c.lift)) : 0)];
+        };
+        const bones = {};
+        bones[c.hips || 'hips'] = {
+            p: looped(c.length, STEP_TIME, t => [0, hip(t) - c.rest, 0]),
+            r: looped(c.length, STEP_TIME, t => [0, (c.pelvis || 0) * Math.cos(2 * Math.PI * t), (c.sway || 0) * Math.sin(2 * Math.PI * t)])
+        };
+        bones.right_leg = {r: looped(c.length, STEP_TIME, t => [leg(t, 1)[0], 0, c.splay || 0])};
+        bones.left_leg = {r: looped(c.length, STEP_TIME, t => [leg(t, -1)[0], 0, -(c.splay || 0)])};
+        bones.right_shin = {r: looped(c.length, STEP_TIME, t => [leg(t, 1)[1], 0, 0])};
+        bones.left_shin = {r: looped(c.length, STEP_TIME, t => [leg(t, -1)[1], 0, 0])};
+        if (c.feet) {
+            bones.right_foot = {r: looped(c.length, STEP_TIME, t => [leg(t, 1)[2], 0, 0])};
+            bones.left_foot = {r: looped(c.length, STEP_TIME, t => [leg(t, -1)[2], 0, 0])};
+        }
+        bones[c.torso || 'torso'] = {r: looped(c.length, STEP_TIME, t => [c.lean || 0, -((c.twist || 0) + (c.pelvis || 0)) * Math.cos(2 * Math.PI * t),
+            -(c.sway || 0) * 0.6 * Math.sin(2 * Math.PI * t)])};
+        for (const [bone, [swing, base, side, lag]] of Object.entries(c.arms || {})) {
+            bones[bone] = {r: looped(c.length, STEP_TIME, t => [base + swing * Math.cos(2 * Math.PI * (t + (side > 0 ? 0 : 0.5) - (lag || 0.05))), 0, (c.armOut || 0) * side])};
+        }
+        for (const [bone, [bend, extra, side]] of Object.entries(c.forearms || {})) {
+            bones[bone] = {r: looped(c.length, STEP_TIME, t => [-(bend + extra * (0.5 - 0.5 * Math.cos(2 * Math.PI * (t + (side > 0 ? 0 : 0.5) - 0.1)))), 0, 0])};
+        }
+        return {length: c.length, loop: 'loop', bones};
+    }
+
+    // ------------------------------------------------------------------ hostile machines and mutants, second version (1.6.0, part B3d)
+    // Owner's notes: the walks and blows looked wooden; the mutants did not convince. The machines now have knees, ankles and
+    // elbows, and walk by inverse kinematics (the foot follows a path, the leg is solved from it, the sole stays level on the
+    // ground); the blows have a wind-up, a strike and a recovery, sampled smoothly. The mech sheds its armor plate and rocket pod
+    // in a second phase. The mutants follow the look of the infection mods the owner named: a recognisable body overgrown with
+    // raw flesh, exposed bone and teeth, lumps and tendrils, never symmetric; ours also glow with radiation.
+    (() => {
+        const R2 = v => Math.round(v * 100) / 100;
+        const loopOf = (length, fn) => looped(length, STEP_TIME, fn);
+        /** A one-off movement through key poses, sampled smoothly (see flowing); hold keeps the last pose. */
+        const move = (length, bones, hold) => Object.assign(flowing(length, bones), hold ? {loop: 'hold'} : {});
+        const K = (...pairs) => Object.fromEntries(pairs.map(([t, v]) => [t.toFixed(3), v]));
+
+        // ---------------------------------------------------------------- the patrol robot
+        const CASE = {c: '#8a9086', n: 0.09};
+        const FRAME = {c: '#3c3e40', n: 0.1};
+        const DARK = '#1c1d1f', EDGE = '#6a7068', AMBER = '#e0a030';
+        const cs = more => Object.assign({}, CASE, more), fr = more => Object.assign({}, FRAME, more);
+        const thighR = [C([-5.5, 8.5, -2], [4, 7.5, 4], fr({sd: [[1, 2, 2, 4, '#2a2c2e']]}))];
+        const shinR = [C([-6, 7, -3], [5, 3, 4], cs({f: [[1, 1, 3, 1, EDGE]]})), C([-5.5, 1.5, -2.5], [4, 6.5, 5], cs({f: [[1, 1, 2, 4, DARK]], sd: [[1, 1, 3, 1, EDGE]]}))];
+        const footR = [C([-6.5, 0, -5], [6, 3, 8], fr({f: hazard(0, 0, 6, 3, AMBER, DARK, 2)}))];
+        SPECS.patrol_robot = {
+            res: 128, seed: 1612, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'hips', parent: 'root', pivot: [0, 15, 0], cubes: [C([-5, 14, -3], [10, 4, 6], fr())]},
+                {name: 'right_leg', parent: 'hips', pivot: [-3.5, 15, 0], cubes: thighR},
+                {name: 'right_shin', parent: 'right_leg', pivot: [-3.5, 8.5, 0], cubes: shinR},
+                {name: 'right_foot', parent: 'right_shin', pivot: [-3.5, 1.5, 0], cubes: footR},
+                {name: 'left_leg', parent: 'hips', pivot: [3.5, 15, 0], cubes: thighR.map(c => mirror(c))},
+                {name: 'left_shin', parent: 'left_leg', pivot: [3.5, 8.5, 0], cubes: shinR.map(c => mirror(c))},
+                {name: 'left_foot', parent: 'left_shin', pivot: [3.5, 1.5, 0], cubes: footR.map(c => mirror(c))},
+                {name: 'torso', parent: 'hips', pivot: [0, 17, 0], cubes: [
+                    C([-4, 17, -2.5], [8, 3, 5], fr()),
+                    C([-7, 19, -4], [14, 8, 8], cs({f: [[1, 1, 12, 1, EDGE], [5, 2, 4, 4, DARK], [6, 3, 2, 2, AMBER]], sd: vents(2, 2, 4, 3, DARK, 2)})),
+                    C([-5, 20, 3], [10, 6, 3], fr({k: vents(1, 1, 8, 3, DARK, 2)}))]},
+                {name: 'head', parent: 'torso', pivot: [0, 28, -1], cubes: [
+                    C([-2, 26, -2], [4, 3, 4], fr()),
+                    C([-4, 28, -5], [8, 6, 8], cs({f: [[1, 2, 6, 2, DARK], [2, 2, 1, 2, AMBER], [5, 2, 1, 2, AMBER]], tp: [[1, 1, 6, 1, EDGE]]})),
+                    C([2, 33, 1], [1, 4, 1], fr({edge: false}))]},
+                {name: 'right_arm', parent: 'torso', pivot: [-8.5, 26, 0], cubes: [
+                    C([-14, 23, -3.5], [8, 6, 7], cs({tp: hazard(0, 0, 8, 7, AMBER, DARK, 2)})),
+                    C([-12, 17, -2], [4, 7, 4], fr())]},
+                {name: 'right_forearm', parent: 'right_arm', pivot: [-10, 18, 0], cubes: [
+                    C([-13.5, 14, -11], [6, 6, 12], cs({sd: [[2, 1, 9, 1, EDGE], [2, 3, 9, 1, DARK]]})),
+                    C([-12, 15, -16], [4, 4, 6], {c: '#3c3e40', n: 0.1, f: [[1, 1, 2, 2, '#0a0a0b']]}),
+                    C([-11.5, 11, -6], [3, 4, 3], fr({f: [[1, 1, 1, 2, AMBER]]}))]},
+                {name: 'left_arm', parent: 'torso', pivot: [8.5, 26, 0], cubes: [
+                    C([6, 23, -3.5], [8, 6, 7], cs({tp: hazard(0, 0, 8, 7, AMBER, DARK, 2)})),
+                    C([8.5, 17, -2], [3, 7, 4], fr())]},
+                {name: 'left_forearm', parent: 'left_arm', pivot: [10, 17.5, 0], cubes: [
+                    C([7, 9, -3], [6, 9, 6], cs({f: [[1, 1, 4, 1, EDGE]], sd: [[1, 4, 4, 1, DARK]]})),
+                    C([7.5, 6, -2.5], [5, 4, 5], fr({f: [[1, 1, 1, 2, DARK], [3, 1, 1, 2, DARK]]}))]}
+            ],
+            animations: {
+                'animation.patrol_robot.idle': {length: 4, loop: 'loop', bones: {
+                    hips: {p: loopOf(4, t => [0, R2(-0.25 + 0.25 * Math.cos(2 * Math.PI * t)), 0])},
+                    torso: {r: loopOf(4, t => [R2(1 + Math.sin(2 * Math.PI * t)), R2(2 * Math.sin(2 * Math.PI * t)), 0])},
+                    right_arm: {r: loopOf(4, t => [R2(-2 + Math.sin(2 * Math.PI * t)), 0, 0])},
+                    left_arm: {r: loopOf(4, t => [R2(3 * Math.sin(2 * Math.PI * (t + 0.3))), 0, -3])},
+                    left_forearm: {r: loopOf(4, t => [R2(-10 - 3 * Math.sin(2 * Math.PI * t)), 0, 0])}}},
+                'animation.patrol_robot.walk': ikGait({length: 1.1, thigh: 6.5, shin: 7, rest: 13.5, hip: 12.9, stride: 3.8, lift: 2.6, stance: 0.58,
+                    bob: 0.55, sway: 3, pelvis: 5, twist: 3, lean: 3, feet: true,
+                    arms: {left_arm: [16, 2, -1, 0.05], right_arm: [3, -4, 1, 0.05]}, forearms: {left_forearm: [12, 18, -1], right_forearm: [0, 2, 1]}}),
+                'animation.patrol_robot.shot': move(0.2, {
+                    right_arm: {r: K([0, [0, 0, 0]], [0.04, [-5, 0, 0]], [0.2, [0, 0, 0]])},
+                    right_forearm: {p: K([0, [0, 0, 0]], [0.04, [0, 0.2, 1.6]], [0.2, [0, 0, 0]])},
+                    torso: {r: K([0, [0, 0, 0]], [0.05, [-1.5, 2, 0]], [0.2, [0, 0, 0]])}}),
+                'animation.patrol_robot.melee': move(0.75, {
+                    torso: {r: K([0, [0, 0, 0]], [0.25, [4, 28, 0]], [0.38, [-6, -24, 0]], [0.75, [0, 0, 0]])},
+                    left_arm: {r: K([0, [0, 0, 0]], [0.25, [25, 0, -25]], [0.38, [-95, -10, -8]], [0.55, [-80, 0, -5]], [0.75, [0, 0, 0]])},
+                    left_forearm: {r: K([0, [-10, 0, 0]], [0.25, [-85, 0, 0]], [0.38, [-5, 0, 0]], [0.75, [-10, 0, 0]])},
+                    right_arm: {r: K([0, [0, 0, 0]], [0.25, [-10, 0, 8]], [0.38, [10, 0, -4]], [0.75, [0, 0, 0]])},
+                    hips: {p: K([0, [0, 0, 0]], [0.25, [0, -0.8, 1]], [0.38, [0, -0.5, -1.5]], [0.75, [0, 0, 0]])},
+                    left_leg: {r: K([0, [0, 0, 0]], [0.38, [-12, 0, 0]], [0.75, [0, 0, 0]])},
+                    left_shin: {r: K([0, [0, 0, 0]], [0.38, [10, 0, 0]], [0.75, [0, 0, 0]])},
+                    left_foot: {r: K([0, [0, 0, 0]], [0.38, [2, 0, 0]], [0.75, [0, 0, 0]])}}),
+                'animation.patrol_robot.dead': move(1.2, {
+                    root: {r: K([0, [0, 0, 0]], [0.5, [-25, 0, 6]], [1.0, [-88, 0, 10]], [1.2, [-86, 0, 10]]),
+                        p: K([0, [0, 0, 0]], [1.0, [0, 4, -17]], [1.2, [0, 4, -17]])},
+                    right_leg: {r: K([0, [0, 0, 0]], [1.0, [-30, 8, 0]], [1.2, [-30, 8, 0]])},
+                    right_shin: {r: K([0, [0, 0, 0]], [1.0, [45, 0, 0]], [1.2, [45, 0, 0]])},
+                    left_leg: {r: K([0, [0, 0, 0]], [1.0, [-8, -6, 0]], [1.2, [-8, -6, 0]])},
+                    head: {r: K([0, [0, 0, 0]], [1.0, [20, -25, 0]], [1.2, [20, -25, 0]])},
+                    right_arm: {r: K([0, [0, 0, 0]], [1.0, [-20, 0, 40]], [1.2, [-20, 0, 40]])},
+                    left_arm: {r: K([0, [0, 0, 0]], [1.0, [-60, 0, -50]], [1.2, [-60, 0, -50]])},
+                    left_forearm: {r: K([0, [0, 0, 0]], [1.0, [-40, 0, 0]], [1.2, [-40, 0, 0]])}}, true)
+            }
+        };
+    })();
+
+    (() => {
+        // ---------------------------------------------------------------- the mech
+        const R2 = v => Math.round(v * 100) / 100;
+        const loopOf = (length, fn) => looped(length, STEP_TIME, fn);
+        const K = (...pairs) => Object.fromEntries(pairs.map(([t, v]) => [t.toFixed(3), v]));
+        const move = (length, bones, hold) => Object.assign(flowing(length, bones), hold ? {loop: 'hold'} : {});
+        const PLATE = {c: '#5f6957', n: 0.08};
+        const FRAME = {c: '#34362f', n: 0.1};
+        const DARK = '#151613', EDGE = '#495043', LIGHT = '#7b8670', AMBER = '#d89a2a', RED = '#d0352a', CORE = '#ff8a1e';
+        const P = (o, s, more) => C(o, s, Object.assign({}, PLATE, more));
+        const F = (o, s, more) => C(o, s, Object.assign({}, FRAME, more));
+        const thigh = [F([-15, 24, -4], [7, 6, 8]), P([-14, 15, -3], [5, 11, 6], {f: [[1, 1, 3, 1, LIGHT], [1, 4, 3, 1, EDGE]], sd: [[1, 2, 4, 1, EDGE]]})];
+        const shin = [F([-15, 13, -5], [7, 4, 9]), P([-14, 3.5, -3], [5, 10.5, 6], {f: [[1, 1, 3, 1, LIGHT], [2, 3, 1, 5, EDGE]]}),
+            F([-12.5, 6, 2.5], [2, 6.5, 2], {edge: false})];
+        const foot = [F([-16, 0, -9], [10, 4, 15], {f: hazard(0, 0, 10, 4, AMBER, DARK, 2)}), F([-15, 0.5, 5.5], [8, 3, 3])];
+        const flip = cubes => cubes.map(c => mirror(c));
+        SPECS.mech = {
+            res: 256, seed: 1613, noCoplanarFaces: true, glow: CORE,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'hips', parent: 'root', pivot: [0, 29, 0], cubes: [F([-9, 27, -6], [18, 6, 12])]},
+                {name: 'right_leg', parent: 'hips', pivot: [-11.5, 29, 0], cubes: thigh},
+                {name: 'right_shin', parent: 'right_leg', pivot: [-11.5, 16, 0], cubes: shin},
+                {name: 'right_foot', parent: 'right_shin', pivot: [-11.5, 3, 0], cubes: foot},
+                {name: 'left_leg', parent: 'hips', pivot: [11.5, 29, 0], cubes: flip(thigh)},
+                {name: 'left_shin', parent: 'left_leg', pivot: [11.5, 16, 0], cubes: flip(shin)},
+                {name: 'left_foot', parent: 'left_shin', pivot: [11.5, 3, 0], cubes: flip(foot)},
+                {name: 'torso', parent: 'hips', pivot: [0, 32, 0], cubes: [
+                    P([-12, 31, -9], [24, 15, 17], {f: [[1, 1, 22, 1, LIGHT], [3, 3, 18, 8, DARK], [2, 12, 20, 1, EDGE]],
+                        sd: [[2, 2, 13, 1, EDGE], ...vents(3, 5, 10, 4, DARK, 2)], k: vents(4, 3, 16, 5, DARK, 2)}),
+                    F([-6, 40, -11], [12, 5, 3], {f: [[1, 1, 10, 2, DARK], [2, 1, 3, 2, RED], [7, 1, 3, 2, RED]]}),
+                    P([-10, 45, -7], [20, 3, 13], {tp: [[1, 1, 18, 1, LIGHT], [1, 11, 18, 1, EDGE]]}),
+                    F([6, 47, 1], [1, 7, 1], {edge: false}),
+                    F([-7, 33, 7], [14, 11, 4], {k: vents(1, 1, 12, 5, DARK, 2)})]},
+                // the reactor core behind the chest plate: hidden at first, laid bare in the second phase
+                {name: 'core', parent: 'torso', pivot: [0, 36, -9], cubes: [C([-4, 34, -10.5], [8, 4, 2], {c: CORE, n: 0.06, f: [[1, 1, 6, 2, '#ffd27a']], edge: false})]},
+                {name: 'plate_front', parent: 'torso', pivot: [0, 36, -10], cubes: [P([-9, 32, -11], [18, 7, 3], {f: [[1, 1, 16, 1, LIGHT], [2, 3, 3, 2, AMBER], [13, 3, 3, 2, AMBER], [1, 5, 16, 1, EDGE]]})]},
+                {name: 'right_gun', parent: 'torso', pivot: [-14, 40, 0], cubes: [
+                    F([-18, 36, -5], [7, 9, 10]),
+                    P([-19, 32, -16], [9, 7, 20], {sd: [[2, 1, 16, 1, LIGHT], [2, 4, 16, 1, EDGE]], tp: [[1, 2, 7, 1, EDGE]]}),
+                    F([-18, 34, -21], [3, 3, 6], {f: [[1, 1, 1, 1, '#050505']], edge: false}),
+                    F([-14, 34, -21], [3, 3, 6], {f: [[1, 1, 1, 1, '#050505']], edge: false}),
+                    F([-19, 33, -29], [9, 5, 9], {f: [[1, 1, 2, 2, '#050505'], [5, 1, 2, 2, '#050505']]})]},
+                {name: 'left_pod', parent: 'torso', pivot: [14, 44, 0], cubes: [
+                    F([11, 39, -4], [5, 6, 8]),
+                    P([13, 44, -8], [11, 9, 14], {f: [[1, 1, 4, 3, DARK], [6, 1, 4, 3, DARK], [1, 5, 4, 3, DARK], [6, 5, 4, 3, DARK],
+                        [2, 2, 2, 1, RED], [7, 2, 2, 1, RED], [2, 6, 2, 1, RED], [7, 6, 2, 1, RED]], sd: hazard(1, 6, 12, 2, AMBER, DARK, 2)})]}
+            ],
+            animations: (() => {
+                const heavy = (length, stride, lean, bob) => ikGait({length, thigh: 13, shin: 13, rest: 26, hip: 24.6, stride, lift: 4.5, stance: 0.62,
+                    bob, sway: 4, pelvis: 6, twist: 4, lean, feet: true, toe: 10, hips: 'hips', torso: 'torso',
+                    arms: {right_gun: [3, -2, 1, 0.1]}});
+                return {
+                    'animation.mech.idle': {length: 4, loop: 'loop', bones: {
+                        hips: {p: loopOf(4, t => [0, R2(-0.4 + 0.4 * Math.cos(2 * Math.PI * t)), 0])},
+                        torso: {r: loopOf(4, t => [R2(Math.sin(2 * Math.PI * t)), 0, R2(0.8 * Math.sin(2 * Math.PI * (t + 0.25)))])},
+                        right_gun: {r: loopOf(4, t => [R2(-2 + 1.5 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                        left_pod: {r: loopOf(4, t => [R2(-2 * Math.sin(2 * Math.PI * (t + 0.4))), 0, 0])},
+                        core: {s: loopOf(4, t => { const k = R2(1 + 0.08 * Math.sin(8 * Math.PI * t)); return [k, k, 1]; })}}},
+                    'animation.mech.walk': heavy(2.2, 7, 3, 1.2),
+                    'animation.mech.run': (() => {
+                        const g = heavy(1.3, 9, 9, 1.8);
+                        g.bones.core = {s: loopOf(1.3, t => { const k = R2(1.1 + 0.15 * Math.sin(4 * Math.PI * t)); return [k, k, 1]; })};
+                        return g;
+                    })(),
+                    'animation.mech.idle_berserk': {length: 1.6, loop: 'loop', bones: {
+                        hips: {p: loopOf(1.6, t => [0, R2(-1.5 + 0.5 * Math.cos(2 * Math.PI * t)), 0])},
+                        right_leg: {r: loopOf(1.6, () => [-10, 0, 0])}, left_leg: {r: loopOf(1.6, () => [-10, 0, 0])},
+                        right_shin: {r: loopOf(1.6, () => [18, 0, 0])}, left_shin: {r: loopOf(1.6, () => [18, 0, 0])},
+                        right_foot: {r: loopOf(1.6, () => [-8, 0, 0])}, left_foot: {r: loopOf(1.6, () => [-8, 0, 0])},
+                        torso: {r: loopOf(1.6, t => [R2(8 + 2 * Math.sin(2 * Math.PI * t)), R2(4 * Math.sin(6 * Math.PI * t) * Math.sin(2 * Math.PI * t)), R2(1.5 * Math.sin(10 * Math.PI * t))])},
+                        right_gun: {r: loopOf(1.6, t => [R2(-6 + 3 * Math.sin(4 * Math.PI * t)), 0, 0])},
+                        core: {s: loopOf(1.6, t => { const k = R2(1.15 + 0.15 * Math.sin(6 * Math.PI * t)); return [k, k, 1]; })}}},
+                    'animation.mech.shot': move(0.14, {
+                        right_gun: {p: K([0, [0, 0, 0]], [0.035, [0, 0.3, 2.2]], [0.14, [0, 0, 0]]), r: K([0, [0, 0, 0]], [0.035, [-3, 0, 0]], [0.14, [0, 0, 0]])},
+                        torso: {r: K([0, [0, 0, 0]], [0.04, [-0.6, 1, 0]], [0.14, [0, 0, 0]])}}),
+                    'animation.mech.rockets': move(0.8, {
+                        left_pod: {r: K([0, [0, 0, 0]], [0.12, [-22, 0, 0]], [0.45, [-10, 0, 0]], [0.8, [0, 0, 0]]), p: K([0, [0, 0, 0]], [0.08, [0, -1.2, 2]], [0.8, [0, 0, 0]])},
+                        torso: {r: K([0, [0, 0, 0]], [0.1, [-3, 0, -2]], [0.8, [0, 0, 0]])},
+                        hips: {p: K([0, [0, 0, 0]], [0.12, [0, -0.8, 0.6]], [0.8, [0, 0, 0]])}}),
+                    'animation.mech.stomp': move(1.0, {
+                        hips: {p: K([0, [0, 0, 0]], [0.35, [0, 0.8, 0]], [0.6, [0, -2.4, 0]], [1.0, [0, 0, 0]]), r: K([0, [0, 0, 0]], [0.35, [0, 0, -6]], [0.6, [0, 0, 2]], [1.0, [0, 0, 0]])},
+                        right_leg: {r: K([0, [0, 0, 0]], [0.45, [-48, 0, 4]], [0.6, [6, 0, 0]], [1.0, [0, 0, 0]])},
+                        right_shin: {r: K([0, [0, 0, 0]], [0.45, [62, 0, 0]], [0.6, [4, 0, 0]], [1.0, [0, 0, 0]])},
+                        right_foot: {r: K([0, [0, 0, 0]], [0.45, [-10, 0, 0]], [0.6, [-10, 0, 0]], [1.0, [0, 0, 0]])},
+                        left_shin: {r: K([0, [0, 0, 0]], [0.6, [16, 0, 0]], [1.0, [0, 0, 0]])},
+                        left_leg: {r: K([0, [0, 0, 0]], [0.6, [-8, 0, 0]], [1.0, [0, 0, 0]])},
+                        left_foot: {r: K([0, [0, 0, 0]], [0.6, [-8, 0, 0]], [1.0, [0, 0, 0]])},
+                        torso: {r: K([0, [0, 0, 0]], [0.45, [-6, 0, 4]], [0.62, [10, 0, -2]], [1.0, [0, 0, 0]])},
+                        right_gun: {r: K([0, [0, 0, 0]], [0.45, [-15, 0, 0]], [0.62, [8, 0, 0]], [1.0, [0, 0, 0]])}}),
+                    'animation.mech.transform': move(3.0, {
+                        hips: {p: K([0, [0, 0, 0]], [0.7, [0, -6, 0]], [2.2, [0, -6, 0]], [3.0, [0, -1, 0]])},
+                        right_leg: {r: K([0, [0, 0, 0]], [0.7, [-28, 0, 0]], [2.2, [-28, 0, 0]], [3.0, [-8, 0, 0]])},
+                        left_leg: {r: K([0, [0, 0, 0]], [0.7, [-28, 0, 0]], [2.2, [-28, 0, 0]], [3.0, [-8, 0, 0]])},
+                        right_shin: {r: K([0, [0, 0, 0]], [0.7, [52, 0, 0]], [2.2, [52, 0, 0]], [3.0, [16, 0, 0]])},
+                        left_shin: {r: K([0, [0, 0, 0]], [0.7, [52, 0, 0]], [2.2, [52, 0, 0]], [3.0, [16, 0, 0]])},
+                        right_foot: {r: K([0, [0, 0, 0]], [0.7, [-24, 0, 0]], [2.2, [-24, 0, 0]], [3.0, [-8, 0, 0]])},
+                        left_foot: {r: K([0, [0, 0, 0]], [0.7, [-24, 0, 0]], [2.2, [-24, 0, 0]], [3.0, [-8, 0, 0]])},
+                        torso: {r: K([0, [0, 0, 0]], [0.7, [22, 0, 0]], [0.9, [22, 0, 3]], [1.1, [22, 0, -3]], [1.3, [22, 0, 3]], [1.5, [26, 0, 0]],
+                            [1.6, [8, 0, 0]], [2.2, [6, 0, 0]], [2.6, [-14, 0, 0]], [3.0, [8, 0, 0]])},
+                        right_gun: {r: K([0, [0, 0, 0]], [0.7, [30, 0, 10]], [1.5, [30, 0, 10]], [2.6, [-40, 0, -12]], [3.0, [-6, 0, 0]])},
+                        plate_front: {p: K([0, [0, 0, 0]], [1.5, [0, 0, 0]], [1.7, [0, 2, -7]], [2.1, [0, -14, -12]]),
+                            r: K([0, [0, 0, 0]], [1.5, [0, 0, 0]], [2.1, [-80, 20, 0]]), s: K([0, [1, 1, 1]], [1.95, [1, 1, 1]], [2.1, [0, 0, 0]], [3.0, [0, 0, 0]])},
+                        left_pod: {p: K([0, [0, 0, 0]], [1.5, [0, 0, 0]], [1.65, [3, 5, 0]], [2.2, [8, -26, 2]]),
+                            r: K([0, [0, 0, 0]], [1.5, [0, 0, 0]], [2.2, [20, 0, -70]]), s: K([0, [1, 1, 1]], [2.05, [1, 1, 1]], [2.2, [0, 0, 0]], [3.0, [0, 0, 0]])},
+                        core: {s: K([0, [1, 1, 1]], [1.5, [1, 1, 1]], [1.7, [1.4, 1.4, 1]], [2.0, [1.1, 1.1, 1]], [2.6, [1.35, 1.35, 1]], [3.0, [1.15, 1.15, 1]])}}),
+                    'animation.mech.dash': move(1.1, {
+                        torso: {r: K([0, [0, 0, 0]], [0.15, [16, 0, 0]], [0.95, [16, 0, 0]], [1.1, [0, 0, 0]])},
+                        hips: {p: K([0, [0, 0, 0]], [0.15, [0, -2, 0]], [0.95, [0, -2, 0]], [1.1, [0, 0, 0]])},
+                        right_leg: {r: K([0, [0, 0, 0]], [0.25, [-30, 0, 0]], [0.5, [24, 0, 0]], [0.75, [-30, 0, 0]], [1.0, [10, 0, 0]], [1.1, [0, 0, 0]])},
+                        left_leg: {r: K([0, [0, 0, 0]], [0.25, [24, 0, 0]], [0.5, [-30, 0, 0]], [0.75, [24, 0, 0]], [1.0, [-10, 0, 0]], [1.1, [0, 0, 0]])},
+                        right_shin: {r: K([0, [0, 0, 0]], [0.25, [40, 0, 0]], [0.5, [10, 0, 0]], [0.75, [40, 0, 0]], [1.1, [0, 0, 0]])},
+                        left_shin: {r: K([0, [0, 0, 0]], [0.25, [10, 0, 0]], [0.5, [40, 0, 0]], [0.75, [10, 0, 0]], [1.1, [0, 0, 0]])},
+                        right_gun: {r: K([0, [0, 0, 0]], [0.15, [25, 0, 12]], [0.95, [25, 0, 12]], [1.1, [0, 0, 0]])}}),
+                    'animation.mech.dead': move(1.6, {
+                        hips: {p: K([0, [0, 0, 0]], [0.5, [0, -4, 0]], [1.2, [0, -13, 0]], [1.6, [0, -13, 0]])},
+                        right_leg: {r: K([0, [0, 0, 0]], [1.2, [-72, 0, 6]], [1.6, [-72, 0, 6]])},
+                        left_leg: {r: K([0, [0, 0, 0]], [1.2, [-60, 0, -8]], [1.6, [-60, 0, -8]])},
+                        right_shin: {r: K([0, [0, 0, 0]], [1.2, [108, 0, 0]], [1.6, [108, 0, 0]])},
+                        left_shin: {r: K([0, [0, 0, 0]], [1.2, [96, 0, 0]], [1.6, [96, 0, 0]])},
+                        right_foot: {r: K([0, [0, 0, 0]], [1.2, [-30, 0, 0]], [1.6, [-30, 0, 0]])},
+                        left_foot: {r: K([0, [0, 0, 0]], [1.2, [-30, 0, 0]], [1.6, [-30, 0, 0]])},
+                        torso: {r: K([0, [0, 0, 0]], [0.6, [12, 0, 4]], [1.3, [38, 0, 9]], [1.6, [36, 0, 9]])},
+                        right_gun: {r: K([0, [0, 0, 0]], [1.3, [52, 0, 18]], [1.6, [50, 0, 18]])},
+                        core: {s: K([0, [1, 1, 1]], [1.6, [0.9, 0.9, 1]])}}, true)
+                };
+            })()
+        };
+    })();
+
+    // ---------------------------------------------------------------- the mutants
+    (() => {
+        const R2 = v => Math.round(v * 100) / 100;
+        const loopOf = (length, fn) => looped(length, STEP_TIME, fn);
+        const K = (...pairs) => Object.fromEntries(pairs.map(([t, v]) => [t.toFixed(3), v]));
+        const move = (length, bones, hold) => Object.assign(flowing(length, bones), hold ? {loop: 'hold'} : {});
+        /**
+         * Organic paint: blotches of darker and lighter tissue, veins, and now and then a sore, a tooth or a pustule; every face
+         * of the cube gets its own, sized to it. pal: {base, dark, light, vein, spots: [colours of the rarer marks]}.
+         */
+        let seedCount = 5100;
+        function organic(s, pal, extra) {
+            const rand = random(seedCount++);
+            const w = Math.ceil(s[0]), h = Math.ceil(s[1]), d = Math.ceil(s[2]);
+            const marks = (fw, fh) => {
+                const ops = [];
+                const count = Math.max(1, Math.round(fw * fh / 10));
+                for (let i = 0; i < count; i++) {
+                    const bw = 1 + Math.floor(rand() * 2), bh = 1 + Math.floor(rand() * 2);
+                    ops.push([Math.floor(rand() * fw), Math.floor(rand() * fh), bw, bh, rand() < 0.6 ? pal.dark : pal.light]);
+                }
+                if (pal.vein && fw * fh > 12) {
+                    let x = Math.floor(rand() * fw), y = 0;
+                    while (y < fh) { ops.push([x, y, 1, 1, pal.vein]); y++; x += Math.floor(rand() * 3) - 1; }
+                }
+                for (const spot of pal.spots || []) {
+                    if (rand() < (pal.spotChance || 0.2)) {
+                        ops.push([Math.floor(rand() * fw), Math.floor(rand() * fh), 1, 1, spot]);
+                    }
+                }
+                return ops;
+            };
+            const paint = {c: pal.base, n: pal.n || 0.1, edge: false, faces: {top: shade(pal.base, 1.12), bottom: shade(pal.base, 0.78)},
+                f: marks(w, h), k: marks(w, h), l: marks(d, h), r: marks(d, h), tp: marks(w, d), bt: marks(w, d)};
+            for (const [key, ops] of Object.entries(extra || {})) {
+                paint[key] = (paint[key] || []).concat(ops);
+            }
+            return paint;
+        }
+        const O = (o, s, pal, extra, opts) => C(o, s, organic(s, pal, extra), opts);
+        const RAW = {base: '#8a2c28', dark: '#6c1f1d', light: '#a4423a', vein: '#4a1214', spots: ['#c25a4c']};
+        const SKIN = {base: '#76584e', dark: '#5e443c', light: '#8e6c5e', vein: '#6a2420', spots: ['#8a2c28']};
+        const BONE = {base: '#d8cfb5', dark: '#a89e84', light: '#efe8d4', n: 0.06};
+        const TEETH = '#efe8d4', MAW = '#2a0808', EYE = '#e8d050';
+
+        // the hound: a skinned, starving dog; its jaw splits open; a fleshy growth over the right shoulder, bone spikes on the back
+        SPECS.mutated_hound = {
+            res: 64, seed: 1641, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'body', parent: 'root', pivot: [0, 10, 0], cubes: [
+                    O([-3.5, 7, -6.5], [7, 6, 8], RAW, {sd: [[1, 1, 1, 4, '#d8cfb5'], [3, 1, 1, 4, '#d8cfb5'], [5, 1, 1, 4, '#d8cfb5']]}),
+                    O([-3.25, 7.5, 1], [6.5, 5, 5], SKIN),
+                    O([-5, 10, -5.5], [3, 4, 4], RAW, {f: [[1, 1, 1, 1, EYE]]}),
+                    O([-0.5, 12.5, -5], [1, 2, 1], BONE), O([-0.5, 12.5, -2], [1, 3, 1], BONE), O([-0.5, 12, 2], [1, 2, 1], BONE)]},
+                {name: 'head', parent: 'body', pivot: [0, 10, -6], cubes: [
+                    O([-2.5, 8, -11], [5, 4.5, 5], SKIN, {f: [[0, 1, 1, 1, EYE], [4, 1, 1, 1, EYE], [2, 0, 1, 1, EYE]]}),
+                    O([-2, 9, -15.5], [4, 2, 5], RAW, {bt: [[0, 0, 4, 5, TEETH], [1, 1, 2, 3, MAW]], f: [[0, 1, 4, 1, TEETH]]}),
+                    O([-3, 12, -9], [1, 3, 1], BONE), O([2, 11.5, -8.5], [1, 2, 1], BONE)]},
+                {name: 'jaw', parent: 'head', pivot: [0, 8.5, -11], cubes: [O([-2, 6.9, -15], [4, 2, 5], RAW, {tp: [[0, 0, 4, 5, TEETH], [1, 1, 2, 3, MAW]], f: [[0, 0, 4, 1, TEETH]]})]},
+                {name: 'front_right_leg', parent: 'body', pivot: [-2, 8, -4], cubes: [O([-3, 0, -5], [2, 8, 2], SKIN, {f: [[0, 6, 2, 2, '#2a1a16']]})]},
+                {name: 'front_left_leg', parent: 'body', pivot: [2, 8, -4], cubes: [O([1, 0, -5], [2, 8, 2], RAW, {f: [[0, 6, 2, 2, '#2a1a16']]})]},
+                {name: 'back_right_leg', parent: 'body', pivot: [-2, 8, 3], cubes: [O([-3, 0, 2], [2, 8, 2], SKIN, {f: [[0, 6, 2, 2, '#2a1a16']]})]},
+                {name: 'back_left_leg', parent: 'body', pivot: [2, 8, 3], cubes: [O([1, 0, 2], [2, 8, 2], SKIN, {f: [[0, 6, 2, 2, '#2a1a16']]})]},
+                {name: 'tendril_1', parent: 'body', pivot: [-1, 11, 5], cubes: [O([-1.5, 10.5, 5], [1, 1, 6], RAW, {}, {rot: [-30, 10, 0], pivot: [-1, 11, 5]})]},
+                {name: 'tendril_2', parent: 'body', pivot: [1, 11, 5], cubes: [O([0.5, 10.5, 5], [1, 1, 5], RAW, {}, {rot: [-15, -20, 0], pivot: [1, 11, 5]})]}
+            ],
+            animations: {
+                'animation.mutated_hound.idle': {length: 2, loop: 'loop', bones: {
+                    body: {p: loopOf(2, t => [0, R2(-0.3 + 0.3 * Math.cos(2 * Math.PI * t)), 0])},
+                    jaw: {r: loopOf(2, t => [R2(6 + 6 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    tendril_1: {r: loopOf(2, t => [R2(8 * Math.sin(2 * Math.PI * t)), R2(12 * Math.sin(2 * Math.PI * (t + 0.2))), 0])},
+                    tendril_2: {r: loopOf(2, t => [R2(8 * Math.sin(2 * Math.PI * (t + 0.5))), R2(-12 * Math.sin(2 * Math.PI * (t + 0.7))), 0])}}},
+                'animation.mutated_hound.walk': {length: 0.5, loop: 'loop', bones: {
+                    front_right_leg: {r: loopOf(0.5, t => [R2(40 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    front_left_leg: {r: loopOf(0.5, t => [R2(40 * Math.cos(2 * Math.PI * (t + 0.12))), 0, 0])},
+                    back_right_leg: {r: loopOf(0.5, t => [R2(-40 * Math.cos(2 * Math.PI * (t + 0.05))), 0, 0])},
+                    back_left_leg: {r: loopOf(0.5, t => [R2(-40 * Math.cos(2 * Math.PI * (t + 0.17))), 0, 0])},
+                    body: {r: loopOf(0.5, t => [R2(5 * Math.sin(2 * Math.PI * t)), 0, 0]), p: loopOf(0.5, t => [0, R2(0.8 * Math.abs(Math.sin(2 * Math.PI * t))), 0])},
+                    head: {r: loopOf(0.5, t => [R2(-5 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    jaw: {r: loopOf(0.5, t => [R2(14 + 10 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    tendril_1: {r: loopOf(0.5, t => [R2(15 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    tendril_2: {r: loopOf(0.5, t => [R2(15 * Math.sin(2 * Math.PI * (t + 0.3))), 0, 0])}}},
+                'animation.mutated_hound.attack': move(0.4, {
+                    body: {r: K([0, [0, 0, 0]], [0.12, [8, 0, 0]], [0.22, [-8, 0, 0]], [0.4, [0, 0, 0]]), p: K([0, [0, 0, 0]], [0.12, [0, -0.6, 1]], [0.22, [0, 0.6, -2.5]], [0.4, [0, 0, 0]])},
+                    jaw: {r: K([0, [5, 0, 0]], [0.15, [55, 0, 0]], [0.24, [0, 0, 0]], [0.4, [5, 0, 0]])},
+                    head: {r: K([0, [0, 0, 0]], [0.15, [-15, 0, 0]], [0.24, [10, 0, 0]], [0.4, [0, 0, 0]])}})
+            }
+        };
+
+        // the glowing ghoul: a worker in the rags of a yellow hazmat suit, swollen with sores that glow; its left arm grew into a
+        // heavy clawed mass, its head split open around a glowing maw
+        const SUIT = {base: '#b08e2a', dark: '#8e7020', light: '#c8a63c', vein: '#6a5420', spots: ['#5a4a3a'], n: 0.08};
+        const SICK = {base: '#768468', dark: '#5c6850', light: '#8c9a7c', vein: '#4e5a42', spots: ['#7cff4a'], spotChance: 0.45};
+        const GLOW = '#7cff4a';
+        SPECS.glowing_ghoul = {
+            res: 64, seed: 1642, noCoplanarFaces: true, glow: GLOW,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'right_leg', parent: 'root', pivot: [-2, 13, 0], cubes: [O([-3, 0, -1.5], [2.5, 13, 3], SUIT, {f: [[0, 0, 3, 3, '#3a3020']]})]},
+                {name: 'left_leg', parent: 'root', pivot: [2, 13, 0], cubes: [O([0.5, 0, -1.5], [2.25, 13, 3], SICK, {f: [[0, 0, 3, 5, '#7a6018'], [1, 8, 1, 1, GLOW]]})]},
+                {name: 'body', parent: 'root', pivot: [0, 12, 0], cubes: [
+                    O([-4, 12, -2], [8, 11, 4], SUIT, {f: [[4, 3, 3, 4, '#7a8a6a'], [5, 4, 1, 1, GLOW], [2, 7, 2, 2, GLOW]], k: [[1, 2, 5, 5, '#7a8a6a'], [2, 3, 2, 2, GLOW]]}),
+                    O([1, 17, -3], [3.5, 4, 1.5], SICK, {f: [[1, 1, 1, 1, GLOW]]}),
+                    O([-3, 19, 1.5], [4, 4.5, 3], SICK, {k: [[1, 1, 2, 2, GLOW]], tp: [[1, 1, 1, 1, GLOW]]})]},
+                {name: 'head', parent: 'body', pivot: [0, 22, -1], cubes: [
+                    O([-3.5, 22, -4.5], [7, 7, 7], SICK, {f: [[1, 2, 2, 1, GLOW], [5, 2, 1, 1, GLOW], [2, 4, 3, 2, MAW], [2, 4, 3, 1, GLOW]], tp: [[3, 1, 1, 5, GLOW]]}),
+                    O([-2.5, 28.5, -3.5], [2, 2, 3], SICK, {tp: [[0, 0, 2, 3, GLOW]]})]},
+                {name: 'jaw', parent: 'head', pivot: [0, 23, -3], cubes: [O([-2.5, 20.8, -5], [5, 2, 4], SICK, {tp: [[0, 0, 5, 1, TEETH]], f: [[0, 0, 5, 1, TEETH]]})]},
+                {name: 'right_arm', parent: 'body', pivot: [-5, 21, 0], cubes: [O([-6.5, 9, -1.5], [3, 13, 3], SUIT, {f: [[0, 9, 3, 4, '#7a8a6a'], [1, 11, 1, 1, GLOW]]})]},
+                {name: 'left_arm', parent: 'body', pivot: [5, 21, 0], cubes: [O([3.5, 15, -2.5], [4, 7, 5], SICK, {f: [[1, 2, 1, 1, GLOW]], sd: [[2, 1, 1, 1, GLOW]]})]},
+                {name: 'left_forearm', parent: 'left_arm', pivot: [5.5, 15.5, 0], cubes: [
+                    O([3, 6, -3], [6, 10, 6], SICK, {f: [[1, 2, 2, 2, GLOW], [4, 6, 1, 1, GLOW]], sd: [[2, 3, 2, 2, GLOW]], k: [[3, 1, 2, 2, GLOW]]}),
+                    O([4, 3, -2.5], [1, 3.5, 1], BONE), O([6, 2.5, -2.5], [1, 4.5, 1], BONE), O([7.5, 3, -2.5], [1, 3.5, 1], BONE)]}
+            ],
+            animations: {
+                'animation.glowing_ghoul.idle': {length: 3, loop: 'loop', bones: {
+                    body: {r: loopOf(3, t => [R2(14 + 3 * Math.sin(2 * Math.PI * t)), 0, R2(3 * Math.sin(2 * Math.PI * (t + 0.3)))])},
+                    right_arm: {r: loopOf(3, t => [R2(-10 + 5 * Math.sin(2 * Math.PI * t)), 0, 4])},
+                    left_arm: {r: loopOf(3, t => [R2(-6 + 4 * Math.sin(2 * Math.PI * (t + 0.5))), 0, -10])},
+                    left_forearm: {r: loopOf(3, t => [R2(-14 - 4 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    jaw: {r: loopOf(3, t => [R2(8 + 8 * Math.sin(4 * Math.PI * t)), 0, 0])}}},
+                // a limping shamble: the healthy leg takes long steps, the sick one drags
+                'animation.glowing_ghoul.walk': {length: 1.4, loop: 'loop', bones: {
+                    right_leg: {r: loopOf(1.4, t => [R2(30 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    left_leg: {r: loopOf(1.4, t => [R2(-14 * Math.cos(2 * Math.PI * t)), 0, R2(-4 + 3 * Math.sin(2 * Math.PI * t))])},
+                    body: {r: loopOf(1.4, t => [R2(18 + 4 * Math.sin(4 * Math.PI * t)), R2(6 * Math.cos(2 * Math.PI * t)), R2(-7 * Math.cos(2 * Math.PI * t))]),
+                        p: loopOf(1.4, t => [0, R2(-0.9 * Math.abs(Math.sin(2 * Math.PI * t))), 0])},
+                    right_arm: {r: loopOf(1.4, t => [R2(-60 + 15 * Math.cos(2 * Math.PI * (t + 0.5))), 0, 5])},
+                    left_arm: {r: loopOf(1.4, t => [R2(10 + 12 * Math.cos(2 * Math.PI * t)), 0, -12])},
+                    left_forearm: {r: loopOf(1.4, t => [R2(-20 - 8 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    jaw: {r: loopOf(1.4, t => [R2(10 + 10 * Math.sin(2 * Math.PI * t)), 0, 0])}}},
+                'animation.glowing_ghoul.attack': move(0.7, {
+                    body: {r: K([0, [14, 0, 0]], [0.3, [6, -25, 0]], [0.45, [26, 25, 0]], [0.7, [14, 0, 0]])},
+                    left_arm: {r: K([0, [0, 0, -10]], [0.3, [-120, 10, -30]], [0.45, [-30, -20, 10]], [0.7, [0, 0, -10]])},
+                    left_forearm: {r: K([0, [-15, 0, 0]], [0.3, [-50, 0, 0]], [0.45, [-5, 0, 0]], [0.7, [-15, 0, 0]])},
+                    jaw: {r: K([0, [5, 0, 0]], [0.3, [35, 0, 0]], [0.7, [5, 0, 0]])}}),
+                'animation.glowing_ghoul.spit': move(0.8, {
+                    body: {r: K([0, [14, 0, 0]], [0.45, [-12, 0, 0]], [0.6, [28, 0, 0]], [0.8, [14, 0, 0]])},
+                    head: {r: K([0, [0, 0, 0]], [0.45, [-25, 0, 0]], [0.6, [15, 0, 0]], [0.8, [0, 0, 0]])},
+                    jaw: {r: K([0, [5, 0, 0]], [0.45, [20, 0, 0]], [0.6, [60, 0, 0]], [0.8, [5, 0, 0]])}})
+            }
+        };
+
+        // the brute: a hulk whose right arm swelled into a club of muscle and bone, a hunched back of bony plates and tumours, a
+        // small head sunk between the shoulders
+        const HULK = {base: '#7c5a4e', dark: '#62463c', light: '#94705e', vein: '#6a2420', spots: ['#8a2c28', '#8fae46']};
+        const MEAT = RAW;
+        SPECS.brute = {
+            res: 128, seed: 1643, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'hips', parent: 'root', pivot: [0, 13, 0], cubes: [O([-7, 11, -4], [14, 6, 9], HULK)]},
+                {name: 'right_leg', parent: 'hips', pivot: [-4, 13, 0], cubes: [O([-7.5, 6, -3], [6, 8, 6], HULK)]},
+                {name: 'right_shin', parent: 'right_leg', pivot: [-4.5, 6.5, 0], cubes: [O([-7, 0, -3.5], [5, 7, 7], HULK, {f: [[0, 5, 5, 2, '#2a1a16']]})]},
+                {name: 'left_leg', parent: 'hips', pivot: [4, 13, 0], cubes: [O([1.5, 6, -3], [6, 8, 6], MEAT)]},
+                {name: 'left_shin', parent: 'left_leg', pivot: [4.5, 6.5, 0], cubes: [O([2, 0, -3.5], [5, 7, 7], HULK, {f: [[0, 5, 5, 2, '#2a1a16']]})]},
+                {name: 'torso', parent: 'hips', pivot: [0, 16, 0], cubes: [
+                    O([-9, 16, -5], [18, 16, 11], HULK, {f: [[3, 4, 12, 1, '#a87e6a'], [5, 8, 3, 3, MEAT.base]], k: [[2, 2, 14, 12, MEAT.dark]]}),
+                    O([-6, 29, -2], [12, 6, 9], MEAT),
+                    O([-4, 33, 2], [3, 3, 3], BONE), O([1, 32.5, 3], [3, 4, 3], BONE), O([-1.5, 30, 5.5], [3, 3, 2], BONE),
+                    O([4, 20, 5.5], [4, 5, 2], MEAT, {k: [[1, 1, 2, 2, '#9bc24a']]})]},
+                {name: 'head', parent: 'torso', pivot: [0, 30, -5], cubes: [
+                    O([-3.5, 27, -10], [7, 6, 6], HULK, {f: [[1, 1, 2, 1, EYE], [4, 1, 1, 1, EYE], [1, 3, 5, 2, MAW], [1, 3, 5, 1, TEETH]]})]},
+                {name: 'jaw', parent: 'head', pivot: [0, 28, -6], cubes: [O([-3, 25.5, -10.5], [6, 2.5, 5], MEAT, {tp: [[0, 0, 6, 1, TEETH]], f: [[0, 0, 6, 1, TEETH]]})]},
+                {name: 'right_arm', parent: 'torso', pivot: [-11, 28, 0], cubes: [
+                    O([-18.5, 18, -4.5], [10, 13, 10], HULK, {f: [[2, 3, 4, 2, MEAT.base]], sd: [[2, 5, 3, 3, MEAT.light]]}),
+                    O([-17, 29, -3], [4, 4, 4], BONE)]},
+                {name: 'right_forearm', parent: 'right_arm', pivot: [-13.5, 19, 0], cubes: [
+                    O([-20, 1, -6.5], [12, 18, 13], MEAT, {f: [[2, 2, 3, 3, HULK.base]], bt: [[1, 1, 10, 11, '#2a1a16']]}),
+                    O([-19, 0.5, -7.5], [3, 4, 3], BONE), O([-15, 0, -8], [3, 4, 3], BONE), O([-11.5, 0.5, -7.5], [3, 4, 3], BONE)]},
+                {name: 'left_arm', parent: 'torso', pivot: [10, 28, 0], cubes: [O([8.5, 18, -3], [5, 12, 6], HULK)]},
+                {name: 'left_forearm', parent: 'left_arm', pivot: [11, 19, 0], cubes: [O([8, 7, -3.5], [6, 12, 7], HULK, {f: [[1, 9, 4, 3, '#2a1a16']]})]}
+            ],
+            animations: (() => {
+                const T = 'torso';
+                return {
+                    'animation.brute.idle': {length: 3, loop: 'loop', bones: {
+                        [T]: {r: loopOf(3, t => [R2(14 + 2 * Math.sin(2 * Math.PI * t)), 0, 0]), p: loopOf(3, t => [0, R2(-0.4 + 0.4 * Math.cos(2 * Math.PI * t)), 0])},
+                        right_arm: {r: loopOf(3, t => [R2(-14 + 3 * Math.sin(2 * Math.PI * t)), 0, 6])},
+                        right_forearm: {r: loopOf(3, t => [R2(-8 - 3 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                        left_arm: {r: loopOf(3, t => [R2(-10 + 3 * Math.sin(2 * Math.PI * (t + 0.5))), 0, -6])},
+                        jaw: {r: loopOf(3, t => [R2(6 + 6 * Math.sin(4 * Math.PI * t)), 0, 0])}}},
+                    'animation.brute.walk': (() => {
+                        const g = ikGait({length: 1.6, thigh: 6.5, shin: 6.5, rest: 12.5, hip: 11.8, stride: 3.5, lift: 2.2, stance: 0.6, bob: 0.9,
+                            sway: 5, pelvis: 6, twist: 4, lean: 14, hips: 'hips', torso: T,
+                            arms: {right_arm: [22, -10, 1, 0.08], left_arm: [16, -8, -1, 0.08]},
+                            forearms: {right_forearm: [10, 12, 1], left_forearm: [12, 14, -1]}});
+                        g.bones.jaw = {r: loopOf(1.6, t => [R2(8 + 6 * Math.sin(2 * Math.PI * t)), 0, 0])};
+                        return g;
+                    })(),
+                    'animation.brute.attack': move(0.9, {
+                        [T]: {r: K([0, [14, 0, 0]], [0.35, [-8, 15, 0]], [0.5, [32, -10, 0]], [0.9, [14, 0, 0]])},
+                        right_arm: {r: K([0, [-10, 0, 6]], [0.35, [-165, 0, 15]], [0.5, [-30, 0, 0]], [0.9, [-10, 0, 6]])},
+                        right_forearm: {r: K([0, [-8, 0, 0]], [0.35, [-30, 0, 0]], [0.5, [0, 0, 0]], [0.9, [-8, 0, 0]])},
+                        hips: {p: K([0, [0, 0, 0]], [0.35, [0, 0.5, 1]], [0.5, [0, -1.5, -1.5]], [0.9, [0, 0, 0]])},
+                        jaw: {r: K([0, [5, 0, 0]], [0.35, [40, 0, 0]], [0.9, [5, 0, 0]])}}),
+                    'animation.brute.roar': move(0.85, {
+                        [T]: {r: K([0, [14, 0, 0]], [0.3, [-22, 0, 0]], [0.65, [-24, 0, 0]], [0.85, [20, 0, 0]])},
+                        head: {r: K([0, [0, 0, 0]], [0.3, [-30, 0, 0]], [0.65, [-30, 0, 0]], [0.85, [0, 0, 0]])},
+                        jaw: {r: K([0, [5, 0, 0]], [0.3, [60, 0, 0]], [0.65, [60, 0, 0]], [0.85, [5, 0, 0]])},
+                        right_arm: {r: K([0, [-10, 0, 6]], [0.3, [-40, 0, 55]], [0.65, [-40, 0, 55]], [0.85, [25, 0, 10]])},
+                        left_arm: {r: K([0, [-10, 0, -6]], [0.3, [-40, 0, -55]], [0.65, [-40, 0, -55]], [0.85, [25, 0, -10]])}}),
+                    'animation.brute.charge': {length: 0.5, loop: 'loop', bones: Object.assign(ikGait({length: 0.5, thigh: 6.5, shin: 6.5, rest: 12.5, hip: 11.2,
+                        stride: 5.5, lift: 3.5, stance: 0.45, bob: 1.6, sway: 3, pelvis: 4, twist: 2, lean: 38, hips: 'hips', torso: T,
+                        arms: {right_arm: [10, 30, 1, 0], left_arm: [10, 30, -1, 0]}, forearms: {right_forearm: [5, 5, 1], left_forearm: [5, 5, -1]}}).bones,
+                        {head: {r: loopOf(0.5, () => [-28, 0, 0])}, jaw: {r: loopOf(0.5, t => [R2(30 + 10 * Math.sin(2 * Math.PI * t)), 0, 0])}})},
+                    'animation.brute.leap': move(0.5, {
+                        hips: {p: K([0, [0, 0, 0]], [0.15, [0, -3, 0]], [0.3, [0, 1, 0]], [0.5, [0, 1, 0]])},
+                        right_leg: {r: K([0, [0, 0, 0]], [0.15, [-40, 0, 0]], [0.3, [15, 0, 0]], [0.5, [-30, 0, 0]])},
+                        left_leg: {r: K([0, [0, 0, 0]], [0.15, [-40, 0, 0]], [0.3, [15, 0, 0]], [0.5, [-30, 0, 0]])},
+                        right_shin: {r: K([0, [0, 0, 0]], [0.15, [70, 0, 0]], [0.3, [5, 0, 0]], [0.5, [50, 0, 0]])},
+                        left_shin: {r: K([0, [0, 0, 0]], [0.15, [70, 0, 0]], [0.3, [5, 0, 0]], [0.5, [50, 0, 0]])},
+                        [T]: {r: K([0, [14, 0, 0]], [0.15, [35, 0, 0]], [0.3, [-10, 0, 0]], [0.5, [5, 0, 0]])},
+                        right_arm: {r: K([0, [-10, 0, 6]], [0.15, [30, 0, 10]], [0.3, [-150, 0, 20]], [0.5, [-150, 0, 20]])},
+                        left_arm: {r: K([0, [-10, 0, -6]], [0.15, [30, 0, -10]], [0.3, [-150, 0, -20]], [0.5, [-150, 0, -20]])}}, true),
+                    'animation.brute.land': move(0.7, {
+                        hips: {p: K([0, [0, 1, 0]], [0.1, [0, -3.5, 0]], [0.7, [0, 0, 0]])},
+                        right_leg: {r: K([0, [-30, 0, 0]], [0.1, [-45, 0, 0]], [0.7, [0, 0, 0]])},
+                        left_leg: {r: K([0, [-30, 0, 0]], [0.1, [-45, 0, 0]], [0.7, [0, 0, 0]])},
+                        right_shin: {r: K([0, [50, 0, 0]], [0.1, [80, 0, 0]], [0.7, [0, 0, 0]])},
+                        left_shin: {r: K([0, [50, 0, 0]], [0.1, [80, 0, 0]], [0.7, [0, 0, 0]])},
+                        [T]: {r: K([0, [5, 0, 0]], [0.1, [45, 0, 0]], [0.7, [14, 0, 0]])},
+                        right_arm: {r: K([0, [-150, 0, 20]], [0.1, [-20, 0, 25]], [0.7, [-10, 0, 6]])},
+                        left_arm: {r: K([0, [-150, 0, -20]], [0.1, [-20, 0, -25]], [0.7, [-10, 0, -6]])}}),
+                    'animation.brute.stun': move(2.0, {
+                        [T]: {r: K([0, [14, 0, 0]], [0.2, [-10, 0, 0]], [0.6, [20, 0, 12]], [1.0, [20, 0, -12]], [1.4, [20, 0, 10]], [1.8, [18, 0, -4]], [2.0, [14, 0, 0]])},
+                        head: {r: K([0, [0, 0, 0]], [0.6, [15, 20, 0]], [1.0, [15, -20, 0]], [1.4, [15, 15, 0]], [2.0, [0, 0, 0]])},
+                        right_arm: {r: K([0, [-10, 0, 6]], [0.6, [5, 0, 20]], [1.4, [5, 0, 20]], [2.0, [-10, 0, 6]])},
+                        left_arm: {r: K([0, [-10, 0, -6]], [0.6, [5, 0, -20]], [1.4, [5, 0, -20]], [2.0, [-10, 0, -6]])}}),
+                    'animation.brute.dead': move(1.4, {
+                        root: {r: K([0, [0, 0, 0]], [0.5, [0, 0, 20]], [1.1, [0, 0, 88]], [1.4, [0, 0, 86]]), p: K([0, [0, 0, 0]], [1.1, [-6, 6, 0]], [1.4, [-6, 6, 0]])},
+                        [T]: {r: K([0, [14, 0, 0]], [1.1, [25, 0, 0]], [1.4, [25, 0, 0]])},
+                        right_arm: {r: K([0, [0, 0, 0]], [1.1, [-60, 0, 30]], [1.4, [-60, 0, 30]])},
+                        left_arm: {r: K([0, [0, 0, 0]], [1.1, [-20, 0, -40]], [1.4, [-20, 0, -40]])},
+                        right_leg: {r: K([0, [0, 0, 0]], [1.1, [-35, 0, 0]], [1.4, [-35, 0, 0]])},
+                        right_shin: {r: K([0, [0, 0, 0]], [1.1, [50, 0, 0]], [1.4, [50, 0, 0]])},
+                        jaw: {r: K([0, [5, 0, 0]], [1.1, [35, 0, 0]], [1.4, [35, 0, 0]])}}, true)
+                };
+            })()
+        };
+    })();
+
     window.RebirthModels = {build, save, SPECS, coplanarFaces};
 })();

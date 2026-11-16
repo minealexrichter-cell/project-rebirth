@@ -59,6 +59,12 @@ public final class HostileRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<BruteEntity>> BRUTE = ENTITY_TYPES.register("brute",
             () -> EntityType.Builder.of(BruteEntity::new, MobCategory.MONSTER).sized(1.3f, 2.5f).eyeHeight(2.2f).clientTrackingRange(10).build("brute"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<RemainsEntity>> REMAINS = ENTITY_TYPES.register("remains",
+            () -> EntityType.Builder.<RemainsEntity>of(RemainsEntity::new, MobCategory.MISC).sized(1.5f, 0.8f).clientTrackingRange(10).build("remains"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<ToxicSpitEntity>> TOXIC_SPIT = ENTITY_TYPES.register("toxic_spit",
+            () -> EntityType.Builder.<ToxicSpitEntity>of(ToxicSpitEntity::new, MobCategory.MISC).sized(0.3f, 0.3f).clientTrackingRange(8).updateInterval(2).noSave().build("toxic_spit"));
+
     /** For trying it out in creative; the ruins place their own. */
     public static final DeferredItem<Item> GUARD_TURRET_SPAWN_EGG = ITEMS.register("guard_turret_spawn_egg",
             () -> new DeferredSpawnEggItem(GUARD_TURRET, 0xA3ACB6, 0xC4382C, new Item.Properties()));

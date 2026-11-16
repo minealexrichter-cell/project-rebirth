@@ -11,8 +11,12 @@
       "text": "codex.projectrebirth.mutants.p1"
     },
     {
-      "type": "note",
+      "type": "text",
       "text": "codex.projectrebirth.mutants.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.mutants.p3"
     }
   ]
 }

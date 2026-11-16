@@ -119,8 +119,10 @@ public final class RadiationSources {
             }
         }
         radiation += oreAround(level, pos);
-        // 1.6.0, part B3c: the glowing ghouls are walking sources
-        radiation += com.projectrebirth.hostile.GlowingGhoulEntity.auraAt(level, pos);
+        // 1.6.0, part B3c: the glowing ghouls and the bodies of brutes are sources too
+        ContaminationMap.Reading creatures = com.projectrebirth.hostile.Auras.at(level, pos);
+        radiation += creatures.radiation();
+        toxin += creatures.toxin();
         return radiation <= 0.0f && toxin <= 0.0f ? ContaminationMap.Reading.NONE : new ContaminationMap.Reading(radiation, toxin);
     }
 

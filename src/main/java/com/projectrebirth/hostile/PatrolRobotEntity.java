@@ -44,6 +44,11 @@ public class PatrolRobotEntity extends WalkingGunner {
     }
 
     @Override
+    protected RemainsEntity.Kind remainsKind() {
+        return RemainsEntity.Kind.PATROL_ROBOT;
+    }
+
+    @Override
     protected boolean enabled() {
         return hostileOn() && (!RebirthConfig.SERVER_SPEC.isLoaded() || RebirthConfig.ROBOT_ENABLED.get());
     }

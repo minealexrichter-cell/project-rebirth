@@ -30,13 +30,20 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public abstract class MutantEntity extends Monster implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final RawAnimation idle, walk, attack;
+    private final String name;
     private boolean configured;
 
     protected MutantEntity(EntityType<? extends Monster> type, Level level, String name) {
         super(type, level);
+        this.name = name;
         this.idle = RawAnimation.begin().thenLoop("animation." + name + ".idle");
         this.walk = RawAnimation.begin().thenLoop("animation." + name + ".walk");
         this.attack = RawAnimation.begin().thenPlay("animation." + name + ".attack");
+    }
+
+    /** The kind's own one-shot animations besides "attack", played with triggerAnim("action", name). */
+    protected java.util.List<String> extraAnimations() {
+        return java.util.List.of();
     }
 
     /** Health, damage and speed from the config. */
@@ -92,7 +99,13 @@ public abstract class MutantEntity extends Monster implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 4, state -> state.setAndContinue(state.isMoving() ? walk : idle)));
-        controllers.add(new AnimationController<>(this, "action", 0, state -> PlayState.STOP).triggerableAnim("attack", attack));
+        AnimationController<MutantEntity> action = new AnimationController<>(this, "action", 0, state -> PlayState.STOP);
+        action.triggerableAnim("attack", attack);
+        for (String extra : extraAnimations()) {
+            String id = "animation." + name + "." + extra;
+            action.triggerableAnim(extra, extra.equals("charge") ? RawAnimation.begin().thenPlayXTimes(id, 4) : RawAnimation.begin().thenPlay(id));
+        }
+        controllers.add(action);
     }
 
     @Override

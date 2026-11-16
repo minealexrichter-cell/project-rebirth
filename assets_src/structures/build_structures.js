@@ -9,7 +9,10 @@ const path = require('path');
 
 const OUT = path.join(__dirname, '../../src/main/resources/data/projectrebirth/structure/ruins');
 
-const {nbtFile, Build} = require('./structure_lib');
+const {nbtFile, Build, T, str, byte, float, list, compound} = require('./structure_lib');
+
+/** A hostile creature or machine of part B3 standing at (x, y, z), looking toward yaw; it stays (PersistenceRequired). */
+const mob = (b, x, y, z, id, yaw) => b.entity(x, y, z, compound({id: str('projectrebirth:' + id), Rotation: list(T.FLOAT, [float(yaw || 0), float(0)]), PersistenceRequired: byte(1)}));
 
 const AIR = 'minecraft:air';
 const DEBRIS = 'projectrebirth:radioactive_debris';
@@ -65,6 +68,9 @@ function lab() {
     // cobwebs in the corners
     for (const [x, y, z] of [[1, 7, 1], [13, 7, 11], [1, 7, 11], [6, 7, 1], [13, 6, 6]]) b.set(x, y, z, 'minecraft:cobweb');
     b.set(7, 7, 6, ['minecraft:redstone_lamp', {lit: 'false'}]);
+    // its dwellers: a pack of hounds among the benches and a ghoul by the storeroom
+    for (const [x, z] of [[2, 8], [4, 9], [6, 8]]) mob(b, x, 3, z, 'mutated_hound', 90);
+    mob(b, 12, 3, 7, 'glowing_ghoul', 90);
     return b;
 }
 
@@ -108,6 +114,8 @@ function ruins() {
     b.set(22, 3, 18, chest('west', 'industrial_ruins'));
     b.set(13, 3, 11, chest('north', 'industrial_ruins'));
     b.set(4, 3, 12, ['minecraft:barrel', {facing: 'up', open: 'false'}, {LootTable: 'projectrebirth:chests/industrial_ruins'}]);
+    // still on guard: a patrol robot in the hall
+    mob(b, 12, 3, 8, 'patrol_robot', 90);
     return b;
 }
 
@@ -168,6 +176,9 @@ function reactor() {
     b.set(8, 3, 8, chest('west', 'ruined_reactor'));
     // one more chest by the core: the richest place is the most dangerous
     b.set(C + 6, 3, C, chest('west', 'ruined_reactor'));
+    // ghouls glow among the debris; a brute keeps the breach
+    for (const [x, z] of [[C + 7, C + 1], [C - 5, C + 6], [C + 1, C - 7]]) mob(b, x, 3, z, 'glowing_ghoul', 0);
+    mob(b, C + 8, 3, C + 6, 'brute', -45);
     return b;
 }
 

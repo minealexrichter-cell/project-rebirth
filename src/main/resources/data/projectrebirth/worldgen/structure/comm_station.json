@@ -96,6 +96,18 @@
       "x": 27,
       "z": 27,
       "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/robot_post_0",
+      "x": 34,
+      "z": 28,
+      "follow": true
+    },
+    {
+      "template": "projectrebirth:ruins/comm_station/robot_post_1",
+      "x": 44,
+      "z": 30,
+      "follow": true
     }
   ]
 }

@@ -268,6 +268,20 @@ public abstract class WalkingGunner extends Monster implements GeoEntity {
         }
     }
 
+    /** What it leaves when destroyed. */
+    protected abstract RemainsEntity.Kind remainsKind();
+
+    /** Destroyed, it leaves its wreck where it stood (taken apart with the wrench for parts) instead of falling over. */
+    @Override
+    public void die(DamageSource source) {
+        super.die(source);
+        if (!level().isClientSide && isRemoved() == false) {
+            RemainsEntity.leave(this, remainsKind());
+            dropExperience(source.getEntity());
+            discard();
+        }
+    }
+
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
         return SoundEvents.IRON_GOLEM_HURT;

@@ -31,13 +31,16 @@ public final class WeaponItemRenderer extends BlockEntityWithoutLevelRenderer {
     @Override
     public void renderByItem(ItemStack stack, ItemDisplayContext context, PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
         float partialTick = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
-        WeaponView view = WeaponView.of(holder, stack.getItem());
-        view.update(holder, partialTick);
+        boolean loose = context == ItemDisplayContext.GROUND || context == ItemDisplayContext.FIXED;
+        LivingEntity who = loose ? null : holder;
+        WeaponView view = WeaponView.of(who, stack.getItem());
+        view.update(who, partialTick);
         poseStack.pushPose();
         // The game has moved the drawing to the corner of a block.
         poseStack.translate(0.5f, 0.5f, 0.5f);
+        // lying on the ground or in a frame it is just the model; only a held weapon tells where its muzzle is
         WeaponRenderer.INSTANCE.draw(poseStack, view, buffers, light, partialTick,
-                WindowPose.isDrawing() ? WeaponRenderer.Space.NONE : WeaponRenderer.Space.WORLD);
+                WindowPose.isDrawing() || loose ? WeaponRenderer.Space.NONE : WeaponRenderer.Space.WORLD);
         poseStack.popPose();
     }
 }

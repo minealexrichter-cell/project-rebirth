@@ -55,7 +55,7 @@ public final class Gunnery {
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, shooter, start, end, shooter.getBoundingBox().expandTowards(end.subtract(start)).inflate(1.0),
                 e -> e != shooter && e.isPickable() && !e.isSpectator() && !(e.getVehicle() instanceof PowerArmorEntity) && !isMechanism(e), 0.1f);
         if (hit != null) {
-            end = hit.getLocation();
+            end = com.projectrebirth.weapons.Weapons.entryPoint(hit.getEntity(), start, end);
             ending = 2;
             Entity victim = hit.getEntity();
             DamageSource source = shooter.damageSources().source(WeaponRegistry.BULLET, shooter);

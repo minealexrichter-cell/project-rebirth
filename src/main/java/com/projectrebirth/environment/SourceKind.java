@@ -14,7 +14,9 @@ public enum SourceKind {
     /** Radioisotope generator: weaker radiation. */
     GENERATOR,
     /** Irradiated sludge in the contamination zone (large structures of 1.6.0): weaker radiation than debris, shorter reach. */
-    SLUDGE;
+    SLUDGE,
+    /** The toxic puddle a glowing ghoul leaves when it dies (part B3c): polluted air, dries up by itself. */
+    TOXIC_PUDDLE;
 
     public boolean enabled() {
         return this != GENERATOR || RebirthConfig.ISOTOPE_RADIATES.get();
@@ -26,13 +28,17 @@ public enum SourceKind {
             case DEBRIS -> RebirthConfig.DEBRIS_RADIATION.get().floatValue();
             case GENERATOR -> RebirthConfig.ISOTOPE_RADIATION.get().floatValue();
             case SLUDGE -> RebirthConfig.SLUDGE_RADIATION.get().floatValue();
-            case WASTE_BARREL -> 0.0f;
+            case WASTE_BARREL, TOXIC_PUDDLE -> 0.0f;
         };
     }
 
     /** Polluted air right next to the block. */
     public float toxin() {
-        return this == WASTE_BARREL ? RebirthConfig.BARREL_TOXIN.get().floatValue() : 0.0f;
+        return switch (this) {
+            case WASTE_BARREL -> RebirthConfig.BARREL_TOXIN.get().floatValue();
+            case TOXIC_PUDDLE -> RebirthConfig.PUDDLE_TOXIN.get().floatValue();
+            default -> 0.0f;
+        };
     }
 
     /** How far it reaches, in blocks. */
@@ -42,6 +48,7 @@ public enum SourceKind {
             case WASTE_BARREL -> RebirthConfig.BARREL_RANGE.get();
             case GENERATOR -> RebirthConfig.ISOTOPE_RANGE.get();
             case SLUDGE -> RebirthConfig.SLUDGE_RANGE.get();
+            case TOXIC_PUDDLE -> RebirthConfig.PUDDLE_RANGE.get();
         };
     }
 }

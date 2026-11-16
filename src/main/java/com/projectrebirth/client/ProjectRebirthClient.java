@@ -126,6 +126,8 @@ public class ProjectRebirthClient {
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH_ROCKET.get(), com.projectrebirth.client.render.MechRocketRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_HOUND.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "mutated_hound", 0.4f, false));
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.GLOWING_GHOUL.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "glowing_ghoul", 0.45f, true));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.REMAINS.get(), com.projectrebirth.client.render.RemainsRenderer::new);
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.TOXIC_SPIT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.BRUTE.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "brute", 0.9f, false));
     }
 

@@ -314,11 +314,20 @@ public final class Weapons {
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, player, start, end, player.getBoundingBox().expandTowards(end.subtract(start)).inflate(1.0),
                 target -> canBeHit(player, target), HIT_MARGIN);
         if (hit != null) {
-            end = hit.getLocation();
+            end = entryPoint(hit.getEntity(), start, end);
             ending = WeaponShotPayload.Ending.ENTITY;
             damageByTarget.merge(hit.getEntity(), damageAt(stats, start.distanceTo(end)), Float::sum);
         }
         return new WeaponShotPayload.Pellet((float) end.x, (float) end.y, (float) end.z, ending);
+    }
+
+    /**
+     * Where a ray enters a body. The vanilla search returns the body's feet as the place of the hit, which drew every tracer and
+     * spark at the bottom of the target and measured the falloff to its feet.
+     */
+    public static Vec3 entryPoint(Entity target, Vec3 start, Vec3 end) {
+        net.minecraft.world.phys.AABB box = target.getBoundingBox().inflate(HIT_MARGIN);
+        return box.contains(start) ? start : box.clip(start, end).orElse(box.getCenter());
     }
 
     /** Not the shooter's own armor. A pilot is hit through their armor, whose box surrounds them. */

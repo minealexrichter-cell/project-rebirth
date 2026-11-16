@@ -33,7 +33,6 @@ public final class MultiblockView {
         pose.mulPose(Axis.YP.rotationDegrees(angle));
         pose.translate(-w / 2.0f, -h / 2.0f, -d / 2.0f);
         Lighting.setupFor3DItems();
-        var blocks = minecraft.getBlockRenderer();
         int layers = Math.min(h, Math.max(1, upTo));
         for (int y = 0; y < layers; y++) {
             for (int z = 0; z < d; z++) {
@@ -45,7 +44,7 @@ public final class MultiblockView {
                     BlockState state = cell.display();
                     pose.pushPose();
                     pose.translate(x, y, z);
-                    blocks.renderSingleBlock(state, pose, graphics.bufferSource(), 0xF000F0, OverlayTexture.NO_OVERLAY);
+                    renderBlock(state, pose, graphics.bufferSource(), 0xF000F0);
                     pose.popPose();
                 }
             }
@@ -76,6 +75,21 @@ public final class MultiblockView {
                 graphics.renderFakeItem(new ItemStack(found.display().getBlock()), 0, 0);
                 pose.popPose();
             }
+        }
+    }
+
+    /**
+     * Draws a block of a plan. An animated block (the manipulator) is drawn from its still block model, since the game's own
+     * call would ask for its item renderer instead.
+     */
+    public static void renderBlock(BlockState state, com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
+        var blocks = net.minecraft.client.Minecraft.getInstance().getBlockRenderer();
+        if (state.getRenderShape() == net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED) {
+            net.minecraft.client.renderer.RenderType type = net.minecraft.client.renderer.RenderType.cutout();
+            blocks.getModelRenderer().renderModel(pose.last(), buffers.getBuffer(type), state, blocks.getBlockModel(state), 1.0f, 1.0f, 1.0f,
+                    light, OverlayTexture.NO_OVERLAY, net.neoforged.neoforge.client.model.data.ModelData.EMPTY, type);
+        } else {
+            blocks.renderSingleBlock(state, pose, buffers, light, OverlayTexture.NO_OVERLAY);
         }
     }
 }

@@ -2306,6 +2306,142 @@
     block('multiblock_controller_front_on', () => controllerFront(true));
     block('multiblock_controller_side', () => casing(new Painter(195), '#e0b33a'));
 
+    // ---------------------------------------------------------------- multiblocks (version 1.7.0, block B)
+
+    // The assembly plate: the floor of the workshops, a heavy steel plate in four tiles with a yellow mark in the middle.
+    block('assembly_plate', () => {
+        const p = new Painter(196);
+        for (const [x, y] of [[0, 0], [8, 0], [0, 8], [8, 8]]) p.bevel(x, y, 8, 8, '#6b737c', 0.04);
+        p.px('#9aa3ad', [1, 1], [14, 1], [1, 14], [14, 14], [9, 1], [6, 14]);
+        p.rect(6, 6, 4, 4, '#e0b33a').rect(7, 7, 2, 2, '#23262b');
+        return p;
+    });
+    // An open frame: steel beams round the edge and a diagonal brace, see-through between them.
+    function frame(seed, beam, width, accent) {
+        const p = new Painter(seed);
+        p.bevel(0, 0, 16, width, beam, 0.04).bevel(0, 16 - width, 16, width, beam, 0.04);
+        p.bevel(0, 0, width, 16, beam, 0.04).bevel(16 - width, 0, width, 16, beam, 0.04);
+        for (let i = width; i < 16 - width; i++) p.rect(i, i, 1, 1, shade(beam, 1.1)).rect(i + 1, i, 1, 1, shade(beam, 0.8));
+        p.px(accent, [0, 0], [15, 0], [0, 15], [15, 15]);
+        return p;
+    }
+    block('assembly_frame', () => frame(197, '#7c858f', 2, '#e0b33a'));
+    block('heavy_frame', () => {
+        const p = frame(198, '#4c535b', 3, '#c9352b');
+        hazard(p, 5, 0, 6, 2);
+        hazard(p, 5, 14, 6, 2);
+        return p;
+    });
+    // The crane beam: an I-beam with a rail under it and a hook trolley mark.
+    block('crane_beam', () => {
+        const p = new Painter(199);
+        p.bevel(0, 0, 16, 4, '#d9a62e', 0.04).bevel(0, 12, 16, 4, '#d9a62e', 0.04);
+        p.inset(0, 4, 16, 8, '#3a3f46', 0.03);
+        p.rect(0, 7, 16, 2, '#8c97a3');
+        p.px('#23262b', [2, 1], [6, 1], [10, 1], [14, 1], [2, 14], [6, 14], [10, 14], [14, 14]);
+        return p;
+    });
+    block('crane_beam_end', () => {
+        const p = new Painter(200);
+        p.inset(0, 0, 16, 16, '#3a3f46', 0.03);
+        p.bevel(0, 0, 16, 4, '#d9a62e', 0.04).bevel(0, 12, 16, 4, '#d9a62e', 0.04).bevel(6, 4, 4, 8, '#d9a62e', 0.04);
+        return p;
+    });
+    // The controllers: the workshop with an orange screen showing a body, the dock with a red one showing a power armor.
+    function workshopFront(on, figure, accent, seed) {
+        const p = casing(new Painter(seed), accent);
+        p.inset(2, 2, 12, 10, '#101418', 0.02);
+        p.grid(figure, {f: on ? '#37c6e8' : '#26323a', e: on ? '#5fbf3a' : '#26323a'}, 3, 3);
+        p.rect(3, 13, 4, 1, on ? '#5fbf3a' : '#3a2a2a').rect(9, 13, 4, 1, accent);
+        return p;
+    }
+    const BODY = ['....ff....', '....ff....', '..ffffff..', '.f.ffff.f.', '.f.ffff.f.', '...f..f...', '...f..f...', 'eeeeeeeeee'];
+    const ARMOR = ['...ffff...', '...feef...', '.ffffffff.', 'ff.ffff.ff', 'f..ffff..f', '..ff..ff..', '..ff..ff..', 'eeeeeeeeee'];
+    block('body_workshop_controller_front', () => workshopFront(false, BODY, '#f08a24', 201));
+    block('body_workshop_controller_front_on', () => workshopFront(true, BODY, '#f08a24', 201));
+    block('body_workshop_controller_side', () => casing(new Painter(202), '#f08a24'));
+    block('heavy_dock_controller_front', () => workshopFront(false, ARMOR, '#c9352b', 203));
+    block('heavy_dock_controller_front_on', () => workshopFront(true, ARMOR, '#c9352b', 203));
+    block('heavy_dock_controller_side', () => {
+        const p = casing(new Painter(204), '#c9352b');
+        hazard(p, 3, 6, 10, 4);
+        return p;
+    });
+    // Parts: the heavy actuator, the power frame, the three armor hulls and the manipulator's icon.
+    item('heavy_actuator', () => icon([
+        '................',
+        '..kkkk..........',
+        '.kSSSSk.........',
+        '.kSyySkkkkkkkk..',
+        '.kSyySmmmmmmmmk.',
+        '.kSSSSmMMMMMMmk.',
+        '..kkkkmmmmmmmmk.',
+        '.....kkkkkkkkkk.',
+        '.........kssk...',
+        '.........kssk...',
+        '........kSSSSk..',
+        '........kSyySk..',
+        '........kSyySk..',
+        '........kSSSSk..',
+        '.........kkkk...',
+        '................'], {k: '#1e2228', S: '#c3c8cd', s: '#8c97a3', y: '#e0b33a', m: '#59626c', M: '#8c97a3'}));
+    item('power_frame', () => icon([
+        '................',
+        '.....kkkkkk.....',
+        '.....kmmmmk.....',
+        '..kkkkmyymkkkk..',
+        '..kmmmmmmmmmmk..',
+        '..km.kmmmmk.mk..',
+        '..km.kmyymk.mk..',
+        '..kk.kmmmmk.kk..',
+        '.....kmmmmk.....',
+        '.....kmkkmk.....',
+        '.....kmkkmk.....',
+        '.....kmkkmk.....',
+        '....kkmkkmkk....',
+        '....kmmkkmmk....',
+        '....kkkkkkkk....',
+        '................'], {k: '#1e2228', m: '#7c858f', y: '#e0b33a'}));
+    function hull(seed, c, accent) {
+        return () => icon([
+            '................',
+            '....kkkkkkkk....',
+            '...kccccccccK...',
+            '..kccaaccaacck..',
+            '.kcccccccccccck.',
+            '.kcckkkkkkkkcck.',
+            '.kcck......kcck.',
+            '.kcck......kcck.',
+            '.kcck......kcck.',
+            '.kcckkkkkkkkcck.',
+            '.kccccccccccccK.',
+            '..kcccaaaacccK..',
+            '...kccccccccK...',
+            '....kkkkkkkk....',
+            '................',
+            '................'], {k: '#1e2228', K: '#14171b', c, a: accent});
+    }
+    item('combat_armor_hull', hull(205, '#6b737c', '#c9352b'));
+    item('mobile_armor_hull', hull(206, '#a7b0b8', '#37c6e8'));
+    item('worker_armor_hull', hull(207, '#d9a62e', '#23262b'));
+    item('manipulator', () => icon([
+        '................',
+        '.....kkkkkkkkk..',
+        '....kmyyyyyyyyk.',
+        '....kmkkkkkkkmk.',
+        '....kyk.....kmk.',
+        '....kyk.....kbk.',
+        '....kyk......k..',
+        '....kyk.........',
+        '....kyk.........',
+        '...kmmmk........',
+        '..kyyyyyk.......',
+        '..kyyyyyk.......',
+        '.kkkkkkkkk......',
+        '.kmmmmmmmk......',
+        '.kkkkkkkkk......',
+        '................'], {k: '#1e2228', m: '#4a4f56', y: '#d9a62e', b: '#9fd8ff'}));
+
     // The bucket of polluted water is the game's bucket with a liquid layer over it: blockbench/tools/polluted_bucket.js.
 
     /** Airlock door: a heavy steel door, the lower half with a hazard band and a locking wheel, the upper with a thick window. */

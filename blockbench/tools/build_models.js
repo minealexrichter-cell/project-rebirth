@@ -1987,7 +1987,7 @@
         Project.name = id;
         Project.model_identifier = id;
         Project.geckolib_modid = 'projectrebirth';
-        Project.geckolib_model_type = spec.weapon ? 'Item' : 'Entity';
+        Project.geckolib_model_type = spec.weapon ? 'Item' : spec.block ? 'Block' : 'Entity';
         Project.box_uv = true;
         Project.visible_box = spec.res === 128 ? [3.5, 4, 2] : [2, 3, 1.5];
 
@@ -2048,7 +2048,7 @@
         const size = spec.texRes || spec.res;
         source.width = source.height = size;
         source.getContext('2d').drawImage(data, 0, 0, size, size);
-        write(ASSETS + (spec.weapon ? 'textures/item/weapon/' : 'textures/entity/') + id + '.png', source);
+        write(ASSETS + (spec.weapon ? 'textures/item/weapon/' : spec.block ? 'textures/block/' : 'textures/entity/') + id + '.png', source);
         if (spec.wrecked) {
             write(ASSETS + 'textures/entity/' + id + '_wrecked.png', wreckedFrom(source, spec.seed + 1));
         }
@@ -3429,6 +3429,47 @@
             muzzle: [0, 4.5, -30],
             ejection: [-3.5, 5, 1]
         }, shotgunAnims), {res: 128});
+    })();
+
+    // ------------------------------------------------------------------ manipulator (1.7.0, block B)
+    // A robot arm of the multiblock workshops, a GeckoLib block: a round base on the floor, a turret that turns, an upright
+    // lower arm, a forearm reaching forward (-Z, toward the machine under assembly) and a welding head pointing down. The
+    // code turns the block to face the assembly zone; "work" swings the arm and shakes the head, "idle" sways the turret.
+    (() => {
+        const CASE = {c: '#d9a62e', n: 0.07, tp: [[1, 1, 2, 2, '#2a2d31']]};
+        const FRAME = {c: '#4a4f56', n: 0.08};
+        const DARK = {c: '#2a2d31', n: 0.06, edge: false};
+        const TIP = {c: '#9fd8ff', n: 0.02, edge: false};
+        SPECS.manipulator = {
+            res: 64, seed: 1701, block: true, noCoplanarFaces: true,
+            bones: [
+                {name: 'base', parent: undefined, pivot: [0, 0, 0], cubes: [
+                    C([-6, 0, -6], [12, 3, 12], Object.assign({}, FRAME, {tp: [[0, 0, 12, 1, '#d9a62e'], [0, 11, 12, 1, '#d9a62e']]})),
+                    C([-4, 2, -4], [8, 3, 8], DARK)]},
+                {name: 'turret', parent: 'base', pivot: [0, 4, 0], cubes: [
+                    C([-3.5, 4, -3.5], [7, 4, 7], CASE)]},
+                {name: 'lower_arm', parent: 'turret', pivot: [0, 7, 0], cubes: [
+                    C([-2.5, 6, -2], [5, 3, 4], FRAME),
+                    C([-1.5, 7, -1.5], [3, 10, 3], CASE)]},
+                {name: 'forearm', parent: 'lower_arm', pivot: [0, 16, 0], cubes: [
+                    C([-2, 15, -2], [4, 3, 4], FRAME),
+                    C([-1, 15.5, -11], [2, 2, 10], CASE)]},
+                {name: 'tool', parent: 'forearm', pivot: [0, 16.5, -10], cubes: [
+                    C([-1.5, 13, -11.5], [3, 3.5, 3], FRAME),
+                    C([-0.5, 11, -10.5], [1, 2.5, 1], TIP)]}
+            ],
+            animations: {
+                'animation.manipulator.idle': {length: 4, loop: 'loop', bones: {
+                    turret: {r: {'0.000': [0, 0, 0], '2.000': [0, 8, 0], '4.000': [0, 0, 0]}},
+                    lower_arm: {r: {'0.000': [-5, 0, 0], '2.000': [-8, 0, 0], '4.000': [-5, 0, 0]}}}},
+                'animation.manipulator.work': {length: 2, loop: 'loop', bones: {
+                    turret: {r: {'0.000': [0, -20, 0], '0.500': [0, 0, 0], '1.000': [0, 20, 0], '1.500': [0, 0, 0], '2.000': [0, -20, 0]}},
+                    lower_arm: {r: {'0.000': [-10, 0, 0], '0.500': [-25, 0, 0], '1.000': [-10, 0, 0], '1.500': [-25, 0, 0], '2.000': [-10, 0, 0]}},
+                    forearm: {r: {'0.000': [10, 0, 0], '0.500': [25, 0, 0], '1.000': [10, 0, 0], '1.500': [25, 0, 0], '2.000': [10, 0, 0]}},
+                    tool: {p: {'0.000': [0, 0, 0], '0.250': [0, -0.5, 0], '0.500': [0, 0, 0], '0.750': [0, -0.5, 0], '1.000': [0, 0, 0],
+                        '1.250': [0, -0.5, 0], '1.500': [0, 0, 0], '1.750': [0, -0.5, 0], '2.000': [0, 0, 0]}}}}
+            }
+        };
     })();
 
     window.RebirthModels = {build, save, SPECS, coplanarFaces};

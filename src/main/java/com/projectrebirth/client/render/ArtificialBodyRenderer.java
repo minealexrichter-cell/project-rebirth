@@ -24,6 +24,7 @@ public class ArtificialBodyRenderer extends GeoEntityRenderer<ArtificialBodyEnti
     @Override
     public void preRender(PoseStack poseStack, ArtificialBodyEntity animatable, BakedGeoModel model, MultiBufferSource bufferSource, VertexConsumer buffer,
                           boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        com.projectrebirth.client.multiblock.AssemblyPreview.apply(getGeoModel(), animatable);
         platingColor = UpgradeVisuals.applyToBody(getGeoModel(), animatable.registryAccess(), animatable.upgrades());
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }

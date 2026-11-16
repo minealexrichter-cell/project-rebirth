@@ -1,0 +1,14 @@
+{
+  "bones": {
+    "torso": 1,
+    "right_leg": 1,
+    "left_leg": 1,
+    "right_shin": 2,
+    "left_shin": 2,
+    "right_arm": 2,
+    "left_arm": 2,
+    "tail": 2,
+    "head": 3,
+    "chest_door": 4
+  }
+}

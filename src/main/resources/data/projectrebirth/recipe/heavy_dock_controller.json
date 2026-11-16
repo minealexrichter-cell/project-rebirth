@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_workstation",
+  "sort": 107,
+  "time": 600,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 4
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:heavy_dock_controller",
+    "count": 1
+  }
+}

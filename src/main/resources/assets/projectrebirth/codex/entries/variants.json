@@ -12,12 +12,12 @@
     },
     {
       "type": "recipe",
-      "value": "projectrebirth:mobile_power_armor",
+      "value": "projectrebirth:dock_mobile_power_armor",
       "text": "codex.projectrebirth.variants.p2"
     },
     {
       "type": "recipe",
-      "value": "projectrebirth:worker_power_armor",
+      "value": "projectrebirth:dock_worker_power_armor",
       "text": "codex.projectrebirth.variants.p3"
     }
   ]

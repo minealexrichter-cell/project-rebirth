@@ -1,14 +1,33 @@
 {
   "type": "projectrebirth:fabrication",
   "station": "assembly_station",
+  "classic": true,
   "sort": 70,
   "time": 600,
   "ingredients": [
-    { "item": "projectrebirth:advanced_synthetic_body", "count": 1 },
-    { "tag": "c:ingots/titanium", "count": 4 },
-    { "item": "projectrebirth:processor", "count": 2 },
-    { "item": "projectrebirth:power_cell", "count": 1 },
-    { "item": "projectrebirth:synthetic_fiber", "count": 4 }
+    {
+      "item": "projectrebirth:advanced_synthetic_body",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:synthetic_fiber",
+      "count": 4
+    }
   ],
-  "result": { "id": "projectrebirth:hightech_synthetic_body", "count": 1 }
+  "result": {
+    "id": "projectrebirth:hightech_synthetic_body",
+    "count": 1
+  }
 }

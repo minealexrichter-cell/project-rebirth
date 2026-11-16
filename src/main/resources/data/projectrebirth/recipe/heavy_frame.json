@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "TIT",
+    "I I",
+    "TIT"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "T": {
+      "tag": "c:ingots/titanium"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:heavy_frame",
+    "count": 6
+  }
+}

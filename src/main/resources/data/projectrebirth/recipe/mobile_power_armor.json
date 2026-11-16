@@ -1,14 +1,33 @@
 {
   "type": "projectrebirth:fabrication",
   "station": "armor_workstation",
+  "classic": true,
   "sort": 21,
   "time": 1200,
   "ingredients": [
-    { "item": "projectrebirth:armor_plate", "count": 4 },
-    { "item": "projectrebirth:actuator", "count": 6 },
-    { "item": "projectrebirth:processor", "count": 1 },
-    { "item": "projectrebirth:power_cell", "count": 2 },
-    { "item": "projectrebirth:aluminum_ingot", "count": 8 }
+    {
+      "item": "projectrebirth:armor_plate",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:aluminum_ingot",
+      "count": 8
+    }
   ],
-  "result": { "id": "projectrebirth:mobile_power_armor", "count": 1 }
+  "result": {
+    "id": "projectrebirth:mobile_power_armor",
+    "count": 1
+  }
 }

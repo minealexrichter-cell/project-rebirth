@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_workstation",
+  "sort": 103,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "minecraft:iron_block",
+      "count": 2
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:power_frame",
+    "count": 1
+  }
+}

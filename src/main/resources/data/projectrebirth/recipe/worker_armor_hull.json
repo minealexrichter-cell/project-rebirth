@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_workstation",
+  "sort": 106,
+  "time": 400,
+  "ingredients": [
+    {
+      "item": "projectrebirth:armor_plate",
+      "count": 4
+    },
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "minecraft:diamond",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:worker_armor_hull",
+    "count": 1
+  }
+}

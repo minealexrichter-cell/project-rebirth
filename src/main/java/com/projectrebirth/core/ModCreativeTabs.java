@@ -92,6 +92,21 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.weather.WeatherRegistry.LONG_RANGE_MODULE.get());
                 output.accept(com.projectrebirth.monitoring.MonitoringRegistry.MONITORING_STATION_ITEM.get());
                 output.accept(com.projectrebirth.scouting.Scouting.FIELD_ANALYZER.get());
+                // 1.7.0: the multiblocks and their parts
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.WORKSHOP_CONTROLLER_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.DOCK_CONTROLLER_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.ASSEMBLY_PLATE_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.ASSEMBLY_FRAME_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.HEAVY_FRAME_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.CRANE_BEAM_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.MANIPULATOR_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.ENERGY_PORT_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.CARGO_PORT_ITEM.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.HEAVY_ACTUATOR.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.POWER_FRAME.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.COMBAT_ARMOR_HULL.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.MOBILE_ARMOR_HULL.get());
+                output.accept(com.projectrebirth.multiblock.MultiblockRegistry.WORKER_ARMOR_HULL.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.BACKUP_BATTERY_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.SHELTER_CONTROL_PANEL_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.DECONTAMINATION_CHAMBER_ITEM.get());

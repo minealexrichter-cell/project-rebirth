@@ -44,7 +44,7 @@ public final class TechRecipes {
     /** The station's recipes in display order. Recipes are synced to clients, so both sides get the same list. */
     public static List<RecipeHolder<FabricationRecipe>> recipesFor(Level level, Station station) {
         return level.getRecipeManager().getAllRecipesFor(FABRICATION.get()).stream()
-                .filter(holder -> holder.value().station() == station)
+                .filter(holder -> holder.value().station() == station && holder.value().available())
                 .sorted(Comparator.comparingInt((RecipeHolder<FabricationRecipe> holder) -> holder.value().sort())
                         .thenComparing(holder -> holder.id().toString()))
                 .toList();

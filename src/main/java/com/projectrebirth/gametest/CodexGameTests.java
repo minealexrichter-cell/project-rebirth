@@ -27,7 +27,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public class CodexGameTests {
     private static final String TEMPLATE = "floor_5x5";
-    private static final Set<String> TYPES = Set.of("text", "item", "block", "entity", "recipe", "note");
+    private static final Set<String> TYPES = Set.of("text", "item", "block", "entity", "recipe", "note", "multiblock");
 
     private static JsonObject lang(String name) {
         InputStream stream = CodexGameTests.class.getResourceAsStream("/assets/" + ProjectRebirth.MOD_ID + "/lang/" + name + ".json");
@@ -81,6 +81,8 @@ public class CodexGameTests {
                     case "entity" -> helper.assertTrue(EntityType.byString(value).isPresent(), where + "entity " + value);
                     case "recipe" -> helper.assertTrue(helper.getLevel().getRecipeManager().byKey(ResourceLocation.parse(value)).isPresent(),
                             where + "recipe " + value);
+                    case "multiblock" -> helper.assertTrue(com.projectrebirth.multiblock.MultiblockRegistry.schema(helper.getLevel().registryAccess(),
+                            ResourceLocation.parse(value)) != null, where + "multiblock " + value);
                     default -> helper.assertTrue(page.text() != null, where + "a text page has text");
                 }
             }

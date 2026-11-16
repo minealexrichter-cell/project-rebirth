@@ -132,6 +132,21 @@ root
 | Аккумулятор | `battery.json`, `battery_on.json` | сторона `front` — выход энергии, должна быть хорошо видна; вверх и вниз та же модель повёрнута состоянием блока |
 | Энергокабель | `cable_core.json` (центр 6..10), `cable_arm.json` (отвод на север 6..10 × 6..10 × 0..6) | отвод поворачивается кодом состояния блока для всех 6 сторон; модель толщиной 4 px, форма столкновения 6 px (5..11) |
 | Руды | `<металл>_ore.json`, `deepslate_<металл>_ore.json` | `cube_all` |
+| Манипулятор (1.7.0) | GeckoLib: `geo/block/manipulator.geo.json`, `animations/block/manipulator.animation.json`, `textures/block/manipulator.png`; неподвижная копия `models/block/manipulator.json` (для схем, голограммы, частиц) | лицом на север (−Z), рука тянется вперёд к изделию; кости `base` > `turret` > `lower_arm` > `forearm` > `tool`; анимации `animation.manipulator.idle` (поворот башни) и `animation.manipulator.work` (качание руки, дрожь головки); блок сам поворачивается к зоне сборки |
+| Плита, рамы, балка, контроллеры цеха и дока (1.7.0) | `assembly_plate`, `assembly_frame`, `heavy_frame` (`cube_all`, рамы — `render_type: cutout`, сквозные), `crane_beam` (торцы на север и юг), `body_workshop_controller(_on)`, `heavy_dock_controller(_on)` (`orientable`, лицо на север) | |
+
+### Изделие в зоне сборки (1.7.0)
+
+Контроллер цеха или дока рисует в зоне модель того, что собирается (тело или броня), и прячет кости, чей этап ещё не наступил. Номер этапа модели задан в рецепте (`model_stage` у этапа), а какая кость с какого этапа видна — в `assets/projectrebirth/assembly_stages/<модель>.json` (для тела — путь сущности, например `basic_robot_body`; для брони — `power_armor`, `mobile_power_armor`, `worker_power_armor`), иначе `default.json`:
+
+| Кость | С этапа |
+|---|---|
+| `torso`, `right_leg`, `left_leg` | 1 (каркас) |
+| `right_shin`, `left_shin`, `right_arm`, `left_arm`, `tail` | 2 (приводы) |
+| `head` | 3 (электроника) |
+| `chest_door` | 4 (обшивка) |
+
+Кости, которых нет в списке, видны всегда (вместе с родителем). Новые кости в моделях тел и брони для этого не нужны; если владелец захочет показывать отдельные детали (например, броневые пластины), достаточно назвать их кости и добавить в этот файл.
 
 ## 4. Предметы
 

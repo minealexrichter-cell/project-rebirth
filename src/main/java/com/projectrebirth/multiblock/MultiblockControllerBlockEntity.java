@@ -116,6 +116,15 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     private MultiblockSchema.Check check;
     private final List<BlockPos> linked = new ArrayList<>();
     private int state = STATE_NO_PLAN;
+    /** Block B: the manipulators of the construction, and whether they were last set working. */
+    private final List<BlockPos> manipulators = new ArrayList<>();
+    private boolean manipulatorsWorking;
+    /** What the clients last heard of the machine under assembly: its result and the stage of its model (-1: none). */
+    private ItemStack shownResult = ItemStack.EMPTY;
+    private int shownStage = -1;
+    /** On the client: the machine under assembly as the server told it. */
+    private ItemStack previewResult = ItemStack.EMPTY;
+    private int previewStage = -1;
 
     private final ContainerData data = new ContainerData() {
         @Override
@@ -190,7 +199,26 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         if (schemaId != null) {
             tag.putString("schema", schemaId.toString());
         }
+        tag.putInt("preview_stage", shownStage);
+        if (!shownResult.isEmpty()) {
+            tag.put("preview_result", shownResult.save(registries));
+        }
         return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        if (tag.contains("schema")) {
+            schemaId = ResourceLocation.tryParse(tag.getString("schema"));
+        }
+        previewStage = tag.contains("preview_stage") ? tag.getInt("preview_stage") : -1;
+        previewResult = tag.contains("preview_result") ? ItemStack.parseOptional(registries, tag.getCompound("preview_result")) : ItemStack.EMPTY;
+    }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.Connection connection, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket packet,
+                             HolderLookup.Provider registries) {
+        handleUpdateTag(packet.getTag(), registries);
     }
 
     @Override
@@ -327,6 +355,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             ports.addAll(check.cargoPorts());
         }
         relink(ports);
+        findManipulators(schema);
         if (level instanceof ServerLevel server) {
             MultiblockTracker.track(server, worldPosition, check.bounds());
             for (ServerPlayer player : server.players()) {
@@ -336,6 +365,83 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             }
         }
         return check;
+    }
+
+    /** The manipulators inside a whole construction, each turned to face the machine under assembly. */
+    private void findManipulators(MultiblockSchema schema) {
+        manipulators.clear();
+        manipulatorsWorking = false;
+        if (level == null || check == null || !check.complete()) {
+            return;
+        }
+        net.minecraft.world.phys.Vec3 target = schema.displayPoint(worldPosition, facing());
+        BoundingBox box = check.bounds();
+        for (BlockPos pos : BlockPos.betweenClosed(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ())) {
+            BlockState found = level.getBlockState(pos);
+            if (found.getBlock() instanceof ManipulatorBlock) {
+                double dx = target.x - (pos.getX() + 0.5), dz = target.z - (pos.getZ() + 0.5);
+                Direction toward = Direction.getNearest(dx, 0, dz);
+                BlockState turned = found.setValue(HorizontalDirectionalBlock.FACING, toward.getAxis().isHorizontal() ? toward : found.getValue(HorizontalDirectionalBlock.FACING))
+                        .setValue(TechSounds.WORKING, false);
+                if (turned != found) {
+                    level.setBlock(pos, turned, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+                manipulators.add(pos.immutable());
+            }
+        }
+    }
+
+    private void setManipulatorsWorking(boolean working) {
+        if (working == manipulatorsWorking || level == null) {
+            return;
+        }
+        manipulatorsWorking = working;
+        for (BlockPos pos : manipulators) {
+            BlockState found = level.getBlockState(pos);
+            if (found.getBlock() instanceof ManipulatorBlock && found.getValue(TechSounds.WORKING) != working) {
+                level.setBlock(pos, found.setValue(TechSounds.WORKING, working), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
+        }
+    }
+
+    /** Tells the clients what stands in the zone when that changes (the start, a new stage, the end). */
+    private void syncPreview() {
+        AssemblyRecipe recipe = stage >= 0 ? recipe(running) : null;
+        ItemStack result = recipe == null ? ItemStack.EMPTY : recipe.result();
+        int modelStage = recipe == null ? -1 : recipe.stages().get(stage).modelStage();
+        if (modelStage != shownStage || !ItemStack.isSameItem(result, shownResult)) {
+            shownStage = modelStage;
+            shownResult = result.copy();
+            if (level != null) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
+        }
+    }
+
+    /** On the client: the result of the recipe under assembly, or empty. */
+    public ItemStack previewResult() {
+        return previewResult;
+    }
+
+    /** On the client: the stage of the model under assembly (-1: nothing in the zone). */
+    public int previewStage() {
+        return previewStage;
+    }
+
+    /** A stage begins: its sound at the machine. */
+    private void stageSound(AssemblyRecipe.Stage begun) {
+        if (level == null) {
+            return;
+        }
+        net.minecraft.sounds.SoundEvent sound = switch (begun.name()) {
+            case "frame" -> net.minecraft.sounds.SoundEvents.SMITHING_TABLE_USE;
+            case "actuators" -> net.minecraft.sounds.SoundEvents.PISTON_EXTEND;
+            case "electronics" -> net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT;
+            case "plating" -> net.minecraft.sounds.SoundEvents.ANVIL_USE;
+            case "ai_core" -> net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE;
+            default -> net.minecraft.sounds.SoundEvents.NOTE_BLOCK_CHIME.value();
+        };
+        level.playSound(null, worldPosition, sound, net.minecraft.sounds.SoundSource.BLOCKS, 0.8f, 1.0f);
     }
 
     private void relink(List<BlockPos> ports) {
@@ -370,6 +476,8 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         }
         state = work();
         TechSounds.setWorking(this, state == STATE_WORKING);
+        setManipulatorsWorking(state == STATE_WORKING);
+        syncPreview();
     }
 
     private int work() {
@@ -406,6 +514,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
                 return STATE_MATERIALS;
             }
             consumed.addAll(next.consume(materialsLive()));
+            stageSound(next);
             stage++;
             ticks = 0;
             setChanged();
@@ -437,6 +546,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         }
         consumed.clear();
         consumed.addAll(first.consume(materialsLive()));
+        stageSound(first);
         running = selected;
         stage = 0;
         ticks = 0;
@@ -625,6 +735,16 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     }
 
     /** The bounds of the construction as last seen; the controller alone before the first look. */
+    public net.minecraft.world.phys.AABB renderBounds() {
+        MultiblockSchema schema = schema();
+        if (schema == null) {
+            return new net.minecraft.world.phys.AABB(worldPosition);
+        }
+        int reach = Math.max(schema.width(), Math.max(schema.depth(), schema.height()));
+        return new net.minecraft.world.phys.AABB(worldPosition).inflate(reach);
+    }
+
+
     public BoundingBox bounds() {
         return check == null ? new BoundingBox(worldPosition) : check.bounds();
     }

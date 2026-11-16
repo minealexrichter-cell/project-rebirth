@@ -1,0 +1,62 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:body_workshop",
+  "sort": 2,
+  "input": {
+    "item": "projectrebirth:improved_robot_body"
+  },
+  "keep": "upgrades",
+  "stages": [
+    {
+      "name": "actuators",
+      "materials": [
+        {
+          "item": "projectrebirth:actuator",
+          "count": 2
+        }
+      ],
+      "time": 120,
+      "energy": 40,
+      "model_stage": 2
+    },
+    {
+      "name": "electronics",
+      "materials": [
+        {
+          "item": "projectrebirth:processor",
+          "count": 1
+        },
+        {
+          "tag": "c:ingots/silver",
+          "count": 2
+        }
+      ],
+      "time": 120,
+      "energy": 40,
+      "model_stage": 3
+    },
+    {
+      "name": "plating",
+      "materials": [
+        {
+          "item": "projectrebirth:synthetic_fiber",
+          "count": 4
+        }
+      ],
+      "time": 160,
+      "energy": 40,
+      "model_stage": 4
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 100,
+      "energy": 40,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:advanced_synthetic_body",
+    "count": 1
+  }
+}

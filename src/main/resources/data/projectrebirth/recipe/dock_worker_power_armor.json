@@ -1,0 +1,70 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:heavy_dock",
+  "sort": 2,
+  "stages": [
+    {
+      "name": "frame",
+      "materials": [
+        {
+          "item": "projectrebirth:power_frame",
+          "count": 1
+        }
+      ],
+      "time": 160,
+      "energy": 120,
+      "model_stage": 1
+    },
+    {
+      "name": "actuators",
+      "materials": [
+        {
+          "item": "projectrebirth:heavy_actuator",
+          "count": 2
+        }
+      ],
+      "time": 160,
+      "energy": 120,
+      "model_stage": 2
+    },
+    {
+      "name": "electronics",
+      "materials": [
+        {
+          "item": "projectrebirth:processor",
+          "count": 1
+        },
+        {
+          "item": "projectrebirth:power_cell",
+          "count": 2
+        }
+      ],
+      "time": 160,
+      "energy": 120,
+      "model_stage": 3
+    },
+    {
+      "name": "plating",
+      "materials": [
+        {
+          "item": "projectrebirth:worker_armor_hull",
+          "count": 1
+        }
+      ],
+      "time": 240,
+      "energy": 120,
+      "model_stage": 4
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 120,
+      "energy": 120,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:worker_power_armor",
+    "count": 1
+  }
+}

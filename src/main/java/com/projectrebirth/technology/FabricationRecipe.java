@@ -24,7 +24,7 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
  * A recipe made at a production station: up to six ingredients with counts, in any input slots, one result and
  * a base time in ticks. {@code sort} orders the recipes in the station's list.
  */
-public record FabricationRecipe(Station station, List<SizedIngredient> ingredients, ItemStack result, int time, int sort)
+public record FabricationRecipe(Station station, List<SizedIngredient> ingredients, ItemStack result, int time, int sort, boolean classic)
         implements Recipe<FabricationInput> {
     public static final int MAX_INGREDIENTS = 6;
 
@@ -34,7 +34,8 @@ public record FabricationRecipe(Station station, List<SizedIngredient> ingredien
                     .forGetter(FabricationRecipe::ingredients),
             ItemStack.STRICT_CODEC.fieldOf("result").forGetter(FabricationRecipe::result),
             ExtraCodecs.POSITIVE_INT.fieldOf("time").forGetter(FabricationRecipe::time),
-            Codec.INT.optionalFieldOf("sort", 0).forGetter(FabricationRecipe::sort)
+            Codec.INT.optionalFieldOf("sort", 0).forGetter(FabricationRecipe::sort),
+            Codec.BOOL.optionalFieldOf("classic", false).forGetter(FabricationRecipe::classic)
     ).apply(instance, FabricationRecipe::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, FabricationRecipe> STREAM_CODEC = StreamCodec.composite(
@@ -43,7 +44,16 @@ public record FabricationRecipe(Station station, List<SizedIngredient> ingredien
             ItemStack.STREAM_CODEC, FabricationRecipe::result,
             ByteBufCodecs.VAR_INT, FabricationRecipe::time,
             ByteBufCodecs.VAR_INT, FabricationRecipe::sort,
+            ByteBufCodecs.BOOL, FabricationRecipe::classic,
             FabricationRecipe::new);
+
+    /**
+     * 1.7.0, block B: a classic recipe (a synthetic body, a power armor) is made at its station only while the multiblocks are
+     * switched off; with them on, those things are built in the body workshop and the heavy dock.
+     */
+    public boolean available() {
+        return !classic || !com.projectrebirth.multiblock.MultiblockRegistry.enabled();
+    }
 
     private static DataResult<List<SizedIngredient>> checkSize(List<SizedIngredient> list) {
         return list.isEmpty() || list.size() > MAX_INGREDIENTS

@@ -1,15 +1,37 @@
 {
   "type": "projectrebirth:fabrication",
   "station": "assembly_station",
+  "classic": true,
   "sort": 80,
   "time": 800,
   "ingredients": [
-    { "item": "projectrebirth:hightech_synthetic_body", "count": 1 },
-    { "tag": "c:ingots/titanium", "count": 6 },
-    { "item": "projectrebirth:processor", "count": 3 },
-    { "item": "projectrebirth:power_cell", "count": 2 },
-    { "item": "minecraft:netherite_ingot", "count": 1 },
-    { "item": "minecraft:echo_shard", "count": 2 }
+    {
+      "item": "projectrebirth:hightech_synthetic_body",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/titanium",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 3
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    },
+    {
+      "item": "minecraft:netherite_ingot",
+      "count": 1
+    },
+    {
+      "item": "minecraft:echo_shard",
+      "count": 2
+    }
   ],
-  "result": { "id": "projectrebirth:premium_synthetic_body", "count": 1 }
+  "result": {
+    "id": "projectrebirth:premium_synthetic_body",
+    "count": 1
+  }
 }

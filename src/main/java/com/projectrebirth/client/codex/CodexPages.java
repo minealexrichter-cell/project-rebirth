@@ -337,6 +337,27 @@ final class CodexPages {
             graphics.drawString(font, time, gridX + 60, y + 50, 0xFF7A6248, false);
             return;
         }
+        if (recipe instanceof com.projectrebirth.multiblock.AssemblyRecipe assembly) {
+            // 1.7.0: a multiblock assembly: its controller, the item it starts from and the materials of all stages together
+            ItemStack controller = CodexScreen.stackOf(assembly.multiblock().getNamespace() + ":" + assembly.multiblock().getPath() + "_controller");
+            graphics.renderItem(controller, gridX, y + 1);
+            label(graphics, font, controller.getHoverName(), gridX + 20, y + 5, x + width - gridX - 20);
+            List<ItemStack> parts = new java.util.ArrayList<>();
+            assembly.input().ifPresent(input -> parts.add(cycle(input)));
+            for (com.projectrebirth.multiblock.AssemblyRecipe.Stage stage : assembly.stages()) {
+                for (SizedIngredient material : stage.materials()) {
+                    parts.add(cycle(material.ingredient()).copyWithCount(material.count()));
+                }
+            }
+            for (int i = 0; i < Math.min(9, parts.size()); i++) {
+                slot(screen, graphics, font, parts.get(i), gridX + (i % 3) * 18, y + 20 + (i / 3) * 18, mouseX, mouseY);
+            }
+            graphics.blit(CodexScreen.ATLAS, gridX + 60, y + 29, 24, 128, 22, 15);
+            slot(screen, graphics, font, result, gridX + 88, y + 28, mouseX, mouseY);
+            Component time = Component.translatable("codex.projectrebirth.recipe_time", assembly.totalTime() / 20);
+            graphics.drawString(font, time, gridX + 60, y + 50, 0xFF7A6248, false);
+            return;
+        }
         List<Ingredient> ingredients = recipe.getIngredients();
         int columns = recipe instanceof ShapedRecipe shaped ? shaped.getWidth() : 3;
         // where it is made: a crafting table, or a furnace for smelting

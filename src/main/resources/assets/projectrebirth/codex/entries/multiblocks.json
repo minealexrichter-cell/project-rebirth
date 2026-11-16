@@ -1,0 +1,50 @@
+{
+  "icon": "projectrebirth:energy_port",
+  "x": 0,
+  "y": 0,
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.multiblocks.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.multiblocks.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:energy_port",
+      "text": "codex.projectrebirth.multiblocks.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:cargo_port",
+      "text": "codex.projectrebirth.multiblocks.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:assembly_plate",
+      "text": "codex.projectrebirth.multiblocks.p5"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:assembly_frame",
+      "text": "codex.projectrebirth.multiblocks.p6"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:heavy_frame",
+      "text": "codex.projectrebirth.multiblocks.p7"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:crane_beam",
+      "text": "codex.projectrebirth.multiblocks.p8"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:manipulator",
+      "text": "codex.projectrebirth.multiblocks.p9"
+    }
+  ]
+}

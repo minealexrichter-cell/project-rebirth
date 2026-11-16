@@ -118,6 +118,15 @@
         "backup_battery",
         "shelter_panel"
       ]
+    },
+    {
+      "id": "garrison",
+      "icon": "projectrebirth:body_workshop_controller",
+      "entries": [
+        "multiblocks",
+        "body_workshop",
+        "heavy_dock"
+      ]
     }
   ]
 }

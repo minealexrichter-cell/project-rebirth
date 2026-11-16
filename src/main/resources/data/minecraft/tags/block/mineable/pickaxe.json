@@ -67,6 +67,13 @@
     "projectrebirth:monitoring_station",
     "projectrebirth:multiblock_controller",
     "projectrebirth:energy_port",
-    "projectrebirth:cargo_port"
+    "projectrebirth:cargo_port",
+    "projectrebirth:assembly_plate",
+    "projectrebirth:assembly_frame",
+    "projectrebirth:heavy_frame",
+    "projectrebirth:crane_beam",
+    "projectrebirth:manipulator",
+    "projectrebirth:body_workshop_controller",
+    "projectrebirth:heavy_dock_controller"
   ]
 }

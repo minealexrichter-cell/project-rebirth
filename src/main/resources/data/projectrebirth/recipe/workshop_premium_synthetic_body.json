@@ -1,0 +1,58 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:body_workshop",
+  "sort": 4,
+  "input": {
+    "item": "projectrebirth:hightech_synthetic_body"
+  },
+  "keep": "upgrades",
+  "stages": [
+    {
+      "name": "frame",
+      "materials": [
+        {
+          "tag": "c:ingots/titanium",
+          "count": 6
+        },
+        {
+          "item": "minecraft:netherite_ingot",
+          "count": 1
+        }
+      ],
+      "time": 200,
+      "energy": 40,
+      "model_stage": 1
+    },
+    {
+      "name": "electronics",
+      "materials": [
+        {
+          "item": "projectrebirth:processor",
+          "count": 3
+        },
+        {
+          "item": "projectrebirth:power_cell",
+          "count": 2
+        },
+        {
+          "item": "minecraft:echo_shard",
+          "count": 2
+        }
+      ],
+      "time": 240,
+      "energy": 40,
+      "model_stage": 3
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 160,
+      "energy": 40,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:premium_synthetic_body",
+    "count": 1
+  }
+}

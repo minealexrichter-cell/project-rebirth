@@ -38,8 +38,9 @@ import net.neoforged.neoforge.gametest.GameTestHooks;
  * @param layers   the layers from the bottom up
  * @param key      what each key stands for
  * @param testOnly a plan of the automated tests: it exists only while game tests are enabled (never in a released game)
+ * @param display  the cell (column, layer, row) where the machine under assembly stands (block B); the middle of the zone without it
  */
-public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key, boolean testOnly) {
+public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key, boolean testOnly, Optional<List<Integer>> display) {
     /**
      * What a cell of the plan takes.
      *
@@ -110,7 +111,8 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
     public static final Codec<MultiblockSchema> CODEC = RecordCodecBuilder.<MultiblockSchema>create(i -> i.group(
             Codec.STRING.listOf().listOf().fieldOf("layers").forGetter(MultiblockSchema::layers),
             Codec.unboundedMap(Codec.STRING, Cell.CODEC).fieldOf("key").forGetter(MultiblockSchema::key),
-            Codec.BOOL.optionalFieldOf("test_only", false).forGetter(MultiblockSchema::testOnly)).apply(i, MultiblockSchema::new))
+            Codec.BOOL.optionalFieldOf("test_only", false).forGetter(MultiblockSchema::testOnly),
+            Codec.INT.listOf().optionalFieldOf("display").forGetter(MultiblockSchema::display)).apply(i, MultiblockSchema::new))
             .validate(MultiblockSchema::validate);
 
     private static DataResult<MultiblockSchema> validate(MultiblockSchema schema) {
@@ -236,6 +238,34 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
             }
         }
         return new Check(problems.isEmpty(), problems, energy, cargo, zone, bounds == null ? new BoundingBox(controller) : bounds);
+    }
+
+    /**
+     * Where the machine under assembly stands: the bottom middle of the display cell (or of the lowest cells of the zone), in the
+     * world, for a controller at that place facing that way.
+     */
+    public net.minecraft.world.phys.Vec3 displayPoint(BlockPos controller, Direction facing) {
+        if (display.isPresent() && display.get().size() == 3) {
+            BlockPos pos = worldPos(controller, facing, display.get().get(0), display.get().get(1), display.get().get(2));
+            return net.minecraft.world.phys.Vec3.atBottomCenterOf(pos);
+        }
+        double x = 0, z = 0;
+        int n = 0, low = Integer.MAX_VALUE;
+        for (int y = 0; y < height() && n == 0; y++) {
+            for (int r = 0; r < depth(); r++) {
+                for (int c = 0; c < width(); c++) {
+                    Cell cell = cell(y, r, c);
+                    if (cell != null && cell.zone()) {
+                        BlockPos pos = worldPos(controller, facing, c, y, r);
+                        x += pos.getX() + 0.5;
+                        z += pos.getZ() + 0.5;
+                        low = Math.min(low, pos.getY());
+                        n++;
+                    }
+                }
+            }
+        }
+        return n == 0 ? net.minecraft.world.phys.Vec3.atBottomCenterOf(controller) : new net.minecraft.world.phys.Vec3(x / n, low, z / n);
     }
 
     /** A block of the construction on the land of a faction its owner is not in. */

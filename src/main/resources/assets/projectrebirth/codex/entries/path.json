@@ -19,8 +19,12 @@
       "text": "codex.projectrebirth.path.p3"
     },
     {
-      "type": "note",
+      "type": "text",
       "text": "codex.projectrebirth.path.p4"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.path.p5"
     }
   ]
 }

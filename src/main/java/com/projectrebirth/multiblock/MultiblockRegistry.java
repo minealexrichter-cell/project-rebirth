@@ -77,9 +77,48 @@ public final class MultiblockRegistry {
     public static final DeferredItem<BlockItem> ENERGY_PORT_ITEM = ITEMS.registerSimpleBlockItem(ENERGY_PORT);
     public static final DeferredItem<BlockItem> CARGO_PORT_ITEM = ITEMS.registerSimpleBlockItem(CARGO_PORT);
 
+    // ---------------------------------------------------------------- block B: the body workshop and the heavy dock
+    public static final ResourceLocation BODY_WORKSHOP = ProjectRebirth.id("body_workshop");
+    public static final ResourceLocation HEAVY_DOCK = ProjectRebirth.id("heavy_dock");
+
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> ASSEMBLY_PLATE = BLOCKS.registerSimpleBlock("assembly_plate", machine());
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> ASSEMBLY_FRAME = BLOCKS.register("assembly_frame",
+            () -> new net.minecraft.world.level.block.Block(machine().noOcclusion()));
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> HEAVY_FRAME = BLOCKS.register("heavy_frame",
+            () -> new net.minecraft.world.level.block.Block(machine().strength(5.0f, 9.0f).noOcclusion()));
+    public static final DeferredBlock<net.minecraft.world.level.block.Block> CRANE_BEAM = BLOCKS.register("crane_beam",
+            () -> new net.minecraft.world.level.block.Block(machine().noOcclusion()));
+    public static final DeferredBlock<ManipulatorBlock> MANIPULATOR = BLOCKS.register("manipulator", () -> new ManipulatorBlock(machine().noOcclusion()));
+    public static final DeferredBlock<MultiblockControllerBlock> WORKSHOP_CONTROLLER = BLOCKS.register("body_workshop_controller",
+            () -> new MultiblockControllerBlock(BODY_WORKSHOP, machine().lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 10 : 0)));
+    public static final DeferredBlock<MultiblockControllerBlock> DOCK_CONTROLLER = BLOCKS.register("heavy_dock_controller",
+            () -> new MultiblockControllerBlock(HEAVY_DOCK, machine().lightLevel(state -> state.getValue(com.projectrebirth.technology.TechSounds.WORKING) ? 10 : 0)));
+    public static final DeferredItem<BlockItem> ASSEMBLY_PLATE_ITEM = ITEMS.registerSimpleBlockItem(ASSEMBLY_PLATE);
+    public static final DeferredItem<BlockItem> ASSEMBLY_FRAME_ITEM = ITEMS.registerSimpleBlockItem(ASSEMBLY_FRAME);
+    public static final DeferredItem<BlockItem> HEAVY_FRAME_ITEM = ITEMS.registerSimpleBlockItem(HEAVY_FRAME);
+    public static final DeferredItem<BlockItem> CRANE_BEAM_ITEM = ITEMS.registerSimpleBlockItem(CRANE_BEAM);
+    public static final DeferredItem<BlockItem> MANIPULATOR_ITEM = ITEMS.registerSimpleBlockItem(MANIPULATOR);
+    public static final DeferredItem<BlockItem> WORKSHOP_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(WORKSHOP_CONTROLLER);
+    public static final DeferredItem<BlockItem> DOCK_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(DOCK_CONTROLLER);
+
+    /** The new parts: the heavy actuator (assembly station), the power frame and the armor hulls (armor workstation). */
+    public static final DeferredItem<net.minecraft.world.item.Item> HEAVY_ACTUATOR = ITEMS.registerSimpleItem("heavy_actuator");
+    public static final DeferredItem<net.minecraft.world.item.Item> POWER_FRAME = ITEMS.registerSimpleItem("power_frame",
+            new net.minecraft.world.item.Item.Properties().stacksTo(16));
+    public static final DeferredItem<net.minecraft.world.item.Item> COMBAT_ARMOR_HULL = ITEMS.registerSimpleItem("combat_armor_hull",
+            new net.minecraft.world.item.Item.Properties().stacksTo(1));
+    public static final DeferredItem<net.minecraft.world.item.Item> MOBILE_ARMOR_HULL = ITEMS.registerSimpleItem("mobile_armor_hull",
+            new net.minecraft.world.item.Item.Properties().stacksTo(1));
+    public static final DeferredItem<net.minecraft.world.item.Item> WORKER_ARMOR_HULL = ITEMS.registerSimpleItem("worker_armor_hull",
+            new net.minecraft.world.item.Item.Properties().stacksTo(1));
+
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MultiblockControllerBlockEntity>> CONTROLLER_ENTITY =
-            BLOCK_ENTITIES.register("multiblock_controller", () -> BlockEntityType.Builder.of(MultiblockControllerBlockEntity::new, CONTROLLER.get()).build(null));
+            BLOCK_ENTITIES.register("multiblock_controller", () -> BlockEntityType.Builder.of(MultiblockControllerBlockEntity::new, CONTROLLER.get(),
+                    WORKSHOP_CONTROLLER.get(), DOCK_CONTROLLER.get()).build(null));
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ManipulatorBlockEntity>> MANIPULATOR_ENTITY =
+            BLOCK_ENTITIES.register("manipulator", () -> BlockEntityType.Builder.of(ManipulatorBlockEntity::new, MANIPULATOR.get()).build(null));
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PortBlockEntity>> PORT_ENTITY =
             BLOCK_ENTITIES.register("multiblock_port", () -> BlockEntityType.Builder.of(PortBlockEntity::new, ENERGY_PORT.get(), CARGO_PORT.get()).build(null));

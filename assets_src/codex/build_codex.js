@@ -36,10 +36,12 @@ category('basics', P + 'rebirth_codex', 'Basics', 'Основы', [
     entry('path', P + 'circuit_board', 2, 0, ['welcome'], 'The Way Ahead', 'Путь развития', [
         text('The mod grows as a chain: every new station and every body needs what the previous ones made.\n\n1. Mine the new ores: tin, aluminum, silver, lithium, titanium. Copper and tin make bronze.\n2. The electronics fabricator (crafting table) makes circuit boards, processors and power cells.\n3. The assembly station makes actuators, synthetic fiber, the transfer capsule and the first artificial bodies.',
             'Мод развивается цепочкой: каждая следующая станция и каждое тело требуют того, что сделано на предыдущих.\n\n1. Добудьте новые руды: олово, алюминий, серебро, литий, титан. Из меди и олова — бронза.\n2. Цех электроники (верстак) делает платы, процессоры и энергоячейки.\n3. Сборочная станция — приводы, синтетическую ткань, капсулу переноса и первые искусственные тела.'),
-        text('4. The armor workstation makes armor plates and power armor; then come the implant fabricator, the armor upgrade fabricator and the weapon workshop.\n5. Stations need energy: a combustion generator, solar panels, a battery, cable.\n6. The world is hostile from the first day: a respirator, filters and a roof at first, a sealed shelter with air filtration later.',
-            '4. Станция брони — бронепластины и силовую броню; дальше цех имплантов, цех модулей брони и оружейная мастерская.\n5. Станциям нужна энергия: генератор на угле, солнечные панели, аккумулятор, кабель.\n6. Мир враждебен с первого дня: сначала респиратор, фильтры и крыша, позже — герметичное убежище с фильтрацией воздуха.'),
+        text('4. The armor workstation makes armor plates and the parts of power armor; then come the implant fabricator, the armor upgrade fabricator and the weapon workshop.\n5. Stations need energy: a combustion generator, solar panels, a battery, cable.\n6. The world is hostile from the first day: a respirator, filters and a roof at first, a sealed shelter with air filtration later.',
+            '4. Станция брони — бронепластины и детали силовой брони; дальше цех имплантов, цех модулей брони и оружейная мастерская.\n5. Станциям нужна энергия: генератор на угле, солнечные панели, аккумулятор, кабель.\n6. Мир враждебен с первого дня: сначала респиратор, фильтры и крыша, позже — герметичное убежище с фильтрацией воздуха.'),
         text('7. Catastrophes leave contaminated land and ruins full of loot, machines and mutants. Before an expedition, learn the way: a weather station foresees the next catastrophe, a monitoring station maps the contamination around and prints it on paper, and in the field the analyzer, the sensor module of a body or the sensor unit of armor show what is near. Clean water comes from the water purifier.',
             '7. Катастрофы оставляют заражённые земли и руины с добычей, машинами и мутантами. Перед вылазкой разведайте путь: метеостанция предскажет следующую катастрофу, станция мониторинга составит карту заражения вокруг и напечатает её, а в поле покажут, что рядом, анализатор, сенсорный модуль тела или сенсорный блок брони. Чистую воду даёт водоочиститель.'),
+        text('8. The Garrison: big machines built of blocks. The body workshop assembles synthetic bodies, the heavy dock assembles power armor.',
+            '8. Гарнизон: большие машины из блоков. Сборочный цех тел собирает синтетические тела, тяжёлый сборочный док — силовую броню.'),
         note('Each tab of this book is one branch of that chain.', 'Каждая вкладка этой книги — одна ветка этой цепочки.')
     ]),
     entry('keys', 'minecraft:compass', 2, 2, ['welcome'], 'Keys and Settings', 'Клавиши и настройки', [
@@ -81,13 +83,13 @@ category('technology', P + 'electronics_fabricator', 'Technology', 'Технол
         recipe(P + 'power_cell', 'Power cells: lithium, aluminum, copper and redstone. They store energy in bodies, armor and batteries.', 'Энергоячейки: литий, алюминий, медь и красная пыль. Хранят энергию в телах, броне и аккумуляторах.')
     ]),
     entry('assembly_station', P + 'assembly_station', 2, 0, ['electronics_fabricator'], 'Assembly Station', 'Сборочная станция', [
-        block(P + 'assembly_station', 'Actuators, synthetic fiber, the transfer capsule and all artificial bodies.', 'Приводы, синтетическая ткань, капсула переноса и все искусственные тела.'),
+        block(P + 'assembly_station', 'Actuators, synthetic fiber, the transfer capsule, robot bodies, the heavy actuator and the manipulator. Synthetic bodies are assembled in the body workshop (Garrison tab).', 'Приводы, синтетическая ткань, капсула переноса, тела-роботы, тяжёлый привод и манипулятор. Синтетические тела собираются в сборочном цехе тел (вкладка «Гарнизон»).'),
         recipe(P + 'assembly_station', 'Aluminum, circuit boards, a crafting table and iron.', 'Алюминий, платы, верстак и железо.'),
         recipe(P + 'actuator', 'Actuators: bronze, iron and redstone.', 'Приводы: бронза, железо и красная пыль.'),
         recipe(P + 'synthetic_fiber', 'Synthetic fiber, the skin of synthetic bodies: string and a slime ball.', 'Синтетическая ткань — кожа синтетических тел: нитки и слизь.')
     ]),
     entry('armor_workstation', P + 'armor_workstation', 4, -1, ['assembly_station'], 'Armor Workstation', 'Станция брони', [
-        block(P + 'armor_workstation', 'Armor plates, power armor of three kinds and the heavy protective suit.', 'Бронепластины, силовая броня трёх видов и тяжёлый защитный костюм.'),
+        block(P + 'armor_workstation', 'Armor plates, the heavy protective suit and the parts of power armor: the power frame and the hulls of three kinds. The armor itself is assembled in the heavy dock (Garrison tab).', 'Бронепластины, тяжёлый защитный костюм и детали силовой брони: силовой каркас и корпуса трёх видов. Саму броню собирают в тяжёлом сборочном доке (вкладка «Гарнизон»).'),
         recipe(P + 'armor_workstation', 'Titanium, actuators, an anvil and iron.', 'Титан, приводы, наковальня и железо.'),
         recipe(P + 'armor_plate', 'Armor plates: the shell of power armor and a part of later stations.', 'Бронепластины: корпус силовой брони и часть поздних станций.')
     ]),
@@ -261,7 +263,7 @@ category('bodies', P + 'basic_robot_body', 'Bodies', 'Тела', [
 category('armor', P + 'power_armor', 'Power Armor', 'Силовая броня', [
     entry('power_armor', P + 'power_armor', -3, 0, [], 'Power Armor', 'Силовая броня', [
         entity(P + 'power_armor', 'A walking suit of armor for a human or a body inside it.', 'Шагающая броня для человека или тела внутри.'),
-        recipe(P + 'power_armor', 'Made at the armor workstation.', 'Делается на станции брони.'),
+        recipe(P + 'dock_power_armor', 'Assembled in the heavy dock (see the Garrison tab).', 'Собирается в тяжёлом сборочном доке (вкладка «Гарнизон»).'),
         text('Place it from its item. Right-click to climb in, Shift to get out; the combat armor opens first: the chest plate swings down, the visor lifts. The pilot is protected: all damage goes to the armor.\n\nArmor strikes with both hands for more damage, reaches farther and jumps higher; items in its fists keep their poses — bow, crossbow, trident, shield.',
             'Ставится из предмета. ПКМ — сесть, Shift — выйти; боевая броня сначала раскрывается: грудная плита откидывается, забрало поднимается. Пилот защищён: весь урон получает броня.\n\nБроня бьёт обеими руками сильнее, дотягивается дальше и прыгает выше; предметы в её кулаках держатся как надо — лук, арбалет, трезубец, щит.'),
         note('In armor the 9th hotbar slot becomes the ability slot; what was in it comes back when you get out.', 'В броне 9-й слот хотбара становится слотом способности; то, что в нём лежало, вернётся после выхода.')
@@ -282,8 +284,8 @@ category('armor', P + 'power_armor', 'Power Armor', 'Силовая броня',
     entry('variants', P + 'mobile_power_armor', -1, 1, ['power_armor'], 'Three Kinds of Armor', 'Три вида брони', [
         text('Combat armor: structural 100, critical 50, the strongest blows; with the ability slot chosen it hits harder.\n\nMobile armor: 70 and 35, faster, jumps higher and falls up to 15 blocks without harm; with the slot chosen it runs faster.\n\nWorker armor: 60 and 30, mines like a diamond tool; B switches between 3×3 and one block; with the slot chosen it mines.',
             'Боевая: структурная 100, критическая 50, самые сильные удары; с выбранным слотом способности бьёт ещё сильнее.\n\nМобильная: 70 и 35, быстрее, прыгает выше и падает до 15 блоков без урона; с выбранным слотом бежит быстрее.\n\nРабочая: 60 и 30, добывает как алмазный инструмент; B переключает 3×3 и один блок; с выбранным слотом добывает.'),
-        recipe(P + 'mobile_power_armor', 'Mobile armor.', 'Мобильная броня.'),
-        recipe(P + 'worker_power_armor', 'Worker armor.', 'Рабочая броня.')
+        recipe(P + 'dock_mobile_power_armor', 'Mobile armor, in the heavy dock.', 'Мобильная броня, в тяжёлом доке.'),
+        recipe(P + 'dock_worker_power_armor', 'Worker armor, in the heavy dock.', 'Рабочая броня, в тяжёлом доке.')
     ]),
     entry('armor_upgrades', P + 'upgrade_mounting_tool', 1, 1, ['variants'], 'Armor Upgrades', 'Улучшения брони', [
         text('With the mounting tool, Shift + right-click your own empty armor: a window with 7 slots of hull parts opens. Putting an upgrade into a slot installs it, taking it out removes it. A banner goes on the back.',
@@ -578,6 +580,50 @@ category('shelter', P + 'air_filtration_unit', 'Shelter', 'Убежище', [
         recipe(P + 'shelter_control_panel'),
         text('The panel gives a redstone signal by the danger: 0 all is well … 15 a leak. When a leak or a lack of energy lasts 10 seconds, the owner and their faction are warned; so too about cartridges and the reserve.\n\nThe HUD shows a "Shelter" line and the contamination on you.',
             'Панель выдаёт сигнал красного камня по опасности: 0 порядок … 15 утечка. Если утечка или нехватка энергии длится 10 секунд, владелец и его фракция получают предупреждение; так же — о картриджах и резерве.\n\nВ HUD видны строка «Убежище» и загрязнение на вас.')
+    ])
+]);
+
+// ================================================================ garrison (1.7.0)
+
+category('garrison', P + 'body_workshop_controller', 'Garrison', 'Гарнизон', [
+    entry('multiblocks', P + 'energy_port', 0, 0, [], 'Multiblocks', 'Мультиблоки', [
+        text('A multiblock is a machine built of many blocks around a controller. Build the frame by its plan: the controller checks it itself whenever a block inside it changes. Until the frame is whole, the work stands still and loses nothing.\n\nRight-click the controller with the repair wrench or this Codex: a hologram shows the missing blocks in place, wrong ones in a red frame. Click again to hide it.',
+            'Мультиблок — машина из многих блоков вокруг контроллера. Постройте конструкцию по схеме: контроллер сам проверяет её, когда меняется любой блок внутри. Пока конструкция неполная, работа стоит и ничего не теряет.\n\nПКМ по контроллеру ремонтным ключом или этим Кодексом: голограмма покажет недостающие блоки на их местах, неверные — в красной рамке. Повторный щелчок её скрывает.'),
+        text('The controller window holds the item the assembly starts from, the materials and the result. An assembly goes in stages (frame, actuators, electronics, plating, calibration): the materials of a stage are taken when it begins, its time runs while there is energy.\n\nThe controller itself takes no energy: it comes through an energy port. A cargo port lets hoppers and pipes bring materials in and take the result out.',
+            'Окно контроллера: ячейка исходного предмета, материалы и результат. Сборка идёт по этапам (каркас, приводы, электроника, обшивка, калибровка): материалы этапа забираются в его начале, время идёт, пока есть энергия.\n\nСам контроллер энергию не берёт: она приходит через энергопорт. Грузовой порт позволяет воронкам и трубам подавать материалы и забирать готовое.'),
+        recipe(P + 'energy_port', 'The energy port: FE from cables of this mod and others.', 'Энергопорт: FE от кабелей этого мода и других.'),
+        recipe(P + 'cargo_port', 'The cargo port: items in and out.', 'Грузовой порт: предметы внутрь и наружу.'),
+        recipe(P + 'assembly_plate', 'Assembly plates: the floor of every workshop.', 'Сборочные плиты: пол любого цеха.'),
+        recipe(P + 'assembly_frame', 'Assembly frames: the walls and roof of the body workshop.', 'Сборочные рамы: стены и крыша цеха тел.'),
+        recipe(P + 'heavy_frame', 'Heavy frames: the walls of the heavy dock.', 'Тяжёлые рамы: стены тяжёлого дока.'),
+        recipe(P + 'crane_beam', 'Crane beams: the roof of the heavy dock.', 'Крановые балки: крыша тяжёлого дока.'),
+        recipe(P + 'manipulator', 'The manipulator: a robot arm that turns to the machine under assembly and works while the assembly goes.', 'Манипулятор: рука-робот, которая поворачивается к собираемой машине и работает, пока идёт сборка.')
+    ]),
+    entry('body_workshop', P + 'body_workshop_controller', 2, -1, ['multiblocks'], 'Body Workshop', 'Сборочный цех тел', [
+        text('The body workshop is 3×3 and 4 high. A body grows in its middle part by part as the stages go.\n\nSynthetic bodies (advanced, high-tech, premium) are assembled only here, each from the body before it. Robot bodies can be made here cheaper than at the assembly station. Upgrades of the old body go over to the new one.',
+            'Сборочный цех тел — 3×3 и 4 в высоту. Тело растёт в его середине деталь за деталью по ходу этапов.\n\nСинтетические тела (продвинутое, высокотехнологичное, премиальное) собираются только здесь, каждое из предыдущего. Тела-роботы здесь дешевле, чем на сборочной станции. Улучшения старого тела переходят на новое.'),
+        multiblock(P + 'body_workshop', 'Plates, frames, two manipulators; the controller in front, both ports at the back.', 'Плиты, рамы, два манипулятора; контроллер спереди, оба порта сзади.'),
+        recipe(P + 'body_workshop_controller', 'The controller: at the electronics fabricator.', 'Контроллер: в цехе электроники.'),
+        recipe(P + 'workshop_basic_robot_body'),
+        recipe(P + 'workshop_improved_robot_body'),
+        recipe(P + 'workshop_advanced_synthetic_body'),
+        recipe(P + 'workshop_hightech_synthetic_body'),
+        recipe(P + 'workshop_premium_synthetic_body')
+    ]),
+    entry('heavy_dock', P + 'heavy_dock_controller', 2, 1, ['multiblocks'], 'Heavy Assembly Dock', 'Тяжёлый сборочный док', [
+        text('The heavy dock is 7×7 and 7 high, with a gate 5×5 in front. Power armor of all three kinds is assembled here from a power frame, heavy actuators, a processor, power cells and a hull of its kind.\n\nThe armor workstation makes the power frame and the hulls; the assembly station makes heavy actuators.',
+            'Тяжёлый сборочный док — 7×7 и 7 в высоту, спереди ворота 5×5. Здесь собирается силовая броня всех трёх видов: силовой каркас, тяжёлые приводы, процессор, энергоячейки и корпус своего вида.\n\nСиловой каркас и корпуса делает станция брони, тяжёлые приводы — сборочная станция.'),
+        multiblock(P + 'heavy_dock', 'Heavy frames, crane beams on top, four manipulators; the controller left of the gate.', 'Тяжёлые рамы, сверху балки, четыре манипулятора; контроллер слева от ворот.'),
+        recipe(P + 'heavy_dock_controller', 'The controller: at the armor workstation.', 'Контроллер: на станции брони.'),
+        recipe(P + 'heavy_actuator'),
+        recipe(P + 'power_frame'),
+        recipe(P + 'combat_armor_hull'),
+        recipe(P + 'mobile_armor_hull'),
+        recipe(P + 'worker_armor_hull'),
+        recipe(P + 'dock_power_armor'),
+        recipe(P + 'dock_mobile_power_armor'),
+        recipe(P + 'dock_worker_power_armor'),
+        note('With multiblocks turned off in the server settings, the old station recipes of synthetic bodies and power armor come back.', 'Если мультиблоки выключены в настройках сервера, возвращаются старые рецепты синтетических тел и силовой брони на станциях.')
     ])
 ]);
 

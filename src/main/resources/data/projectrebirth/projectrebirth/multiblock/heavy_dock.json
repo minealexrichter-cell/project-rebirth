@@ -1,0 +1,106 @@
+{
+  "layers": [
+    [
+      "PPPPPPP",
+      "PPPPPPP",
+      "PPPPPPP",
+      "PPPPPPP",
+      "PPPPPPP",
+      "PPPPPPP",
+      "PPPPPPP"
+    ],
+    [
+      "HHEHEHH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "GZZZZZG",
+      "CZZZZZH"
+    ],
+    [
+      "HHHHHHH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH"
+    ],
+    [
+      "HHHHHHH",
+      "HZZZZZH",
+      "MZZZZZM",
+      "HZZZZZH",
+      "MZZZZZM",
+      "HZZZZZH",
+      "HZZZZZH"
+    ],
+    [
+      "HHHHHHH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH"
+    ],
+    [
+      "HHHHHHH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH",
+      "HZZZZZH"
+    ],
+    [
+      "HHHHHHH",
+      "HBBBBBH",
+      "HBBBBBH",
+      "HBBBBBH",
+      "HBBBBBH",
+      "HBBBBBH",
+      "HHHHHHH"
+    ]
+  ],
+  "key": {
+    "P": {
+      "blocks": [
+        "projectrebirth:assembly_plate"
+      ]
+    },
+    "H": {
+      "blocks": [
+        "projectrebirth:heavy_frame"
+      ]
+    },
+    "B": {
+      "blocks": [
+        "projectrebirth:crane_beam"
+      ]
+    },
+    "M": {
+      "blocks": [
+        "projectrebirth:manipulator"
+      ]
+    },
+    "Z": {
+      "zone": true
+    },
+    "C": {
+      "controller": true
+    },
+    "E": {
+      "port": "energy"
+    },
+    "G": {
+      "port": "cargo"
+    }
+  },
+  "display": [
+    3,
+    1,
+    3
+  ]
+}

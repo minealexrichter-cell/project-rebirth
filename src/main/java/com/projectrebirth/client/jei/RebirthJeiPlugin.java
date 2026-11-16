@@ -81,6 +81,9 @@ public class RebirthJeiPlugin implements IModPlugin {
         for (Station station : Station.values()) {
             registration.addRecipeCatalyst(new ItemStack(TechItems.STATIONS.get(station).get()), TYPES.get(station));
         }
+        // 1.7.0: the controllers of the body workshop and the heavy dock
+        registration.addRecipeCatalyst(new ItemStack(com.projectrebirth.multiblock.MultiblockRegistry.WORKSHOP_CONTROLLER_ITEM.get()), AssemblyRecipeCategory.TYPE);
+        registration.addRecipeCatalyst(new ItemStack(com.projectrebirth.multiblock.MultiblockRegistry.DOCK_CONTROLLER_ITEM.get()), AssemblyRecipeCategory.TYPE);
     }
 
     /** The ability icons of the armor slot are not real items: keep them out of the item list. */

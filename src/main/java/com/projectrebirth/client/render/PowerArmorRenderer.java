@@ -83,6 +83,7 @@ public class PowerArmorRenderer extends GeoEntityRenderer<PowerArmorEntity> {
     @Override
     public void preRender(PoseStack poseStack, PowerArmorEntity animatable, BakedGeoModel model, MultiBufferSource bufferSource, VertexConsumer buffer,
                           boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+        com.projectrebirth.client.multiblock.AssemblyPreview.apply(getGeoModel(), animatable);
         platingColors = UpgradeVisuals.applyToArmor(getGeoModel(), animatable.registryAccess(), animatable.upgrades());
         super.preRender(poseStack, animatable, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }

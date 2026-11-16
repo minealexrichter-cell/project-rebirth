@@ -133,7 +133,7 @@ public final class MultiblockClient {
             pose.translate(pos.getX() - camera.x + 0.5, pos.getY() - camera.y + 0.5, pos.getZ() - camera.z + 0.5);
             pose.scale(0.9f, 0.9f, 0.9f);
             pose.translate(-0.5, -0.5, -0.5);
-            minecraft.getBlockRenderer().renderSingleBlock(problem.expected(), pose, ghost, 0xF000F0, OverlayTexture.NO_OVERLAY, ModelData.EMPTY, null);
+            MultiblockView.renderBlock(problem.expected(), pose, ghost, 0xF000F0);
             pose.popPose();
         }
         buffers.endBatch(Sheets.translucentCullBlockSheet());

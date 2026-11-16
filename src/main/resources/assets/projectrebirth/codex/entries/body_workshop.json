@@ -1,0 +1,44 @@
+{
+  "icon": "projectrebirth:body_workshop_controller",
+  "x": 2,
+  "y": -1,
+  "parents": [
+    "multiblocks"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.body_workshop.p1"
+    },
+    {
+      "type": "multiblock",
+      "value": "projectrebirth:body_workshop",
+      "text": "codex.projectrebirth.body_workshop.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:body_workshop_controller",
+      "text": "codex.projectrebirth.body_workshop.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_basic_robot_body"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_improved_robot_body"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_advanced_synthetic_body"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_hightech_synthetic_body"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_premium_synthetic_body"
+    }
+  ]
+}

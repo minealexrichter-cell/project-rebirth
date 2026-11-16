@@ -1,0 +1,54 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:body_workshop",
+  "sort": 0,
+  "stages": [
+    {
+      "name": "frame",
+      "materials": [
+        {
+          "item": "minecraft:iron_ingot",
+          "count": 4
+        }
+      ],
+      "time": 60,
+      "energy": 40,
+      "model_stage": 1
+    },
+    {
+      "name": "actuators",
+      "materials": [
+        {
+          "item": "projectrebirth:actuator",
+          "count": 1
+        }
+      ],
+      "time": 60,
+      "energy": 40,
+      "model_stage": 2
+    },
+    {
+      "name": "electronics",
+      "materials": [
+        {
+          "item": "projectrebirth:circuit_board",
+          "count": 1
+        }
+      ],
+      "time": 60,
+      "energy": 40,
+      "model_stage": 3
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 40,
+      "energy": 40,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:basic_robot_body",
+    "count": 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "projectrebirth:block/crane_beam",
+    "north": "projectrebirth:block/crane_beam_end",
+    "south": "projectrebirth:block/crane_beam_end",
+    "east": "projectrebirth:block/crane_beam",
+    "west": "projectrebirth:block/crane_beam",
+    "up": "projectrebirth:block/crane_beam",
+    "down": "projectrebirth:block/crane_beam"
+  }
+}

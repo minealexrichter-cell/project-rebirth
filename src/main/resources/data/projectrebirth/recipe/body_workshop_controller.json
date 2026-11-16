@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 102,
+  "time": 400,
+  "ingredients": [
+    {
+      "item": "projectrebirth:processor",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 4
+    },
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:body_workshop_controller",
+    "count": 1
+  }
+}

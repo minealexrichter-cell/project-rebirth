@@ -100,10 +100,34 @@ public class MultiblockControllerBlock extends WorkingMachineBlock {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide || type != MultiblockRegistry.CONTROLLER_ENTITY.get()) {
+        if (type != MultiblockRegistry.CONTROLLER_ENTITY.get()) {
             return null;
         }
+        if (level.isClientSide) {
+            return (tickLevel, pos, tickState, blockEntity) -> clientTick(tickLevel, pos, tickState, (MultiblockControllerBlockEntity) blockEntity);
+        }
         return (tickLevel, pos, tickState, blockEntity) -> ((MultiblockControllerBlockEntity) blockEntity).serverTick();
+    }
+
+    /** Client: while it builds, welding sparks fly at the machine now and then, and the hall hums. */
+    private static void clientTick(Level level, BlockPos pos, BlockState state, MultiblockControllerBlockEntity controller) {
+        if (!state.getValue(com.projectrebirth.technology.TechSounds.WORKING) || controller.previewStage() < 0) {
+            return;
+        }
+        MultiblockSchema schema = controller.schema();
+        if (schema == null || level.random.nextInt(3) != 0) {
+            return;
+        }
+        net.minecraft.world.phys.Vec3 at = schema.displayPoint(pos, controller.facing());
+        double x = at.x + (level.random.nextDouble() - 0.5) * 0.9, y = at.y + 0.3 + level.random.nextDouble() * 1.6, z = at.z + (level.random.nextDouble() - 0.5) * 0.9;
+        level.addParticle(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, x, y, z, (level.random.nextDouble() - 0.5) * 0.2, 0.05,
+                (level.random.nextDouble() - 0.5) * 0.2);
+        if (level.random.nextInt(4) == 0) {
+            level.addParticle(net.minecraft.core.particles.ParticleTypes.SMALL_FLAME, x, y, z, 0.0, 0.01, 0.0);
+        }
+        if (level.random.nextInt(40) == 0) {
+            level.playLocalSound(x, y, z, net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, net.minecraft.sounds.SoundSource.BLOCKS, 0.15f, 1.8f, false);
+        }
     }
 
     @Override

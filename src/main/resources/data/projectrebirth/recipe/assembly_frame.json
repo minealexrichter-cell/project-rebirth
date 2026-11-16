@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "IAI",
+    "A A",
+    "IAI"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "A": {
+      "tag": "c:ingots/aluminum"
+    }
+  },
+  "result": {
+    "id": "projectrebirth:assembly_frame",
+    "count": 6
+  }
+}

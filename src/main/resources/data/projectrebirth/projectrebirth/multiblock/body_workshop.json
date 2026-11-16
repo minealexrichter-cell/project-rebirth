@@ -1,0 +1,58 @@
+{
+  "layers": [
+    [
+      "PPP",
+      "PPP",
+      "PPP"
+    ],
+    [
+      "EFG",
+      "FZF",
+      "CZF"
+    ],
+    [
+      "FFF",
+      "MZM",
+      "FZF"
+    ],
+    [
+      "FFF",
+      "FFF",
+      "FFF"
+    ]
+  ],
+  "key": {
+    "P": {
+      "blocks": [
+        "projectrebirth:assembly_plate"
+      ]
+    },
+    "F": {
+      "blocks": [
+        "projectrebirth:assembly_frame"
+      ]
+    },
+    "M": {
+      "blocks": [
+        "projectrebirth:manipulator"
+      ]
+    },
+    "Z": {
+      "zone": true
+    },
+    "C": {
+      "controller": true
+    },
+    "E": {
+      "port": "energy"
+    },
+    "G": {
+      "port": "cargo"
+    }
+  },
+  "display": [
+    1,
+    1,
+    1
+  ]
+}

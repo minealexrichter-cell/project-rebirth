@@ -1,14 +1,33 @@
 {
   "type": "projectrebirth:fabrication",
   "station": "assembly_station",
+  "classic": true,
   "sort": 60,
   "time": 500,
   "ingredients": [
-    { "item": "projectrebirth:improved_robot_body", "count": 1 },
-    { "item": "projectrebirth:synthetic_fiber", "count": 4 },
-    { "item": "projectrebirth:processor", "count": 1 },
-    { "tag": "c:ingots/silver", "count": 2 },
-    { "item": "projectrebirth:actuator", "count": 2 }
+    {
+      "item": "projectrebirth:improved_robot_body",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:synthetic_fiber",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "tag": "c:ingots/silver",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 2
+    }
   ],
-  "result": { "id": "projectrebirth:advanced_synthetic_body", "count": 1 }
+  "result": {
+    "id": "projectrebirth:advanced_synthetic_body",
+    "count": 1
+  }
 }

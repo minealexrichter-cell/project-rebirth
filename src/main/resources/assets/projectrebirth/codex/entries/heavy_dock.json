@@ -1,0 +1,60 @@
+{
+  "icon": "projectrebirth:heavy_dock_controller",
+  "x": 2,
+  "y": 1,
+  "parents": [
+    "multiblocks"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.heavy_dock.p1"
+    },
+    {
+      "type": "multiblock",
+      "value": "projectrebirth:heavy_dock",
+      "text": "codex.projectrebirth.heavy_dock.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:heavy_dock_controller",
+      "text": "codex.projectrebirth.heavy_dock.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:heavy_actuator"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:power_frame"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:combat_armor_hull"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:mobile_armor_hull"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:worker_armor_hull"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dock_power_armor"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dock_mobile_power_armor"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dock_worker_power_armor"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.heavy_dock.p12"
+    }
+  ]
+}

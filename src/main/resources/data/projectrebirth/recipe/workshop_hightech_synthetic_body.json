@@ -1,0 +1,62 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:body_workshop",
+  "sort": 3,
+  "input": {
+    "item": "projectrebirth:advanced_synthetic_body"
+  },
+  "keep": "upgrades",
+  "stages": [
+    {
+      "name": "frame",
+      "materials": [
+        {
+          "tag": "c:ingots/titanium",
+          "count": 4
+        }
+      ],
+      "time": 140,
+      "energy": 40,
+      "model_stage": 1
+    },
+    {
+      "name": "electronics",
+      "materials": [
+        {
+          "item": "projectrebirth:processor",
+          "count": 2
+        },
+        {
+          "item": "projectrebirth:power_cell",
+          "count": 1
+        }
+      ],
+      "time": 160,
+      "energy": 40,
+      "model_stage": 3
+    },
+    {
+      "name": "plating",
+      "materials": [
+        {
+          "item": "projectrebirth:synthetic_fiber",
+          "count": 4
+        }
+      ],
+      "time": 180,
+      "energy": 40,
+      "model_stage": 4
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 120,
+      "energy": 40,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:hightech_synthetic_body",
+    "count": 1
+  }
+}

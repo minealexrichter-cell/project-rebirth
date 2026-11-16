@@ -1,14 +1,33 @@
 {
   "type": "projectrebirth:fabrication",
   "station": "armor_workstation",
+  "classic": true,
   "sort": 20,
   "time": 1200,
   "ingredients": [
-    { "item": "projectrebirth:armor_plate", "count": 6 },
-    { "item": "projectrebirth:actuator", "count": 4 },
-    { "item": "projectrebirth:processor", "count": 1 },
-    { "item": "projectrebirth:power_cell", "count": 2 },
-    { "item": "minecraft:iron_block", "count": 2 }
+    {
+      "item": "projectrebirth:armor_plate",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 2
+    },
+    {
+      "item": "minecraft:iron_block",
+      "count": 2
+    }
   ],
-  "result": { "id": "projectrebirth:power_armor", "count": 1 }
+  "result": {
+    "id": "projectrebirth:power_armor",
+    "count": 1
+  }
 }

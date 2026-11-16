@@ -140,7 +140,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
             return null;
         }
         return level.getRecipeManager().byKey(selected)
-                .filter(holder -> holder.value() instanceof FabricationRecipe)
+                .filter(holder -> holder.value() instanceof FabricationRecipe recipe && recipe.available())
                 .map(StationBlockEntity::cast)
                 .orElse(null);
     }

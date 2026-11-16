@@ -44,6 +44,7 @@ public final class ScoutingClient {
         ScoutPayload.clientHandler = payload -> Minecraft.getInstance().execute(() -> {
             last = payload;
             receivedAt = now();
+            beepIfContaminated(payload);
         });
         modEventBus.addListener((RegisterGuiLayersEvent event) ->
                 event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, ProjectRebirth.id("scouting_map"), ScoutingClient::render));
@@ -61,6 +62,18 @@ public final class ScoutingClient {
         int seconds = RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.SCOUTING_UPDATE_SECONDS.get() : 2;
         long age = now() - receivedAt;
         return last != null && age >= 0 && age <= 20L * seconds + 15L ? last : null;
+    }
+
+    /** The analyzer beeps at each reading while the ground under the player counts as a contaminated zone. */
+    private static void beepIfContaminated(ScoutPayload payload) {
+        Minecraft minecraft = Minecraft.getInstance();
+        float threshold = RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.ZONES_MARK_THRESHOLD.get().floatValue() : 0.5f;
+        Snapshot snapshot = payload.snapshot();
+        if (payload.analyzer() && minecraft.player != null && minecraft.level != null
+                && Math.max(snapshot.radiationAt(0, 0), snapshot.toxinAt(0, 0)) > threshold) {
+            minecraft.level.playLocalSound(minecraft.player.getX(), minecraft.player.getY(), minecraft.player.getZ(), ModSounds.ANALYZER_BEEP.get(),
+                    SoundSource.PLAYERS, 0.6f, 1.0f, false);
+        }
     }
 
     private static void onClientTick(ClientTickEvent.Post event) {

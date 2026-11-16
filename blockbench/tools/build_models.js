@@ -221,7 +221,8 @@
                 }
             }
         }
-        for (const c of [...cubes].filter(c => c.late).sort((a, b) => area(b) - area(a))) {
+        // the parts of 1.6.0 (latest) after those of 1.5.0, so that the older ones keep their places
+        for (const c of [...cubes].filter(c => c.late).sort((a, b) => (a.latest ? 1 : 0) - (b.latest ? 1 : 0) || area(b) - area(a))) {
             if (c.uv || c.share) {
                 continue;
             }
@@ -2105,7 +2106,14 @@
             k: [[0, 1, 1, 1, '#5d666d'], [0, 3, 1, 1, '#4fc3f7']]}, {late: true});
         const mesh = C([-2.5, 22.3, back], [5, 1.5, 1], {c: '#3a3f44', n: 0.03, edge: false,
             k: [[0, 0, 5, 1, '#d9894a'], [0, 0, 1, 1, '#d9894a'], [2, 0, 1, 1, '#d9894a'], [4, 0, 1, 1, '#d9894a']]}, {late: true});
+        // 1.6.0, block F: the sensor module, a pod with a green lens on the right side of the head and a short antenna on it
+        const headSide = minOf(head.cubes.filter(c => c.s[0] >= 4), 0);
+        // small: the textures of the bodies (64 by 64) have little room left; the antenna shares the pod's texture
+        const pod = C([headSide - 1, 26, -0.5], [1, 2, 1], {c: '#3a3f46', n: 0.03, edge: false,
+            sd: [[0, 0, 1, 1, '#5fbf3a']], f: [[0, 0, 1, 1, '#b6f28a']]}, {late: true, latest: true});
+        const rod = Object.assign(C([headSide - 1, 28, -0.5], [1, 2, 1], pod.p, {late: true, latest: true}), {share: pod});
         spec.bones.push(
+            {name: 'upgrade_sensor', parent: 'head', pivot: head.pivot, cubes: [pod, rod]},
             {name: 'upgrade_battery', parent: 'torso', pivot: torso.pivot, cubes: [cell]},
             {name: 'upgrade_cooling', parent: 'torso', pivot: torso.pivot, cubes: [fins, mirror(fins)]},
             {name: 'upgrade_shielding', parent: 'torso', pivot: torso.pivot, cubes: [mesh]}
@@ -2158,6 +2166,13 @@
         spec.bones.push(
             part('slot_chest_emi', chest.parent, chest.pivot, [C([-4.5, hullY + 0.5, front - 1], [9, 2.5, 1], screen, {late: true})]),
             part('slot_back_emi', 'torso', torso.pivot, [C([-4.5, hullY + 10.5, back], [9, 2, 1], screen, {late: true})])
+        );
+        // 1.6.0, block F: the sensor unit, a box with two green lenses on the right side of the helmet and an antenna on top of it
+        const helmetSide = minOf(crown, 0);
+        const lenses = {c: '#343a42', n: 0.03, edge: false, f: [[0, 1, 1, 1, '#5fbf3a'], [2, 1, 1, 1, '#5fbf3a']], sd: [[1, 1, 1, 1, '#b6f28a']]};
+        spec.bones.push(
+            part('slot_head_sensor', 'head', head.pivot, [C([helmetSide - 1.75, top - 4, -1.5], [2, 3, 3], lenses, {late: true, latest: true}),
+                C([helmetSide - 1.25, top - 1, -0.5], [1, 4, 1], {c: '#8c97a3', n: 0.02, edge: false, tp: [[0, 0, 1, 1, '#ff4a3d']]}, {late: true, latest: true})])
         );
     }
 

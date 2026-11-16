@@ -30,9 +30,11 @@ public final class UpgradeVisuals {
     private static final String BODY_BATTERY = "upgrade_battery";
     private static final String BODY_COOLING = "upgrade_cooling";
     private static final String BODY_SHIELDING = "upgrade_shielding";
+    // 1.6.0, block F
+    private static final String BODY_SENSOR = "upgrade_sensor";
     private static final List<String> ARMOR_BONES = List.of("slot_head_floodlight", "slot_chest_plating", "slot_chest_floodlight", "slot_back_air",
             "slot_right_arm_plating", "slot_right_arm_floodlight", "slot_left_arm_plating", "slot_left_arm_floodlight",
-            "slot_right_leg_plating", "slot_right_leg_air", "slot_left_leg_plating", "slot_left_leg_air", "slot_chest_emi", "slot_back_emi");
+            "slot_right_leg_plating", "slot_right_leg_air", "slot_left_leg_plating", "slot_left_leg_air", "slot_chest_emi", "slot_back_emi", "slot_head_sensor");
     private static final Map<String, Integer> MATERIAL_COLORS = Map.of("copper", 0xFFD98A5A, "iron", 0xFFC9CED3, "titanium", 0xFF8FA6C8);
     public static final int NO_TINT = 0xFFFFFFFF;
 
@@ -66,6 +68,7 @@ public final class UpgradeVisuals {
         show(model, BODY_BATTERY, BodyGadgets.has(access, upgrades, com.projectrebirth.bodies.power.BodyPower.BATTERY));
         show(model, BODY_COOLING, BodyGadgets.has(access, upgrades, com.projectrebirth.bodies.power.BodyHeat.COOLING));
         show(model, BODY_SHIELDING, BodyGadgets.has(access, upgrades, com.projectrebirth.environment.Emi.SHIELDING));
+        show(model, BODY_SENSOR, BodyGadgets.has(access, upgrades, com.projectrebirth.scouting.Scouting.SENSOR));
         return plating;
     }
 
@@ -98,6 +101,7 @@ public final class UpgradeVisuals {
                 case ArmorUpgradeEffects.FLOODLIGHT -> "_floodlight";
                 case ArmorUpgradeEffects.COMPRESSED_AIR -> "_air";
                 case com.projectrebirth.environment.Emi.SCREEN -> "_emi";
+                case com.projectrebirth.scouting.Scouting.SENSOR -> "_sensor";
                 default -> "_none";
             };
             show(model, bone, true);

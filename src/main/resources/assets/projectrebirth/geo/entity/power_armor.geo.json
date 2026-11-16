@@ -266,6 +266,15 @@
 					]
 				},
 				{
+					"name": "slot_head_sensor",
+					"parent": "head",
+					"pivot": [0, 34, 0],
+					"cubes": [
+						{"origin": [-6.15, 39.3, -1.5], "size": [2, 3, 3], "uv": [172, 54]},
+						{"origin": [-5.65, 42.3, -0.5], "size": [1, 4, 1], "uv": [88, 54]}
+					]
+				},
+				{
 					"name": "right_arm",
 					"parent": "torso",
 					"pivot": [-11, 31, 0],

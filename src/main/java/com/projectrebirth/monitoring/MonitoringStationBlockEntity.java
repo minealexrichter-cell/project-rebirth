@@ -226,6 +226,9 @@ public class MonitoringStationBlockEntity extends BlockEntity implements MenuPro
         ItemStack map = new ItemStack(MonitoringRegistry.CONTAMINATION_MAP.get());
         map.set(MonitoringRegistry.SNAPSHOT.get(), snapshot.withoutPlayers());
         items.setStackInSlot(MAP_SLOT, map);
+        if (level != null) {
+            level.playSound(null, worldPosition, com.projectrebirth.core.ModSounds.MAP_PRINT.get(), net.minecraft.sounds.SoundSource.BLOCKS, 0.8f, 1.0f);
+        }
         return true;
     }
 

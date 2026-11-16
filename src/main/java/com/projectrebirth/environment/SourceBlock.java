@@ -75,9 +75,13 @@ public class SourceBlock extends BaseEntityBlock {
         return new SourceBlockEntity(pos, state);
     }
 
-    /** Client only: now and then a drip from the barrel and a flake from the debris. */
+    /** Client only: now and then a drip from the barrel and a flake from the debris; the radioactive ones hum (1.6.0, block G). */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if ((kind == SourceKind.DEBRIS || kind == SourceKind.SLUDGE) && random.nextInt(4) == 0) {
+            level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, com.projectrebirth.core.ModSounds.SOURCE_HUM.get(),
+                    net.minecraft.sounds.SoundSource.BLOCKS, 0.5f, 0.85f + random.nextFloat() * 0.3f, false);
+        }
         if (kind == SourceKind.WASTE_BARREL && random.nextInt(6) == 0) {
             level.addParticle(ParticleTypes.FALLING_SPORE_BLOSSOM, pos.getX() + 0.3 + random.nextDouble() * 0.4, pos.getY() + 0.05,
                     pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0.0, 0.0, 0.0);

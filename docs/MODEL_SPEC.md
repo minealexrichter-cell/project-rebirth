@@ -100,12 +100,13 @@ root
 | `upgrade_battery` | доп. аккумулятор (`extra_battery`): жёлтая ячейка внизу груди (с 1.5.0) |
 | `upgrade_cooling` | модуль охлаждения (`cooling_module`): два ряда рёбер по бокам спины (с 1.5.0) |
 | `upgrade_shielding` | экранирование электроники (`emi_shielding`): медная сетка вверху спины, под шеей (с 1.5.0) |
+| `upgrade_sensor` | сенсорный модуль (`sensor_module`): столбик с зелёными линзами на правом боку головы (с 1.6.0) |
 
 **Броня** (все 3 вида), отдельная кость на каждое сочетание слота и улучшения:
 
 | Слот | Кости |
 |---|---|
-| голова | `slot_head_floodlight` |
+| голова | `slot_head_floodlight`, `slot_head_sensor` (сенсорный блок, коробка с линзами и антенной на правом боку шлема, с 1.6.0) |
 | грудь | `slot_chest_plating`, `slot_chest_floodlight`, `slot_chest_emi` (ЭМИ-экран, с 1.5.0) |
 | спина | `slot_back_air`, `slot_back_emi` (ЭМИ-экран, с 1.5.0), `slot_back_banner` (точка крепления: само знамя рисует код, это целое ванильное знамя) |
 | правая рука | `slot_right_arm_plating`, `slot_right_arm_floodlight` |

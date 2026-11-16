@@ -429,5 +429,29 @@
         "volume": 0.6
       }
     ]
+  },
+  "scouting.source_hum": {
+    "subtitle": "subtitles.projectrebirth.scouting.source_hum",
+    "sounds": [
+      {
+        "name": "projectrebirth:scouting/source_hum"
+      }
+    ]
+  },
+  "scouting.analyzer_beep": {
+    "subtitle": "subtitles.projectrebirth.scouting.analyzer_beep",
+    "sounds": [
+      {
+        "name": "projectrebirth:scouting/analyzer_beep"
+      }
+    ]
+  },
+  "scouting.map_print": {
+    "subtitle": "subtitles.projectrebirth.scouting.map_print",
+    "sounds": [
+      {
+        "name": "projectrebirth:scouting/map_print"
+      }
+    ]
   }
 }

@@ -135,7 +135,7 @@ public final class GarrisonRegistry {
             () -> EntityType.Builder.of(SmallRobotEntity::new, MobCategory.MISC).sized(0.85f, 2.1f).eyeHeight(1.8f).clientTrackingRange(10).build("small_robot"));
     public static final DeferredItem<PackedMachineItem> SMALL_ROBOT_ITEM = ITEMS.register("small_robot",
             () -> new PackedMachineItem(MachineKind.ROBOT, SMALL_ROBOT::get, new Item.Properties().stacksTo(1)));
-    public static final net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> SERVICE_POST_PLATE = BLOCKS.registerSimpleBlock("service_post_plate",
+    public static final net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> SERVICE_POST_PLATE = BLOCKS.registerBlock("service_post_plate", ServicePostPlateBlock::new,
             net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
                     .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredItem<net.minecraft.world.item.BlockItem> SERVICE_POST_PLATE_ITEM = ITEMS.registerSimpleBlockItem(SERVICE_POST_PLATE);

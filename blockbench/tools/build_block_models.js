@@ -741,9 +741,10 @@
         parent: 'minecraft:block/block',
         textures: garrisonTextures('deck', ['deck', 'steel', 'mid', 'dark', 'hazard']),
         elements: [
-            gbox([0, 0, 0], [16, 4, 16], 'dark', {up: 'deck', north: 'hazard', south: 'hazard', west: 'hazard', east: 'hazard'}),
-            gbox([1, 4, 1], [15, 5, 15], 'steel', {up: 'deck'}),
-            gbox([3, 4.5, 3], [13, 5.5, 13], 'mid', {up: 'deck'})
+            // 1.7.2: a half block (the top at 8 pixels, as the collision box), the machine stands on its top
+            gbox([0, 0, 0], [16, 6, 16], 'dark', {up: 'deck', north: 'hazard', south: 'hazard', west: 'hazard', east: 'hazard'}),
+            gbox([1, 6, 1], [15, 7, 15], 'steel', {up: 'deck'}),
+            gbox([3, 7, 3], [13, 8, 13], 'mid', {up: 'deck'})
         ]
     };
     MODELS.service_post = {

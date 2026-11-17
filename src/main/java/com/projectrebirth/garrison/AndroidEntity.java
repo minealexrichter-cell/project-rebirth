@@ -755,6 +755,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             return pad != null && core().active() && charge() < BodyPower.capacity(AndroidEntity.this) * RebirthConfig.ANDROID_CHARGED.get()
                     && (level().getBlockEntity(BlockPos.containing(pad)) instanceof ChargingPadBlockEntity
                     || level().getBlockEntity(BlockPos.containing(pad).below()) instanceof ChargingPadBlockEntity
+                    || level().getBlockState(BlockPos.containing(pad)).is(GarrisonRegistry.SERVICE_POST_PLATE.get())
                     || level().getBlockState(BlockPos.containing(pad).below()).is(GarrisonRegistry.SERVICE_POST_PLATE.get()));
         }
 

@@ -71,11 +71,11 @@ public class ServicePostBlockEntity extends BlockEntity {
         return level.getBlockState(pos).is(GarrisonRegistry.SERVICE_POST_PLATE.get());
     }
 
-    /** Where a machine stands to be served: the middle of the plates' top, or null. */
+    /** Where a machine stands to be served: the middle of the plates' top (1.7.2: half a block up, a plate is a slab), or null. */
     @Nullable
     public Vec3 standPoint() {
         BlockPos corner = plates();
-        return corner == null ? null : new Vec3(corner.getX() + 1.0, corner.getY() + 1.0, corner.getZ() + 1.0);
+        return corner == null ? null : new Vec3(corner.getX() + 1.0, corner.getY() + ServicePostPlateBlock.HEIGHT, corner.getZ() + 1.0);
     }
 
     /** The machines on the plates. */
@@ -84,7 +84,7 @@ public class ServicePostBlockEntity extends BlockEntity {
         if (corner == null || level == null) {
             return List.of();
         }
-        AABB area = new AABB(corner.getX(), corner.getY() + 0.5, corner.getZ(), corner.getX() + 2, corner.getY() + 4, corner.getZ() + 2);
+        AABB area = new AABB(corner.getX(), corner.getY() + ServicePostPlateBlock.HEIGHT - 0.25, corner.getZ(), corner.getX() + 2, corner.getY() + 4, corner.getZ() + 2);
         return level.getEntities((Entity) null, area, found -> found instanceof GarrisonMachine && found.isAlive());
     }
 

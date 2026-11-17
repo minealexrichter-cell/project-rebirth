@@ -281,14 +281,16 @@ public class GarrisonGameTests {
                 arrived[0] = true;
             }
         }));
+        net.minecraft.world.entity.Entity[] built = new net.minecraft.world.entity.Entity[1];
         helper.runAfterDelay(time + 10, () -> {
             helper.assertTrue(helper.getLevel().getEntitiesOfClass(kind, around).size() == 1, recipe + ": it stands in the dock");
+            built[0] = helper.getLevel().getEntitiesOfClass(kind, around).get(0);
             helper.assertTrue(entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT).isEmpty(), "Nothing in the output slot");
         });
         helper.runAfterDelay(time + 200, () -> {
-            var found = helper.getLevel().getEntitiesOfClass(kind, around);
-            helper.assertTrue(found.size() == 1, "One of it");
-            var thing = found.get(0);
+            // 1.7.2: the one that was built (a machine may walk off to a post once it is out)
+            var thing = built[0];
+            helper.assertTrue(thing != null && thing.isAlive(), "It is still there");
             helper.assertTrue(arrived[0], recipe + ": it rolled out to the exit: " + thing.position() + " / " + exit);
             outside.accept(helper, thing);
             thing.discard();

@@ -64,6 +64,9 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private static final EntityDataAccessor<Integer> LEFT_NODE = SynchedEntityData.defineId(GuardMechEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> AIMING = SynchedEntityData.defineId(GuardMechEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DOWN = SynchedEntityData.defineId(GuardMechEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> FLYING = SynchedEntityData.defineId(GuardMechEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 1.7.2: ticks from the start of the stomp to the blow (the leg comes down at 0.6 s of the animation). */
+    private static final int STOMP_WINDUP = 12;
 
     /** What sits on a side: nothing, a machine gun node, a rocket launcher node. */
     public enum Node {
@@ -128,6 +131,10 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private Vec3 cameFrom;
     /** 1.7.2: the game time before which it does not go to the post for ammunition again (the post had none). */
     private long ammoRetry;
+    /** 1.7.2, block C: its jetpack (the small robot has none), and the stomp. */
+    private final MechJetpack jetpack = new MechJetpack(this);
+    private int stompCooldown;
+    private int stompWindup = -1;
 
     public GuardMechEntity(EntityType<? extends GuardMechEntity> type, Level level) {
         this(type, level, MachineKind.MECH);
@@ -136,6 +143,97 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     /** 1.7.1: a machine of another kind on the mech's logic (the small robot), with its own numbers from {@link #stats()}. */
     protected GuardMechEntity(EntityType<? extends GuardMechEntity> type, Level level, MachineKind kind) {
         super(type, level, kind);
+        mover.setLift(jetpack::hop);
+    }
+
+    // ------------------------------------------------------------------ 1.7.2: the jetpack and the stomp
+
+    /** Whether it has a jetpack and may use it (the guard mech; not the small robot). */
+    public boolean canFly() {
+        return RebirthConfig.GUARD_MECH_JETPACK.get();
+    }
+
+    /** Whether it stomps whoever comes too close (the guard mech; not the small robot). */
+    public boolean canStomp() {
+        return true;
+    }
+
+    /** Client and server: in the air on its jetpack. */
+    public boolean flying() {
+        return entityData.get(FLYING);
+    }
+
+    void setFlyingShown(boolean flying) {
+        entityData.set(FLYING, flying);
+    }
+
+    /** Public for tests. */
+    public boolean jetpackReady() {
+        return jetpack.ready();
+    }
+
+    /** A hop over an obstacle towards a place; whether it took off. Public for tests. */
+    public boolean hopTowards(Vec3 goal) {
+        return jetpack.hop(goal);
+    }
+
+    double lowEnergyShare() {
+        return stats().lowEnergy().get();
+    }
+
+    void useEnergy(float amount) {
+        energy = Math.max(0.0f, energy - amount);
+    }
+
+    private Vec3 forward() {
+        double yaw = yBodyRot * Mth.DEG_TO_RAD;
+        return new Vec3(-Math.sin(yaw), 0.0, Math.cos(yaw));
+    }
+
+    /** Where the flame of a nozzle of its jetpack comes out, in the world (side -1 right, 1 left). */
+    Vec3 jetNozzle(int side) {
+        double yaw = yBodyRot * Mth.DEG_TO_RAD;
+        Vec3 right = new Vec3(-Math.cos(yaw), 0.0, -Math.sin(yaw));
+        return position().add(0.0, 1.85, 0.0).add(forward().scale(-0.85)).add(right.scale(-side * 0.37));
+    }
+
+    /**
+     * The stomp (up close, and when it lands from a flight): whoever it may attack by its rules of targets within reach of its feet
+     * is hurt and thrown away; its own, its allies and its faction's players are not touched. Public for tests.
+     */
+    public void stomp() {
+        if (!canStomp()) {
+            return;
+        }
+        double radius = RebirthConfig.GUARD_MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5;
+        float damage = RebirthConfig.GUARD_MECH_STOMP_DAMAGE.get().floatValue();
+        for (LivingEntity hit : level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(radius, 1.0, radius),
+                e -> e != this && e.isAlive() && TargetRules.mayAttack(this, e))) {
+            if (hit.position().subtract(position()).horizontalDistanceSqr() > radius * radius) {
+                continue;
+            }
+            hit.hurt(damageSources().mobAttack(this), damage);
+            Vec3 away = hit.position().subtract(position()).multiply(1.0, 0.0, 1.0);
+            away = away.lengthSqr() < 1.0e-4 ? forward() : away.normalize();
+            hit.push(away.x * 1.2, 0.5, away.z * 1.2);
+            hit.hurtMarked = true;
+        }
+        if (level() instanceof net.minecraft.server.level.ServerLevel server) {
+            net.minecraft.world.level.block.state.BlockState under = level().getBlockState(blockPosition().below());
+            if (under.isAir()) {
+                under = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+            }
+            server.sendParticles(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK, under),
+                    getX(), getY() + 0.1, getZ(), 50, radius * 0.5, 0.1, radius * 0.5, 0.2);
+            server.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION, getX(), getY() + 0.3, getZ(), 2, 0.6, 0.0, 0.6, 0.0);
+        }
+        playSound(SoundEvents.GENERIC_EXPLODE.value(), 1.2f, 0.6f);
+        stompCooldown = RebirthConfig.GUARD_MECH_STOMP_COOLDOWN.get();
+    }
+
+    @Override
+    public boolean causeFallDamage(float distance, float multiplier, net.minecraft.world.damagesource.DamageSource source) {
+        return false;
     }
 
     /** 1.7.1: a walking machine is solid, as the hostile robots and the power armor: one bumps into it and it is not pushed about. */
@@ -197,6 +295,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         builder.define(LEFT_NODE, Node.ROCKET.ordinal());
         builder.define(AIMING, false);
         builder.define(DOWN, false);
+        builder.define(FLYING, false);
     }
 
     // ------------------------------------------------------------------ nodes, energy, magazine
@@ -352,6 +451,13 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             if (cooldown[side] > 0) {
                 cooldown[side]--;
             }
+        }
+        jetpack.tick();
+        if (stompCooldown > 0) {
+            stompCooldown--;
+        }
+        if (stompWindup >= 0 && --stompWindup < 0 && working() && onGround()) {
+            stomp();
         }
         if (tickCount % 20 == 0) {
             second();
@@ -510,10 +616,25 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             double leash = RebirthConfig.ANDROID_HOLD_RADIUS.get();
             boolean mayChase = !holding || target.blockPosition().distSqr(holdPoint) <= (leash + 2) * (leash + 2);
             double range = stats().range().get();
-            if ((!sees || distance > range * 0.6) && mayChase) {
+            if (jetpack.flying()) {
+                // in the air the jetpack carries it; the guns go on firing
+            } else if ((!sees || distance > range * 0.6) && mayChase) {
                 mover.walk(target.position(), 1.0);
             } else {
                 mover.stop();
+            }
+            // 1.7.2: up close it stomps; out of its reach on foot (high up, or no way to it), or now and then, it takes off over the target
+            if (!jetpack.flying() && canStomp() && onGround() && stompWindup < 0 && stompCooldown <= 0
+                    && distance <= RebirthConfig.GUARD_MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5) {
+                stompWindup = STOMP_WINDUP;
+                stompCooldown = RebirthConfig.GUARD_MECH_STOMP_COOLDOWN.get();
+                triggerAnim("main", "stomp");
+            } else if (mayChase && !jetpack.flying() && jetpack.ready()) {
+                int chance = RebirthConfig.GUARD_MECH_COMBAT_FLIGHT_CHANCE.get();
+                boolean outOfReach = target.getY() - getY() > 2.5 || mover.stuck();
+                if (outOfReach || sees && chance > 0 && random.nextInt(chance) == 0) {
+                    jetpack.overFight(target);
+                }
             }
             if (target != lastTarget) {
                 lastTarget = target;
@@ -611,7 +732,9 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
 
     /** 1.7.2: towards a place, by the mover (a path, or straight when the way is free; it gets itself unstuck). */
     private void walkTo(Vec3 goal) {
-        mover.walk(goal, 1.0);
+        if (!jetpack.flying()) {
+            mover.walk(goal, 1.0);
+        }
     }
 
     /** 1.7.2: whether a weapon it carries is low on ammunition (at most the config's share of its magazine left). */
@@ -697,11 +820,10 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             }
         }
 
-        /** The post to go to (for energy alone the small robot takes a pad too), or null. */
+        /** The post to go to (low on energy: the nearest place to charge first, for the small robot a pad too), or null. */
         @Nullable
         private Vec3 place(net.minecraft.server.level.ServerLevel server, boolean low) {
-            Vec3 found = forAmmo ? ServicePostBlockEntity.nearest(server, blockPosition()) : chargePoint(server);
-            return found == null && forAmmo && low ? chargePoint(server) : found;
+            return low ? chargePoint(server) : ServicePostBlockEntity.nearest(server, blockPosition());
         }
 
         @Override
@@ -890,6 +1012,8 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         rounds = tag.getInt("Rounds");
         rockets = tag.getInt("Rockets");
         emergency = tag.getBoolean("Emergency");
+        // 1.7.2: a flight is not saved; it stands on the ground again
+        jetpack.reset();
     }
 
     // ------------------------------------------------------------------ the look
@@ -927,6 +1051,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         // 1.7.1, block I: with no structural integrity it sinks down and stays so; a wreck slumps further and lies there
         RawAnimation shutdown = RawAnimation.begin().thenPlayAndHold(animationPrefix() + ".shutdown");
         RawAnimation wrecked = RawAnimation.begin().thenPlayAndHold(animationPrefix() + ".wrecked");
+        RawAnimation fly = RawAnimation.begin().thenLoop(animationPrefix() + ".fly");
         controllers.add(new AnimationController<>(this, "main", 5, state -> {
             MachineCore.State shown = shownState();
             if (shown == MachineCore.State.WRECK) {
@@ -938,12 +1063,16 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             if (down()) {
                 return state.setAndContinue(idle);
             }
+            if (flying()) {
+                return state.setAndContinue(fly);
+            }
             double dx = getX() - xo, dz = getZ() - zo;
             return state.setAndContinue(state.isMoving() || dx * dx + dz * dz > 1.0e-5 ? walk : idle);
         }).triggerableAnim("shot_right", RawAnimation.begin().thenPlay(animationPrefix() + ".shot_right"))
                 .triggerableAnim("shot_left", RawAnimation.begin().thenPlay(animationPrefix() + ".shot_left"))
                 .triggerableAnim("rocket_right", RawAnimation.begin().thenPlay(animationPrefix() + ".rocket_right"))
-                .triggerableAnim("rocket_left", RawAnimation.begin().thenPlay(animationPrefix() + ".rocket_left")));
+                .triggerableAnim("rocket_left", RawAnimation.begin().thenPlay(animationPrefix() + ".rocket_left"))
+                .triggerableAnim("stomp", RawAnimation.begin().thenPlay(animationPrefix() + ".stomp")));
     }
 
     @Override

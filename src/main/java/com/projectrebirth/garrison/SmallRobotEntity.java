@@ -75,6 +75,17 @@ public class SmallRobotEntity extends GuardMechEntity {
         return true;
     }
 
+    /** 1.7.2: no jetpack and no stomp: those are the guard mech's. */
+    @Override
+    public boolean canFly() {
+        return false;
+    }
+
+    @Override
+    public boolean canStomp() {
+        return false;
+    }
+
     @Override
     @Nullable
     protected Vec3 chargePoint(ServerLevel server) {

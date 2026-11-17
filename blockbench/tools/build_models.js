@@ -3153,7 +3153,7 @@
         };
 
         // ---------------------------------------------------------------- the guard mech (1.7.0, block H)
-        // The player's mech: the mech of the ruins in service, without its second phase (no core, jetpack, gatling). Service paint
+        // The player's mech: the mech of the ruins in service, without its second phase (no core or gatling; 1.7.2: its jetpack). Service paint
         // (light plates, dark frame, green lamps). On each side a weapon node: a machine gun or a rocket pod, both modelled, the code
         // shows the one installed (bones right_gun / right_pod under right_mount, left_gun / left_pod under left_mount; the mounts
         // tilt to aim). A stripe across the chest and a banner on the back (bones "stripes" and "banner", near white) take the
@@ -3209,7 +3209,15 @@
                     {name: 'left_mount', parent: 'torso', pivot: [14, 40, 0], cubes: []},
                     {name: 'left_gun', parent: 'left_mount', pivot: [14, 40, 0], cubes: flipG(gGun)},
                     {name: 'left_gun_muzzle', parent: 'left_gun', pivot: [14.5, 35.5, -29.2], cubes: []},
-                    {name: 'left_pod', parent: 'left_mount', pivot: [14, 44, 0], cubes: gPod}
+                    {name: 'left_pod', parent: 'left_mount', pivot: [14, 44, 0], cubes: gPod},
+                    // 1.7.2, block C: the jetpack of its prototype, in service paint: a frame on the back, two fuel tanks, two
+                    // nozzles glowing hot inside (the flames are particles from the code)
+                    {name: 'jetpack', parent: 'torso', pivot: [0, 38, 11], cubes: [
+                        gF([-7.5, 34, 10], [15, 9, 2]),
+                        gP([-8.5, 32, 11.5], [5, 12, 5], {sd: [[1, 2, 3, 1, GLIGHT], [1, 8, 3, 1, GEDGE]], k: hazard(0, 9, 5, 2, AMBER, GDARK, 2)}),
+                        gP([3.5, 32, 11.5], [5, 12, 5], {sd: [[1, 2, 3, 1, GLIGHT], [1, 8, 3, 1, GEDGE]], k: hazard(0, 9, 5, 2, AMBER, GDARK, 2)})]},
+                    {name: 'jet_right', parent: 'jetpack', pivot: [-6, 31, 13.75], cubes: [gF([-7.5, 29.5, 12.25], [3, 3, 3], {bt: [[0, 0, 3, 3, '#ff8a2a']], edge: false})]},
+                    {name: 'jet_left', parent: 'jetpack', pivot: [6, 31, 13.75], cubes: [gF([4.5, 29.5, 12.25], [3, 3, 3], {bt: [[0, 0, 3, 3, '#ff8a2a']], edge: false})]}
                 ],
                 animations: (() => {
                     const recoil = bone => move(0.14, {[bone]: {p: K([0, [0, 0, 0]], [0.04, [0, 0, 2]], [0.14, [0, 0, 0]])}});
@@ -3226,6 +3234,29 @@
                         'animation.guard_mech.shot_left': recoil('left_gun'),
                         'animation.guard_mech.rocket_right': kick('right_pod'),
                         'animation.guard_mech.rocket_left': kick('left_pod'),
+                        // 1.7.2, block C: the stomp of its prototype (a leg raised high and brought down, the torso thrown into it)
+                        'animation.guard_mech.stomp': move(1.0, {
+                            hips: {p: K([0, [0, 0, 0]], [0.35, [0, 0.8, 0]], [0.6, [0, -2.4, 0]], [1.0, [0, 0, 0]]), r: K([0, [0, 0, 0]], [0.35, [0, 0, -6]], [0.6, [0, 0, 2]], [1.0, [0, 0, 0]])},
+                            right_leg: {r: K([0, [0, 0, 0]], [0.45, [-48, 0, 4]], [0.6, [6, 0, 0]], [1.0, [0, 0, 0]])},
+                            right_shin: {r: K([0, [0, 0, 0]], [0.45, [62, 0, 0]], [0.6, [4, 0, 0]], [1.0, [0, 0, 0]])},
+                            right_foot: {r: K([0, [0, 0, 0]], [0.45, [-10, 0, 0]], [0.6, [-10, 0, 0]], [1.0, [0, 0, 0]])},
+                            left_shin: {r: K([0, [0, 0, 0]], [0.6, [16, 0, 0]], [1.0, [0, 0, 0]])},
+                            left_leg: {r: K([0, [0, 0, 0]], [0.6, [-8, 0, 0]], [1.0, [0, 0, 0]])},
+                            left_foot: {r: K([0, [0, 0, 0]], [0.6, [-8, 0, 0]], [1.0, [0, 0, 0]])},
+                            torso: {r: K([0, [0, 0, 0]], [0.45, [-6, 0, 4]], [0.62, [10, 0, -2]], [1.0, [0, 0, 0]])},
+                            banner: {r: K([0, [0, 0, 0]], [0.62, [14, 0, 0]], [1.0, [0, 0, 0]])}}),
+                        // in the air on its jetpack: legs drawn up and swinging a little, torso leaning into the flight, nozzles working
+                        'animation.guard_mech.fly': {length: 1.2, loop: 'loop', bones: {
+                            hips: {p: loopOf(1.2, t => [0, R2(1.2 * Math.sin(2 * Math.PI * t)), 0])},
+                            right_leg: {r: loopOf(1.2, t => [R2(12 + 4 * Math.sin(2 * Math.PI * t)), 0, 6])},
+                            left_leg: {r: loopOf(1.2, t => [R2(16 + 4 * Math.sin(2 * Math.PI * (t + 0.3))), 0, -6])},
+                            right_shin: {r: loopOf(1.2, t => [R2(30 + 5 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                            left_shin: {r: loopOf(1.2, t => [R2(36 + 5 * Math.sin(2 * Math.PI * (t + 0.3))), 0, 0])},
+                            right_foot: {r: loopOf(1.2, () => [28, 0, 0])}, left_foot: {r: loopOf(1.2, () => [30, 0, 0])},
+                            torso: {r: loopOf(1.2, t => [R2(12 + 2 * Math.sin(2 * Math.PI * t)), 0, R2(2 * Math.sin(2 * Math.PI * (t + 0.25)))])},
+                            banner: {r: loopOf(1.2, t => [R2(30 + 6 * Math.sin(2 * Math.PI * t)), R2(8 * Math.sin(2 * Math.PI * (t + 0.4))), 0])},
+                            jet_right: {r: loopOf(1.2, t => [R2(-10 + 4 * Math.sin(4 * Math.PI * t)), 0, 0])},
+                            jet_left: {r: loopOf(1.2, t => [R2(-10 + 4 * Math.sin(4 * Math.PI * (t + 0.2))), 0, 0])}}},
                         // 1.7.1, block I. Shut down: it sinks onto its knees, the torso bows, the banner hangs.
                         'animation.guard_mech.shutdown': fall(1.8, {
                             hips: {p: [0, -12.5, 0]}, right_leg: {r: [-70, 0, 5]}, left_leg: {r: [-62, 0, -6]},

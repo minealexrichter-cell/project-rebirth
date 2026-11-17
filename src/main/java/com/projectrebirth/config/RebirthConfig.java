@@ -384,6 +384,17 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue POST_REPAIR_SECONDS;
     public static final ModConfigSpec.DoubleValue POST_PLATE_REPAIR;
     public static final ModConfigSpec.IntValue POST_RADIUS;
+    public static final ModConfigSpec.BooleanValue GUARD_MECH_JETPACK;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_FLIGHT_ENERGY;
+    public static final ModConfigSpec.IntValue GUARD_MECH_FLIGHT_SECONDS;
+    public static final ModConfigSpec.IntValue GUARD_MECH_FLIGHT_REST;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_HOVER_HEIGHT;
+    public static final ModConfigSpec.IntValue GUARD_MECH_HOP_RANGE;
+    public static final ModConfigSpec.IntValue GUARD_MECH_MAX_RISE;
+    public static final ModConfigSpec.IntValue GUARD_MECH_COMBAT_FLIGHT_CHANCE;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_STOMP_DAMAGE;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_STOMP_RADIUS;
+    public static final ModConfigSpec.IntValue GUARD_MECH_STOMP_COOLDOWN;
     public static final ModConfigSpec.DoubleValue POST_RELOAD_SHARE;
     public static final ModConfigSpec.IntValue POST_AMMO_WAIT_SECONDS;
     public static final ModConfigSpec.IntValue MOVE_STUCK_TICKS;
@@ -1114,6 +1125,19 @@ public final class RebirthConfig {
         GUARD_MECH_LOW_ENERGY = builder.comment("Below this share of energy it goes to a service post").defineInRange("lowEnergy", 0.2, 0.0, 1.0);
         GUARD_MECH_CHARGED = builder.comment("It leaves the post at this share").defineInRange("charged", 0.9, 0.05, 1.0);
         GUARD_MECH_GUARD_RADIUS = builder.comment("Blocks around the point it guards in which it fights").defineInRange("guardRadius", 16, 1, 64);
+        // 1.7.2, block C: the jetpack and the stomp of its prototype
+        GUARD_MECH_JETPACK = builder.comment("Whether it uses its jetpack: to fly over what it cannot walk past, and now and then in a fight").define("jetpack", true);
+        GUARD_MECH_FLIGHT_ENERGY = builder.comment("Energy (FE) its jetpack uses per second of flight").defineInRange("flightEnergyPerSecond", 600.0, 0.0, 1_000_000.0);
+        GUARD_MECH_FLIGHT_SECONDS = builder.comment("Longest flight in seconds (over a fight it circles its target this long)").defineInRange("flightSeconds", 8, 1, 120);
+        GUARD_MECH_FLIGHT_REST = builder.comment("Seconds between two flights").defineInRange("flightRestSeconds", 15, 0, 3600);
+        GUARD_MECH_HOVER_HEIGHT = builder.comment("Blocks over its target it hovers in a fight").defineInRange("hoverHeight", 5.0, 1.0, 32.0);
+        GUARD_MECH_HOP_RANGE = builder.comment("Blocks it flies at most in one hop over an obstacle").defineInRange("hopRange", 16, 2, 64);
+        GUARD_MECH_MAX_RISE = builder.comment("Blocks it rises at most to clear an obstacle; higher than that it does not take off").defineInRange("maxRise", 16, 2, 64);
+        GUARD_MECH_COMBAT_FLIGHT_CHANCE = builder.comment("In a fight, one chance in this many each tick that it takes off over its target (it always does",
+                "when the target is out of its reach on foot); 0 = never on a whim").defineInRange("combatFlightChance", 200, 0, 100000);
+        GUARD_MECH_STOMP_DAMAGE = builder.comment("Damage of its stomp (up close, and when it lands from a flight)").defineInRange("stompDamage", 14.0, 0.0, 1000.0);
+        GUARD_MECH_STOMP_RADIUS = builder.comment("Blocks from its body the stomp reaches").defineInRange("stompRadius", 3.0, 0.5, 16.0);
+        GUARD_MECH_STOMP_COOLDOWN = builder.comment("Ticks between two stomps").defineInRange("stompCooldownTicks", 60, 5, 2000);
         builder.pop();
         builder.comment("The small robot (1.7.1): a cheap soldier of the heavy dock on the mech's logic, with a built-in machine gun. Integrity in",
                 "[garrison.machines.robot]; it charges at a service post or a charging pad.").push("small_robot");

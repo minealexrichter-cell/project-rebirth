@@ -18,7 +18,8 @@
 
 - **GeckoLib-модели** (box UV): размеры всех деталей целые. GeckoLib раскладывает текстуру по размерам, округлённым вниз, и дробная деталь показывает пустой угол развёртки — дыру. Тонкие детали делаются целого размера и утоньшаются через `inflate`. `build_models.js` проверяет это сам (`textureHoles`) и не соберёт модель с дырами; `RebirthModels.checkAll()` — проверка всех моделей. Генератор к тому же докрашивает дробные детали по раскладке игры, так что у старых моделей дыр больше нет; список `KNOWN_HOLES` пуст и должен таким остаться.
 - **Текстуры блоков**: без прозрачных пикселей, кроме блоков, прозрачных по замыслу (`CLEAR_BLOCKS` в `build_textures.js`, проверка `clearPixels` при `saveAll`).
-- Грани деталей не должны лежать в одной плоскости внахлёст (`noCoplanarFaces`).
+- Грани деталей не должны лежать в одной плоскости внахлёст (`noCoplanarFaces`): в игре такие места мерцают. С 1.7.1 флаг спецификации `separateFaces` сам чуть раздувает (inflate +0,1) меньшую деталь каждой такой пары, пока совпадений не останется; так собран малый робот.
+- **Текстура остова** `<id>_wreck.png` (тёмная, с копотью и ржавчиной) выводится из основной текстуры: `derive_textures.js`, `await RebirthDerived.wreck('<id>')`. После любой правки основной текстуры её нужно вывести заново. У силовой брони своя `<вариант>_wrecked.png`.
 
 ## 1. Искусственные тела (5 классов)
 
@@ -52,7 +53,7 @@ root
   рисуется ванильной моделью руки с этой текстурой. Роботы (классы 1–2) — широкие руки 4 px, синтетики (3–5) —
   тонкие 3 px (как скин «Алекс»).
 - У тонких рук классов 3–5 локти и плечи на X ±5,5.
-- Анимации: `animation.body.idle`, `walk`, `run`, `sneak`, `crouch` (циклы), `animation.body.interact` (один раз). Код выбирает их по движению игрока.
+- Анимации: `animation.body.idle`, `walk`, `run`, `sneak`, `crouch` (циклы), `animation.body.interact` (один раз). Код выбирает их по движению игрока. С 1.7.1 ещё `animation.body.shutdown` (андроид отключён: на колени) и `animation.body.wrecked` (лицом вниз: остов андроида и обломки уничтоженного тела), обе держат последний кадр; текстуры остова `<класс>_wreck.png`.
   Анимации не должны крутить `head` (её поворачивает код) — иначе голова будет дёргаться.
 - Код поворачивает `right_arm` и `left_arm` как руки игрока (предмет в руке, удар, лук, арбалет, щит, трезубец,
   подзорная труба): точки поворота должны быть в плечах.
@@ -211,8 +212,28 @@ root
 
 ## Турели обороны игрока (1.7.0, блок G)
 
-`machine_gun_turret`, `rocket_turret` (сущности, текстуры 128×128, генератор `build_models.js`): кости `base`, `head` (поворачивает код), `stripes` (полосы на боках головы, почти белые — рендер красит в цвет фракции), `barrel` (наклоняет код; у ракетной это пусковая установка), `muzzle` (точка вспышки). Анимации общие: `animations/entity/defence_turret.animation.json` (`animation.defence_turret.idle`, `.shot`). Этапы сборки в доке: `assembly_stages/<турель>.json` (голова — 1, ствол — 2, полосы — 3).
+`machine_gun_turret`, `rocket_turret` (сущности, текстуры 128×128, генератор `build_models.js`): кости `base`, `head` (поворачивает код), `stripes` (полосы на боках головы, почти белые — рендер красит в цвет фракции), `barrel` (наклоняет код; у ракетной это пусковая установка), `muzzle` (точка вспышки). Анимации общие: `animations/entity/defence_turret.animation.json` (`animation.defence_turret.idle`, `.shot`, с 1.7.1 `.shutdown` и `.wrecked` — наклоняется только голова; ствол опускает код). Текстуры остова `<турель>_wreck.png`. Этапы сборки в доке: `assembly_stages/<турель>.json` (голова — 1, ствол — 2, полосы — 3).
 
 ## Мех охраны (1.7.0, блок H)
 
-`guard_mech` (сущность, текстура 256×256, генератор `build_models.js`): кости как у вражеского меха (`root`, `hips`, ноги, `torso` — поворачивает код, `plate_front`), плюс `stripes` (полоса на груди) и `banner` (знамя на спине) — почти белые, рендер красит в цвет фракции; `right_mount` / `left_mount` (наклоняет код) с `right_gun` / `right_pod` и `left_gun` / `left_pod` — код показывает установленный узел; точки вспышек `right_gun_muzzle`, `left_gun_muzzle`. Анимации `animations/entity/guard_mech.animation.json`: `idle`, `walk`, `shot_right`, `shot_left`, `rocket_right`, `rocket_left`. Этапы сборки в доке: `assembly_stages/guard_mech.json`.
+`guard_mech` (сущность, текстура 256×256, генератор `build_models.js`): кости как у вражеского меха (`root`, `hips`, ноги, `torso` — поворачивает код, `plate_front`), плюс `stripes` (полоса на груди) и `banner` (знамя на спине) — почти белые, рендер красит в цвет фракции; `right_mount` / `left_mount` (наклоняет код) с `right_gun` / `right_pod` и `left_gun` / `left_pod` — код показывает установленный узел; точки вспышек `right_gun_muzzle`, `left_gun_muzzle`. Анимации `animations/entity/guard_mech.animation.json`: `idle`, `walk`, `shot_right`, `shot_left`, `rocket_right`, `rocket_left`; с 1.7.1 `shutdown` (на колени) и `wrecked` (оседает грудой), с 1.7.2 `stomp` (удар ногой) и `fly` (полёт на джетпаке). С 1.7.2 у меха ранец прототипа: кости `jetpack` (дочерняя к `torso`), `jet_right`, `jet_left` (сопла; огонь — частицы из кода, точка `GuardMechEntity.jetNozzle`). Текстура остова `guard_mech_wreck.png`. Этапы сборки в доке: `assembly_stages/guard_mech.json` (ранец — этап 3).
+
+## Малый робот (1.7.1)
+
+`small_robot` (сущность 0,85 × 2,1, текстура 128×128, генератор `build_models.js`, флаги `noCoplanarFaces` и `separateFaces`): кости `root`, `hips`, ноги с голенями и стопами, `torso`, `stripes` (цвет фракции), `backpack` > `fan` (вентилятор вращается), `head` > `sensor` (линза ходит по лицу), `antenna`, `right_mount` (наклоняет код) > `right_gun` > `barrels` (поворачиваются при выстреле), точка `right_gun_muzzle`; `left_arm` > `left_forearm` > `left_claw_front`, `left_claw_back`. Анимации: `idle`, `walk`, `shot_right`, `shutdown`, `wrecked`. Текстура остова `small_robot_wreck.png`. Этапы сборки: `assembly_stages/small_robot.json`.
+
+## Враги руин и мутанты (1.6.0)
+
+Все — GeckoLib, генератор `build_models.js`, исходники `blockbench/<id>.bbmodel`.
+
+| Сущность | Анимации | Примечания |
+|---|---|---|
+| `guard_turret` | `idle`, `shot` | турель охраны руин |
+| `patrol_robot` | `idle`, `walk`, `shot`, `melee`, `dead` | остов — `RemainsEntity`, текстура `patrol_robot_wreck.png` |
+| `mech` | `idle`, `walk`, `run`, `idle_berserk`, `shot`, `rockets`, `stomp`, `dash`, `transform`, `fly`, `gatling`, `gatling_spin`, `folded`, `dead` | вторая фаза: кости `core`, `gatling_mount` > `gatling`, ранец `jetpack`, `jet_right`, `jet_left`; остов `mech_wreck.png` |
+| `mech_rocket` | — | снаряд, 32×32 |
+| `mutated_hound` | `idle`, `walk`, `attack` | |
+| `glowing_ghoul` | `idle`, `walk`, `attack`, `spit` | светящиеся места — отдельная текстура свечения |
+| `brute` | `idle`, `walk`, `attack`, `charge`, `leap`, `land`, `roar`, `stun`, `dead` | |
+
+Анимация остова (`dead` у врагов руин, `wrecked` у тел) выбирается по виду остова в `RemainsEntity.Kind`.

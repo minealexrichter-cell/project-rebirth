@@ -2010,6 +2010,33 @@
      * in space; a turn about x keeps the two side faces in planes along the axes); cubes turned about two or three axes are
      * left out. Overlap is judged by the faces' bounding rectangles in their plane, so it may report a near miss.
      */
+    /**
+     * Parts that touch face to face, or share a side plane, flicker in the game (both faces are drawn at the same depth).
+     * This grows the smaller cube of each such pair by a tenth of a pixel (inflate), again until no pair is left, so the
+     * parts sink a hair into each other. The texture is not touched: inflate draws a cube bigger than its texture size.
+     */
+    function separateFaces(spec) {
+        const byName = {};
+        spec.bones.forEach(b => b.cubes.forEach((c, i) => { byName[b.name + '#' + i] = c; }));
+        const volume = c => c.s[0] * c.s[1] * c.s[2];
+        for (let round = 0; round < 8; round++) {
+            const found = coplanarFaces(spec);
+            if (!found.length) {
+                return;
+            }
+            const grown = new Set();
+            for (const line of found) {
+                const [a, b] = line.split(' at ')[0].split(' / ').map(n => byName[n]);
+                if (grown.has(a) || grown.has(b)) {
+                    continue;
+                }
+                const small = volume(a) <= volume(b) ? a : b;
+                small.inflate = Math.round(((small.inflate || 0) + 0.1) * 100) / 100;
+                grown.add(small);
+            }
+        }
+    }
+
     function coplanarFaces(spec) {
         const faces = [];
         const DEG = Math.PI / 180;
@@ -2105,6 +2132,9 @@
         Project.box_uv = true;
         Project.visible_box = spec.res === 128 ? [3.5, 4, 2] : [2, 3, 1.5];
 
+        if (spec.separateFaces) {
+            separateFaces(spec);
+        }
         if (spec.noCoplanarFaces) {
             const found = coplanarFaces(spec);
             if (found.length) {
@@ -3237,7 +3267,7 @@
             const flipR = cubes => cubes.map(c => mirror(c));
             const barrel = (x, y) => rF([x, y, -15], [1, 1, 6], {f: [[0, 0, 1, 1, '#050505']], edge: false});
             SPECS.small_robot = {
-                res: 128, seed: 1712, noCoplanarFaces: false,
+                res: 128, seed: 1712, noCoplanarFaces: true, separateFaces: true,
                 bones: [
                     {name: 'root', pivot: [0, 0, 0], cubes: []},
                     {name: 'hips', parent: 'root', pivot: [0, 14.5, 0], cubes: [rF([-4.5, 13.5, -3], [9, 3, 6], {f: [[1, 1, 7, 1, RDARK]]})]},
@@ -3264,8 +3294,8 @@
                         rP([-3, 27.5, -4], [6, 5, 6], {f: [[0, 1, 6, 2, RDARK], [1, 1, 4, 1, RCYAN], [0, 0, 6, 1, RLIGHT], [0, 4, 6, 1, REDGE]],
                             tp: [[1, 1, 4, 4, REDGE]], sd: [[1, 1, 4, 1, RDARK]]}),
                         rF([-4, 28.5, -2], [1, 3, 3]), rF([3, 28.5, -2], [1, 3, 3])]},
-                    {name: 'sensor', parent: 'head', pivot: [1.5, 31, -4], cubes: [
-                        rF([0.5, 30.5, -5], [2, 1, 1], {f: [[1, 0, 1, 1, RCYAN]], edge: false}, {inflate: 0.15})]},
+                    {name: 'sensor', parent: 'head', pivot: [0, 31, -4], cubes: [
+                        rF([-1, 30.5, -5], [2, 1, 1], {f: [[1, 0, 1, 1, RCYAN]], edge: false}, {inflate: 0.15})]},
                     {name: 'antenna', parent: 'head', pivot: [-2, 32.5, 1], cubes: [
                         rF([-2.5, 32.5, 0.5], [1, 4, 1], {edge: false}),
                         C([-2.5, 36.5, 0.5], [1, 1, 1], {c: RGREEN, n: 0.02, edge: false}, {inflate: 0.2})]},
@@ -3317,7 +3347,7 @@
                             hips: {p: loopOf(4, t => [0, R2(-0.2 + 0.2 * Math.cos(2 * Math.PI * t)), 0])},
                             torso: {r: loopOf(4, t => [R2(Math.sin(2 * Math.PI * t)), 0, R2(0.6 * Math.sin(2 * Math.PI * (t + 0.25)))])},
                             head: {r: loopOf(4, t => [R2(2 * Math.sin(4 * Math.PI * t)), R2(14 * Math.sin(2 * Math.PI * t)), 0])},
-                            sensor: {p: loopOf(4, t => [0, 0, R2(-0.4 - 0.4 * Math.sin(4 * Math.PI * t))])},
+                            sensor: {p: loopOf(4, t => [R2(1.5 * Math.sin(2 * Math.PI * t)), 0, 0])},
                             antenna: {r: sway(4)}, fan: {r: spin(4, 4)},
                             left_arm: {r: loopOf(4, t => [R2(2 * Math.sin(2 * Math.PI * (t + 0.4))), 0, -2])},
                             left_forearm: {r: loopOf(4, t => [R2(-14 - 3 * Math.sin(2 * Math.PI * t)), 0, 0])},

@@ -129,6 +129,21 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         super(type, level, kind);
     }
 
+    /** 1.7.1: a walking machine is solid, as the hostile robots and the power armor: one bumps into it and it is not pushed about. */
+    @Override
+    public boolean canBeCollidedWith() {
+        return isAlive();
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    protected void doPush(net.minecraft.world.entity.Entity entity) {
+    }
+
     /**
      * 1.7.1: the numbers of a walking machine on this logic, from its section of the config. The mech has [garrison.mech]; the small
      * robot (a subclass) has its own.

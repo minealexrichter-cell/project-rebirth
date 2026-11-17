@@ -221,6 +221,7 @@ public final class ModCreativeTabs {
         out.accept(GarrisonRegistry.TURRET_MOUNT_ITEM.get());
         out.accept(GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get());
         out.accept(GarrisonRegistry.ROCKET_TURRET_ITEM.get());
+        out.accept(GarrisonRegistry.SMALL_ROBOT_ITEM.get());
         out.accept(GarrisonRegistry.GUARD_MECH_ITEM.get());
         out.accept(GarrisonRegistry.MECH_ARMOR_HULL.get());
         out.accept(GarrisonRegistry.MACHINE_GUN_NODE.get());

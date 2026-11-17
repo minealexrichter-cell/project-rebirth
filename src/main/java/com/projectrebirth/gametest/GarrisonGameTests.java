@@ -301,6 +301,16 @@ public class GarrisonGameTests {
         });
     }
 
+    /** 1.7.1, block E: the small robot comes out of the dock on its own legs, charged, with its gun. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 2000)
+    public static void theHeavyDockBuildsASmallRobot(GameTestHelper helper) {
+        dockRollsOut(helper, "dock_small_robot", com.projectrebirth.garrison.SmallRobotEntity.class, (h, thing) -> {
+            var robot = (com.projectrebirth.garrison.SmallRobotEntity) thing;
+            h.assertTrue(!robot.isRollingOut() && robot.working() && robot.energy() > robot.capacity() * 0.9f, "Out, charged, working");
+            h.assertTrue(robot.node(com.projectrebirth.garrison.GuardMechEntity.RIGHT) == com.projectrebirth.garrison.GuardMechEntity.Node.GUN, "With its gun");
+        });
+    }
+
     @GameTest(template = TEMPLATE, timeoutTicks = 3000)
     public static void theHeavyDockRollsATurretOutInACrate(GameTestHelper helper) {
         dockRollsOut(helper, "dock_machine_gun_turret", com.projectrebirth.garrison.TurretCrateEntity.class, (h, thing) -> {

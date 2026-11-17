@@ -77,6 +77,14 @@ public class ChargingPadBlockEntity extends BlockEntity {
                     use(amount);
                     gave = true;
                 }
+            } else if (entity instanceof com.projectrebirth.garrison.GuardMechEntity walker && walker.chargesOnPads()) {
+                // 1.7.1: the small robot charges on a pad too
+                int amount = available((int) Math.min(rate, walker.capacity() - walker.energy()));
+                if (amount > 0) {
+                    walker.addEnergy(amount);
+                    use(amount);
+                    gave = true;
+                }
             } else if (entity instanceof ServerPlayer player && TransferService.isInArtificialBody(player)) {
                 int amount = available((int) Math.min(rate, BodyPower.capacity(player) - BodyPower.charge(player)));
                 if (amount > 0) {

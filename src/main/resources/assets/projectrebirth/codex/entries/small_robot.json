@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:small_robot",
+  "x": 12,
+  "y": 2,
+  "parents": [
+    "defence_turrets",
+    "heavy_dock"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:small_robot",
+      "text": "codex.projectrebirth.small_robot.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.small_robot.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dock_small_robot"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.small_robot.p4"
+    }
+  ]
+}

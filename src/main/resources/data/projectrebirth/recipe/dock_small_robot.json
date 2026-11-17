@@ -1,0 +1,72 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:heavy_dock",
+  "sort": 25,
+  "stages": [
+    {
+      "name": "frame",
+      "materials": [
+        {
+          "item": "minecraft:iron_ingot",
+          "count": 6
+        },
+        {
+          "item": "projectrebirth:actuator",
+          "count": 2
+        }
+      ],
+      "time": 400,
+      "energy": 60,
+      "model_stage": 1
+    },
+    {
+      "name": "weapon",
+      "materials": [
+        {
+          "item": "projectrebirth:machine_gun_node",
+          "count": 1
+        }
+      ],
+      "time": 300,
+      "energy": 60,
+      "model_stage": 2
+    },
+    {
+      "name": "ai_core",
+      "materials": [
+        {
+          "item": "projectrebirth:ai_core",
+          "count": 1
+        },
+        {
+          "item": "projectrebirth:circuit_board",
+          "count": 1
+        },
+        {
+          "item": "projectrebirth:power_cell",
+          "count": 1
+        }
+      ],
+      "time": 400,
+      "energy": 60,
+      "model_stage": 3
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 200,
+      "energy": 60,
+      "model_stage": 4
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:small_robot",
+    "count": 1,
+    "components": {
+      "projectrebirth:mech_loadout": {
+        "right": 1,
+        "left": 0
+      }
+    }
+  }
+}

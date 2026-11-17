@@ -234,6 +234,25 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
     public static final ModConfigSpec.BooleanValue GARRISON_ENABLED;
     public static final ModConfigSpec.BooleanValue MACHINES_IMMUNE_TO_EFFECTS;
+    // 1.7.1, block E: the small robot
+    public static final ModConfigSpec.BooleanValue SMALL_ROBOT_ENABLED;
+    public static final ModConfigSpec.DoubleValue SMALL_ROBOT_SPEED;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_ENERGY_CAPACITY;
+    public static final ModConfigSpec.DoubleValue SMALL_ROBOT_ENERGY_IDLE;
+    public static final ModConfigSpec.DoubleValue SMALL_ROBOT_ENERGY_MOVING;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_ENERGY_SHOT;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_ROUNDS;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_ROCKETS;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_RANGE;
+    public static final ModConfigSpec.DoubleValue SMALL_ROBOT_DAMAGE;
+    public static final ModConfigSpec.DoubleValue SMALL_ROBOT_SPREAD;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_BURST;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_SHOT_TICKS;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_PAUSE_TICKS;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_ROCKET_TICKS;
+    public static final ModConfigSpec.DoubleValue SMALL_ROBOT_LOW_ENERGY;
+    public static final ModConfigSpec.DoubleValue SMALL_ROBOT_CHARGED;
+    public static final ModConfigSpec.IntValue SMALL_ROBOT_GUARD_RADIUS;
     public static final ModConfigSpec.DoubleValue DOCK_ROLLOUT_SPEED;
     public static final ModConfigSpec.BooleanValue MULTIBLOCKS_ENABLED;
     public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_CAPACITY;
@@ -1021,9 +1040,9 @@ public final class RebirthConfig {
         MACHINE_SERVER_LIMIT = builder.comment("Machines of all players on the server at most").defineInRange("serverLimit", 200, 0, 100000);
         MACHINE_MANAGER_ROLES = builder.comment("Faction roles that may pack up, repair and command the machines of other members (leader, officer, member, recruit)")
                 .defineListAllowEmpty("managerRoles", java.util.List.of("leader", "officer"), () -> "officer", value -> value instanceof String);
-        int[][] limits = {{6, 12}, {10, 20}, {1, 3}, {4, 8}};
-        double[][] integrity = {{30.0, 15.0}, {80.0, 40.0}, {250.0, 125.0}, {40.0, 20.0}};
-        int[] slots = {0, 2, 3, 3};
+        int[][] limits = {{6, 12}, {10, 20}, {1, 3}, {8, 16}, {4, 8}};
+        double[][] integrity = {{30.0, 15.0}, {80.0, 40.0}, {250.0, 125.0}, {50.0, 25.0}, {40.0, 20.0}};
+        int[] slots = {0, 2, 3, 1, 3};
         for (com.projectrebirth.garrison.MachineKind kind : com.projectrebirth.garrison.MachineKind.values()) {
             builder.comment("Machines of this kind: " + kind.description()).push(kind.id());
             MACHINE_PLAYER_LIMIT.put(kind, builder.comment("At most per player").defineInRange("playerLimit", limits[kind.ordinal()][0], 0, 10000));
@@ -1089,6 +1108,27 @@ public final class RebirthConfig {
         GUARD_MECH_LOW_ENERGY = builder.comment("Below this share of energy it goes to a service post").defineInRange("lowEnergy", 0.2, 0.0, 1.0);
         GUARD_MECH_CHARGED = builder.comment("It leaves the post at this share").defineInRange("charged", 0.9, 0.05, 1.0);
         GUARD_MECH_GUARD_RADIUS = builder.comment("Blocks around the point it guards in which it fights").defineInRange("guardRadius", 16, 1, 64);
+        builder.pop();
+        builder.comment("The small robot (1.7.1): a cheap soldier of the heavy dock on the mech's logic, with a built-in machine gun. Integrity in",
+                "[garrison.machines.robot]; it charges at a service post or a charging pad.").push("small_robot");
+        SMALL_ROBOT_ENABLED = builder.comment("Whether the player's small robots act at all").define("enabled", true);
+        SMALL_ROBOT_SPEED = builder.comment("Movement speed (attribute)").defineInRange("speed", 0.27, 0.05, 1.0);
+        SMALL_ROBOT_ENERGY_CAPACITY = builder.comment("Energy (FE) it holds").defineInRange("energyCapacity", 20000, 1, 1_000_000_000);
+        SMALL_ROBOT_ENERGY_IDLE = builder.comment("Energy it uses per second while working").defineInRange("energyPerSecond", 4.0, 0.0, 100000.0);
+        SMALL_ROBOT_ENERGY_MOVING = builder.comment("Energy more per second while it walks").defineInRange("energyMovingPerSecond", 10.0, 0.0, 100000.0);
+        SMALL_ROBOT_ENERGY_SHOT = builder.comment("Energy a bullet takes").defineInRange("energyPerShot", 10, 0, 100000);
+        SMALL_ROBOT_ROUNDS = builder.comment("Assault rifle rounds its magazine holds").defineInRange("rounds", 192, 0, 100000);
+        SMALL_ROBOT_ROCKETS = builder.comment("Rockets (it has no rocket launcher; kept at 0)").defineInRange("rockets", 0, 0, 0);
+        SMALL_ROBOT_RANGE = builder.comment("Blocks it sees and shoots at").defineInRange("range", 20, 4, 128);
+        SMALL_ROBOT_DAMAGE = builder.comment("Damage of one bullet").defineInRange("damage", 3.5, 0.0, 1000.0);
+        SMALL_ROBOT_SPREAD = builder.comment("Spread of its bullets in degrees").defineInRange("spread", 4.0, 0.0, 45.0);
+        SMALL_ROBOT_BURST = builder.comment("Bullets in a burst").defineInRange("burst", 4, 1, 100);
+        SMALL_ROBOT_SHOT_TICKS = builder.comment("Ticks between two bullets of a burst").defineInRange("shotTicks", 3, 1, 100);
+        SMALL_ROBOT_PAUSE_TICKS = builder.comment("Ticks between two bursts").defineInRange("pauseTicks", 24, 1, 1000);
+        SMALL_ROBOT_ROCKET_TICKS = builder.comment("Unused (no rockets)").defineInRange("rocketTicks", 70, 5, 2000);
+        SMALL_ROBOT_LOW_ENERGY = builder.comment("Below this share of energy it goes to charge").defineInRange("lowEnergy", 0.25, 0.0, 1.0);
+        SMALL_ROBOT_CHARGED = builder.comment("It goes back to its order at this share").defineInRange("charged", 0.9, 0.05, 1.0);
+        SMALL_ROBOT_GUARD_RADIUS = builder.comment("Blocks around the point it guards in which it fights").defineInRange("guardRadius", 12, 1, 64);
         builder.pop();
         builder.comment("The service post (block H): four post plates and a post console. A machine on the plates is charged from the console's",
                 "energy, has its structural integrity mended with iron or armor plates from a chest next to the console and its magazine filled from it.").push("service_post");

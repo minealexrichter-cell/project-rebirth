@@ -40,6 +40,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.items.IItemHandler;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -63,8 +64,6 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private static final EntityDataAccessor<Integer> LEFT_NODE = SynchedEntityData.defineId(GuardMechEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> AIMING = SynchedEntityData.defineId(GuardMechEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DOWN = SynchedEntityData.defineId(GuardMechEntity.class, EntityDataSerializers.BOOLEAN);
-    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.guard_mech.idle");
-    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.guard_mech.walk");
 
     /** What sits on a side: nothing, a machine gun node, a rocket launcher node. */
     public enum Node {
@@ -122,7 +121,39 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private int routeIndex;
 
     public GuardMechEntity(EntityType<? extends GuardMechEntity> type, Level level) {
-        super(type, level, MachineKind.MECH);
+        this(type, level, MachineKind.MECH);
+    }
+
+    /** 1.7.1: a machine of another kind on the mech's logic (the small robot), with its own numbers from {@link #stats()}. */
+    protected GuardMechEntity(EntityType<? extends GuardMechEntity> type, Level level, MachineKind kind) {
+        super(type, level, kind);
+    }
+
+    /**
+     * 1.7.1: the numbers of a walking machine on this logic, from its section of the config. The mech has [garrison.mech]; the small
+     * robot (a subclass) has its own.
+     */
+    public record Stats(ModConfigSpec.BooleanValue enabled, ModConfigSpec.DoubleValue speed, ModConfigSpec.IntValue capacity,
+                        ModConfigSpec.DoubleValue energyIdle, ModConfigSpec.DoubleValue energyMoving, ModConfigSpec.IntValue energyShot,
+                        ModConfigSpec.IntValue rounds, ModConfigSpec.IntValue rockets, ModConfigSpec.IntValue range, ModConfigSpec.DoubleValue damage,
+                        ModConfigSpec.DoubleValue spread, ModConfigSpec.IntValue burst, ModConfigSpec.IntValue shotTicks, ModConfigSpec.IntValue pauseTicks,
+                        ModConfigSpec.IntValue rocketTicks, ModConfigSpec.DoubleValue lowEnergy, ModConfigSpec.DoubleValue charged,
+                        ModConfigSpec.IntValue guardRadius) {
+    }
+
+    @Nullable
+    private static Stats mechStats;
+
+    protected Stats stats() {
+        if (mechStats == null) {
+            mechStats = new Stats(RebirthConfig.MECHS_ENABLED, RebirthConfig.GUARD_MECH_SPEED, RebirthConfig.GUARD_MECH_ENERGY_CAPACITY,
+                    RebirthConfig.GUARD_MECH_ENERGY_IDLE, RebirthConfig.GUARD_MECH_ENERGY_MOVING, RebirthConfig.GUARD_MECH_ENERGY_SHOT,
+                    RebirthConfig.GUARD_MECH_ROUNDS, RebirthConfig.GUARD_MECH_ROCKETS, RebirthConfig.GUARD_MECH_RANGE, RebirthConfig.GUARD_MECH_DAMAGE,
+                    RebirthConfig.GUARD_MECH_SPREAD, RebirthConfig.GUARD_MECH_BURST, RebirthConfig.GUARD_MECH_SHOT_TICKS, RebirthConfig.GUARD_MECH_PAUSE_TICKS,
+                    RebirthConfig.GUARD_MECH_ROCKET_TICKS, RebirthConfig.GUARD_MECH_LOW_ENERGY, RebirthConfig.GUARD_MECH_CHARGED,
+                    RebirthConfig.GUARD_MECH_GUARD_RADIUS);
+        }
+        return mechStats;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -168,7 +199,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     }
 
     public int capacity() {
-        return RebirthConfig.GUARD_MECH_ENERGY_CAPACITY.get();
+        return stats().capacity().get();
     }
 
     public int rounds() {
@@ -195,8 +226,8 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     public void refill(IItemHandler store) {
         for (int slot = 0; slot < store.getSlots(); slot++) {
             ItemStack stack = store.getStackInSlot(slot);
-            int room = stack.is(WeaponRegistry.ASSAULT_RIFLE_AMMO.get()) ? RebirthConfig.GUARD_MECH_ROUNDS.get() - rounds
-                    : stack.is(GarrisonRegistry.ROCKET.get()) ? RebirthConfig.GUARD_MECH_ROCKETS.get() - rockets : 0;
+            int room = stack.is(WeaponRegistry.ASSAULT_RIFLE_AMMO.get()) ? stats().rounds().get() - rounds
+                    : stack.is(GarrisonRegistry.ROCKET.get()) ? stats().rockets().get() - rockets : 0;
             if (room > 0) {
                 ItemStack taken = store.extractItem(slot, room, false);
                 load(taken);
@@ -207,18 +238,18 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     /** Puts rounds or rockets into its magazine as far as there is room; what does not fit stays in the stack. */
     public void load(ItemStack stack) {
         if (stack.is(WeaponRegistry.ASSAULT_RIFLE_AMMO.get())) {
-            int put = Math.min(stack.getCount(), RebirthConfig.GUARD_MECH_ROUNDS.get() - rounds);
+            int put = Math.min(stack.getCount(), stats().rounds().get() - rounds);
             rounds += put;
             stack.shrink(put);
         } else if (stack.is(GarrisonRegistry.ROCKET.get())) {
-            int put = Math.min(stack.getCount(), RebirthConfig.GUARD_MECH_ROCKETS.get() - rockets);
+            int put = Math.min(stack.getCount(), stats().rockets().get() - rockets);
             rockets += put;
             stack.shrink(put);
         }
     }
 
     public boolean working() {
-        return machineCore().active() && !emergency && RebirthConfig.MECHS_ENABLED.get() && RebirthConfig.GARRISON_ENABLED.get();
+        return machineCore().active() && !emergency && stats().enabled().get() && RebirthConfig.GARRISON_ENABLED.get();
     }
 
     // ------------------------------------------------------------------ packing
@@ -243,7 +274,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
-        Node node = Node.of(held);
+        Node node = swapsNodes() ? Node.of(held) : Node.NONE;
         boolean ammo = held.is(WeaponRegistry.ASSAULT_RIFLE_AMMO.get()) || held.is(GarrisonRegistry.ROCKET.get());
         boolean empty = held.isEmpty() && hand == InteractionHand.MAIN_HAND;
         if (node == Node.NONE && !ammo && !empty) {
@@ -307,7 +338,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         MachineCore core = machineCore();
         if (core.active()) {
             boolean moving = getDeltaMovement().horizontalDistanceSqr() > 1.0e-4;
-            energy = Math.max(0.0f, energy - (float) (RebirthConfig.GUARD_MECH_ENERGY_IDLE.get() + (moving ? RebirthConfig.GUARD_MECH_ENERGY_MOVING.get() : 0.0)));
+            energy = Math.max(0.0f, energy - (float) (stats().energyIdle().get() + (moving ? stats().energyMoving().get() : 0.0)));
         }
         boolean empty = energy <= 0.0f;
         boolean recovered = energy > capacity() * 0.05f;
@@ -327,7 +358,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             ConsoleLink.supply(this, core, lacking);
         }
         entityData.set(DOWN, !working());
-        getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(RebirthConfig.GUARD_MECH_SPEED.get() * (core.emiFault() ? 0.6 : 1.0));
+        getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(stats().speed().get() * (core.emiFault() ? 0.6 : 1.0));
         if (!core.task().equals(lastTask)) {
             lastTask = core.task();
             holdPoint = blockPosition();
@@ -357,7 +388,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private boolean withinOrder(LivingEntity target) {
         MachineTask task = machineCore().task();
         if (task.type() == MachineTask.Type.GUARD && task.point().isPresent()) {
-            double radius = RebirthConfig.GUARD_MECH_GUARD_RADIUS.get();
+            double radius = stats().guardRadius().get();
             return target.blockPosition().distSqr(task.point().get()) <= radius * radius;
         }
         return true;
@@ -367,7 +398,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         if (target == null || !target.isAlive() || target.level() != level()) {
             return false;
         }
-        double range = RebirthConfig.GUARD_MECH_RANGE.get();
+        double range = stats().range().get();
         return distanceToSqr(target) <= range * range * 1.5 && TargetRules.mayAttack(this, target) && withinOrder(target);
     }
 
@@ -387,7 +418,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             if (validTarget(getTarget())) {
                 return false;
             }
-            double range = RebirthConfig.GUARD_MECH_RANGE.get();
+            double range = stats().range().get();
             LivingEntity best = null;
             double bestDistance = Double.MAX_VALUE;
             for (LivingEntity found : level().getEntitiesOfClass(LivingEntity.class, new AABB(blockPosition()).inflate(range),
@@ -448,7 +479,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             boolean holding = task.type() == MachineTask.Type.HOLD && holdPoint != null;
             double leash = RebirthConfig.ANDROID_HOLD_RADIUS.get();
             boolean mayChase = !holding || target.blockPosition().distSqr(holdPoint) <= (leash + 2) * (leash + 2);
-            double range = RebirthConfig.GUARD_MECH_RANGE.get();
+            double range = stats().range().get();
             if ((!sees || distance > range * 0.6) && mayChase) {
                 if (tickCount % 10 == 0) {
                     getNavigation().moveTo(target, 1.0);
@@ -494,7 +525,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
 
     /** One shot of a side if it is ready: a bullet of a burst, or a rocket. Public for tests. */
     public boolean fireSide(int side, LivingEntity target) {
-        if (cooldown[side] > 0 || energy < RebirthConfig.GUARD_MECH_ENERGY_SHOT.get()) {
+        if (cooldown[side] > 0 || energy < stats().energyShot().get()) {
             return false;
         }
         switch (node(side)) {
@@ -503,17 +534,17 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                     return false;
                 }
                 if (shotsLeft[side] <= 0) {
-                    shotsLeft[side] = RebirthConfig.GUARD_MECH_BURST.get();
+                    shotsLeft[side] = stats().burst().get();
                 }
                 rounds--;
-                energy -= RebirthConfig.GUARD_MECH_ENERGY_SHOT.get();
-                double spread = RebirthConfig.GUARD_MECH_SPREAD.get() * (machineCore().dusty() ? RebirthConfig.TURRET_DUST_SPREAD.get() : 1.0)
+                energy -= stats().energyShot().get();
+                double spread = stats().spread().get() * (machineCore().dusty() ? RebirthConfig.TURRET_DUST_SPREAD.get() : 1.0)
                         + (machineCore().emiFault() ? RebirthConfig.TURRET_EMI_SPREAD.get() * 0.5 : 0.0);
-                Gunnery.fire(this, muzzle(side), target, spread, RebirthConfig.GUARD_MECH_DAMAGE.get().floatValue(), RebirthConfig.GUARD_MECH_RANGE.get() + 4.0, 0.8f,
+                Gunnery.fire(this, muzzle(side), target, spread, stats().damage().get().floatValue(), stats().range().get() + 4.0, 0.8f,
                         e -> e != this && !TargetRules.friendly(this, e), SoundSource.NEUTRAL);
                 triggerAnim("main", side == RIGHT ? "shot_right" : "shot_left");
                 shotsLeft[side]--;
-                cooldown[side] = shotsLeft[side] > 0 ? RebirthConfig.GUARD_MECH_SHOT_TICKS.get() : RebirthConfig.GUARD_MECH_PAUSE_TICKS.get();
+                cooldown[side] = shotsLeft[side] > 0 ? stats().shotTicks().get() : stats().pauseTicks().get();
                 return true;
             }
             case ROCKET -> {
@@ -522,14 +553,14 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                     return false;
                 }
                 rockets--;
-                energy -= RebirthConfig.GUARD_MECH_ENERGY_SHOT.get();
+                energy -= stats().energyShot().get();
                 Vec3 from = muzzle(side);
                 Vec3 to = target.position();
                 level().addFreshEntity(new MechRocketEntity(level(), this, from, to, 14 + (int) (from.distanceTo(to) * 0.6),
                         RebirthConfig.ROCKET_TURRET_POWER.get().floatValue(), RebirthConfig.ROCKET_TURRET_BREAKS.get()));
                 playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 1.4f, 0.7f);
                 triggerAnim("main", side == RIGHT ? "rocket_right" : "rocket_left");
-                cooldown[side] = RebirthConfig.GUARD_MECH_ROCKET_TICKS.get();
+                cooldown[side] = stats().rocketTicks().get();
                 return true;
             }
             default -> {
@@ -570,18 +601,18 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
 
         @Override
         public boolean canUse() {
-            if (!machineCore().active() || energy > capacity() * RebirthConfig.GUARD_MECH_LOW_ENERGY.get() || --wait > 0
+            if (!machineCore().active() || energy > capacity() * stats().lowEnergy().get() || --wait > 0
                     || !(level() instanceof net.minecraft.server.level.ServerLevel server)) {
                 return false;
             }
             wait = 10;
-            post = ServicePostBlockEntity.nearest(server, blockPosition());
+            post = chargePoint(server);
             return post != null;
         }
 
         @Override
         public boolean canContinueToUse() {
-            return post != null && machineCore().active() && energy < capacity() * RebirthConfig.GUARD_MECH_CHARGED.get();
+            return post != null && machineCore().active() && energy < capacity() * stats().charged().get();
         }
 
         @Override
@@ -732,18 +763,41 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         return 75;
     }
 
+    /** 1.7.1: the start of its animations' names in its animation file. */
+    protected String animationPrefix() {
+        return "animation.guard_mech";
+    }
+
+    /** 1.7.1: whether a weapon node in hand swaps one of its nodes (the small robot has its gun built in). */
+    protected boolean swapsNodes() {
+        return true;
+    }
+
+    /** 1.7.1: whether a charging pad charges it (the small robot); the mech charges only at a service post. */
+    public boolean chargesOnPads() {
+        return false;
+    }
+
+    /** Where it goes to charge: the nearest service post (the small robot: or charging pad, whichever is nearer), or null. */
+    @Nullable
+    protected Vec3 chargePoint(net.minecraft.server.level.ServerLevel server) {
+        return ServicePostBlockEntity.nearest(server, blockPosition());
+    }
+
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        RawAnimation idle = RawAnimation.begin().thenLoop(animationPrefix() + ".idle");
+        RawAnimation walk = RawAnimation.begin().thenLoop(animationPrefix() + ".walk");
         controllers.add(new AnimationController<>(this, "main", 5, state -> {
             if (down()) {
-                return state.setAndContinue(IDLE);
+                return state.setAndContinue(idle);
             }
             double dx = getX() - xo, dz = getZ() - zo;
-            return state.setAndContinue(state.isMoving() || dx * dx + dz * dz > 1.0e-5 ? WALK : IDLE);
-        }).triggerableAnim("shot_right", RawAnimation.begin().thenPlay("animation.guard_mech.shot_right"))
-                .triggerableAnim("shot_left", RawAnimation.begin().thenPlay("animation.guard_mech.shot_left"))
-                .triggerableAnim("rocket_right", RawAnimation.begin().thenPlay("animation.guard_mech.rocket_right"))
-                .triggerableAnim("rocket_left", RawAnimation.begin().thenPlay("animation.guard_mech.rocket_left")));
+            return state.setAndContinue(state.isMoving() || dx * dx + dz * dz > 1.0e-5 ? walk : idle);
+        }).triggerableAnim("shot_right", RawAnimation.begin().thenPlay(animationPrefix() + ".shot_right"))
+                .triggerableAnim("shot_left", RawAnimation.begin().thenPlay(animationPrefix() + ".shot_left"))
+                .triggerableAnim("rocket_right", RawAnimation.begin().thenPlay(animationPrefix() + ".rocket_right"))
+                .triggerableAnim("rocket_left", RawAnimation.begin().thenPlay(animationPrefix() + ".rocket_left")));
     }
 
     @Override

@@ -766,21 +766,24 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     /** The nearest charging pad within the config's radius, or null. Public for tests. */
     @Nullable
     public BlockPos nearestPad() {
-        if (!(level() instanceof ServerLevel server)) {
-            return null;
-        }
+        return level() instanceof ServerLevel server ? nearestPad(server, blockPosition()) : null;
+    }
+
+    /** The nearest charging pad to a place within the config's radius, or null (1.7.1: the small robot looks for one too). */
+    @Nullable
+    public static BlockPos nearestPad(ServerLevel server, BlockPos from) {
         int radius = RebirthConfig.ANDROID_PAD_RADIUS.get();
         int chunks = (radius >> 4) + 1;
         BlockPos best = null;
         double bestDistance = (double) radius * radius;
         for (int dx = -chunks; dx <= chunks; dx++) {
             for (int dz = -chunks; dz <= chunks; dz++) {
-                LevelChunk chunk = server.getChunkSource().getChunkNow((blockPosition().getX() >> 4) + dx, (blockPosition().getZ() >> 4) + dz);
+                LevelChunk chunk = server.getChunkSource().getChunkNow((from.getX() >> 4) + dx, (from.getZ() >> 4) + dz);
                 if (chunk == null) {
                     continue;
                 }
                 for (BlockEntity found : chunk.getBlockEntities().values()) {
-                    double distance = found.getBlockPos().distSqr(blockPosition());
+                    double distance = found.getBlockPos().distSqr(from);
                     if (found instanceof ChargingPadBlockEntity && distance < bestDistance) {
                         best = found.getBlockPos();
                         bestDistance = distance;

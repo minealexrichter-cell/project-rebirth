@@ -3145,6 +3145,66 @@
                 })()
             };
         }
+
+        // ---------------------------------------------------------------- the small robot (1.7.1, block E)
+        // The cheap soldier of the heavy dock: a biped about a block and a quarter tall in the service paint of the guard mech (light
+        // plates, dark frame), a boxy head with a cyan visor, a machine gun built into the right forearm (bone right_gun under
+        // right_mount, which tilts to aim, as the mech's), a plain left arm. The chest stripe (bone "stripes", near white) takes the
+        // faction's colour in the renderer. Bones for the dock's stages: legs, torso, right_mount, head, stripes.
+        {
+            const RP = {c: '#a9b0b6', n: 0.06};
+            const RF = {c: '#43474c', n: 0.08};
+            const RDARK = '#1d1f22', REDGE = '#8a9198', RLIGHT = '#cdd3d8', RCYAN = '#37c6e8', RWHITE = '#f2f4f6';
+            const rP = (o, sz, more) => C(o, sz, Object.assign({}, RP, more));
+            const rF = (o, sz, more) => C(o, sz, Object.assign({}, RF, more));
+            const rThigh = [rF([-4, 9.5, -1.5], [3, 2, 3]), rP([-3.5, 6, -1], [2, 4, 2], {f: [[0, 1, 2, 1, RLIGHT]]})];
+            const rShin = [rF([-4, 4.5, -1.5], [3, 2, 3]), rP([-3.5, 2, -1], [2, 3, 2], {f: [[0, 0, 2, 1, RLIGHT]]})];
+            const rFoot = [rF([-4.5, 0, -3], [4, 2, 5], {f: hazard(0, 0, 4, 1, AMBER, RDARK, 2), edge: false})];
+            const flipR = cubes => cubes.map(c => mirror(c));
+            SPECS.small_robot = {
+                res: 64, seed: 1711, noCoplanarFaces: false,
+                bones: [
+                    {name: 'root', pivot: [0, 0, 0], cubes: []},
+                    {name: 'hips', parent: 'root', pivot: [0, 11, 0], cubes: [rF([-3, 10.5, -2], [6, 2, 4])]},
+                    {name: 'right_leg', parent: 'hips', pivot: [-2.5, 11, 0], cubes: rThigh},
+                    {name: 'right_shin', parent: 'right_leg', pivot: [-2.5, 6, 0], cubes: rShin},
+                    {name: 'right_foot', parent: 'right_shin', pivot: [-2.5, 1.5, 0], cubes: rFoot},
+                    {name: 'left_leg', parent: 'hips', pivot: [2.5, 11, 0], cubes: flipR(rThigh)},
+                    {name: 'left_shin', parent: 'left_leg', pivot: [2.5, 6, 0], cubes: flipR(rShin)},
+                    {name: 'left_foot', parent: 'left_shin', pivot: [2.5, 1.5, 0], cubes: flipR(rFoot)},
+                    {name: 'torso', parent: 'hips', pivot: [0, 12.5, 0], cubes: [
+                        rP([-4, 12.5, -2.5], [8, 6, 5], {f: [[1, 1, 6, 1, RLIGHT], [2, 3, 4, 2, RDARK], [1, 5, 6, 1, REDGE]],
+                            sd: [[1, 1, 3, 1, REDGE]], k: vents(1, 1, 6, 2, RDARK, 2)}),
+                        rF([-3, 13, 2.5], [6, 4, 2], {k: vents(1, 1, 4, 2, RDARK, 1)}),
+                        rF([1.5, 17.5, 3], [1, 4, 1], {edge: false})]},
+                    {name: 'stripes', parent: 'torso', pivot: [0, 17, -2.5], cubes: [C([-4, 16.5, -3], [8, 1, 1], {c: RWHITE, n: 0.02, edge: false}, {inflate: 0.1})]},
+                    {name: 'head', parent: 'torso', pivot: [0, 18.5, 0], cubes: [
+                        rP([-2, 18.5, -2.5], [4, 3, 4], {f: [[0, 1, 4, 1, RCYAN], [0, 0, 4, 1, RLIGHT]], tp: [[1, 1, 2, 2, REDGE]]})]},
+                    {name: 'right_mount', parent: 'torso', pivot: [-5.5, 16.5, 0], cubes: [rF([-7, 15, -1.5], [3, 3, 3])]},
+                    {name: 'right_gun', parent: 'right_mount', pivot: [-5.5, 16.5, 0], cubes: [
+                        rP([-7, 12.5, -6], [3, 3, 7], {sd: [[1, 1, 5, 1, RLIGHT]], tp: [[1, 1, 1, 5, REDGE]]}),
+                        C([-6, 13.5, -9], [1, 1, 3], Object.assign({}, RF, {f: [[0, 0, 1, 1, '#050505']], edge: false}), {inflate: 0.25})]},
+                    {name: 'right_gun_muzzle', parent: 'right_gun', pivot: [-5.5, 14, -9.3], cubes: []},
+                    {name: 'left_arm', parent: 'torso', pivot: [5.5, 17, 0], cubes: [
+                        rF([4, 15, -1.5], [3, 3, 3]),
+                        rP([4.5, 10, -1], [2, 5, 2], {f: [[0, 1, 2, 1, RLIGHT]]}),
+                        rF([4, 9, -1.5], [3, 1, 3], {edge: false})]}
+                ],
+                animations: (() => {
+                    const recoil = bone => move(0.12, {[bone]: {p: K([0, [0, 0, 0]], [0.03, [0, 0, 1]], [0.12, [0, 0, 0]])}});
+                    return {
+                        'animation.small_robot.idle': {length: 3, loop: 'loop', bones: {
+                            hips: {p: loopOf(3, t => [0, R2(-0.15 + 0.15 * Math.cos(2 * Math.PI * t)), 0])},
+                            torso: {r: loopOf(3, t => [R2(Math.sin(2 * Math.PI * t)), 0, R2(0.6 * Math.sin(2 * Math.PI * (t + 0.25)))])},
+                            head: {r: loopOf(3, t => [0, R2(8 * Math.sin(2 * Math.PI * t)), 0])},
+                            left_arm: {r: loopOf(3, t => [R2(2 * Math.sin(2 * Math.PI * (t + 0.4))), 0, 0])}}},
+                        'animation.small_robot.walk': ikGait({length: 0.9, thigh: 5, shin: 4.5, rest: 9.5, hip: 9.1, stride: 3, lift: 1.5, stance: 0.6,
+                            bob: 0.4, sway: 2, pelvis: 4, twist: 3, lean: 3, feet: true, toe: 8, hips: 'hips', torso: 'torso', arms: {}}),
+                        'animation.small_robot.shot_right': recoil('right_gun')
+                    };
+                })()
+            };
+        }
     })();
 
     // ---------------------------------------------------------------- the mutants

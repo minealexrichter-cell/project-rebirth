@@ -127,9 +127,14 @@ public final class GarrisonRegistry {
             builder -> builder.persistent(GuardMechEntity.Loadout.CODEC).networkSynchronized(GuardMechEntity.Loadout.STREAM_CODEC));
     public static final DeferredItem<Item> MECH_ARMOR_HULL = ITEMS.registerSimpleItem("mech_armor_hull", new Item.Properties().stacksTo(1));
     public static final DeferredHolder<EntityType<?>, EntityType<GuardMechEntity>> GUARD_MECH = ENTITY_TYPES.register("guard_mech",
-            () -> EntityType.Builder.of(GuardMechEntity::new, MobCategory.MISC).sized(2.2f, 3.4f).eyeHeight(2.6f).fireImmune().clientTrackingRange(12).build("guard_mech"));
+            () -> EntityType.Builder.<GuardMechEntity>of((type, level) -> new GuardMechEntity(type, level), MobCategory.MISC).sized(2.2f, 3.4f).eyeHeight(2.6f).fireImmune().clientTrackingRange(12).build("guard_mech"));
     public static final DeferredItem<PackedMachineItem> GUARD_MECH_ITEM = ITEMS.register("guard_mech",
             () -> new PackedMachineItem(MachineKind.MECH, GUARD_MECH::get, new Item.Properties().stacksTo(1)));
+    /** 1.7.1, block E: the small robot, the cheap soldier of the heavy dock. */
+    public static final DeferredHolder<EntityType<?>, EntityType<SmallRobotEntity>> SMALL_ROBOT = ENTITY_TYPES.register("small_robot",
+            () -> EntityType.Builder.of(SmallRobotEntity::new, MobCategory.MISC).sized(0.7f, 1.3f).eyeHeight(1.1f).clientTrackingRange(10).build("small_robot"));
+    public static final DeferredItem<PackedMachineItem> SMALL_ROBOT_ITEM = ITEMS.register("small_robot",
+            () -> new PackedMachineItem(MachineKind.ROBOT, SMALL_ROBOT::get, new Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> SERVICE_POST_PLATE = BLOCKS.registerSimpleBlock("service_post_plate",
             net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
                     .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops());
@@ -182,5 +187,6 @@ public final class GarrisonRegistry {
         event.put(MACHINE_GUN_TURRET.get(), DefenceTurretEntity.createAttributes().build());
         event.put(ROCKET_TURRET.get(), DefenceTurretEntity.createAttributes().build());
         event.put(GUARD_MECH.get(), GuardMechEntity.createAttributes().build());
+        event.put(SMALL_ROBOT.get(), SmallRobotEntity.createAttributes().build());
     }
 }

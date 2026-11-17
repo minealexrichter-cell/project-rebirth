@@ -2697,6 +2697,24 @@
         '...khhk..khhk...',
         '...kkkk..kkkk...',
         '................'], {k: '#1e2228', w: '#a9b0b6', d: '#43474c', g: '#2a2d31', p: '#5fd06a', b: '#5fd06a', y: '#e0b33a', h: '#d89a2a'}));
+    // 1.7.1, block E: the small robot (packed): a short biped, cyan visor, the machine gun on its right arm.
+    item('small_robot', () => icon([
+        '......kkkk......',
+        '.....kwwwwk.....',
+        '.....kbbbbk.....',
+        '.....kwwwwk.....',
+        '..kkkkkkkkkkk...',
+        '.kdddkwwwwwkddk.',
+        'kxxxxdkyyyykddk.',
+        'kxxxxdkwwwwkkdk.',
+        '.kkkkkkddddk.kk.',
+        '......kw..wk....',
+        '......kw..wk....',
+        '......kd..dk....',
+        '......kw..wk....',
+        '.....kwwk.kwwk..',
+        '.....khhk.khhk..',
+        '.....kkkk.kkkk..'], {k: '#1e2228', w: '#a9b0b6', d: '#43474c', x: '#2a2d31', b: '#37c6e8', y: '#e0b33a', h: '#d89a2a'}));
     item('mech_armor_hull', () => icon([
         '................',
         '...kkkkkkkkkk...',

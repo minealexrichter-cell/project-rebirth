@@ -136,6 +136,7 @@
         "work_android",
         "defence_turrets",
         "guard_mech",
+        "small_robot",
         "service_post"
       ]
     }

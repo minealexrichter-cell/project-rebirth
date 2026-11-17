@@ -14,6 +14,7 @@ public enum MachineKind implements StringRepresentable {
     ANDROID("an artificial body run by an AI core"),
     TURRET("a defence turret"),
     MECH("the guard mech"),
+    ROBOT("the small robot (1.7.1)"),
     TEST("the stand-in machine of the automated tests");
 
     private final String description;

@@ -32,8 +32,13 @@ public class GuardMechRenderer extends GeoEntityRenderer<GuardMechEntity> {
     private int factionColor = NO_FACTION;
 
     public GuardMechRenderer(EntityRendererProvider.Context context) {
-        super(context, new MechModel());
-        this.shadowRadius = 1.4f;
+        this(context, "guard_mech", 1.4f);
+    }
+
+    /** 1.7.1: the same for another machine on the mech's logic (the small robot), with its own model, texture and animations. */
+    public GuardMechRenderer(EntityRendererProvider.Context context, String id, float shadow) {
+        super(context, new MechModel(id));
+        this.shadowRadius = shadow;
     }
 
     @Override
@@ -79,19 +84,27 @@ public class GuardMechRenderer extends GeoEntityRenderer<GuardMechEntity> {
     }
 
     private static class MechModel extends GeoModel<GuardMechEntity> {
+        private final ResourceLocation model, texture, animations;
+
+        MechModel(String id) {
+            model = ProjectRebirth.id("geo/entity/" + id + ".geo.json");
+            texture = ProjectRebirth.id("textures/entity/" + id + ".png");
+            animations = ProjectRebirth.id("animations/entity/" + id + ".animation.json");
+        }
+
         @Override
         public ResourceLocation getModelResource(GuardMechEntity mech) {
-            return ProjectRebirth.id("geo/entity/guard_mech.geo.json");
+            return model;
         }
 
         @Override
         public ResourceLocation getTextureResource(GuardMechEntity mech) {
-            return ProjectRebirth.id("textures/entity/guard_mech.png");
+            return texture;
         }
 
         @Override
         public ResourceLocation getAnimationResource(GuardMechEntity mech) {
-            return ProjectRebirth.id("animations/entity/guard_mech.animation.json");
+            return animations;
         }
 
         @Override

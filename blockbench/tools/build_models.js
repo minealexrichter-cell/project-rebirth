@@ -2430,6 +2430,66 @@
         };
     })();
 
+    // ------------------------------------------------------------------ defence turrets (1.7.0, block G)
+    // The player's turrets: the guard turret's shape in service paint (clean light casing, green lamps). The stripes on the sides
+    // of the head (bone "stripes", a leaf) are near white: the renderer tints them in the owner's faction colour. The machine gun
+    // keeps the long barrel; the rocket turret carries a launcher of four tubes instead (bone "barrel" all the same, so the code
+    // tilts both alike).
+    (() => {
+        const CASING = {c: '#c3c9cf', n: 0.04};
+        const FRAME = {c: '#4a4f55', n: 0.05};
+        const GREEN = {c: '#5fd06a', n: 0.02, edge: false};
+        const STRIPE = {c: '#f2f4f6', n: 0.02, edge: false};
+        const panel = {c: '#c3c9cf', n: 0.04, sd: [[2, 2, 9, 1, '#99a0a8']], f: [[1, 3, 10, 1, '#99a0a8']]};
+        const feet = [[-8, -8], [5, -8], [-8, 5], [5, 5]].map(([x, z]) => C([x, 0, z], [3, 3, 3], FRAME));
+        const base = () => [...feet.map(c => Object.assign({}, c)),
+            C([-6, 1, -6], [12, 5, 12], CASING),
+            C([-5, 5, -5], [10, 5, 10], CASING),
+            C([-3, 9, -3], [6, 4, 6], CASING),
+            C([-4, 12, -4], [8, 3, 8], FRAME),
+            C([-2, 14, -2], [4, 7, 4], FRAME)];
+        const head = () => [
+            C([-3, 18, -3], [6, 2, 6], FRAME),
+            C([-6, 19, -7], [12, 9, 13], panel),
+            C([-2, 27, -4], [4, 3, 6], FRAME),
+            C([-7, 21, 1], [2, 2, 4], GREEN),
+            C([5, 21, 1], [2, 2, 4], GREEN),
+            C([-3, 20, -9], [6, 6, 3], FRAME)];
+        const stripes = () => [C([-7, 24, -6], [2, 2, 11], STRIPE), C([5, 24, -6], [2, 2, 11], STRIPE)];
+        const animations = {
+            'animation.defence_turret.idle': {length: 2, loop: 'loop', bones: {barrel: {p: {'0.000': [0, 0, 0], '2.000': [0, 0, 0]}}}},
+            'animation.defence_turret.shot': {length: 0.2, loop: 'once', bones: {barrel: {p: {'0.000': [0, 0, 0], '0.050': [0, 0, 1.5], '0.200': [0, 0, 0]}}}}
+        };
+        SPECS.machine_gun_turret = {
+            res: 128, seed: 1701, noCoplanarFaces: true,
+            bones: [
+                {name: 'base', parent: undefined, pivot: [0, 0, 0], cubes: base()},
+                {name: 'head', parent: 'base', pivot: [0, 19, 0], cubes: head()},
+                {name: 'stripes', parent: 'head', pivot: [0, 19, 0], cubes: stripes()},
+                {name: 'barrel', parent: 'head', pivot: [0, 23, -8], cubes: [
+                    C([-2, 21, -23], [4, 4, 15], FRAME),
+                    C([-3, 20, -25], [6, 6, 3], {c: '#4a4f55', n: 0.05, f: [[1, 1, 4, 4, '#1c1c1e'], [2, 2, 2, 2, '#0a0a0b']]})]},
+                {name: 'muzzle', parent: 'barrel', pivot: [0, 23, -25.2], cubes: []}
+            ],
+            animations
+        };
+        const BORE = '#141416';
+        SPECS.rocket_turret = {
+            res: 128, seed: 1702, noCoplanarFaces: true,
+            bones: [
+                {name: 'base', parent: undefined, pivot: [0, 0, 0], cubes: base()},
+                {name: 'head', parent: 'base', pivot: [0, 19, 0], cubes: head()},
+                {name: 'stripes', parent: 'head', pivot: [0, 19, 0], cubes: stripes()},
+                {name: 'barrel', parent: 'head', pivot: [0, 23, -8], cubes: [
+                    C([-5, 20, -18], [10, 7, 8], {c: '#7d8a6a', n: 0.04, sd: [[1, 1, 6, 1, '#5d6850']],
+                        f: [[1, 1, 3, 2, BORE], [6, 1, 3, 2, BORE], [1, 4, 3, 2, BORE], [6, 4, 3, 2, BORE]]}),
+                    C([-4, 26, -16], [8, 2, 5], FRAME)]},
+                {name: 'muzzle', parent: 'barrel', pivot: [0, 23.5, -18.2], cubes: []}
+            ],
+            animations
+        };
+    })();
+
     // ------------------------------------------------------------------ patrol robot and mech (1.6.0, part B3b)
     // Walking machines of the ruins. The robot: a gun for a right arm held forward, a heavy left fist, a head that turns and
     // tilts (bone "head", turned by the code). The mech: two heavy legs with knees, a torso that turns on the hips (bone

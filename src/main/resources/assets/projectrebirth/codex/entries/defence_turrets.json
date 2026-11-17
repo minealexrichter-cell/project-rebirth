@@ -1,0 +1,57 @@
+{
+  "icon": "projectrebirth:machine_gun_turret",
+  "x": 12,
+  "y": -2,
+  "parents": [
+    "ai_core",
+    "heavy_dock",
+    "target_rules"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:machine_gun_turret",
+      "text": "codex.projectrebirth.defence_turrets.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.defence_turrets.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:turret_mount"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.defence_turrets.p4"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dock_machine_gun_turret"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.defence_turrets.p6"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dock_rocket_turret"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:rocket"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.defence_turrets.p9"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:stabilizer"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.defence_turrets.p11"
+    }
+  ]
+}

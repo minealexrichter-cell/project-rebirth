@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "weapon_workshop",
+  "sort": 61,
+  "time": 500,
+  "ingredients": [
+    {
+      "tag": "c:ingots/titanium",
+      "count": 8
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:rocket_launcher_node",
+    "count": 1
+  }
+}

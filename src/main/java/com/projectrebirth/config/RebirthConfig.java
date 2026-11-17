@@ -307,6 +307,37 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue WORK_REST_SECONDS;
     public static final ModConfigSpec.IntValue WORK_FLEE_SECONDS;
 
+    public static final ModConfigSpec.BooleanValue TURRETS_ENABLED;
+    public static final ModConfigSpec.IntValue TURRET_MOUNT_CAPACITY;
+    public static final ModConfigSpec.DoubleValue TURRET_TURN;
+    public static final ModConfigSpec.IntValue TURRET_LOOK_TICKS;
+    public static final ModConfigSpec.IntValue TURRET_SENSOR_RANGE;
+    public static final ModConfigSpec.DoubleValue TURRET_STABILIZER_SPREAD;
+    public static final ModConfigSpec.DoubleValue TURRET_DUST_SPREAD;
+    public static final ModConfigSpec.DoubleValue TURRET_EMI_SPREAD;
+    public static final ModConfigSpec.DoubleValue TURRET_EMI_SHUTDOWN_CHANCE;
+    public static final ModConfigSpec.DoubleValue MACHINE_PLATING_COPPER;
+    public static final ModConfigSpec.DoubleValue MACHINE_PLATING_IRON;
+    public static final ModConfigSpec.DoubleValue MACHINE_PLATING_TITANIUM;
+    public static final ModConfigSpec.IntValue GUN_TURRET_RANGE;
+    public static final ModConfigSpec.DoubleValue GUN_TURRET_DAMAGE;
+    public static final ModConfigSpec.DoubleValue GUN_TURRET_SPREAD;
+    public static final ModConfigSpec.IntValue GUN_TURRET_BURST;
+    public static final ModConfigSpec.IntValue GUN_TURRET_SHOT_TICKS;
+    public static final ModConfigSpec.IntValue GUN_TURRET_PAUSE_TICKS;
+    public static final ModConfigSpec.IntValue GUN_TURRET_LOCK_TICKS;
+    public static final ModConfigSpec.IntValue GUN_TURRET_ENERGY;
+    public static final ModConfigSpec.IntValue ROCKET_TURRET_RANGE;
+    public static final ModConfigSpec.IntValue ROCKET_TURRET_MIN_RANGE;
+    public static final ModConfigSpec.DoubleValue ROCKET_TURRET_POWER;
+    public static final ModConfigSpec.BooleanValue ROCKET_TURRET_BREAKS;
+    public static final ModConfigSpec.IntValue ROCKET_TURRET_INTERVAL;
+    public static final ModConfigSpec.IntValue ROCKET_TURRET_LOCK_TICKS;
+    public static final ModConfigSpec.IntValue ROCKET_TURRET_ENERGY;
+    public static final ModConfigSpec.DoubleValue ROCKET_TURRET_FRIEND_RADIUS;
+    public static final ModConfigSpec.DoubleValue ROCKET_TURRET_STRUCTURAL;
+    public static final ModConfigSpec.DoubleValue ROCKET_TURRET_CRITICAL;
+
     public static AndroidStats androidStats(com.projectrebirth.bodies.BodyClass bodyClass) {
         return ANDROID_STATS.get(bodyClass);
     }
@@ -961,7 +992,7 @@ public final class RebirthConfig {
                 .defineListAllowEmpty("managerRoles", java.util.List.of("leader", "officer"), () -> "officer", value -> value instanceof String);
         int[][] limits = {{6, 12}, {10, 20}, {1, 3}, {4, 8}};
         double[][] integrity = {{30.0, 15.0}, {80.0, 40.0}, {250.0, 125.0}, {40.0, 20.0}};
-        int[] slots = {0, 4, 3, 3};
+        int[] slots = {0, 2, 3, 3};
         for (com.projectrebirth.garrison.MachineKind kind : com.projectrebirth.garrison.MachineKind.values()) {
             builder.comment("Machines of this kind: " + kind.description()).push(kind.id());
             MACHINE_PLAYER_LIMIT.put(kind, builder.comment("At most per player").defineInRange("playerLimit", limits[kind.ordinal()][0], 0, 10000));
@@ -972,6 +1003,42 @@ public final class RebirthConfig {
             builder.pop();
         }
         builder.pop();
+        builder.comment("Defence turrets (block G): a machine gun and a rocket turret on a turret mount, which takes energy from cables and ammunition from hoppers.",
+                "The machine gun's integrity is [garrison.machines.turret]; the rocket turret has its own below.").push("turrets");
+        TURRETS_ENABLED = builder.comment("Whether the player's turrets shoot at all").define("enabled", true);
+        TURRET_MOUNT_CAPACITY = builder.comment("Energy a turret mount holds").defineInRange("mountCapacity", 20000, 1, 1_000_000_000);
+        TURRET_TURN = builder.comment("Degrees the head turns per tick").defineInRange("turnSpeed", 15.0, 1.0, 180.0);
+        TURRET_LOOK_TICKS = builder.comment("Ticks between two looks for a target").defineInRange("lookTicks", 10, 1, 100);
+        TURRET_SENSOR_RANGE = builder.comment("Blocks of range a sensor unit adds").defineInRange("sensorRange", 8, 0, 64);
+        TURRET_STABILIZER_SPREAD = builder.comment("The spread times this with a stabilizer").defineInRange("stabilizerSpread", 0.5, 0.0, 1.0);
+        TURRET_DUST_SPREAD = builder.comment("The spread times this in a dust storm").defineInRange("dustSpread", 1.6, 1.0, 10.0);
+        TURRET_EMI_SPREAD = builder.comment("Degrees of spread an EMI storm adds outside a shelter (no EMI screen)").defineInRange("emiSpread", 12.0, 0.0, 90.0);
+        TURRET_EMI_SHUTDOWN_CHANCE = builder.comment("Chance each second that an EMI storm shuts a turret down for 2 to 3 seconds").defineInRange("emiShutdownChance", 0.08, 0.0, 1.0);
+        MACHINE_PLATING_COPPER = builder.comment("Share of damage armor plating keeps off a turret or a mech: copper").defineInRange("platingCopper", 0.1, 0.0, 0.9);
+        MACHINE_PLATING_IRON = builder.comment("... iron").defineInRange("platingIron", 0.2, 0.0, 0.9);
+        MACHINE_PLATING_TITANIUM = builder.comment("... titanium").defineInRange("platingTitanium", 0.3, 0.0, 0.9);
+        builder.push("machine_gun");
+        GUN_TURRET_RANGE = builder.comment("Blocks it sees and shoots at").defineInRange("range", 24, 4, 128);
+        GUN_TURRET_DAMAGE = builder.comment("Damage of one bullet").defineInRange("damage", 4.0, 0.0, 1000.0);
+        GUN_TURRET_SPREAD = builder.comment("Spread of its bullets in degrees").defineInRange("spread", 3.0, 0.0, 45.0);
+        GUN_TURRET_BURST = builder.comment("Bullets in a burst").defineInRange("burst", 5, 1, 100);
+        GUN_TURRET_SHOT_TICKS = builder.comment("Ticks between two bullets of a burst").defineInRange("shotTicks", 3, 1, 100);
+        GUN_TURRET_PAUSE_TICKS = builder.comment("Ticks between two bursts").defineInRange("pauseTicks", 20, 1, 1000);
+        GUN_TURRET_LOCK_TICKS = builder.comment("Ticks it aims at a new target before the first shot").defineInRange("lockTicks", 10, 0, 200);
+        GUN_TURRET_ENERGY = builder.comment("Energy one bullet takes from the mount (and one round of assault rifle ammunition)").defineInRange("energyPerShot", 20, 0, 100000);
+        builder.pop();
+        builder.push("rocket");
+        ROCKET_TURRET_RANGE = builder.comment("Blocks it sees and shoots at").defineInRange("range", 32, 8, 128);
+        ROCKET_TURRET_MIN_RANGE = builder.comment("It does not shoot closer than this").defineInRange("minRange", 6, 0, 64);
+        ROCKET_TURRET_POWER = builder.comment("Power of a rocket's blast (TNT is 4)").defineInRange("power", 2.5, 0.5, 10.0);
+        ROCKET_TURRET_BREAKS = builder.comment("Whether its rockets break blocks").define("breaksBlocks", false);
+        ROCKET_TURRET_INTERVAL = builder.comment("Ticks between two rockets").defineInRange("intervalTicks", 60, 5, 2000);
+        ROCKET_TURRET_LOCK_TICKS = builder.comment("Ticks it aims at a new target before the first rocket").defineInRange("lockTicks", 20, 0, 200);
+        ROCKET_TURRET_ENERGY = builder.comment("Energy one rocket takes from the mount (and one rocket)").defineInRange("energyPerShot", 100, 0, 100000);
+        ROCKET_TURRET_FRIEND_RADIUS = builder.comment("It holds fire while one of its own (player, ally, machine) is this close to the target").defineInRange("friendRadius", 5.0, 0.0, 32.0);
+        ROCKET_TURRET_STRUCTURAL = builder.comment("Structural integrity").defineInRange("maxStructural", 100.0, 1.0, 100000.0);
+        ROCKET_TURRET_CRITICAL = builder.comment("Critical integrity").defineInRange("maxCritical", 50.0, 1.0, 100000.0);
+        builder.pop(2);
         builder.comment("The rules by which machines choose targets.").push("targeting");
         ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);
         SELF_DEFENCE_SECONDS = builder.comment("Seconds a machine remembers who attacked it, its owner or a member of its faction nearby").defineInRange("selfDefenceSeconds", 30, 1, 3600);

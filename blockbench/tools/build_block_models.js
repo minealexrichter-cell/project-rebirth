@@ -672,6 +672,27 @@
         ]
     };
 
+    // 1.7.0, block G: the turret mount. A heavy steel plinth with a ring on top the turret's feet stand on, an ammunition hatch
+    // with a hazard band on each side and a green lamp. Swatches only.
+    MODELS.turret_mount = {
+        parent: 'minecraft:block/block',
+        textures: {parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/machine_parts'},
+        elements: [
+            box([0, 0, 0], [16, 3, 16], 'dark'),
+            box([1, 3, 1], [15, 13, 15], 'steel', {up: 'mid', down: 'dark'}),
+            box([0, 13, 0], [16, 16, 16], 'gun', {up: 'dark'}),
+            box([4, 5, 0.5], [12, 11, 1.5], 'mid'),
+            box([4, 5, 14.5], [12, 11, 15.5], 'mid'),
+            box([0.5, 5, 4], [1.5, 11, 12], 'mid'),
+            box([14.5, 5, 4], [15.5, 11, 12], 'mid'),
+            box([5, 9, 0], [11, 10, 1], 'hazard'),
+            box([5, 9, 15], [11, 10, 16], 'hazard'),
+            box([0, 9, 5], [1, 10, 11], 'hazard'),
+            box([15, 9, 5], [16, 10, 11], 'hazard'),
+            box([7, 11.5, 0], [9, 12.5, 1.5], 'green', null, GLOW)
+        ]
+    };
+
     // Irradiated sludge: a glowing green layer two pixels deep over the ground.
     (() => {
         const ooze = tex('ooze'), edge = tex('ooze', [0, 14, 16, 16]);
@@ -936,6 +957,7 @@
         });
     });
     STATES.leaking_waste_barrel = {variants: {'': variant('leaking_waste_barrel')}};
+    STATES.turret_mount = {variants: {'': variant('turret_mount')}};
 
     // Structure decoration (1.6.0): facing blocks look the way the model looks at north; the tank and the sludge have no facing.
     ['wall_monitor', 'server_rack', 'ammo_crate', 'broken_wall_monitor', 'broken_server_rack', ...RUSTED.map(id => 'rusted_' + id)].forEach(id => {

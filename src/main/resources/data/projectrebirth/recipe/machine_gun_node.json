@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "weapon_workshop",
+  "sort": 60,
+  "time": 400,
+  "ingredients": [
+    {
+      "tag": "c:ingots/titanium",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:machine_gun_node",
+    "count": 1
+  }
+}

@@ -78,6 +78,26 @@ public final class TargetRules {
         return ours.isPresent() && intruder(server, machine, target, ours.get());
     }
 
+    /**
+     * Whether the target is one of the machine's own (1.7.0, block G: a rocket turret holds fire near them): a player, a body, armor
+     * or a machine of its owner, of its owner's faction or of an allied one.
+     */
+    public static boolean friendly(GarrisonMachine machine, @Nullable Entity target) {
+        MinecraftServer server = machine.asEntity().getServer();
+        UUID mine = machine.machineCore().owner();
+        UUID theirs = target == null ? null : FactionService.ownerOf(target);
+        if (server == null || mine == null || theirs == null) {
+            return false;
+        }
+        if (mine.equals(theirs)) {
+            return true;
+        }
+        FactionData data = FactionData.get(server);
+        Optional<Faction> ours = data.of(mine);
+        Optional<Faction> other = data.of(theirs);
+        return ours.isPresent() && other.isPresent() && (ours.get().id().equals(other.get().id()) || ours.get().allies().contains(other.get().id()));
+    }
+
     /** The war is active, and the target is not on its own faction's land while nobody of that faction is online. */
     private static boolean atWar(MinecraftServer server, Entity self, Entity target, Faction ours, Faction theirs) {
         if (FactionService.warState(ours, theirs, System.currentTimeMillis()) != FactionService.WarState.ACTIVE) {

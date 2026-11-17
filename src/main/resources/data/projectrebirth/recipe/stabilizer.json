@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_upgrade_fabricator",
+  "sort": 60,
+  "time": 300,
+  "ingredients": [
+    {
+      "tag": "c:ingots/titanium",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:processor",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:stabilizer",
+    "count": 1
+  }
+}

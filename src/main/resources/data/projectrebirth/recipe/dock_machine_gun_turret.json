@@ -1,0 +1,62 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:heavy_dock",
+  "sort": 20,
+  "stages": [
+    {
+      "name": "frame",
+      "materials": [
+        {
+          "item": "projectrebirth:armor_plate",
+          "count": 4
+        },
+        {
+          "item": "projectrebirth:actuator",
+          "count": 2
+        }
+      ],
+      "time": 400,
+      "energy": 60,
+      "model_stage": 1
+    },
+    {
+      "name": "weapon",
+      "materials": [
+        {
+          "item": "projectrebirth:machine_gun_node",
+          "count": 1
+        }
+      ],
+      "time": 400,
+      "energy": 60,
+      "model_stage": 2
+    },
+    {
+      "name": "ai_core",
+      "materials": [
+        {
+          "item": "projectrebirth:ai_core",
+          "count": 1
+        },
+        {
+          "item": "projectrebirth:circuit_board",
+          "count": 2
+        }
+      ],
+      "time": 400,
+      "energy": 60,
+      "model_stage": 3
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 200,
+      "energy": 60,
+      "model_stage": 4
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:machine_gun_turret",
+    "count": 1
+  }
+}

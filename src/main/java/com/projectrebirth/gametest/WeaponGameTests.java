@@ -437,7 +437,9 @@ public class WeaponGameTests {
             boolean usesActuator = ingredients.stream().anyMatch(ingredient -> ingredient.ingredient().test(actuator));
             if (result.is(WeaponRegistry.COMBAT_SHOTGUN.get())) {
                 helper.assertFalse(uses || usesTitanium, "The shotgun is the early weapon");
-            } else if (result.getItem() instanceof WeaponItem) {
+            } else if (result.getItem() instanceof WeaponItem || result.is(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_NODE.get())
+                    || result.is(com.projectrebirth.garrison.GarrisonRegistry.ROCKET_LAUNCHER_NODE.get())) {
+                // 1.7.0: the weapon nodes of the turrets cost what a rifle does
                 helper.assertTrue(uses && usesTitanium && usesActuator, "A rifle needs titanium, processors and actuators: " + result);
             } else {
                 helper.assertTrue(ingredients.stream().anyMatch(ingredient -> ingredient.ingredient().test(gunpowder)), "Rounds need gunpowder: " + result);

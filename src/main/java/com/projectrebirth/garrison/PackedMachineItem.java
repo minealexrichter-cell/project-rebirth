@@ -43,7 +43,36 @@ public class PackedMachineItem extends Item {
 
     public static MachineCore.Packed packed(ItemStack stack) {
         MachineCore.Packed packed = stack.get(GarrisonRegistry.PACKED_MACHINE.get());
-        return packed != null ? packed : MachineCore.Packed.fresh(stack.getItem() instanceof PackedMachineItem item ? item.kind : MachineKind.TEST);
+        return packed != null ? packed : stack.getItem() instanceof PackedMachineItem item ? item.fresh() : MachineCore.Packed.fresh(MachineKind.TEST);
+    }
+
+    /** A new machine of this item: whole, nobody's yet. */
+    public MachineCore.Packed fresh() {
+        return MachineCore.Packed.fresh(kind);
+    }
+
+    /** The entity this item sets up (the multiblock preview shows it). */
+    public EntityType<? extends MachineEntity> entityType() {
+        return type.get();
+    }
+
+    /**
+     * A machine just built in a multiblock (block G): it belongs to the owner of the AI core that went into it, if the core is bound
+     * to someone.
+     */
+    public static void bindToCore(ItemStack result, java.util.List<ItemStack> used) {
+        if (!(result.getItem() instanceof PackedMachineItem item) || result.has(GarrisonRegistry.PACKED_MACHINE.get())) {
+            return;
+        }
+        for (ItemStack stack : used) {
+            GarrisonRegistry.CoreOwner bound = stack.get(GarrisonRegistry.CORE_OWNER.get());
+            if (stack.getItem() instanceof AiCoreItem && bound != null) {
+                MachineCore.Packed fresh = item.fresh();
+                result.set(GarrisonRegistry.PACKED_MACHINE.get(), new MachineCore.Packed(fresh.kind(), fresh.structural(), fresh.critical(), 0.0f,
+                        java.util.Optional.of(bound.id()), bound.name(), ""));
+                return;
+            }
+        }
     }
 
     @Override

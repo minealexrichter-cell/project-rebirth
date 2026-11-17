@@ -42,6 +42,12 @@ public final class Gunnery {
 
     /** Fires one bullet from {@code start} at the target with the given spread; returns whether it hit a body. */
     public static boolean fire(Mob shooter, Vec3 start, LivingEntity target, double spreadDegrees, float damage, double range, float pitch) {
+        return fire(shooter, start, target, spreadDegrees, damage, range, pitch, e -> !isMechanism(e), SoundSource.HOSTILE);
+    }
+
+    /** The same for any shooter (1.7.0: the player's turrets): what the bullet may hit and where its sound goes. */
+    public static boolean fire(Mob shooter, Vec3 start, LivingEntity target, double spreadDegrees, float damage, double range, float pitch,
+                               java.util.function.Predicate<Entity> mayHit, SoundSource sound) {
         Level level = shooter.level();
         Vec3 aim = target.getEyePosition().subtract(0.0, 0.3, 0.0).subtract(start).normalize();
         Vec3 direction = scatter(aim, spreadDegrees, shooter.getRandom());
@@ -53,7 +59,7 @@ public final class Gunnery {
             ending = 1;
         }
         EntityHitResult hit = ProjectileUtil.getEntityHitResult(level, shooter, start, end, shooter.getBoundingBox().expandTowards(end.subtract(start)).inflate(1.0),
-                e -> e != shooter && e.isPickable() && !e.isSpectator() && !(e.getVehicle() instanceof PowerArmorEntity) && !isMechanism(e), 0.1f);
+                e -> e != shooter && e.isPickable() && !e.isSpectator() && !(e.getVehicle() instanceof PowerArmorEntity) && mayHit.test(e), 0.1f);
         if (hit != null) {
             end = com.projectrebirth.weapons.Weapons.entryPoint(hit.getEntity(), start, end);
             ending = 2;
@@ -63,7 +69,7 @@ public final class Gunnery {
             victim.hurt(source, damage);
             victim.invulnerableTime = 0;
         }
-        level.playSound(null, start.x, start.y, start.z, WeaponRegistry.sounds("assault_rifle").shot().get(), SoundSource.HOSTILE, 1.4f,
+        level.playSound(null, start.x, start.y, start.z, WeaponRegistry.sounds("assault_rifle").shot().get(), sound, 1.4f,
                 pitch + shooter.getRandom().nextFloat() * 0.1f);
         if (level instanceof ServerLevel) {
             PacketDistributor.sendToPlayersTrackingEntity(shooter, new TurretShotPayload(shooter.getId(), (float) start.x, (float) start.y, (float) start.z,

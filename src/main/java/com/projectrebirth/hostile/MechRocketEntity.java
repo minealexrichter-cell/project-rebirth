@@ -27,6 +27,9 @@ public class MechRocketEntity extends Entity implements software.bernie.geckolib
     private Vec3 end = Vec3.ZERO;
     private int flight = 20;
     private UUID owner;
+    /** 1.7.0: a rocket of a player's turret has its own blast (power above 0); the mech's takes the mech's config. */
+    private float power = -1.0f;
+    private boolean breaks;
 
     public MechRocketEntity(EntityType<? extends MechRocketEntity> type, Level level) {
         super(type, level);
@@ -40,6 +43,13 @@ public class MechRocketEntity extends Entity implements software.bernie.geckolib
         this.end = end;
         this.flight = Math.max(4, flight);
         setPos(start);
+    }
+
+    /** A rocket of a player's machine (1.7.0): its blast and whether it breaks blocks. */
+    public MechRocketEntity(Level level, LivingEntity owner, Vec3 start, Vec3 end, int flight, float power, boolean breaks) {
+        this(level, owner, start, end, flight);
+        this.power = power;
+        this.breaks = breaks;
     }
 
     @Override
@@ -78,7 +88,7 @@ public class MechRocketEntity extends Entity implements software.bernie.geckolib
                 return;
             }
             Entity hit = level().getEntities(this, getBoundingBox().expandTowards(motion).inflate(0.3),
-                    e -> e instanceof LivingEntity && e.isAlive() && !Gunnery.isMechanism(e) && !e.isSpectator())
+                    e -> e instanceof LivingEntity && e.isAlive() && !e.isSpectator() && (power > 0.0f ? mayHit(e) : !Gunnery.isMechanism(e)))
                     .stream().findFirst().orElse(null);
             if (hit != null) {
                 burst(hit.position());
@@ -93,11 +103,18 @@ public class MechRocketEntity extends Entity implements software.bernie.geckolib
         }
     }
 
+    /** A rocket of a player's machine bursts on the way only on what that machine may attack. */
+    private boolean mayHit(Entity e) {
+        Entity shooter = owner != null && level() instanceof net.minecraft.server.level.ServerLevel server ? server.getEntity(owner) : null;
+        return shooter instanceof com.projectrebirth.garrison.GarrisonMachine machine && com.projectrebirth.garrison.TargetRules.mayAttack(machine, e);
+    }
+
     private void burst(Vec3 at) {
         Entity source = owner != null && level() instanceof net.minecraft.server.level.ServerLevel server ? server.getEntity(owner) : null;
         discard();
-        boolean breaks = RebirthConfig.SERVER_SPEC.isLoaded() && RebirthConfig.MECH_ROCKETS_BREAK.get();
-        float power = RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.MECH_ROCKET_POWER.get().floatValue() : 2.0f;
+        boolean own = this.power > 0.0f;
+        boolean breaks = own ? this.breaks : RebirthConfig.SERVER_SPEC.isLoaded() && RebirthConfig.MECH_ROCKETS_BREAK.get();
+        float power = own ? this.power : RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.MECH_ROCKET_POWER.get().floatValue() : 2.0f;
         level().explode(source, at.x, at.y, at.z, power, breaks ? Level.ExplosionInteraction.MOB : Level.ExplosionInteraction.NONE);
     }
 

@@ -61,6 +61,9 @@ public final class AssemblyPreview {
                 created.setVariant(armor.variant());
             }
             entity = created;
+        } else if (item instanceof com.projectrebirth.garrison.PackedMachineItem machine && machine != com.projectrebirth.garrison.GarrisonRegistry.TEST_MACHINE_ITEM.get()) {
+            // 1.7.0, block G: turrets (and later the mech)
+            entity = machine.entityType().create(level);
         } else {
             entity = null;
         }

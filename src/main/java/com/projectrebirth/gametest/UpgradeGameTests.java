@@ -178,12 +178,13 @@ public class UpgradeGameTests {
         assertRefused(helper, armor, stack(UpgradeRegistry.JETPACK.get()), ArmorSlot.CHEST_BACK, Upgrades.Problem.WRONG_HOST);
         assertRefused(helper, body, stack(UpgradeRegistry.ARMOR_COPPER_PLATING.get()), null, Upgrades.Problem.WRONG_HOST);
         assertRefused(helper, body, stack(UpgradeRegistry.COMPRESSED_AIR_MODULE.get()), null, Upgrades.Problem.WRONG_HOST);
-        // Every upgrade of the mod's data goes on one of the two, never on both; the armor's go on machines too (1.7.0), the bodies' not.
+        // Every upgrade of the mod's data goes on one host: bodies, armor or (1.7.0, the stabilizer) machines only; the armor's go on machines too, the bodies' not.
         access(helper).registryOrThrow(UpgradeRegistry.UPGRADES).forEach(definition -> {
-            helper.assertTrue(definition.body().isPresent() != !definition.armorSlots().isEmpty(), "Exactly one host for " + definition.kind());
+            helper.assertTrue((definition.body().isPresent() ? 1 : 0) + (definition.armorSlots().isEmpty() ? 0 : 1) + (definition.machines() ? 1 : 0) == 1,
+                    "Exactly one host for " + definition.kind());
             boolean onMachines = Upgrades.problem(stack -> java.util.Optional.empty(), definition, ItemStack.EMPTY, InstalledUpgrades.EMPTY,
                     new com.projectrebirth.upgrades.UpgradeLayout.MachineSlots(4), null) != Upgrades.Problem.WRONG_HOST;
-            helper.assertTrue(onMachines == !definition.armorSlots().isEmpty(), "Armor upgrades and only they on machines: " + definition.kind());
+            helper.assertTrue(onMachines == (!definition.armorSlots().isEmpty() || definition.machines()), "Armor and machine upgrades and only they on machines: " + definition.kind());
         });
         helper.succeed();
     }
@@ -191,9 +192,9 @@ public class UpgradeGameTests {
     @GameTest(template = TEMPLATE)
     public static void incompatibleKindsAreRefusedBothWays(GameTestHelper helper) {
         UpgradeDefinition jetpack = new UpgradeDefinition(HolderSet.direct(UpgradeRegistry.JETPACK.getDelegate()), "jetpack", Optional.empty(),
-                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of(), List.of());
+                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of(), List.of(), false);
         UpgradeDefinition sealing = new UpgradeDefinition(HolderSet.direct(UpgradeRegistry.SEALING_MODULE.getDelegate()), "sealing", Optional.empty(),
-                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of("jetpack"), List.of());
+                Optional.of(new UpgradeDefinition.BodyFit(1, 1, false)), List.of(), List.of("jetpack"), List.of(), false);
         UpgradeLayout layout = new UpgradeLayout.Counted(5);
         InstalledUpgrades withJetpack = InstalledUpgrades.EMPTY.with(new InstalledUpgrades.Installed(Optional.empty(), stack(UpgradeRegistry.JETPACK.get())));
         InstalledUpgrades withSealing = InstalledUpgrades.EMPTY.with(new InstalledUpgrades.Installed(Optional.empty(), stack(UpgradeRegistry.SEALING_MODULE.get())));

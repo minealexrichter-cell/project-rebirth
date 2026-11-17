@@ -152,6 +152,7 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
             return false;
         }
         boolean wasWreck = core.wreck();
+        amount *= 1.0f - platingShare();
         if (!core.hurt(this, source, amount)) {
             return false;
         }
@@ -165,6 +166,21 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
             }
         }
         return true;
+    }
+
+    /** The share of damage its armor plating keeps off (1.7.0, block G: by the plates' metal, config). */
+    public float platingShare() {
+        for (com.projectrebirth.upgrades.InstalledUpgrades.Installed entry : upgrades.entries()) {
+            var definition = Upgrades.definition(registryAccess(), entry.stack());
+            if (definition.isPresent() && definition.get().kind().equals("armor_plating")) {
+                return switch (definition.get().material().orElse("")) {
+                    case "copper" -> RebirthConfig.MACHINE_PLATING_COPPER.get().floatValue();
+                    case "titanium" -> RebirthConfig.MACHINE_PLATING_TITANIUM.get().floatValue();
+                    default -> RebirthConfig.MACHINE_PLATING_IRON.get().floatValue();
+                };
+            }
+        }
+        return 0.0f;
     }
 
     @Override

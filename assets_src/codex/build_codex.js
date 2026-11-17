@@ -707,6 +707,25 @@ category('garrison', P + 'body_workshop_controller', 'Garrison', 'Гарнизо
             'Фермер: область до 32 на 32 блока. Собирает только созревшее: пшеницу, морковь, картофель, свёклу, незерский нарост, какао, сладкие ягоды, арбузы и тыквы (стебель остаётся), сахарный тростник и бамбук (нижний блок остаётся). Пересаживает из собранного и засевает пустые грядки. Новую землю не вспахивает, животных не трогает, грядки не вытаптывает.'),
         text('Its reports at the console: the work is done or there is nothing to do (in the log only), no tool, the chest is full or out of reach, no charge, attacked.',
             'Сообщения на пульте: работа закончена или нечего делать (только в журнале), нет инструмента, сундук полон или недоступен, нет заряда, атакован.')
+    ]),
+    entry('defence_turrets', P + 'machine_gun_turret', 12, -2, ['ai_core', 'heavy_dock', 'target_rules'], 'Defence Turrets', 'Турели обороны', [
+        entity(P + 'machine_gun_turret', 'The machine gun turret: the guard turret of the ruins in service paint, with stripes in the colour of its faction.',
+            'Пулемётная турель: турель охраны из руин в рабочей окраске, с полосами цвета своей фракции.'),
+        text('Your own guard turrets. A turret stands on a turret mount: cables bring the mount energy, hoppers or your hand bring it ammunition. Each shot takes its energy and one round or rocket from the mount. Without them the turret is silent and the console raises the alarm "no supply".\n\nRight-click the mount to see what it holds.',
+            'Собственные турели охраны. Турель стоит на основании: кабель подводит к нему энергию, воронка или вы сами кладёте боеприпасы. Каждый выстрел берёт из основания энергию и один патрон или ракету. Без них турель молчит, а пульт поднимает тревогу «нет снабжения».\n\nПКМ по основанию показывает, что в нём есть.'),
+        recipe(P + 'turret_mount'),
+        text('Assembly, in the heavy dock: armor plates and actuators, a weapon node, an AI core and circuit boards. The turret belongs to the owner of its core. Set it up by right-clicking the top of a mount.\n\nThe machine gun turret: 24 blocks, bursts of assault rifle rounds, integrity 80 / 40. It never hits its own.',
+            'Сборка — в тяжёлом доке: бронепластины и приводы, оружейный узел, ядро ИИ и платы. Турель принадлежит владельцу ядра. Ставится ПКМ по верху основания.\n\nПулемётная турель: 24 блока, очереди патронами автоматической винтовки, целостность 80 / 40. В своих не попадает.'),
+        recipe(P + 'dock_machine_gun_turret'),
+        text('The rocket turret: 6 to 32 blocks, a rocket along an arc against groups, mechs and brutes, integrity 100 / 50. Its blast breaks no blocks, and it holds fire while one of its own is near the target.',
+            'Ракетная турель: от 6 до 32 блоков, ракета по дуге против групп, мехов и громил, целостность 100 / 50. Взрыв не ломает блоки, и турель не стреляет, пока рядом с целью кто-то свой.'),
+        recipe(P + 'dock_rocket_turret'),
+        recipe(P + 'rocket'),
+        text('A turret finds its target by the rules of targets and obeys the console: hold, stand down. Upgrades, two slots, with the upgrade mounting tool: armor plating (less damage), an EMI screen, a sensor unit (8 blocks more range), a stabilizer (half the spread).\n\nA dust storm spreads its fire. An EMI storm outside a shelter throws its aim off and now and then shuts it down for a few seconds.',
+            'Цель турель выбирает по правилам цели и подчиняется пульту: держать, отбой. Улучшения, два слота, через устройство монтажа: обшивка брони (меньше урона), ЭМИ-экран, сенсорный блок (+8 блоков дальности), стабилизатор (вдвое меньше разброс).\n\nПыльная буря увеличивает разброс. ЭМИ-буря вне убежища сбивает прицел и иногда отключает турель на несколько секунд.'),
+        recipe(P + 'stabilizer'),
+        text('Integrity as for every machine: at no structural integrity it shuts down and its barrel hangs; the repair wrench with iron starts it again. At no critical integrity it is a wreck: Shift + the wrench takes it apart for plates, its upgrades and a damaged AI core.',
+            'Целостность — как у всех машин: без структурной турель отключается и опускает ствол, ремонтный ключ с железом запускает её снова. Без критической — остов: Shift + ключ разбирает его на пластины, улучшения и повреждённое ядро ИИ.')
     ])
 ]);
 

@@ -682,6 +682,8 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
                 }
             }
         }
+        // 1.7.0, block G: a machine built here belongs to the owner of its AI core
+        com.projectrebirth.garrison.PackedMachineItem.bindToCore(result, consumed);
         ItemStack output = items.getStackInSlot(OUTPUT_SLOT);
         if (rollOut(result)) {
             // it left the dock on its own

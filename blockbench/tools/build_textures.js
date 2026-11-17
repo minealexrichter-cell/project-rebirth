@@ -2589,6 +2589,96 @@
     }
     item('combat_module', moduleIcon('#7a2a24', '#ffb0a0'));
     item('work_module', moduleIcon('#7a5a1a', '#ffe08a'));
+    // 1.7.0, block G: the turrets' parts, the rocket and the stabilizer, and the packed turrets.
+    item('rocket', () => icon([
+        '................',
+        '............rr..',
+        '...........rwwr.',
+        '..........rwwwr.',
+        '.........kwwwr..',
+        '........kmmwk...',
+        '.......kmmmk....',
+        '......kmmmk.....',
+        '.....kmmmk......',
+        '....kmmmk.......',
+        '..f.kmmk........',
+        '..fkkmk.........',
+        '.fffkk..........',
+        '.ofof...........',
+        'oo.o............',
+        '................'], {k: '#2b2f36', m: '#8a939c', w: '#dfe3e8', r: '#c9352b', f: '#5d6850', o: '#ff9a3c'}));
+    item('machine_gun_node', () => icon([
+        '................',
+        '................',
+        '................',
+        '..kkkkkk........',
+        '.kmmmmmmkkkkkkkk',
+        '.kmggmmmgggggggk',
+        '.kmggmmmkkkkkkkk',
+        '.kmmmmmmk.......',
+        '.kmyymmmk.......',
+        '.kmmmmmmk.......',
+        '..kkkkkk........',
+        '...k..k.........',
+        '...ccccc........',
+        '................',
+        '................',
+        '................'], {k: '#1e2228', m: '#8a939c', g: '#3c4046', y: '#e0b33a', c: '#c58a3a'}));
+    item('rocket_launcher_node', () => icon([
+        '................',
+        '................',
+        '..kkkkkkkkkk....',
+        '.kooooooooook...',
+        '.kobbobbooook...',
+        '.kobbobbooook...',
+        '.koooooooooook..',
+        '.kobbobbooook...',
+        '.kobbobbooook...',
+        '.kooooooooook...',
+        '..kkkkkkkkkk....',
+        '....k...k.......',
+        '...ccccccc......',
+        '................',
+        '................',
+        '................'], {k: '#1e2228', o: '#7d8a6a', b: '#141416', c: '#c58a3a'}));
+    item('stabilizer', () => icon([
+        '................',
+        '.......kk.......',
+        '......kmmk......',
+        '......kmmk......',
+        '...kkkkmmkkkk...',
+        '..kssssmmssssk..',
+        '..ksbbbmmbbbsk..',
+        '..kssssmmssssk..',
+        '...kkkkmmkkkk...',
+        '......kmmk......',
+        '.....kmyymk.....',
+        '.....kmyymk.....',
+        '......kmmk......',
+        '.......kk.......',
+        '................',
+        '................'], {k: '#1e2228', m: '#8a939c', s: '#5a626c', b: '#37c6e8', y: '#e0b33a'}));
+    function turretIcon(barrel, mark) {
+        return () => icon([
+            '................',
+            '................',
+            '.....kkkk.......',
+            '....kwwwwk......',
+            '...kwwwwwwkkkkkk',
+            '..kgwwsswwbbbbbk',
+            '...kwwwwwwkkkkkk',
+            '....kwwwwk......',
+            '.....kddk.......',
+            '.....kwwk.......',
+            '....kwwwwk......',
+            '...kwwwwwwk.....',
+            '..kkwwwwwwkk....',
+            '..d.kkkkkk.d....',
+            '..d........d....',
+            '................'], {k: '#1e2228', w: '#c3c9cf', d: '#4a4f55', g: '#5fd06a', s: mark, b: barrel});
+    }
+    item('machine_gun_turret', turretIcon('#4a4f55', '#f2f4f6'));
+    item('rocket_turret', turretIcon('#7d8a6a', '#f2f4f6'));
     item('test_machine', () => icon([
         '................',
         '................',

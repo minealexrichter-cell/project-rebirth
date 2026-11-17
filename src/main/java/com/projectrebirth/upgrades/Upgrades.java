@@ -116,7 +116,7 @@ public final class Upgrades {
     @Nullable
     private static Problem machineProblem(Function<ItemStack, Optional<UpgradeDefinition>> lookup, UpgradeDefinition definition,
                                           InstalledUpgrades installed, UpgradeLayout.MachineSlots layout) {
-        if (definition.armorSlots().isEmpty()) {
+        if (definition.armorSlots().isEmpty() && !definition.machines()) {
             return Problem.WRONG_HOST;
         }
         for (InstalledUpgrades.Installed entry : installed.entries()) {

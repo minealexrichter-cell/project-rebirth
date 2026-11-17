@@ -103,6 +103,30 @@ public final class GarrisonRegistry {
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMountingMenu>> MACHINE_MOUNTING =
             MENUS.register("machine_mounting", () -> IMenuTypeExtension.create(MachineMountingMenu::new));
 
+    /** Block G: the defence turrets, their mount, their parts and ammunition. */
+    public static final DeferredItem<Item> ROCKET = ITEMS.registerSimpleItem("rocket", new Item.Properties().stacksTo(16));
+    public static final DeferredItem<Item> MACHINE_GUN_NODE = ITEMS.registerSimpleItem("machine_gun_node", new Item.Properties().stacksTo(16));
+    public static final DeferredItem<Item> ROCKET_LAUNCHER_NODE = ITEMS.registerSimpleItem("rocket_launcher_node", new Item.Properties().stacksTo(16));
+    public static final DeferredItem<Item> STABILIZER = ITEMS.registerSimpleItem("stabilizer", new Item.Properties().stacksTo(16));
+    public static final net.neoforged.neoforge.registries.DeferredBlock<TurretMountBlock> TURRET_MOUNT = BLOCKS.register("turret_mount",
+            () -> new TurretMountBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
+                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> TURRET_MOUNT_ITEM = ITEMS.registerSimpleBlockItem(TURRET_MOUNT);
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<TurretMountBlockEntity>> TURRET_MOUNT_ENTITY =
+            BLOCK_ENTITIES.register("turret_mount", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(TurretMountBlockEntity::new, TURRET_MOUNT.get()).build(null));
+    public static final DeferredHolder<EntityType<?>, EntityType<DefenceTurretEntity>> MACHINE_GUN_TURRET = turret(TurretType.MACHINE_GUN);
+    public static final DeferredHolder<EntityType<?>, EntityType<DefenceTurretEntity>> ROCKET_TURRET = turret(TurretType.ROCKET);
+    public static final DeferredItem<TurretItem> MACHINE_GUN_TURRET_ITEM = ITEMS.register("machine_gun_turret",
+            () -> new TurretItem(TurretType.MACHINE_GUN, MACHINE_GUN_TURRET::get, new Item.Properties().stacksTo(1)));
+    public static final DeferredItem<TurretItem> ROCKET_TURRET_ITEM = ITEMS.register("rocket_turret",
+            () -> new TurretItem(TurretType.ROCKET, ROCKET_TURRET::get, new Item.Properties().stacksTo(1)));
+
+    private static DeferredHolder<EntityType<?>, EntityType<DefenceTurretEntity>> turret(TurretType turret) {
+        return ENTITY_TYPES.register(turret.id(), () -> EntityType.Builder.<DefenceTurretEntity>of((type, level) -> new DefenceTurretEntity(type, level, turret),
+                MobCategory.MISC).sized(0.95f, 1.9f).eyeHeight(1.5f).clientTrackingRange(10).build(turret.id()));
+    }
+
     private GarrisonRegistry() {
     }
 
@@ -121,9 +145,13 @@ public final class GarrisonRegistry {
 
     private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, CONSOLE_ENTITY.get(), (console, side) -> console.energy().inputOnly());
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, TURRET_MOUNT_ENTITY.get(), (mount, side) -> mount.energy().inputOnly());
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, TURRET_MOUNT_ENTITY.get(), (mount, side) -> mount.ammo());
     }
 
     private static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(TEST_MACHINE.get(), TestMachineEntity.createAttributes().build());
+        event.put(MACHINE_GUN_TURRET.get(), DefenceTurretEntity.createAttributes().build());
+        event.put(ROCKET_TURRET.get(), DefenceTurretEntity.createAttributes().build());
     }
 }

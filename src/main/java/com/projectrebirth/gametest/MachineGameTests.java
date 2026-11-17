@@ -338,11 +338,11 @@ public class MachineGameTests {
                 && Upgrades.install(access, machine, new ItemStack(UpgradeRegistry.SENSOR_UNIT.get()), null) == null, "Up to its slots");
         helper.assertTrue(Upgrades.problem(access, machine, new ItemStack(UpgradeRegistry.FLOODLIGHT.get()), null) == Upgrades.Problem.NO_FREE_SLOTS,
                 "No more than its slots (" + MachineKind.TEST.upgradeSlots() + ")");
-        // every armor upgrade of the mod's data fits machines too, and no body upgrade does
+        // every armor upgrade of the mod's data fits machines too, and the machine-only ones (the stabilizer, 1.7.0 block G); no body upgrade does
         access.registryOrThrow(UpgradeRegistry.UPGRADES).forEach(definition -> helper.assertTrue(
-                definition.armorSlots().isEmpty() == (Upgrades.problem(item -> java.util.Optional.empty(), definition, ItemStack.EMPTY,
+                (definition.armorSlots().isEmpty() && !definition.machines()) == (Upgrades.problem(item -> java.util.Optional.empty(), definition, ItemStack.EMPTY,
                         com.projectrebirth.upgrades.InstalledUpgrades.EMPTY, new com.projectrebirth.upgrades.UpgradeLayout.MachineSlots(3), null)
-                        == Upgrades.Problem.WRONG_HOST), "Machines take armor upgrades only: " + definition.kind()));
+                        == Upgrades.Problem.WRONG_HOST), "Machines take armor and machine upgrades only: " + definition.kind()));
         machine.discard();
         helper.succeed();
     }

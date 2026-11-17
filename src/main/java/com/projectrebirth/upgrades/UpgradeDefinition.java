@@ -24,9 +24,10 @@ import net.minecraft.world.item.ItemStack;
  * @param armorSlots       the armor parts it goes on; empty = not on power armor
  * @param incompatibleWith kinds that cannot be on the same body or armor; it is enough if one of the two names the other
  * @param protectsFrom     what the upgrade keeps out of a body: drowning, acid, dust (the dust storm comes in 1.5.0)
+ * @param machines         1.7.0: it goes on machines (turrets, the mech) even with no armor slots, like the stabilizer
  */
 public record UpgradeDefinition(HolderSet<Item> items, String kind, Optional<String> material, Optional<BodyFit> body,
-                                List<ArmorSlot> armorSlots, List<String> incompatibleWith, List<String> protectsFrom) {
+                                List<ArmorSlot> armorSlots, List<String> incompatibleWith, List<String> protectsFrom, boolean machines) {
     public static final Codec<UpgradeDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("items").forGetter(UpgradeDefinition::items),
             Codec.STRING.fieldOf("kind").forGetter(UpgradeDefinition::kind),
@@ -34,7 +35,8 @@ public record UpgradeDefinition(HolderSet<Item> items, String kind, Optional<Str
             BodyFit.CODEC.optionalFieldOf("body").forGetter(UpgradeDefinition::body),
             ArmorSlot.CODEC.listOf().optionalFieldOf("armor_slots", List.of()).forGetter(UpgradeDefinition::armorSlots),
             Codec.STRING.listOf().optionalFieldOf("incompatible_with", List.of()).forGetter(UpgradeDefinition::incompatibleWith),
-            Codec.STRING.listOf().optionalFieldOf("protects_from", List.of()).forGetter(UpgradeDefinition::protectsFrom)
+            Codec.STRING.listOf().optionalFieldOf("protects_from", List.of()).forGetter(UpgradeDefinition::protectsFrom),
+            Codec.BOOL.optionalFieldOf("machines", false).forGetter(UpgradeDefinition::machines)
     ).apply(instance, UpgradeDefinition::new));
 
     public boolean matches(ItemStack stack) {

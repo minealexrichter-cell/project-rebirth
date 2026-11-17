@@ -117,6 +117,13 @@ public final class ModCreativeTabs {
                 output.accept(com.projectrebirth.garrison.GarrisonRegistry.WORK_MODULE.get());
                 output.accept(com.projectrebirth.garrison.GarrisonRegistry.CONSOLE_ITEM.get());
                 output.accept(com.projectrebirth.garrison.GarrisonRegistry.TABLET.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.TURRET_MOUNT_ITEM.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.ROCKET_TURRET_ITEM.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_NODE.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.ROCKET_LAUNCHER_NODE.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.ROCKET.get());
+                output.accept(com.projectrebirth.garrison.GarrisonRegistry.STABILIZER.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.BACKUP_BATTERY_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.SHELTER_CONTROL_PANEL_ITEM.get());
                 output.accept(com.projectrebirth.shelter.ShelterRegistry.DECONTAMINATION_CHAMBER_ITEM.get());

@@ -110,7 +110,7 @@ public final class GarrisonRegistry {
     public static final DeferredItem<Item> STABILIZER = ITEMS.registerSimpleItem("stabilizer", new Item.Properties().stacksTo(16));
     public static final net.neoforged.neoforge.registries.DeferredBlock<TurretMountBlock> TURRET_MOUNT = BLOCKS.register("turret_mount",
             () -> new TurretMountBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
-                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops()));
+                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final DeferredItem<net.minecraft.world.item.BlockItem> TURRET_MOUNT_ITEM = ITEMS.registerSimpleBlockItem(TURRET_MOUNT);
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<TurretMountBlockEntity>> TURRET_MOUNT_ENTITY =
@@ -137,11 +137,11 @@ public final class GarrisonRegistry {
             () -> new PackedMachineItem(MachineKind.ROBOT, SMALL_ROBOT::get, new Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> SERVICE_POST_PLATE = BLOCKS.registerSimpleBlock("service_post_plate",
             net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
-                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops());
+                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredItem<net.minecraft.world.item.BlockItem> SERVICE_POST_PLATE_ITEM = ITEMS.registerSimpleBlockItem(SERVICE_POST_PLATE);
     public static final net.neoforged.neoforge.registries.DeferredBlock<ServicePostBlock> SERVICE_POST = BLOCKS.register("service_post",
             () -> new ServicePostBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
-                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops()));
+                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final DeferredItem<net.minecraft.world.item.BlockItem> SERVICE_POST_ITEM = ITEMS.registerSimpleBlockItem(SERVICE_POST);
     @SuppressWarnings("DataFlowIssue")
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<ServicePostBlockEntity>> SERVICE_POST_ENTITY =

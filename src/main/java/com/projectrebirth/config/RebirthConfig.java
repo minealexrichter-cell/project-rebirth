@@ -1040,7 +1040,7 @@ public final class RebirthConfig {
         MACHINE_SERVER_LIMIT = builder.comment("Machines of all players on the server at most").defineInRange("serverLimit", 200, 0, 100000);
         MACHINE_MANAGER_ROLES = builder.comment("Faction roles that may pack up, repair and command the machines of other members (leader, officer, member, recruit)")
                 .defineListAllowEmpty("managerRoles", java.util.List.of("leader", "officer"), () -> "officer", value -> value instanceof String);
-        int[][] limits = {{6, 12}, {10, 20}, {1, 3}, {8, 16}, {4, 8}};
+        int[][] limits = {{6, 12}, {10, 20}, {200, 200}, {8, 16}, {4, 8}};
         double[][] integrity = {{30.0, 15.0}, {80.0, 40.0}, {250.0, 125.0}, {50.0, 25.0}, {40.0, 20.0}};
         int[] slots = {0, 2, 3, 1, 3};
         for (com.projectrebirth.garrison.MachineKind kind : com.projectrebirth.garrison.MachineKind.values()) {

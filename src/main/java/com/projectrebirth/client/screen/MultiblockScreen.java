@@ -123,7 +123,14 @@ public class MultiblockScreen extends AbstractContainerScreen<MultiblockMenu> {
         AssemblyRecipe recipe = index >= 0 && index < recipes.size() ? recipes.get(index).value() : null;
         if (recipe != null) {
             graphics.renderFakeItem(recipe.result(), 22, RECIPE_Y - 4);
-            line(graphics, recipe.result().getHoverName(), 42, RECIPE_Y, imageWidth - 64, TEXT);
+            // a long name takes two lines; what still does not fit is cut
+            List<net.minecraft.util.FormattedCharSequence> name = font.split(recipeName(recipes.get(index)), imageWidth - 64);
+            if (name.size() == 1) {
+                graphics.drawString(font, name.get(0), 42, RECIPE_Y, TEXT, false);
+            } else if (!name.isEmpty()) {
+                graphics.drawString(font, name.get(0), 42, RECIPE_Y - 4, TEXT, false);
+                graphics.drawString(font, name.get(1), 42, RECIPE_Y + 5, TEXT, false);
+            }
         } else {
             line(graphics, Component.translatable(recipes.isEmpty() ? "screen.projectrebirth.multiblock.no_recipes" : "screen.projectrebirth.multiblock.choose"),
                     24, RECIPE_Y, imageWidth - 48, 0x808080);
@@ -178,6 +185,15 @@ public class MultiblockScreen extends AbstractContainerScreen<MultiblockMenu> {
             Component more = Component.translatable("screen.projectrebirth.multiblock.more", lines.size() - shown);
             graphics.drawString(font, more, imageWidth - 8 - font.width(more), inventoryLabelY, 0x808080, false);
         }
+    }
+
+    /**
+     * The recipe's own name (assembly.projectrebirth.&lt;recipe id&gt;) when it has one: the recipes of the body workshop all make a
+     * body, so only their names tell a body from a combat or a worker android. Otherwise the result's name.
+     */
+    public static Component recipeName(RecipeHolder<AssemblyRecipe> holder) {
+        String key = "assembly." + holder.id().getNamespace() + "." + holder.id().getPath();
+        return net.minecraft.client.resources.language.I18n.exists(key) ? Component.translatable(key) : holder.value().result().getHoverName();
     }
 
     private List<RecipeHolder<AssemblyRecipe>> recipes() {

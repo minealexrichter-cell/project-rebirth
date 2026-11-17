@@ -57,6 +57,9 @@ public class TemperatureGameTests {
 
     @GameTest(template = TEMPLATE)
     public static void aDesertIsHotAndSnowIsCold(GameTestHelper helper) {
+        // midday: the night is colder, and a long run of all the tests may reach it (1.7.0)
+        helper.getLevel().setDayTime(6000);
+        helper.getLevel().updateSkyBrightness();
         BlockPos at = helper.absolutePos(POS);
         fillBiome(helper, "minecraft:desert");
         float desert = Temperature.withoutHeaters(helper.getLevel(), at);

@@ -124,6 +124,8 @@ final class AndroidWork {
     private int rest;
     private int flee;
     private int pickupWait;
+    /** Ticks between two blocks broken, as a player has (block J: the vanilla delay of five ticks). */
+    private int pause;
     private final EnumSet<ConsoleAlarm> raised = EnumSet.noneOf(ConsoleAlarm.class);
 
     AndroidWork(AndroidEntity android) {
@@ -292,6 +294,10 @@ final class AndroidWork {
             if (flee % 20 == 0 && android.distanceToSqr(Vec3.atCenterOf(chest)) > 9.0) {
                 android.getNavigation().moveTo(chest.getX() + 0.5, chest.getY(), chest.getZ() + 0.5, 1.2);
             }
+            return;
+        }
+        if (pause > 0) {
+            pause--;
             return;
         }
         if (rest > 0) {
@@ -736,6 +742,7 @@ final class AndroidWork {
                 if (progress >= 1.0f) {
                     breakBlock(level, now.pos(), state);
                     finishJob(true);
+                    pause = 5;
                 }
             }
             case BERRIES -> {

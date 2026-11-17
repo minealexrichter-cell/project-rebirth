@@ -6,11 +6,11 @@
   "ingredients": [
     {
       "item": "projectrebirth:armor_plate",
-      "count": 12
+      "count": 6
     },
     {
       "item": "minecraft:iron_block",
-      "count": 4
+      "count": 2
     }
   ],
   "result": {

@@ -79,6 +79,20 @@ public class DefenceTurretRenderer extends GeoEntityRenderer<DefenceTurretEntity
         super.renderRecursively(poseStack, turret, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
     }
 
+    /** Client only: since when (in ticks of the turret) each turret shows as down, to sink its barrel smoothly. */
+    private static final java.util.Map<DefenceTurretEntity, Float> DOWN_SINCE = new java.util.WeakHashMap<>();
+
+    /** 0 while active, then up to 1 over a second after it went down. */
+    private static float sinking(DefenceTurretEntity turret, boolean down, float partialTick) {
+        float now = turret.tickCount + partialTick;
+        if (!down) {
+            DOWN_SINCE.remove(turret);
+            return 0.0f;
+        }
+        float since = DOWN_SINCE.computeIfAbsent(turret, t -> now);
+        return Mth.clamp((now - since) / 20.0f, 0.0f, 1.0f);
+    }
+
     private static class TurretModel extends GeoModel<DefenceTurretEntity> {
         @Override
         public ResourceLocation getModelResource(DefenceTurretEntity turret) {
@@ -87,7 +101,7 @@ public class DefenceTurretRenderer extends GeoEntityRenderer<DefenceTurretEntity
 
         @Override
         public ResourceLocation getTextureResource(DefenceTurretEntity turret) {
-            return ProjectRebirth.id("textures/entity/" + turret.turret().id() + ".png");
+            return ProjectRebirth.id("textures/entity/" + turret.turret().id() + (turret.shownState() == MachineCore.State.WRECK ? "_wreck" : "") + ".png");
         }
 
         @Override
@@ -100,13 +114,16 @@ public class DefenceTurretRenderer extends GeoEntityRenderer<DefenceTurretEntity
             EntityModelData data = state.getData(DataTickets.ENTITY_MODEL_DATA);
             GeoBone head = getAnimationProcessor().getBone("head");
             GeoBone barrel = getAnimationProcessor().getBone("barrel");
-            boolean down = turret.shownState() != MachineCore.State.ACTIVE;
+            MachineCore.State shown = turret.shownState();
             if (data != null && head != null) {
                 head.setRotY(data.netHeadYaw() * Mth.DEG_TO_RAD);
             }
             if (barrel != null) {
-                // shut down or a wreck: the barrel hangs
-                barrel.setRotX((down ? -35.0f : data != null ? data.headPitch() : 0.0f) * Mth.DEG_TO_RAD);
+                // shut down or a wreck: the barrel sinks over a second and hangs (lower for a wreck)
+                float aim = data != null ? data.headPitch() : 0.0f;
+                float hang = shown == MachineCore.State.WRECK ? -55.0f : -35.0f;
+                float sunk = sinking(turret, shown != MachineCore.State.ACTIVE, state.getPartialTick());
+                barrel.setRotX(Mth.lerp(sunk, aim, hang) * Mth.DEG_TO_RAD);
             }
         }
     }

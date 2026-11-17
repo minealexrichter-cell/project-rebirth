@@ -19,8 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The small robot (1.7.1): the cheap soldier of the heavy dock. A biped about a block and a quarter tall with a machine gun built
- * into its right arm, on the guard mech's logic (orders, the rules of targets, energy and magazine, packing) with its own numbers
+ * The small robot (1.7.1): the cheap soldier of the heavy dock. A biped as tall as the patrol robot (block H) with a rotary
+ * machine gun built into its right arm, on the guard mech's logic (orders, the rules of targets, energy and magazine, packing) with its own numbers
  * ([garrison.small_robot]) and integrity ([garrison.machines.robot]). It fires assault rifle rounds, loaded by hand or at a service
  * post, and charges at a service post or a charging pad, whichever is nearer. Its gun cannot be swapped.
  */
@@ -92,13 +92,13 @@ public class SmallRobotEntity extends GuardMechEntity {
         return "animation.small_robot";
     }
 
-    /** Its gun: at the end of the right forearm, at chest height. */
+    /** Its gun: the end of the barrels in the right forearm, at the height of its waist (bone right_gun_muzzle). */
     @Override
     public Vec3 muzzle(int side) {
         double yaw = getYHeadRot() * Mth.DEG_TO_RAD;
         Vec3 forward = new Vec3(-Math.sin(yaw), 0.0, Math.cos(yaw));
         Vec3 right = new Vec3(-Math.cos(yaw), 0.0, -Math.sin(yaw));
-        return position().add(0.0, 0.85, 0.0).add(right.scale(0.32)).add(forward.scale(0.7));
+        return position().add(0.0, 1.03, 0.0).add(right.scale(0.5)).add(forward.scale(0.96));
     }
 
     @Override

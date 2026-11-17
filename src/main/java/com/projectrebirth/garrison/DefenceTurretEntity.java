@@ -46,6 +46,8 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
     public static final String STABILIZER = "stabilizer";
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.defence_turret.idle");
     private static final RawAnimation SHOT = RawAnimation.begin().thenPlay("animation.defence_turret.shot");
+    private static final RawAnimation SHUTDOWN = RawAnimation.begin().thenPlayAndHold("animation.defence_turret.shutdown");
+    private static final RawAnimation WRECKED = RawAnimation.begin().thenPlayAndHold("animation.defence_turret.wrecked");
     /** The height of the barrel's axis and how far ahead of the head the muzzle is, in blocks (as the guard turret's). */
     private static final double MUZZLE_HEIGHT = 1.5;
     private static final double MUZZLE_AHEAD = 1.55;
@@ -364,7 +366,12 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "main", 2, state -> state.setAndContinue(IDLE)).triggerableAnim("shot", SHOT));
+        // 1.7.1, block I: shut down the head tips over, a wreck slips half off its ring
+        controllers.add(new AnimationController<>(this, "main", 2, state -> state.setAndContinue(switch (shownState()) {
+            case WRECK -> WRECKED;
+            case DISABLED -> SHUTDOWN;
+            default -> IDLE;
+        })).triggerableAnim("shot", SHOT));
     }
 
     @Override

@@ -22,6 +22,16 @@ public final class BodyModels {
      */
     public static <T extends GeoAnimatable> DefaultedEntityGeoModel<T> create(BodyClass bodyClass, boolean turnsHead) {
         return new DefaultedEntityGeoModel<>(ProjectRebirth.id(bodyClass.id()), turnsHead) {
+            /** 1.7.1, block J: an android that is a wreck wears the battered texture of its body. */
+            @Override
+            public ResourceLocation getTextureResource(T animatable) {
+                if (animatable instanceof com.projectrebirth.garrison.AndroidEntity android
+                        && android.shownState() == com.projectrebirth.garrison.MachineCore.State.WRECK) {
+                    return ProjectRebirth.id("textures/entity/" + bodyClass.id() + "_wreck.png");
+                }
+                return super.getTextureResource(animatable);
+            }
+
             @Override
             public void setCustomAnimations(T animatable, long instanceId, AnimationState<T> state) {
                 super.setCustomAnimations(animatable, instanceId, state);

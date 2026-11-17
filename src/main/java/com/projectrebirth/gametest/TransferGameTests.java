@@ -143,6 +143,31 @@ public class TransferGameTests {
         helper.succeed();
     }
 
+    private static java.util.List<com.projectrebirth.hostile.RemainsEntity> wrecks(GameTestHelper helper) {
+        return helper.getLevel().getEntitiesOfClass(com.projectrebirth.hostile.RemainsEntity.class, new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(6),
+                com.projectrebirth.hostile.RemainsEntity::isAlive);
+    }
+
+    /** 1.7.1, block J: a destroyed body, with the player in it or empty, leaves its wreck; the wrench takes it apart for parts. */
+    @GameTest(template = TEMPLATE, batch = BATCH)
+    public static void destroyedBodiesLeaveWrecksTakenApartForParts(GameTestHelper helper) {
+        Setup setup = setUp(helper);
+        ServerPlayer player = setup.player();
+        transfer(setup);
+        player.kill();
+        java.util.List<com.projectrebirth.hostile.RemainsEntity> found = wrecks(helper);
+        helper.assertTrue(found.size() == 1 && found.getFirst().kind() == com.projectrebirth.hostile.RemainsEntity.Kind.forBody(BODY_CLASS),
+                "The body the player was in lies as a wreck: " + found.size());
+        ArtificialBodyEntity empty = helper.spawn(BodyEntities.type(BODY_CLASS), BODY_POS);
+        empty.kill();
+        helper.assertTrue(empty.isRemoved() && wrecks(helper).size() == 2, "An empty body leaves its wreck too and is gone");
+        int before = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(6)).size();
+        found.getFirst().dismantle(helper.getLevel(), player);
+        int after = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(6)).size();
+        helper.assertTrue(found.getFirst().isRemoved() && after > before, "Taken apart it gives parts: " + before + " -> " + after);
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE, batch = BATCH)
     public static void humanBodyDeathDropsItsItemsAndThenBodyDeathIsRealDeath(GameTestHelper helper) {
         Setup setup = setUp(helper);

@@ -558,9 +558,49 @@
             'animation.body.sneak': of(cfg.sneak),
             // The same bent pose, without steps, and only barely moving.
             'animation.body.crouch': of(Object.assign({}, cfg.sneak, {length: 3, hold: 0, stride: 0, lift: 0, stagger: 1.5, arm: 0, bob: 0.12, roll: 0, sway: 0, twist: 0, pelvis: 0})),
-            'animation.body.interact': cfg.interact
+            'animation.body.interact': cfg.interact,
+            'animation.body.shutdown': BODY_SHUTDOWN,
+            'animation.body.wrecked': BODY_WRECKED
         };
     }
+
+    /** Keyframes from a list of [time, value] pairs. */
+    const KF = (...pairs) => Object.fromEntries(pairs.map(([t, v]) => [t.toFixed(3), v]));
+    /**
+     * 1.7.1, block J. An android shut down (structural integrity gone): it sinks onto both knees, the shins flat on the ground
+     * behind it, bows its head and lets its arms hang. The same for every class: the bones and their pivots are shared.
+     */
+    const BODY_SHUTDOWN = {length: 1.4, loop: 'hold', ease: 'easeInOutSine', bones: {
+        root: {p: KF([0, [0, 0, 0]], [1.0, [0, -6, 0]], [1.4, [0, -6, 0]])},
+        right_leg: {r: KF([0, [0, 0, 0]], [1.0, [-8, 0, 4]], [1.4, [-8, 0, 4]])},
+        left_leg: {r: KF([0, [0, 0, 0]], [1.0, [-4, 0, -4]], [1.4, [-4, 0, -4]])},
+        right_shin: {r: KF([0, [0, 0, 0]], [1.0, [92, 0, 0]], [1.4, [92, 0, 0]])},
+        left_shin: {r: KF([0, [0, 0, 0]], [1.0, [90, 0, 0]], [1.4, [90, 0, 0]])},
+        torso: {r: KF([0, [0, 0, 0]], [1.0, [20, 0, 0]], [1.4, [26, 0, 0]])},
+        head: {r: KF([0, [0, 0, 0]], [1.4, [26, 6, 0]])},
+        right_arm: {r: KF([0, [0, 0, 0]], [1.4, [-12, 0, 6]])},
+        left_arm: {r: KF([0, [0, 0, 0]], [1.4, [-10, 0, -6]])},
+        right_forearm: {r: KF([0, [0, 0, 0]], [1.4, [-14, 0, 0]])},
+        left_forearm: {r: KF([0, [0, 0, 0]], [1.4, [-12, 0, 0]])}
+    }};
+    /**
+     * A wreck (an android's critical integrity gone; a destroyed body of the player leaves the same): the knees buckle and it
+     * falls flat on its face, the head turned aside, the arms thrown out. Shifted back so that it lies over the place it stood.
+     */
+    const BODY_WRECKED = {length: 1.2, loop: 'hold', bones: {
+        root: {r: KF([0, [0, 0, 0]], [0.45, [12, 0, 0]], [1.0, [88, 0, 6]], [1.2, [86, 0, 6]]),
+            p: KF([0, [0, 0, 0]], [0.45, [0, -3, 1]], [1.0, [0, 2, 15]], [1.2, [0, 2, 15]])},
+        right_leg: {r: KF([0, [0, 0, 0]], [0.45, [-24, 0, 4]], [1.2, [4, 0, 8]])},
+        left_leg: {r: KF([0, [0, 0, 0]], [0.45, [-18, 0, -4]], [1.2, [6, 0, -10]])},
+        right_shin: {r: KF([0, [0, 0, 0]], [0.45, [46, 0, 0]], [1.2, [14, 0, 0]])},
+        left_shin: {r: KF([0, [0, 0, 0]], [0.45, [40, 0, 0]], [1.2, [8, 0, 0]])},
+        torso: {r: KF([0, [0, 0, 0]], [0.45, [18, 0, 0]], [1.2, [4, 0, -3]])},
+        head: {r: KF([0, [0, 0, 0]], [0.45, [10, 0, 0]], [1.2, [-24, 48, 0]])},
+        right_arm: {r: KF([0, [0, 0, 0]], [0.45, [-20, 0, 10]], [1.2, [6, 0, 24]])},
+        left_arm: {r: KF([0, [0, 0, 0]], [0.45, [-16, 0, -10]], [1.2, [10, 0, -30]])},
+        right_forearm: {r: KF([0, [0, 0, 0]], [1.2, [-24, 0, 0]])},
+        left_forearm: {r: KF([0, [0, 0, 0]], [1.2, [-10, 0, 0]])}
+    }};
 
     // ------------------------------------------------------------------ artificial bodies
 
@@ -2458,7 +2498,14 @@
         const stripes = () => [C([-7, 24, -6], [2, 2, 11], STRIPE), C([5, 24, -6], [2, 2, 11], STRIPE)];
         const animations = {
             'animation.defence_turret.idle': {length: 2, loop: 'loop', bones: {barrel: {p: {'0.000': [0, 0, 0], '2.000': [0, 0, 0]}}}},
-            'animation.defence_turret.shot': {length: 0.2, loop: 'once', bones: {barrel: {p: {'0.000': [0, 0, 0], '0.050': [0, 0, 1.5], '0.200': [0, 0, 0]}}}}
+            'animation.defence_turret.shot': {length: 0.2, loop: 'once', bones: {barrel: {p: {'0.000': [0, 0, 0], '0.050': [0, 0, 1.5], '0.200': [0, 0, 0]}}}},
+            // 1.7.1, block I: shut down, the head tips forward and to a side (the code turns it and lowers the barrel); a wreck slips
+            // half off its ring
+            'animation.defence_turret.shutdown': {length: 1.2, loop: 'hold', ease: 'easeOutBounce', bones: {
+                head: {r: {'0.000': [0, 0, 0], '1.200': [10, 0, 7]}, p: {'0.000': [0, 0, 0], '1.200': [0, -0.5, 0]}}}},
+            'animation.defence_turret.wrecked': {length: 1.0, loop: 'hold', ease: 'easeOutBounce', bones: {
+                head: {r: {'0.000': [0, 0, 0], '1.000': [22, 0, 24]}, p: {'0.000': [0, 0, 0], '1.000': [-1.5, -3, 0]}},
+                stripes: {p: {'0.000': [0, 0, 0], '1.000': [0, -0.2, 0]}}}}
         };
         SPECS.machine_gun_turret = {
             res: 128, seed: 1701, noCoplanarFaces: true,
@@ -2816,6 +2863,12 @@
         /** A one-off movement through key poses, sampled smoothly (see flowing); hold keeps the last pose. */
         const move = (length, bones, hold) => Object.assign(flowing(length, bones), hold ? {loop: 'hold'} : {});
         const K = (...pairs) => Object.fromEntries(pairs.map(([t, v]) => [t.toFixed(3), v]));
+        /**
+         * 1.7.1, block I: a machine going down into a pose and staying there (shut down, a wreck): every bone moves from rest to
+         * its pose, slightly past it at {@code half} of the time, and holds it.
+         */
+        const fall = (length, pose, half) => move(length, Object.fromEntries(Object.entries(pose).map(([bone, ch]) => [bone,
+            Object.fromEntries(Object.entries(ch).map(([k, v]) => [k, K([0, [0, 0, 0]], [length * half, v.map(x => R2(x * 1.04))], [length, v])]))])), true);
 
         // ---------------------------------------------------------------- the patrol robot
         const CASE = {c: '#8a9086', n: 0.09};
@@ -2903,6 +2956,8 @@
         const R2 = v => Math.round(v * 100) / 100;
         const loopOf = (length, fn) => looped(length, STEP_TIME, fn);
         const K = (...pairs) => Object.fromEntries(pairs.map(([t, v]) => [t.toFixed(3), v]));
+        const fall = (length, pose, half) => move(length, Object.fromEntries(Object.entries(pose).map(([bone, ch]) => [bone,
+            Object.fromEntries(Object.entries(ch).map(([k, v]) => [k, K([0, [0, 0, 0]], [length * half, v.map(x => R2(x * 1.04))], [length, v])]))])), true);
         const move = (length, bones, hold) => Object.assign(flowing(length, bones), hold ? {loop: 'hold'} : {});
         const PLATE = {c: '#5f6957', n: 0.08};
         const FRAME = {c: '#34362f', n: 0.1};
@@ -3140,67 +3195,140 @@
                         'animation.guard_mech.shot_right': recoil('right_gun'),
                         'animation.guard_mech.shot_left': recoil('left_gun'),
                         'animation.guard_mech.rocket_right': kick('right_pod'),
-                        'animation.guard_mech.rocket_left': kick('left_pod')
+                        'animation.guard_mech.rocket_left': kick('left_pod'),
+                        // 1.7.1, block I. Shut down: it sinks onto its knees, the torso bows, the banner hangs.
+                        'animation.guard_mech.shutdown': fall(1.8, {
+                            hips: {p: [0, -12.5, 0]}, right_leg: {r: [-70, 0, 5]}, left_leg: {r: [-62, 0, -6]},
+                            right_shin: {r: [104, 0, 0]}, left_shin: {r: [96, 0, 0]}, right_foot: {r: [-34, 0, 0]}, left_foot: {r: [-34, 0, 0]},
+                            torso: {r: [18, 0, 2]}, banner: {r: [16, 0, 0]}}, 0.75),
+                        // A wreck: the knees give way, it slumps forward and to one side, the chest plate hangs loose.
+                        'animation.guard_mech.wrecked': fall(1.5, {
+                            root: {r: [0, 0, -10]}, hips: {p: [0, -15, 0]}, right_leg: {r: [-80, 6, 10]}, left_leg: {r: [-54, -8, -12]},
+                            right_shin: {r: [112, 0, 0]}, left_shin: {r: [88, 0, 0]}, right_foot: {r: [-28, 0, 0]}, left_foot: {r: [-18, 0, 0]},
+                            torso: {r: [40, 8, 14]}, plate_front: {r: [34, 0, 6], p: [0, -1.5, -1.5]}, banner: {r: [50, 26, 0]}}, 0.7)
                     };
                 })()
             };
         }
 
-        // ---------------------------------------------------------------- the small robot (1.7.1, block E)
-        // The cheap soldier of the heavy dock: a biped about a block and a quarter tall in the service paint of the guard mech (light
-        // plates, dark frame), a boxy head with a cyan visor, a machine gun built into the right forearm (bone right_gun under
-        // right_mount, which tilts to aim, as the mech's), a plain left arm. The chest stripe (bone "stripes", near white) takes the
-        // faction's colour in the renderer. Bones for the dock's stages: legs, torso, right_mount, head, stripes.
+        // ---------------------------------------------------------------- the small robot (1.7.1, blocks E and H)
+        // The cheap soldier of the heavy dock, second version (block H, owner: "as tall as the patrol robot, more detail, moving
+        // parts"): a biped about two blocks tall in the service paint of the guard mech (light plates, dark frame). A head with a
+        // cyan visor, a sensor lens that focuses and an antenna; a backpack with a cooling fan that spins; a three-barrel rotary
+        // gun in the right forearm (bone right_gun under right_mount, which tilts to aim, as the mech's; the barrels turn at each
+        // shot); a left arm with an elbow and a two-finger claw; pistons behind the shins. The chest stripe (bone "stripes", near
+        // white) takes the faction's colour in the renderer. Bones for the dock's stages: legs, torso, right_mount, head, stripes.
         {
-            const RP = {c: '#a9b0b6', n: 0.06};
-            const RF = {c: '#43474c', n: 0.08};
-            const RDARK = '#1d1f22', REDGE = '#8a9198', RLIGHT = '#cdd3d8', RCYAN = '#37c6e8', RWHITE = '#f2f4f6';
-            const rP = (o, sz, more) => C(o, sz, Object.assign({}, RP, more));
-            const rF = (o, sz, more) => C(o, sz, Object.assign({}, RF, more));
-            const rThigh = [rF([-4, 9.5, -1.5], [3, 2, 3]), rP([-3.5, 6, -1], [2, 4, 2], {f: [[0, 1, 2, 1, RLIGHT]]})];
-            const rShin = [rF([-4, 4.5, -1.5], [3, 2, 3]), rP([-3.5, 2, -1], [2, 3, 2], {f: [[0, 0, 2, 1, RLIGHT]]})];
-            const rFoot = [rF([-4.5, 0, -3], [4, 2, 5], {f: hazard(0, 0, 4, 1, AMBER, RDARK, 2), edge: false})];
+            const RP = {c: '#a9b0b6', n: 0.07};
+            const RF = {c: '#43474c', n: 0.09};
+            const RDARK = '#1d1f22', REDGE = '#8a9198', RLIGHT = '#cdd3d8', RCYAN = '#37c6e8', RWHITE = '#f2f4f6', RGREEN = '#5fd06a';
+            const rP = (o, sz, more, extra) => C(o, sz, Object.assign({}, RP, more), extra);
+            const rF = (o, sz, more, extra) => C(o, sz, Object.assign({}, RF, more), extra);
+            const rThigh = [
+                rF([-4.5, 12.5, -2], [3, 2, 4]),
+                rP([-4.5, 8.5, -2], [3, 4, 4], {f: [[1, 0, 1, 4, RLIGHT]], sd: [[0, 1, 4, 1, REDGE]]}),
+                rF([-5, 7, -2.5], [4, 2, 5], {f: [[1, 0, 2, 1, REDGE]]})];
+            const rShin = [
+                rP([-4.5, 2, -2], [3, 5, 4], {f: [[1, 0, 1, 5, RLIGHT], [0, 4, 3, 1, REDGE]], sd: [[1, 1, 2, 3, REDGE]]}),
+                rF([-3.5, 3, 2], [1, 4, 1], {edge: false}, {inflate: 0.2})];
+            const rFoot = [
+                rF([-5, 0, -5.5], [4, 2, 8], {f: hazard(0, 0, 4, 2, AMBER, RDARK, 2)}),
+                rF([-4.5, 0, 2.5], [3, 1, 2], {edge: false})];
             const flipR = cubes => cubes.map(c => mirror(c));
+            const barrel = (x, y) => rF([x, y, -15], [1, 1, 6], {f: [[0, 0, 1, 1, '#050505']], edge: false});
             SPECS.small_robot = {
-                res: 64, seed: 1711, noCoplanarFaces: false,
+                res: 128, seed: 1712, noCoplanarFaces: false,
                 bones: [
                     {name: 'root', pivot: [0, 0, 0], cubes: []},
-                    {name: 'hips', parent: 'root', pivot: [0, 11, 0], cubes: [rF([-3, 10.5, -2], [6, 2, 4])]},
-                    {name: 'right_leg', parent: 'hips', pivot: [-2.5, 11, 0], cubes: rThigh},
-                    {name: 'right_shin', parent: 'right_leg', pivot: [-2.5, 6, 0], cubes: rShin},
-                    {name: 'right_foot', parent: 'right_shin', pivot: [-2.5, 1.5, 0], cubes: rFoot},
-                    {name: 'left_leg', parent: 'hips', pivot: [2.5, 11, 0], cubes: flipR(rThigh)},
-                    {name: 'left_shin', parent: 'left_leg', pivot: [2.5, 6, 0], cubes: flipR(rShin)},
-                    {name: 'left_foot', parent: 'left_shin', pivot: [2.5, 1.5, 0], cubes: flipR(rFoot)},
-                    {name: 'torso', parent: 'hips', pivot: [0, 12.5, 0], cubes: [
-                        rP([-4, 12.5, -2.5], [8, 6, 5], {f: [[1, 1, 6, 1, RLIGHT], [2, 3, 4, 2, RDARK], [1, 5, 6, 1, REDGE]],
-                            sd: [[1, 1, 3, 1, REDGE]], k: vents(1, 1, 6, 2, RDARK, 2)}),
-                        rF([-3, 13, 2.5], [6, 4, 2], {k: vents(1, 1, 4, 2, RDARK, 1)}),
-                        rF([1.5, 17.5, 3], [1, 4, 1], {edge: false})]},
-                    {name: 'stripes', parent: 'torso', pivot: [0, 17, -2.5], cubes: [C([-4, 16.5, -3], [8, 1, 1], {c: RWHITE, n: 0.02, edge: false}, {inflate: 0.1})]},
-                    {name: 'head', parent: 'torso', pivot: [0, 18.5, 0], cubes: [
-                        rP([-2, 18.5, -2.5], [4, 3, 4], {f: [[0, 1, 4, 1, RCYAN], [0, 0, 4, 1, RLIGHT]], tp: [[1, 1, 2, 2, REDGE]]})]},
-                    {name: 'right_mount', parent: 'torso', pivot: [-5.5, 16.5, 0], cubes: [rF([-7, 15, -1.5], [3, 3, 3])]},
-                    {name: 'right_gun', parent: 'right_mount', pivot: [-5.5, 16.5, 0], cubes: [
-                        rP([-7, 12.5, -6], [3, 3, 7], {sd: [[1, 1, 5, 1, RLIGHT]], tp: [[1, 1, 1, 5, REDGE]]}),
-                        C([-6, 13.5, -9], [1, 1, 3], Object.assign({}, RF, {f: [[0, 0, 1, 1, '#050505']], edge: false}), {inflate: 0.25})]},
-                    {name: 'right_gun_muzzle', parent: 'right_gun', pivot: [-5.5, 14, -9.3], cubes: []},
-                    {name: 'left_arm', parent: 'torso', pivot: [5.5, 17, 0], cubes: [
-                        rF([4, 15, -1.5], [3, 3, 3]),
-                        rP([4.5, 10, -1], [2, 5, 2], {f: [[0, 1, 2, 1, RLIGHT]]}),
-                        rF([4, 9, -1.5], [3, 1, 3], {edge: false})]}
+                    {name: 'hips', parent: 'root', pivot: [0, 14.5, 0], cubes: [rF([-4.5, 13.5, -3], [9, 3, 6], {f: [[1, 1, 7, 1, RDARK]]})]},
+                    {name: 'right_leg', parent: 'hips', pivot: [-3, 14, 0], cubes: rThigh},
+                    {name: 'right_shin', parent: 'right_leg', pivot: [-3, 8, 0], cubes: rShin},
+                    {name: 'right_foot', parent: 'right_shin', pivot: [-3, 2, 0], cubes: rFoot},
+                    {name: 'left_leg', parent: 'hips', pivot: [3, 14, 0], cubes: flipR(rThigh)},
+                    {name: 'left_shin', parent: 'left_leg', pivot: [3, 8, 0], cubes: flipR(rShin)},
+                    {name: 'left_foot', parent: 'left_shin', pivot: [3, 2, 0], cubes: flipR(rFoot)},
+                    {name: 'torso', parent: 'hips', pivot: [0, 16.5, 0], cubes: [
+                        rF([-3, 16.5, -2], [6, 2, 4], {f: [[1, 0, 4, 1, RDARK]]}),
+                        rP([-6, 18.5, -3.5], [12, 7, 7], {f: [[1, 1, 10, 1, RLIGHT], [3, 3, 6, 3, RDARK], [4, 4, 1, 1, RGREEN], [1, 6, 10, 1, REDGE]],
+                            sd: [[1, 1, 5, 1, REDGE], ...vents(1, 3, 5, 3, RDARK, 2)], tp: [[1, 1, 10, 1, RLIGHT]]}),
+                        rF([-4, 25.5, -2.5], [8, 1, 5])]},
+                    {name: 'stripes', parent: 'torso', pivot: [0, 24, -3.5], cubes: [C([-6, 23.5, -4], [12, 1, 1], {c: RWHITE, n: 0.02, edge: false}, {inflate: 0.1})]},
+                    {name: 'backpack', parent: 'torso', pivot: [0, 22, 3.5], cubes: [
+                        rF([-4.5, 18.5, 3.5], [9, 7, 3], {k: [[1, 1, 7, 5, RDARK]], sd: vents(0, 1, 3, 5, RDARK, 2), tp: [[1, 1, 7, 1, REDGE]]}),
+                        rP([-5.5, 19, 4], [1, 5, 2], {edge: false}), rP([4.5, 19, 4], [1, 5, 2], {edge: false})]},
+                    {name: 'fan', parent: 'backpack', pivot: [0, 22, 6.6], cubes: [
+                        rP([-3, 21.5, 6], [6, 1, 1], {edge: false}), rP([-0.5, 19, 6], [1, 6, 1], {edge: false}),
+                        rF([-1, 21, 6.2], [2, 2, 1], {k: [[0, 0, 2, 2, RLIGHT]], edge: false})]},
+                    {name: 'head', parent: 'torso', pivot: [0, 26.5, 0], cubes: [
+                        rF([-1.5, 26, -1.5], [3, 2, 3]),
+                        rP([-3, 27.5, -4], [6, 5, 6], {f: [[0, 1, 6, 2, RDARK], [1, 1, 4, 1, RCYAN], [0, 0, 6, 1, RLIGHT], [0, 4, 6, 1, REDGE]],
+                            tp: [[1, 1, 4, 4, REDGE]], sd: [[1, 1, 4, 1, RDARK]]}),
+                        rF([-4, 28.5, -2], [1, 3, 3]), rF([3, 28.5, -2], [1, 3, 3])]},
+                    {name: 'sensor', parent: 'head', pivot: [1.5, 31, -4], cubes: [
+                        rF([0.5, 30.5, -5], [2, 1, 1], {f: [[1, 0, 1, 1, RCYAN]], edge: false}, {inflate: 0.15})]},
+                    {name: 'antenna', parent: 'head', pivot: [-2, 32.5, 1], cubes: [
+                        rF([-2.5, 32.5, 0.5], [1, 4, 1], {edge: false}),
+                        C([-2.5, 36.5, 0.5], [1, 1, 1], {c: RGREEN, n: 0.02, edge: false}, {inflate: 0.2})]},
+                    {name: 'right_mount', parent: 'torso', pivot: [-7.5, 24, 0], cubes: [
+                        rF([-10, 21.5, -2.5], [4, 4, 5]),
+                        rP([-10.5, 25, -3], [5, 2, 6], {tp: hazard(0, 0, 5, 6, AMBER, RDARK, 2)})]},
+                    {name: 'right_gun', parent: 'right_mount', pivot: [-7.5, 24, 0], cubes: [
+                        rF([-9.5, 17.5, -1.5], [3, 4, 3]),
+                        rP([-10, 14.5, -9], [4, 4, 11], {sd: [[2, 1, 8, 1, RLIGHT], [2, 3, 8, 1, REDGE]], tp: [[1, 2, 2, 7, REDGE]]}),
+                        rF([-12, 14, -4], [2, 4, 5], {sd: [[1, 1, 3, 2, RDARK]]}),
+                        rF([-11, 13, -1], [1, 2, 2], {edge: false})]},
+                    {name: 'barrels', parent: 'right_gun', pivot: [-8, 16.5, -12], cubes: [
+                        barrel(-8.5, 17), barrel(-9.37, 15.5), barrel(-7.63, 15.5),
+                        rF([-9.5, 15, -12], [3, 3, 1], {edge: false})]},
+                    {name: 'right_gun_muzzle', parent: 'right_gun', pivot: [-8, 16.5, -15.3], cubes: []},
+                    {name: 'left_arm', parent: 'torso', pivot: [7.5, 24, 0], cubes: [
+                        rF([6, 21.5, -2.5], [4, 4, 5]),
+                        rP([5.5, 25, -3], [5, 2, 6], {tp: hazard(0, 0, 5, 6, AMBER, RDARK, 2)}),
+                        rP([7, 17.5, -1.5], [3, 4, 3], {f: [[1, 0, 1, 4, RLIGHT]]})]},
+                    {name: 'left_forearm', parent: 'left_arm', pivot: [8.5, 17.5, 0], cubes: [
+                        rF([7, 16.5, -2], [3, 1, 4], {edge: false}),
+                        rP([7, 12, -1.5], [3, 5, 3], {f: [[1, 1, 1, 3, RLIGHT]], sd: [[0, 1, 3, 1, REDGE]]}),
+                        rF([7, 10.5, -1.5], [3, 2, 3])]},
+                    {name: 'left_claw_front', parent: 'left_forearm', pivot: [8.5, 10.5, -1], cubes: [rP([8, 7.5, -1.5], [1, 3, 1], {edge: false})]},
+                    {name: 'left_claw_back', parent: 'left_forearm', pivot: [8.5, 10.5, 1], cubes: [rP([8, 7.5, 0.5], [1, 3, 1], {edge: false})]}
                 ],
                 animations: (() => {
-                    const recoil = bone => move(0.12, {[bone]: {p: K([0, [0, 0, 0]], [0.03, [0, 0, 1]], [0.12, [0, 0, 0]])}});
+                    const spin = (length, turns) => { const n = Math.round(length / STEP_TIME), out = {}; for (let i = 0; i <= n; i++) out[(length * i / n).toFixed(3)] = [0, 0, R2(360 * turns * i / n)]; return out; };
+                    const sway = length => loopOf(length, t => [R2(5 * Math.sin(2 * Math.PI * t)), 0, R2(4 * Math.sin(2 * Math.PI * (t + 0.3)))]);
+                    const walk = ikGait({length: 1.1, thigh: 6, shin: 6, rest: 12, hip: 11.4, stride: 3.6, lift: 2.2, stance: 0.58,
+                        bob: 0.5, sway: 2.5, pelvis: 4, twist: 3, lean: 3, feet: true, toe: 9, hips: 'hips', torso: 'torso',
+                        arms: {left_arm: [14, 2, -1, 0.05]}, forearms: {left_forearm: [12, 14, -1]}});
+                    Object.assign(walk.bones, {fan: {r: spin(1.1, 2)}, antenna: {r: sway(1.1)}});
+                    // shut down (structural integrity gone): the fan stops, it sinks onto its knees, head and arms hang
+                    const kneel = {
+                        hips: {p: [0, -6.5, 0]}, right_leg: {r: [-70, 0, 4]}, left_leg: {r: [-62, 0, -4]},
+                        right_shin: {r: [104, 0, 0]}, left_shin: {r: [98, 0, 0]}, right_foot: {r: [-32, 0, 0]}, left_foot: {r: [-34, 0, 0]},
+                        torso: {r: [20, 0, 0]}, head: {r: [26, 0, 0]}, left_arm: {r: [4, 0, -8]}, left_forearm: {r: [-12, 0, 0]},
+                        antenna: {r: [28, 0, 0]}, left_claw_front: {r: [-20, 0, 0]}, left_claw_back: {r: [20, 0, 0]}};
+                    // a wreck (critical integrity gone): it topples on one side over its knees, the backpack knocked loose
+                    const heap = {
+                        root: {r: [0, 0, -12]}, hips: {p: [0, -8.5, 0]}, right_leg: {r: [-82, 8, 12]}, left_leg: {r: [-56, -8, -14]},
+                        right_shin: {r: [112, 0, 0]}, left_shin: {r: [90, 0, 0]}, right_foot: {r: [-30, 0, 0]}, left_foot: {r: [-20, 0, 0]},
+                        torso: {r: [46, 12, 18]}, head: {r: [34, -28, 16]}, left_arm: {r: [-26, 0, -38]}, left_forearm: {r: [-48, 0, 0]},
+                        antenna: {r: [62, 0, 40]}, backpack: {r: [-14, 0, 6], p: [0, -1, 1]}, sensor: {p: [0, -0.5, 0]},
+                        left_claw_front: {r: [-35, 0, 0]}, left_claw_back: {r: [30, 0, 0]}};
                     return {
-                        'animation.small_robot.idle': {length: 3, loop: 'loop', bones: {
-                            hips: {p: loopOf(3, t => [0, R2(-0.15 + 0.15 * Math.cos(2 * Math.PI * t)), 0])},
-                            torso: {r: loopOf(3, t => [R2(Math.sin(2 * Math.PI * t)), 0, R2(0.6 * Math.sin(2 * Math.PI * (t + 0.25)))])},
-                            head: {r: loopOf(3, t => [0, R2(8 * Math.sin(2 * Math.PI * t)), 0])},
-                            left_arm: {r: loopOf(3, t => [R2(2 * Math.sin(2 * Math.PI * (t + 0.4))), 0, 0])}}},
-                        'animation.small_robot.walk': ikGait({length: 0.9, thigh: 5, shin: 4.5, rest: 9.5, hip: 9.1, stride: 3, lift: 1.5, stance: 0.6,
-                            bob: 0.4, sway: 2, pelvis: 4, twist: 3, lean: 3, feet: true, toe: 8, hips: 'hips', torso: 'torso', arms: {}}),
-                        'animation.small_robot.shot_right': recoil('right_gun')
+                        'animation.small_robot.idle': {length: 4, loop: 'loop', bones: {
+                            hips: {p: loopOf(4, t => [0, R2(-0.2 + 0.2 * Math.cos(2 * Math.PI * t)), 0])},
+                            torso: {r: loopOf(4, t => [R2(Math.sin(2 * Math.PI * t)), 0, R2(0.6 * Math.sin(2 * Math.PI * (t + 0.25)))])},
+                            head: {r: loopOf(4, t => [R2(2 * Math.sin(4 * Math.PI * t)), R2(14 * Math.sin(2 * Math.PI * t)), 0])},
+                            sensor: {p: loopOf(4, t => [0, 0, R2(-0.4 - 0.4 * Math.sin(4 * Math.PI * t))])},
+                            antenna: {r: sway(4)}, fan: {r: spin(4, 4)},
+                            left_arm: {r: loopOf(4, t => [R2(2 * Math.sin(2 * Math.PI * (t + 0.4))), 0, -2])},
+                            left_forearm: {r: loopOf(4, t => [R2(-14 - 3 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                            left_claw_front: {r: loopOf(4, t => [R2(-6 - 6 * Math.max(0, Math.sin(4 * Math.PI * t))), 0, 0])},
+                            left_claw_back: {r: loopOf(4, t => [R2(6 + 6 * Math.max(0, Math.sin(4 * Math.PI * t))), 0, 0])}}},
+                        'animation.small_robot.walk': walk,
+                        'animation.small_robot.shot_right': move(0.15, {
+                            right_gun: {p: K([0, [0, 0, 0]], [0.03, [0, 0, 1.2]], [0.15, [0, 0, 0]])},
+                            barrels: {r: K([0, [0, 0, 0]], [0.15, [0, 0, 120]])}}),
+                        'animation.small_robot.shutdown': fall(1.4, kneel, 0.75),
+                        'animation.small_robot.wrecked': fall(1.1, heap, 0.7)
                     };
                 })()
             };

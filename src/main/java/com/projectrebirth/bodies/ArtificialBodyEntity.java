@@ -281,12 +281,25 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         return stack;
     }
 
+    /**
+     * 1.7.1, block J: a destroyed body does not fall over and vanish, it leaves its wreck where it stood (taken apart with the
+     * repair wrench for parts, never repaired). Its items and upgrades drop as before.
+     */
     @Override
     public void die(DamageSource source) {
         super.die(source);
         if (!level().isClientSide && owner != null && registersAsBody()) {
             BodyRegistry.get(getServer()).markDestroyed(owner, getUUID(), level().dimension(), position());
         }
+        if (!level().isClientSide && leavesWreck() && !isRemoved()) {
+            com.projectrebirth.hostile.RemainsEntity.leave(this, com.projectrebirth.hostile.RemainsEntity.Kind.forBody(bodyClass));
+            discard();
+        }
+    }
+
+    /** True for a body that leaves its wreck when destroyed (an android stays where it is, as a wreck of its own). */
+    protected boolean leavesWreck() {
+        return true;
     }
 
     @Override

@@ -84,11 +84,12 @@ public class GuardMechRenderer extends GeoEntityRenderer<GuardMechEntity> {
     }
 
     private static class MechModel extends GeoModel<GuardMechEntity> {
-        private final ResourceLocation model, texture, animations;
+        private final ResourceLocation model, texture, wreck, animations;
 
         MechModel(String id) {
             model = ProjectRebirth.id("geo/entity/" + id + ".geo.json");
             texture = ProjectRebirth.id("textures/entity/" + id + ".png");
+            wreck = ProjectRebirth.id("textures/entity/" + id + "_wreck.png");
             animations = ProjectRebirth.id("animations/entity/" + id + ".animation.json");
         }
 
@@ -99,7 +100,7 @@ public class GuardMechRenderer extends GeoEntityRenderer<GuardMechEntity> {
 
         @Override
         public ResourceLocation getTextureResource(GuardMechEntity mech) {
-            return texture;
+            return mech.shownState() == com.projectrebirth.garrison.MachineCore.State.WRECK ? wreck : texture;
         }
 
         @Override

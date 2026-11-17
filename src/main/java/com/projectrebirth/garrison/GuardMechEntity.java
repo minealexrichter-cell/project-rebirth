@@ -788,7 +788,17 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         RawAnimation idle = RawAnimation.begin().thenLoop(animationPrefix() + ".idle");
         RawAnimation walk = RawAnimation.begin().thenLoop(animationPrefix() + ".walk");
+        // 1.7.1, block I: with no structural integrity it sinks down and stays so; a wreck slumps further and lies there
+        RawAnimation shutdown = RawAnimation.begin().thenPlayAndHold(animationPrefix() + ".shutdown");
+        RawAnimation wrecked = RawAnimation.begin().thenPlayAndHold(animationPrefix() + ".wrecked");
         controllers.add(new AnimationController<>(this, "main", 5, state -> {
+            MachineCore.State shown = shownState();
+            if (shown == MachineCore.State.WRECK) {
+                return state.setAndContinue(wrecked);
+            }
+            if (shown == MachineCore.State.DISABLED) {
+                return state.setAndContinue(shutdown);
+            }
             if (down()) {
                 return state.setAndContinue(idle);
             }

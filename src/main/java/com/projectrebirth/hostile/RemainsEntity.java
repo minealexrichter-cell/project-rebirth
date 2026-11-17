@@ -43,24 +43,48 @@ import software.bernie.geckolib.util.GeckoLibUtil;
  * What is left of a destroyed machine or a dead brute (1.6.0, part B3): the same model, lying the way it fell (its "dead"
  * animation), with a battered texture. A patrol robot's and the mech's wreck stays like the wreck of a power armor and is taken
  * apart with the repair wrench held while sneaking, for parts (loot table entities/&lt;kind&gt;_wreck) and, by chance, a damaged AI
- * core (1.7.0). A brute's body radiates
+ * core (1.7.0). 1.7.1, block J: a destroyed artificial body (one of the five classes, empty or with a player in it) leaves its
+ * wreck too, lying face down (the bodies' "wrecked" animation), taken apart the same way. A brute's body radiates
  * (see {@link Auras}) and rots away after a while (config).
  */
 public class RemainsEntity extends Entity implements GeoEntity {
     public enum Kind {
         PATROL_ROBOT("patrol_robot", 1.9f, 0.7f, true),
         MECH("mech", 3.2f, 2.0f, true),
-        BRUTE("brute", 2.4f, 0.9f, false);
+        BRUTE("brute", 2.4f, 0.9f, false),
+        // 1.7.1, block J: the bodies, in the order of BodyClass (new kinds only at the end: saves keep the index)
+        BASIC_ROBOT_BODY("basic_robot_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
+        IMPROVED_ROBOT_BODY("improved_robot_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
+        ADVANCED_SYNTHETIC_BODY("advanced_synthetic_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
+        HIGHTECH_SYNTHETIC_BODY("hightech_synthetic_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
+        PREMIUM_SYNTHETIC_BODY("premium_synthetic_body", 1.2f, 0.5f, true, "animation.body.wrecked");
 
         public final String id;
         public final float width, height;
         public final boolean machine;
+        /** The animation it lies in (played once, then held). */
+        public final String animation;
 
         Kind(String id, float width, float height, boolean machine) {
+            this(id, width, height, machine, "animation." + id + ".dead");
+        }
+
+        Kind(String id, float width, float height, boolean machine, String animation) {
             this.id = id;
             this.width = width;
             this.height = height;
             this.machine = machine;
+            this.animation = animation;
+        }
+
+        /** The wreck of a body of this class. */
+        public static Kind forBody(com.projectrebirth.bodies.BodyClass bodyClass) {
+            return values()[BASIC_ROBOT_BODY.ordinal() + bodyClass.ordinal()];
+        }
+
+        /** The wreck of an artificial body (it shows no upgrades). */
+        public boolean body() {
+            return ordinal() >= BASIC_ROBOT_BODY.ordinal();
         }
 
         static Kind of(int index) {
@@ -229,7 +253,7 @@ public class RemainsEntity extends Entity implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 0,
-                state -> state.setAndContinue(RawAnimation.begin().thenPlayAndHold("animation." + kind().id + ".dead"))));
+                state -> state.setAndContinue(RawAnimation.begin().thenPlayAndHold(kind().animation))));
     }
 
     @Override

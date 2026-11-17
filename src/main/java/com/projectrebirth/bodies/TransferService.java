@@ -356,6 +356,9 @@ public final class TransferService {
         player.setData(BodyPowerRegistry.CONTROLLED_WEAR, 0.0f);
         deathLevel.sendParticles(ParticleTypes.EXPLOSION, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
         boolean robot = state(player).body().map(bodyClass -> !bodyClass.synthetic()).orElse(false);
+        // 1.7.1, block J: the destroyed body stays where it fell, as a wreck taken apart with the wrench
+        state(player).body().ifPresent(bodyClass -> com.projectrebirth.hostile.RemainsEntity.leave(player,
+                com.projectrebirth.hostile.RemainsEntity.Kind.forBody(bodyClass)));
         deathLevel.playSound(null, player.blockPosition(), robot ? ModSounds.ROBOT_DESTROYED.get() : SoundEvents.PLAYER_DEATH,
                 SoundSource.PLAYERS, 1.0f, 1.0f);
 

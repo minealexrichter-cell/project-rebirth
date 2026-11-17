@@ -132,7 +132,7 @@ public final class GarrisonRegistry {
             () -> new PackedMachineItem(MachineKind.MECH, GUARD_MECH::get, new Item.Properties().stacksTo(1)));
     /** 1.7.1, block E: the small robot, the cheap soldier of the heavy dock. */
     public static final DeferredHolder<EntityType<?>, EntityType<SmallRobotEntity>> SMALL_ROBOT = ENTITY_TYPES.register("small_robot",
-            () -> EntityType.Builder.of(SmallRobotEntity::new, MobCategory.MISC).sized(0.7f, 1.3f).eyeHeight(1.1f).clientTrackingRange(10).build("small_robot"));
+            () -> EntityType.Builder.of(SmallRobotEntity::new, MobCategory.MISC).sized(0.85f, 2.1f).eyeHeight(1.8f).clientTrackingRange(10).build("small_robot"));
     public static final DeferredItem<PackedMachineItem> SMALL_ROBOT_ITEM = ITEMS.register("small_robot",
             () -> new PackedMachineItem(MachineKind.ROBOT, SMALL_ROBOT::get, new Item.Properties().stacksTo(1)));
     public static final net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> SERVICE_POST_PLATE = BLOCKS.registerSimpleBlock("service_post_plate",

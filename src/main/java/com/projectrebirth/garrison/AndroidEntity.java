@@ -297,6 +297,11 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         return false;
     }
 
+    @Override
+    protected boolean leavesWreck() {
+        return false;
+    }
+
     // ------------------------------------------------------------------ hands
 
     @Override
@@ -868,11 +873,25 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     private static final software.bernie.geckolib.animation.RawAnimation DOWN =
             software.bernie.geckolib.animation.RawAnimation.begin().thenLoop("animation.body.crouch");
 
-    /** It walks, runs after a target, kneels when shut down, a wreck or out of charge. */
+    private static final software.bernie.geckolib.animation.RawAnimation SHUTDOWN =
+            software.bernie.geckolib.animation.RawAnimation.begin().thenPlayAndHold("animation.body.shutdown");
+    private static final software.bernie.geckolib.animation.RawAnimation WRECKED =
+            software.bernie.geckolib.animation.RawAnimation.begin().thenPlayAndHold("animation.body.wrecked");
+
+    /**
+     * It walks, runs after a target, crouches out of charge (emergency mode). 1.7.1, block J: shut down (no structural integrity)
+     * it sinks onto its knees, a wreck falls on its face; both stay so.
+     */
     @Override
     public void registerControllers(software.bernie.geckolib.animation.AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new software.bernie.geckolib.animation.AnimationController<>(this, MAIN_CONTROLLER, 5, state -> {
-            if (shownState() != MachineCore.State.ACTIVE || shownEmergency()) {
+            if (shownState() == MachineCore.State.WRECK) {
+                return state.setAndContinue(WRECKED);
+            }
+            if (shownState() == MachineCore.State.DISABLED) {
+                return state.setAndContinue(SHUTDOWN);
+            }
+            if (shownEmergency()) {
                 return state.setAndContinue(DOWN);
             }
             if (state.isMoving()) {

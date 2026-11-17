@@ -33,9 +33,19 @@ public class RemainsRenderer extends GeoEntityRenderer<RemainsEntity> {
                 return ProjectRebirth.id("animations/entity/" + remains.kind().id + ".animation.json");
             }
 
-            /** A mech is always destroyed in its second phase: no chest plate, no rocket pod. */
+            /**
+             * A mech is always destroyed in its second phase: no chest plate, no rocket pod. A body's wreck shows none of the
+             * upgrades and android parts its model carries (they went into the loot or were never there).
+             */
             @Override
             public void setCustomAnimations(RemainsEntity remains, long instanceId, software.bernie.geckolib.animation.AnimationState<RemainsEntity> state) {
+                if (remains.kind().body()) {
+                    for (software.bernie.geckolib.cache.object.GeoBone bone : getAnimationProcessor().getRegisteredBones()) {
+                        String name = bone.getName();
+                        bone.setHidden(name.startsWith("upgrade_") || name.startsWith("android_") || name.startsWith("jetpack_"));
+                    }
+                    return;
+                }
                 boolean mech = remains.kind() == RemainsEntity.Kind.MECH;
                 for (String part : new String[] {"plate_front", "left_pod"}) {
                     software.bernie.geckolib.cache.object.GeoBone piece = getAnimationProcessor().getBone(part);

@@ -77,6 +77,10 @@ public class TemperatureGameTests {
     /** Block I: a savanna is as warm as a desert in vanilla; its profile makes it cooler, so that only true deserts are hot. */
     @GameTest(template = TEMPLATE)
     public static void aSavannaIsCoolerThanADesert(GameTestHelper helper) {
+        // midday, measured in this same tick: the solar panel test of the main group sets midnight for a few ticks,
+        // and the night is colder (1.7.3: failed on GitHub when the two ran together)
+        helper.getLevel().setDayTime(6000);
+        helper.getLevel().updateSkyBrightness();
         BlockPos at = helper.absolutePos(POS);
         fillBiome(helper, "minecraft:desert");
         float desert = Temperature.withoutHeaters(helper.getLevel(), at);

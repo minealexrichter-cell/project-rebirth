@@ -139,6 +139,7 @@ public class ProjectRebirthClient {
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.GUARD_TURRET.get(), com.projectrebirth.client.render.GuardTurretRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_TURRET.get(), com.projectrebirth.client.render.DefenceTurretRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.garrison.GarrisonRegistry.ROCKET_TURRET.get(), com.projectrebirth.client.render.DefenceTurretRenderer::new);
+        event.registerEntityRenderer(com.projectrebirth.garrison.GarrisonRegistry.GUARD_MECH.get(), com.projectrebirth.client.render.GuardMechRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.PATROL_ROBOT.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::robot);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH.get(), com.projectrebirth.client.render.WalkingGunnerRenderer::mech);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MECH_ROCKET.get(), com.projectrebirth.client.render.MechRocketRenderer::new);

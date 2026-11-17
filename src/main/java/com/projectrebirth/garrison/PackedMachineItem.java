@@ -121,6 +121,7 @@ public class PackedMachineItem extends Item {
             return null;
         }
         machine.setUpgrades(Upgrades.ofStack(stack));
+        machine.readPacked(stack);
         level.addFreshEntity(machine);
         MachineRegistry.get(level.getServer()).update(machine, core);
         ConsoleLink.linkNearest(level, machine, core, player);

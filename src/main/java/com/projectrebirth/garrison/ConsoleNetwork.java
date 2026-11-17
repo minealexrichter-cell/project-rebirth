@@ -216,6 +216,13 @@ public final class ConsoleNetwork {
             return null;
         }
         sendView(player, console);
+        if (type == MachineTask.Type.PATROL && console.ordersMech(machine, group)) {
+            // block H: a mech is wide; the order goes out, but the player hears of the narrow places
+            BlockPos narrow = GuardMechEntity.narrowPlace(player.level(), task.route());
+            if (narrow != null) {
+                return Component.translatable("message.projectrebirth.console.route_narrow", narrow.getX(), narrow.getY(), narrow.getZ());
+            }
+        }
         return Component.translatable("message.projectrebirth.console.ordered", Component.translatable(type.translationKey()));
     }
 }

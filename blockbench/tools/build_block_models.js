@@ -693,6 +693,31 @@
         ]
     };
 
+    // 1.7.0, block H: the service post. A plate: a low steel deck with a hazard rim and a grid, a machine stands on four of them.
+    // The post console: a squat cabinet with a screen and a green lamp. Swatches only.
+    MODELS.service_post_plate = {
+        parent: 'minecraft:block/block',
+        textures: {parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/machine_parts'},
+        elements: [
+            box([0, 0, 0], [16, 4, 16], 'dark', {up: 'gun', north: 'hazard', south: 'hazard', west: 'hazard', east: 'hazard'}),
+            box([1, 4, 1], [15, 5, 15], 'steel'),
+            box([3, 4.5, 3], [13, 5.5, 13], 'mid')
+        ]
+    };
+    MODELS.service_post = {
+        parent: 'minecraft:block/block',
+        textures: {parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/machine_parts'},
+        elements: [
+            box([1, 0, 1], [15, 2, 15], 'dark'),
+            box([2, 2, 2], [14, 12, 14], 'steel', {up: 'mid'}),
+            box([3, 6, 1], [13, 11, 2.5], 'dark'),
+            box([4, 7, 0.5], [12, 10, 1.5], 'cyan', null, GLOW),
+            box([11, 3, 1.5], [13, 5, 2.5], 'green', null, GLOW),
+            box([3, 3, 1.5], [9, 4, 2.5], 'hazard'),
+            box([5, 11, 5], [11, 14, 11], 'gun')
+        ]
+    };
+
     // Irradiated sludge: a glowing green layer two pixels deep over the ground.
     (() => {
         const ooze = tex('ooze'), edge = tex('ooze', [0, 14, 16, 16]);
@@ -958,6 +983,8 @@
     });
     STATES.leaking_waste_barrel = {variants: {'': variant('leaking_waste_barrel')}};
     STATES.turret_mount = {variants: {'': variant('turret_mount')}};
+    STATES.service_post_plate = {variants: {'': variant('service_post_plate')}};
+    STATES.service_post = {variants: {'': variant('service_post')}};
 
     // Structure decoration (1.6.0): facing blocks look the way the model looks at north; the tank and the sludge have no facing.
     ['wall_monitor', 'server_rack', 'ammo_crate', 'broken_wall_monitor', 'broken_server_rack', ...RUSTED.map(id => 'rusted_' + id)].forEach(id => {

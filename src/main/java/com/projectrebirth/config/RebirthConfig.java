@@ -338,6 +338,32 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue ROCKET_TURRET_STRUCTURAL;
     public static final ModConfigSpec.DoubleValue ROCKET_TURRET_CRITICAL;
 
+    public static final ModConfigSpec.BooleanValue MECHS_ENABLED;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_SPEED;
+    public static final ModConfigSpec.IntValue GUARD_MECH_ENERGY_CAPACITY;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_ENERGY_IDLE;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_ENERGY_MOVING;
+    public static final ModConfigSpec.IntValue GUARD_MECH_ENERGY_SHOT;
+    public static final ModConfigSpec.IntValue GUARD_MECH_ROUNDS;
+    public static final ModConfigSpec.IntValue GUARD_MECH_ROCKETS;
+    public static final ModConfigSpec.IntValue GUARD_MECH_RANGE;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_DAMAGE;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_SPREAD;
+    public static final ModConfigSpec.IntValue GUARD_MECH_BURST;
+    public static final ModConfigSpec.IntValue GUARD_MECH_SHOT_TICKS;
+    public static final ModConfigSpec.IntValue GUARD_MECH_PAUSE_TICKS;
+    public static final ModConfigSpec.IntValue GUARD_MECH_ROCKET_TICKS;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_LOW_ENERGY;
+    public static final ModConfigSpec.DoubleValue GUARD_MECH_CHARGED;
+    public static final ModConfigSpec.IntValue GUARD_MECH_GUARD_RADIUS;
+
+    public static final ModConfigSpec.BooleanValue POST_ENABLED;
+    public static final ModConfigSpec.IntValue POST_ENERGY_CAPACITY;
+    public static final ModConfigSpec.IntValue POST_CHARGE_PER_SECOND;
+    public static final ModConfigSpec.IntValue POST_REPAIR_SECONDS;
+    public static final ModConfigSpec.DoubleValue POST_PLATE_REPAIR;
+    public static final ModConfigSpec.IntValue POST_RADIUS;
+
     public static AndroidStats androidStats(com.projectrebirth.bodies.BodyClass bodyClass) {
         return ANDROID_STATS.get(bodyClass);
     }
@@ -1039,6 +1065,35 @@ public final class RebirthConfig {
         ROCKET_TURRET_STRUCTURAL = builder.comment("Structural integrity").defineInRange("maxStructural", 100.0, 1.0, 100000.0);
         ROCKET_TURRET_CRITICAL = builder.comment("Critical integrity").defineInRange("maxCritical", 50.0, 1.0, 100000.0);
         builder.pop(2);
+        builder.comment("The guard mech (block H): integrity in [garrison.machines.mech]; two weapon nodes, its own energy and magazine.").push("mech");
+        MECHS_ENABLED = builder.comment("Whether the player's mechs act at all").define("enabled", true);
+        GUARD_MECH_SPEED = builder.comment("Movement speed (attribute)").defineInRange("speed", 0.2, 0.05, 1.0);
+        GUARD_MECH_ENERGY_CAPACITY = builder.comment("Energy (FE) it holds").defineInRange("energyCapacity", 60000, 1, 1_000_000_000);
+        GUARD_MECH_ENERGY_IDLE = builder.comment("Energy it uses per second while working").defineInRange("energyPerSecond", 10.0, 0.0, 100000.0);
+        GUARD_MECH_ENERGY_MOVING = builder.comment("Energy more per second while it walks").defineInRange("energyMovingPerSecond", 30.0, 0.0, 100000.0);
+        GUARD_MECH_ENERGY_SHOT = builder.comment("Energy a bullet or a rocket takes").defineInRange("energyPerShot", 20, 0, 100000);
+        GUARD_MECH_ROUNDS = builder.comment("Assault rifle rounds its magazine holds").defineInRange("rounds", 512, 0, 100000);
+        GUARD_MECH_ROCKETS = builder.comment("Rockets its magazine holds").defineInRange("rockets", 16, 0, 10000);
+        GUARD_MECH_RANGE = builder.comment("Blocks it sees and shoots at").defineInRange("range", 28, 4, 128);
+        GUARD_MECH_DAMAGE = builder.comment("Damage of one bullet").defineInRange("damage", 5.0, 0.0, 1000.0);
+        GUARD_MECH_SPREAD = builder.comment("Spread of its bullets in degrees").defineInRange("spread", 3.0, 0.0, 45.0);
+        GUARD_MECH_BURST = builder.comment("Bullets in a burst of one machine gun node").defineInRange("burst", 6, 1, 100);
+        GUARD_MECH_SHOT_TICKS = builder.comment("Ticks between two bullets of a burst").defineInRange("shotTicks", 3, 1, 100);
+        GUARD_MECH_PAUSE_TICKS = builder.comment("Ticks between two bursts").defineInRange("pauseTicks", 20, 1, 1000);
+        GUARD_MECH_ROCKET_TICKS = builder.comment("Ticks between two rockets of one rocket node").defineInRange("rocketTicks", 70, 5, 2000);
+        GUARD_MECH_LOW_ENERGY = builder.comment("Below this share of energy it goes to a service post").defineInRange("lowEnergy", 0.2, 0.0, 1.0);
+        GUARD_MECH_CHARGED = builder.comment("It leaves the post at this share").defineInRange("charged", 0.9, 0.05, 1.0);
+        GUARD_MECH_GUARD_RADIUS = builder.comment("Blocks around the point it guards in which it fights").defineInRange("guardRadius", 16, 1, 64);
+        builder.pop();
+        builder.comment("The service post (block H): four post plates and a post console. A machine on the plates is charged from the console's",
+                "energy, has its structural integrity mended with iron or armor plates from a chest next to the console and its magazine filled from it.").push("service_post");
+        POST_ENABLED = builder.comment("Whether service posts work").define("enabled", true);
+        POST_ENERGY_CAPACITY = builder.comment("Energy the post console holds").defineInRange("energyCapacity", 100000, 1, 1_000_000_000);
+        POST_CHARGE_PER_SECOND = builder.comment("Energy it gives a machine per second").defineInRange("chargePerSecond", 2000, 1, 1_000_000);
+        POST_REPAIR_SECONDS = builder.comment("Seconds between two pieces it uses for repair").defineInRange("repairSeconds", 2, 1, 600);
+        POST_PLATE_REPAIR = builder.comment("An armor plate mends this many times what an iron ingot does").defineInRange("plateRepair", 3.0, 1.0, 100.0);
+        POST_RADIUS = builder.comment("Blocks around in which machines look for a service post").defineInRange("radius", 64, 1, 256);
+        builder.pop();
         builder.comment("The rules by which machines choose targets.").push("targeting");
         ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);
         SELF_DEFENCE_SECONDS = builder.comment("Seconds a machine remembers who attacked it, its owner or a member of its faction nearby").defineInRange("selfDefenceSeconds", 30, 1, 3600);

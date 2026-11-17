@@ -706,10 +706,10 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         setCharge(charge() - (float) (RebirthConfig.BODY_ENERGY_ATTACK.get() * BodyPower.useMultiplier(getBodyClass())));
     }
 
-    /** Low on charge: to the nearest charging pad, and stays on it until charged. */
+    /** Low on charge: to the nearest charging pad or service post (block H), and stays on it until charged. */
     private final class ChargeGoal extends Goal {
         @Nullable
-        private BlockPos pad;
+        private Vec3 pad;
         private int wait;
 
         ChargeGoal() {
@@ -724,20 +724,25 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             }
             // canUse runs every other tick: about once a second
             wait = 10;
-            pad = nearestPad();
+            BlockPos found = nearestPad();
+            Vec3 post = level() instanceof ServerLevel server ? ServicePostBlockEntity.nearest(server, blockPosition()) : null;
+            pad = found == null ? post : post != null && post.distanceToSqr(position()) < found.distToCenterSqr(position())
+                    ? post : Vec3.atBottomCenterOf(found).add(0, 0.2, 0);
             return pad != null;
         }
 
         @Override
         public boolean canContinueToUse() {
             return pad != null && core().active() && charge() < BodyPower.capacity(AndroidEntity.this) * RebirthConfig.ANDROID_CHARGED.get()
-                    && level().getBlockEntity(pad) instanceof ChargingPadBlockEntity;
+                    && (level().getBlockEntity(BlockPos.containing(pad)) instanceof ChargingPadBlockEntity
+                    || level().getBlockEntity(BlockPos.containing(pad).below()) instanceof ChargingPadBlockEntity
+                    || level().getBlockState(BlockPos.containing(pad).below()).is(GarrisonRegistry.SERVICE_POST_PLATE.get()));
         }
 
         @Override
         public void tick() {
-            if (pad != null && distanceToSqr(Vec3.atBottomCenterOf(pad).add(0, 0.2, 0)) > 0.5) {
-                getNavigation().moveTo(pad.getX() + 0.5, pad.getY() + 0.2, pad.getZ() + 0.5, 1.0);
+            if (pad != null && distanceToSqr(pad) > 0.5) {
+                getNavigation().moveTo(pad.x, pad.y, pad.z, 1.0);
             } else {
                 getNavigation().stop();
             }
@@ -835,10 +840,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
                         : Vec3.atBottomCenterOf(task.route().get(Math.min(routeIndex, task.route().size() - 1)).above());
                 case ESCORT -> task.escort().map(id -> level().getPlayerByUUID(id)).filter(p -> p.distanceToSqr(AndroidEntity.this) < 64 * 64)
                         .map(Player::position).orElse(null);
-                case TO_POST, SHELTER -> {
-                    GlobalPos console = core().console();
-                    yield console != null && console.dimension().equals(level().dimension()) ? Vec3.atBottomCenterOf(console.pos().above()) : null;
-                }
+                case TO_POST, SHELTER -> GuardMechEntity.postOrConsole(AndroidEntity.this, core());
                 default -> null;
             };
         }

@@ -2679,6 +2679,41 @@
     }
     item('machine_gun_turret', turretIcon('#4a4f55', '#f2f4f6'));
     item('rocket_turret', turretIcon('#7d8a6a', '#f2f4f6'));
+    // 1.7.0, block H: the guard mech (packed) and its armor hull.
+    item('guard_mech', () => icon([
+        '.....kkkkkk.....',
+        '..kkkwwwwwwkkk..',
+        '.kggkwbbbbwkppk.',
+        '.kggkwwwwwwkppk.',
+        '.kddkyyyyyykddk.',
+        '..k.kwwwwwwk.k..',
+        '....kkkddkkk....',
+        '....kwk..kwk....',
+        '....kwk..kwk....',
+        '....kdk..kdk....',
+        '....kwk..kwk....',
+        '....kwk..kwk....',
+        '...kwwk..kwwk...',
+        '...khhk..khhk...',
+        '...kkkk..kkkk...',
+        '................'], {k: '#1e2228', w: '#a9b0b6', d: '#43474c', g: '#2a2d31', p: '#5fd06a', b: '#5fd06a', y: '#e0b33a', h: '#d89a2a'}));
+    item('mech_armor_hull', () => icon([
+        '................',
+        '...kkkkkkkkkk...',
+        '..kwwwwwwwwwwk..',
+        '.kwlllllllllwwk.',
+        '.kwlwwwwwwwwlwk.',
+        '.kwlwbbbbbbwlwk.',
+        '.kwlwwwwwwwwlwk.',
+        '.kwlwwwwwwwwlwk.',
+        '.kwlwwwwwwwwlwk.',
+        '.kwllllllllllwk.',
+        '..kwwwwwwwwwwk..',
+        '..khhhhhhhhhhk..',
+        '...kkkkkkkkkk...',
+        '................',
+        '................',
+        '................'], {k: '#1e2228', w: '#a9b0b6', l: '#cdd3d8', b: '#1d1f22', h: '#d89a2a'}));
     item('test_machine', () => icon([
         '................',
         '................',

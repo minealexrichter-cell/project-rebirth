@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:service_post",
+  "x": 14,
+  "y": -1,
+  "parents": [
+    "guard_mech",
+    "combat_android"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.service_post.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:service_post"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:service_post_plate"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.service_post.p4"
+    }
+  ]
+}

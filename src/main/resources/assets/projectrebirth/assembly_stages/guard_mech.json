@@ -1,0 +1,11 @@
+{
+  "bones": {
+    "right_leg": 1,
+    "left_leg": 1,
+    "torso": 2,
+    "right_mount": 3,
+    "left_mount": 3,
+    "stripes": 4,
+    "banner": 4
+  }
+}

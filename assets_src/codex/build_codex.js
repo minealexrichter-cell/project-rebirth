@@ -726,6 +726,26 @@ category('garrison', P + 'body_workshop_controller', 'Garrison', 'Гарнизо
         recipe(P + 'stabilizer'),
         text('Integrity as for every machine: at no structural integrity it shuts down and its barrel hangs; the repair wrench with iron starts it again. At no critical integrity it is a wreck: Shift + the wrench takes it apart for plates, its upgrades and a damaged AI core.',
             'Целостность — как у всех машин: без структурной турель отключается и опускает ствол, ремонтный ключ с железом запускает её снова. Без критической — остов: Shift + ключ разбирает его на пластины, улучшения и повреждённое ядро ИИ.')
+    ]),
+    entry('guard_mech', P + 'guard_mech', 12, 0, ['defence_turrets', 'heavy_dock'], 'Guard Mech', 'Мех охраны', [
+        entity(P + 'guard_mech', 'The guard mech: the mech of the ruins in service, with a stripe and a banner in the colour of its faction.',
+            'Мех охраны: мех из руин на службе, с полосой и знаменем цвета своей фракции.'),
+        text('The top of your garrison. Built in the heavy dock: a power frame and heavy actuators, a mech armor hull, two weapon nodes, an AI core with processors and power cells. Integrity 250 / 125, three upgrade slots (power armor upgrades). Nobody pilots it: for a pilot there is power armor. It has no second phase: it is a machine in service, not a boss.',
+            'Вершина гарнизона. Собирается в тяжёлом доке: силовой каркас и тяжёлые приводы, бронекорпус меха, два оружейных узла, ядро ИИ с процессорами и энергоячейками. Целостность 250 / 125, три слота улучшений (улучшения силовой брони). Пилота у него нет: для пилота есть силовая броня. Второй фазы нет: это машина на службе, а не босс.'),
+        recipe(P + 'dock_guard_mech_gun_rocket'),
+        recipe(P + 'mech_armor_hull'),
+        text('Weapons: on each side a machine gun node or a rocket launcher node, in any mix. Right-click it with a node to put it on the right, with Shift on the left; the old node comes back to you.\n\nIt has its own energy and magazine. Right-click it with rounds or rockets to load them; with an empty hand it tells its energy and magazine. Rockets break no blocks and are not fired near its own.',
+            'Оружие: на каждом борту пулемётный или ракетный узел, в любом сочетании. ПКМ по меху узлом ставит его на правый борт, с Shift — на левый; старый узел возвращается вам.\n\nУ меха свой запас энергии и магазин. ПКМ патронами или ракетами заряжает их; пустой рукой — показывает энергию и магазин. Ракеты не ломают блоки и не летят, если рядом с целью свои.'),
+        text('Orders from the console as for androids. The mech is wide and heavy: it walks open ground and does not pass narrow doors. When you give it a patrol route, the console warns you of places too narrow for it.\n\nBelow a fifth of its energy it walks to the nearest service post and waits there until charged. Empty, it stops and the console raises the alarm "no supply", as it does when it has no ammunition left.',
+            'Приказы с пульта — как у андроидов. Мех широкий и тяжёлый: ходит по открытой местности и не проходит в узкие двери. Если дать ему маршрут патруля, пульт предупредит об узких местах.\n\nПри пятой части энергии он идёт к ближайшему посту обслуживания и ждёт там зарядки. Пустой — останавливается, а пульт поднимает тревогу «нет снабжения», как и когда кончаются боеприпасы.')
+    ]),
+    entry('service_post', P + 'service_post', 14, -1, ['guard_mech', 'combat_android'], 'Service Post', 'Пост обслуживания', [
+        text('A station for your machines. Lay four post plates in a square of two by two, set the post console next to them, a chest next to the console, and bring the console energy by cable.\n\nA machine standing on the plates is charged, its structural integrity mended with iron ingots or armor plates from the chest, and a mech\'s magazine filled with rounds and rockets from it. Critical integrity is not mended here: pack the machine and take it to the maintenance station.',
+            'Станция для ваших машин. Положите четыре плиты поста квадратом 2 на 2, рядом с ними — пульт поста, к пульту — сундук, и подведите к пульту энергию кабелем.\n\nМашина на плитах заряжается, её структурная целостность чинится железом или бронепластинами из сундука, а магазин меха пополняется патронами и ракетами оттуда же. Критическую целостность пост не чинит: машину упаковывают и несут на станцию обслуживания.'),
+        recipe(P + 'service_post'),
+        recipe(P + 'service_post_plate'),
+        text('The order "to the post" sends androids and mechs to the nearest post (or to their console when there is none). Low on energy, mechs come by themselves; androids go to a post or to a charging pad, whichever is nearer. Turrets need no post: their mount feeds them.\n\nRight-click the post console to see its energy and the machines it serves.',
+            'Приказ «к посту» отправляет андроидов и мехов к ближайшему посту (или к их пульту, если поста нет). При низкой энергии мехи приходят сами, андроиды идут к посту или к зарядной платформе — что ближе. Турелям пост не нужен: их кормит основание.\n\nПКМ по пульту поста показывает его энергию и обслуживаемые машины.')
     ])
 ]);
 

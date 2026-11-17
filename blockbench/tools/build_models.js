@@ -3066,6 +3066,85 @@
                 };
             })()
         };
+
+        // ---------------------------------------------------------------- the guard mech (1.7.0, block H)
+        // The player's mech: the mech of the ruins in service, without its second phase (no core, jetpack, gatling). Service paint
+        // (light plates, dark frame, green lamps). On each side a weapon node: a machine gun or a rocket pod, both modelled, the code
+        // shows the one installed (bones right_gun / right_pod under right_mount, left_gun / left_pod under left_mount; the mounts
+        // tilt to aim). A stripe across the chest and a banner on the back (bones "stripes" and "banner", near white) take the
+        // faction's colour in the renderer. The gun and pod of a side are never shown together, so they may share space.
+        {
+            const GP = {c: '#a9b0b6', n: 0.06};
+            const GF = {c: '#43474c', n: 0.08};
+            const GDARK = '#1d1f22', GEDGE = '#8a9198', GLIGHT = '#cdd3d8', GREEN = '#5fd06a', WHITE = '#f2f4f6';
+            const gP = (o, sz, more) => C(o, sz, Object.assign({}, GP, more));
+            const gF = (o, sz, more) => C(o, sz, Object.assign({}, GF, more));
+            const gThigh = [gF([-15, 24, -4], [7, 6, 8]), gP([-14, 15, -3], [5, 11, 6], {f: [[1, 1, 3, 1, GLIGHT], [1, 4, 3, 1, GEDGE]], sd: [[1, 2, 4, 1, GEDGE]]})];
+            const gShin = [gF([-15, 13, -5], [7, 4, 9]), gP([-14, 3.5, -3], [5, 10.5, 6], {f: [[1, 1, 3, 1, GLIGHT], [2, 3, 1, 5, GEDGE]]}),
+                gF([-12.5, 6, 2.5], [2, 6.5, 2], {edge: false})];
+            const gFoot = [gF([-16, 0, -9], [10, 4, 15], {f: hazard(0, 0, 10, 4, AMBER, GDARK, 2)}), gF([-15, 0.5, 5.5], [8, 3, 3])];
+            const gGun = [
+                gF([-18, 36, -5], [7, 9, 10]),
+                gP([-19, 32, -16], [9, 7, 20], {sd: [[2, 1, 16, 1, GLIGHT], [2, 4, 16, 1, GEDGE]], tp: [[1, 2, 7, 1, GEDGE]]}),
+                gF([-18, 34, -21], [3, 3, 6], {f: [[1, 1, 1, 1, '#050505']], edge: false}),
+                gF([-14, 34, -21], [3, 3, 6], {f: [[1, 1, 1, 1, '#050505']], edge: false}),
+                gF([-19, 33, -29], [9, 5, 9], {f: [[1, 1, 2, 2, '#050505'], [5, 1, 2, 2, '#050505']]})];
+            const gPod = [
+                gF([11, 39, -4], [5, 6, 8]),
+                gP([13, 44, -8], [11, 9, 14], {f: [[1, 1, 4, 3, GDARK], [6, 1, 4, 3, GDARK], [1, 5, 4, 3, GDARK], [6, 5, 4, 3, GDARK],
+                    [2, 2, 2, 1, GREEN], [7, 2, 2, 1, GREEN], [2, 6, 2, 1, GREEN], [7, 6, 2, 1, GREEN]], sd: hazard(1, 6, 12, 2, AMBER, GDARK, 2)})];
+            const flipG = cubes => cubes.map(c => mirror(c));
+            SPECS.guard_mech = {
+                res: 256, seed: 1703, noCoplanarFaces: false,
+                bones: [
+                    {name: 'root', pivot: [0, 0, 0], cubes: []},
+                    {name: 'hips', parent: 'root', pivot: [0, 29, 0], cubes: [gF([-9, 27, -6], [18, 6, 12])]},
+                    {name: 'right_leg', parent: 'hips', pivot: [-11.5, 29, 0], cubes: gThigh},
+                    {name: 'right_shin', parent: 'right_leg', pivot: [-11.5, 16, 0], cubes: gShin},
+                    {name: 'right_foot', parent: 'right_shin', pivot: [-11.5, 3, 0], cubes: gFoot},
+                    {name: 'left_leg', parent: 'hips', pivot: [11.5, 29, 0], cubes: flipG(gThigh)},
+                    {name: 'left_shin', parent: 'left_leg', pivot: [11.5, 16, 0], cubes: flipG(gShin)},
+                    {name: 'left_foot', parent: 'left_shin', pivot: [11.5, 3, 0], cubes: flipG(gFoot)},
+                    {name: 'torso', parent: 'hips', pivot: [0, 32, 0], cubes: [
+                        gP([-12, 31, -9], [24, 15, 17], {f: [[1, 1, 22, 1, GLIGHT], [3, 3, 18, 8, GDARK], [2, 12, 20, 1, GEDGE]],
+                            sd: [[2, 2, 13, 1, GEDGE], ...vents(3, 5, 10, 4, GDARK, 2)], k: vents(4, 3, 16, 5, GDARK, 2)}),
+                        gF([-6, 40, -11], [12, 5, 3], {f: [[1, 1, 10, 2, GDARK], [2, 1, 3, 2, GREEN], [7, 1, 3, 2, GREEN]]}),
+                        gP([-10, 45, -7], [20, 3, 13], {tp: [[1, 1, 18, 1, GLIGHT], [1, 11, 18, 1, GEDGE]]}),
+                        gF([-7, 33, 7], [14, 11, 4], {k: vents(1, 1, 12, 5, GDARK, 2)}),
+                        gF([8, 40, 6], [1, 24, 3], {edge: false})]},
+                    {name: 'plate_front', parent: 'torso', pivot: [0, 36, -10], cubes: [gP([-9, 32, -11], [18, 7, 3],
+                        {f: [[1, 1, 16, 1, GLIGHT], [2, 3, 3, 2, AMBER], [13, 3, 3, 2, AMBER], [1, 5, 16, 1, GEDGE]]})]},
+                    {name: 'stripes', parent: 'torso', pivot: [0, 43, -9], cubes: [C([-11, 42, -10], [22, 2, 2], {c: WHITE, n: 0.02, edge: false})]},
+                    {name: 'banner', parent: 'torso', pivot: [9, 58, 7.5], cubes: [C([9, 54, 7], [9, 8, 1], {c: WHITE, n: 0.03,
+                        f: [[1, 1, 7, 1, '#d6d9dc'], [1, 6, 7, 1, '#d6d9dc'], [3, 3, 3, 2, '#c9cdd1']], k: [[1, 1, 7, 1, '#d6d9dc'], [1, 6, 7, 1, '#d6d9dc']]})]},
+                    {name: 'right_mount', parent: 'torso', pivot: [-14, 40, 0], cubes: []},
+                    {name: 'right_gun', parent: 'right_mount', pivot: [-14, 40, 0], cubes: gGun},
+                    {name: 'right_gun_muzzle', parent: 'right_gun', pivot: [-14.5, 35.5, -29.2], cubes: []},
+                    {name: 'right_pod', parent: 'right_mount', pivot: [-14, 44, 0], cubes: flipG(gPod)},
+                    {name: 'left_mount', parent: 'torso', pivot: [14, 40, 0], cubes: []},
+                    {name: 'left_gun', parent: 'left_mount', pivot: [14, 40, 0], cubes: flipG(gGun)},
+                    {name: 'left_gun_muzzle', parent: 'left_gun', pivot: [14.5, 35.5, -29.2], cubes: []},
+                    {name: 'left_pod', parent: 'left_mount', pivot: [14, 44, 0], cubes: gPod}
+                ],
+                animations: (() => {
+                    const recoil = bone => move(0.14, {[bone]: {p: K([0, [0, 0, 0]], [0.04, [0, 0, 2]], [0.14, [0, 0, 0]])}});
+                    const kick = bone => move(0.8, {[bone]: {r: K([0, [0, 0, 0]], [0.1, [-12, 0, 0]], [0.8, [0, 0, 0]]),
+                        p: K([0, [0, 0, 0]], [0.1, [0, -1, 1.5]], [0.8, [0, 0, 0]])}});
+                    return {
+                        'animation.guard_mech.idle': {length: 4, loop: 'loop', bones: {
+                            hips: {p: loopOf(4, t => [0, R2(-0.4 + 0.4 * Math.cos(2 * Math.PI * t)), 0])},
+                            torso: {r: loopOf(4, t => [R2(Math.sin(2 * Math.PI * t)), 0, R2(0.8 * Math.sin(2 * Math.PI * (t + 0.25)))])},
+                            banner: {r: loopOf(4, t => [0, R2(6 * Math.sin(2 * Math.PI * t)), 0])}}},
+                        'animation.guard_mech.walk': ikGait({length: 2.2, thigh: 13, shin: 13, rest: 26, hip: 24.6, stride: 7, lift: 4.5, stance: 0.62,
+                            bob: 1.2, sway: 4, pelvis: 6, twist: 4, lean: 3, feet: true, toe: 10, hips: 'hips', torso: 'torso', arms: {}}),
+                        'animation.guard_mech.shot_right': recoil('right_gun'),
+                        'animation.guard_mech.shot_left': recoil('left_gun'),
+                        'animation.guard_mech.rocket_right': kick('right_pod'),
+                        'animation.guard_mech.rocket_left': kick('left_pod')
+                    };
+                })()
+            };
+        }
     })();
 
     // ---------------------------------------------------------------- the mutants

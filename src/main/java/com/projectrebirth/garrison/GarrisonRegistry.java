@@ -122,6 +122,26 @@ public final class GarrisonRegistry {
     public static final DeferredItem<TurretItem> ROCKET_TURRET_ITEM = ITEMS.register("rocket_turret",
             () -> new TurretItem(TurretType.ROCKET, ROCKET_TURRET::get, new Item.Properties().stacksTo(1)));
 
+    /** Block H: the guard mech and the service post. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<GuardMechEntity.Loadout>> MECH_LOADOUT = COMPONENTS.registerComponentType("mech_loadout",
+            builder -> builder.persistent(GuardMechEntity.Loadout.CODEC).networkSynchronized(GuardMechEntity.Loadout.STREAM_CODEC));
+    public static final DeferredItem<Item> MECH_ARMOR_HULL = ITEMS.registerSimpleItem("mech_armor_hull", new Item.Properties().stacksTo(1));
+    public static final DeferredHolder<EntityType<?>, EntityType<GuardMechEntity>> GUARD_MECH = ENTITY_TYPES.register("guard_mech",
+            () -> EntityType.Builder.of(GuardMechEntity::new, MobCategory.MISC).sized(2.2f, 3.4f).eyeHeight(2.6f).fireImmune().clientTrackingRange(12).build("guard_mech"));
+    public static final DeferredItem<PackedMachineItem> GUARD_MECH_ITEM = ITEMS.register("guard_mech",
+            () -> new PackedMachineItem(MachineKind.MECH, GUARD_MECH::get, new Item.Properties().stacksTo(1)));
+    public static final net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> SERVICE_POST_PLATE = BLOCKS.registerSimpleBlock("service_post_plate",
+            net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
+                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops());
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> SERVICE_POST_PLATE_ITEM = ITEMS.registerSimpleBlockItem(SERVICE_POST_PLATE);
+    public static final net.neoforged.neoforge.registries.DeferredBlock<ServicePostBlock> SERVICE_POST = BLOCKS.register("service_post",
+            () -> new ServicePostBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL)
+                    .strength(4.0f, 8.0f).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops()));
+    public static final DeferredItem<net.minecraft.world.item.BlockItem> SERVICE_POST_ITEM = ITEMS.registerSimpleBlockItem(SERVICE_POST);
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<ServicePostBlockEntity>> SERVICE_POST_ENTITY =
+            BLOCK_ENTITIES.register("service_post", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(ServicePostBlockEntity::new, SERVICE_POST.get()).build(null));
+
     private static DeferredHolder<EntityType<?>, EntityType<DefenceTurretEntity>> turret(TurretType turret) {
         return ENTITY_TYPES.register(turret.id(), () -> EntityType.Builder.<DefenceTurretEntity>of((type, level) -> new DefenceTurretEntity(type, level, turret),
                 MobCategory.MISC).sized(0.95f, 1.9f).eyeHeight(1.5f).clientTrackingRange(10).build(turret.id()));
@@ -147,11 +167,13 @@ public final class GarrisonRegistry {
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, CONSOLE_ENTITY.get(), (console, side) -> console.energy().inputOnly());
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, TURRET_MOUNT_ENTITY.get(), (mount, side) -> mount.energy().inputOnly());
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, TURRET_MOUNT_ENTITY.get(), (mount, side) -> mount.ammo());
+        event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, SERVICE_POST_ENTITY.get(), (post, side) -> post.energy().inputOnly());
     }
 
     private static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(TEST_MACHINE.get(), TestMachineEntity.createAttributes().build());
         event.put(MACHINE_GUN_TURRET.get(), DefenceTurretEntity.createAttributes().build());
         event.put(ROCKET_TURRET.get(), DefenceTurretEntity.createAttributes().build());
+        event.put(GUARD_MECH.get(), GuardMechEntity.createAttributes().build());
     }
 }

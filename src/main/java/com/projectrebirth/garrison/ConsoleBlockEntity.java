@@ -198,6 +198,17 @@ public class ConsoleBlockEntity extends BlockEntity {
         return count;
     }
 
+    /** Whether a mech gets this order: the machine, or one of the group (block H: its patrol route is checked). */
+    public boolean ordersMech(java.util.Optional<UUID> machine, int group) {
+        for (Map.Entry<UUID, Link> entry : machines.entrySet()) {
+            boolean gets = machine.isPresent() ? entry.getKey().equals(machine.get()) : entry.getValue().group == group;
+            if (gets && entry.getValue().kind == MachineKind.MECH) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void setGroup(UUID machine, int group) {
         Link link = machines.get(machine);
         if (link != null) {

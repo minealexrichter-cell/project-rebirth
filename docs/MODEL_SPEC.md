@@ -212,3 +212,7 @@ root
 ## Турели обороны игрока (1.7.0, блок G)
 
 `machine_gun_turret`, `rocket_turret` (сущности, текстуры 128×128, генератор `build_models.js`): кости `base`, `head` (поворачивает код), `stripes` (полосы на боках головы, почти белые — рендер красит в цвет фракции), `barrel` (наклоняет код; у ракетной это пусковая установка), `muzzle` (точка вспышки). Анимации общие: `animations/entity/defence_turret.animation.json` (`animation.defence_turret.idle`, `.shot`). Этапы сборки в доке: `assembly_stages/<турель>.json` (голова — 1, ствол — 2, полосы — 3).
+
+## Мех охраны (1.7.0, блок H)
+
+`guard_mech` (сущность, текстура 256×256, генератор `build_models.js`): кости как у вражеского меха (`root`, `hips`, ноги, `torso` — поворачивает код, `plate_front`), плюс `stripes` (полоса на груди) и `banner` (знамя на спине) — почти белые, рендер красит в цвет фракции; `right_mount` / `left_mount` (наклоняет код) с `right_gun` / `right_pod` и `left_gun` / `left_pod` — код показывает установленный узел; точки вспышек `right_gun_muzzle`, `left_gun_muzzle`. Анимации `animations/entity/guard_mech.animation.json`: `idle`, `walk`, `shot_right`, `shot_left`, `rocket_right`, `rocket_left`. Этапы сборки в доке: `assembly_stages/guard_mech.json`.

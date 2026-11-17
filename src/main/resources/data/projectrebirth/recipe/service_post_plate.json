@@ -1,0 +1,20 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_workstation",
+  "sort": 61,
+  "time": 200,
+  "ingredients": [
+    {
+      "tag": "c:ingots/iron",
+      "count": 4
+    },
+    {
+      "item": "projectrebirth:actuator",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:service_post_plate",
+    "count": 1
+  }
+}

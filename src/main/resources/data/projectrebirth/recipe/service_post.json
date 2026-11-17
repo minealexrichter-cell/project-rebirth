@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "armor_workstation",
+  "sort": 62,
+  "time": 400,
+  "ingredients": [
+    {
+      "tag": "c:ingots/iron",
+      "count": 6
+    },
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 2
+    },
+    {
+      "item": "projectrebirth:power_cell",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:repair_wrench",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:service_post",
+    "count": 1
+  }
+}

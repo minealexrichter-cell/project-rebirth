@@ -309,6 +309,14 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
         return false;
     }
 
+    /** What else a kind keeps in its packed item (1.7.0, block H: the mech's nodes, energy and magazine). */
+    protected void writePacked(ItemStack stack) {
+    }
+
+    /** Takes it back when set up from the item. */
+    public void readPacked(ItemStack stack) {
+    }
+
     /** Packs the machine into its item with its integrity, wear, owner, name and upgrades. */
     public ItemStack packUp(Player player) {
         if (!isAlive()) {
@@ -316,6 +324,7 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
         }
         ItemStack stack = new ItemStack(packedItem());
         stack.set(GarrisonRegistry.PACKED_MACHINE.get(), core.pack());
+        writePacked(stack);
         Upgrades.putOnStack(stack, upgrades);
         upgrades = InstalledUpgrades.EMPTY;
         ConsoleLink.packed(this, core);

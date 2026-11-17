@@ -78,6 +78,8 @@
     "projectrebirth:screwdriver_manipulator",
     "projectrebirth:body_workshop_controller",
     "projectrebirth:heavy_dock_controller",
-    "projectrebirth:turret_mount"
+    "projectrebirth:turret_mount",
+    "projectrebirth:service_post",
+    "projectrebirth:service_post_plate"
   ]
 }

@@ -134,7 +134,9 @@
         "androids",
         "combat_android",
         "work_android",
-        "defence_turrets"
+        "defence_turrets",
+        "guard_mech",
+        "service_post"
       ]
     }
   ]

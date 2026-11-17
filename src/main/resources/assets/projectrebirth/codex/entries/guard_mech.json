@@ -1,0 +1,36 @@
+{
+  "icon": "projectrebirth:guard_mech",
+  "x": 12,
+  "y": 0,
+  "parents": [
+    "defence_turrets",
+    "heavy_dock"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:guard_mech",
+      "text": "codex.projectrebirth.guard_mech.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.guard_mech.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:dock_guard_mech_gun_rocket"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:mech_armor_hull"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.guard_mech.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.guard_mech.p6"
+    }
+  ]
+}

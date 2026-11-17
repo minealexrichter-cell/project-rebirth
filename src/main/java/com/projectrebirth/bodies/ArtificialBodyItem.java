@@ -43,6 +43,16 @@ public class ArtificialBodyItem extends Item {
                 ? clicked
                 : clicked.relative(context.getClickedFace());
 
+        Player placer = context.getPlayer();
+        if (com.projectrebirth.garrison.Androids.isAndroid(context.getItemInHand())) {
+            // 1.7.0: an AI core in it: it stands up an android
+            if (!(placer instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+                return InteractionResult.FAIL;
+            }
+            float androidYaw = Mth.wrapDegrees(placer.getYRot() + 180.0f);
+            return com.projectrebirth.garrison.Androids.place(level, serverPlayer, context.getItemInHand(), bodyClass, pos, androidYaw) != null
+                    ? InteractionResult.CONSUME : InteractionResult.FAIL;
+        }
         ArtificialBodyEntity body = BodyEntities.type(bodyClass).create(level);
         if (body == null) {
             return InteractionResult.FAIL;
@@ -103,6 +113,24 @@ public class ArtificialBodyItem extends Item {
                     .withStyle(storedWear >= com.projectrebirth.bodies.power.BodyWear.MAX ? ChatFormatting.RED : ChatFormatting.GOLD));
         }
         Upgrades.addTooltip(stack, tooltip);
+        // 1.7.0: a body with an AI core is a combat android, a machine of its owner
+        var parts = stack.get(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get());
+        if (parts != null) {
+            tooltip.add(Component.translatable("tooltip.projectrebirth.android.parts", parts.module().getHoverName()).withStyle(ChatFormatting.AQUA));
+            var packed = stack.get(com.projectrebirth.garrison.GarrisonRegistry.PACKED_MACHINE.get());
+            if (packed != null) {
+                if (!packed.ownerName().isEmpty()) {
+                    tooltip.add(Component.translatable("tooltip.projectrebirth.android.owner", packed.ownerName()).withStyle(ChatFormatting.GRAY));
+                }
+                float maxCritical = com.projectrebirth.technology.Maintenance.maxAndroidCritical(stack);
+                if (packed.critical() < maxCritical) {
+                    tooltip.add(Component.translatable("tooltip.projectrebirth.android.critical", Mth.ceil(packed.critical()), Mth.ceil(maxCritical))
+                            .withStyle(ChatFormatting.RED));
+                }
+            }
+            tooltip.add(Component.translatable("tooltip.projectrebirth.android.hint").withStyle(ChatFormatting.GRAY));
+            return;
+        }
         tooltip.add(Component.translatable("tooltip.projectrebirth.body.hint").withStyle(ChatFormatting.GRAY));
     }
 }

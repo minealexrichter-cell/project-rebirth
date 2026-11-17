@@ -1,0 +1,22 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:body_workshop",
+  "sort": 20,
+  "input": {
+    "item": "projectrebirth:basic_robot_body"
+  },
+  "keep": "strip_android",
+  "stages": [
+    {
+      "name": "ai_core",
+      "materials": [],
+      "time": 200,
+      "energy": 40,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:basic_robot_body",
+    "count": 1
+  }
+}

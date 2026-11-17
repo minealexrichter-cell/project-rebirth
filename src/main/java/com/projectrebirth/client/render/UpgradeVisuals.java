@@ -50,6 +50,16 @@ public final class UpgradeVisuals {
         model.getBone(bone).ifPresent(found -> found.setHidden(!visible));
     }
 
+    /** The visor and the core antenna of a body run by an AI core (1.7.0): hidden on every other body. */
+    public static final String ANDROID_VISOR = "android_visor";
+    public static final String ANDROID_CORE = "android_core";
+    public static final String ANDROID_CORE_TIP = "android_core_tip";
+
+    public static void showAndroid(GeoModel<? extends GeoAnimatable> model, boolean visible) {
+        show(model, ANDROID_VISOR, visible);
+        show(model, ANDROID_CORE, visible);
+    }
+
     /** Shows the parts of a body's gadgets; returns the colour of its plates. */
     public static int applyToBody(GeoModel<? extends GeoAnimatable> model, RegistryAccess access, InstalledUpgrades upgrades) {
         int plating = NO_TINT;
@@ -68,6 +78,7 @@ public final class UpgradeVisuals {
         show(model, BODY_BATTERY, BodyGadgets.has(access, upgrades, com.projectrebirth.bodies.power.BodyPower.BATTERY));
         show(model, BODY_COOLING, BodyGadgets.has(access, upgrades, com.projectrebirth.bodies.power.BodyHeat.COOLING));
         show(model, BODY_SHIELDING, BodyGadgets.has(access, upgrades, com.projectrebirth.environment.Emi.SHIELDING));
+        showAndroid(model, false);
         show(model, BODY_SENSOR, BodyGadgets.has(access, upgrades, com.projectrebirth.scouting.Scouting.SENSOR));
         return plating;
     }

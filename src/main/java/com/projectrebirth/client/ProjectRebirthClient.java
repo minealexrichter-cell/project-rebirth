@@ -111,6 +111,7 @@ public class ProjectRebirthClient {
         event.register(TechMenus.MAINTENANCE.get(), MaintenanceScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_MOUNTING.get(), com.projectrebirth.client.screen.MachineMountingScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.CONSOLE_MENU.get(), com.projectrebirth.client.garrison.ConsoleScreen::new);
+        event.register(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_GEAR.get(), com.projectrebirth.client.screen.AndroidGearScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_MENU.get(), com.projectrebirth.client.screen.AirFiltrationScreen::new);
         event.register(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_MENU.get(), com.projectrebirth.client.screen.WaterPurifierScreen::new);
@@ -129,6 +130,8 @@ public class ProjectRebirthClient {
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         for (BodyClass bodyClass : BodyClass.values()) {
             event.registerEntityRenderer(BodyEntities.type(bodyClass), context -> new ArtificialBodyRenderer(context, bodyClass));
+            event.registerEntityRenderer(com.projectrebirth.garrison.Androids.type(bodyClass),
+                    context -> new com.projectrebirth.client.render.AndroidRenderer(context, bodyClass));
         }
         event.registerEntityRenderer(BodyEntities.HUMAN_SHELL.get(), HumanShellRenderer::new);
         // the stand-in machine of the automated tests has no look of its own

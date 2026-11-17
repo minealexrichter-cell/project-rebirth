@@ -97,6 +97,9 @@ public final class GarrisonRegistry {
     public static final DeferredHolder<MenuType<?>, MenuType<ConsoleMenu>> CONSOLE_MENU =
             MENUS.register("console", () -> IMenuTypeExtension.create(ConsoleMenu::new));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<AndroidGearMenu>> ANDROID_GEAR =
+            MENUS.register("android_gear", () -> IMenuTypeExtension.create(AndroidGearMenu::new));
+
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMountingMenu>> MACHINE_MOUNTING =
             MENUS.register("machine_mounting", () -> IMenuTypeExtension.create(MachineMountingMenu::new));
 
@@ -111,6 +114,7 @@ public final class GarrisonRegistry {
         BLOCKS.register(modEventBus);
         BLOCK_ENTITIES.register(modEventBus);
         ConsoleNetwork.register(modEventBus);
+        Androids.register(modEventBus);
         modEventBus.addListener(GarrisonRegistry::registerCapabilities);
         modEventBus.addListener(GarrisonRegistry::registerAttributes);
     }

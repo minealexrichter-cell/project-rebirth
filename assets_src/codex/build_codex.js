@@ -672,6 +672,26 @@ category('garrison', P + 'body_workshop_controller', 'Garrison', 'Гарнизо
         text('Right-click in the air: the short list of the console\'s machines and the quick orders, for the chosen machine or a group, within 256 blocks of the console.\n\nA work area is at most 16 blocks each side and 64 deep for a miner, 32 for a lumberjack and a farmer.',
             'ПКМ в воздух — короткий список машин пульта и быстрые приказы выбранной машине или группе, в 256 блоках от пульта.\n\nРабочая область — не больше 16 блоков в сторону и 64 в глубину для шахтёра, 32 для лесоруба и фермера.'),
         recipe(P + 'tactical_tablet', 'At the electronics fabricator.', 'В цехе электроники.')
+    ]),
+    entry('androids', P + 'basic_robot_body', 8, -2, ['ai_core', 'body_workshop'], 'Androids', 'Андроиды', [
+        text('An android is an artificial body run by an AI core instead of a mind. It is a machine of the core\'s owner: it obeys the console and the tactical tablet, keeps the rules of targets and counts toward the limits of machines.\n\nNobody can move into a body that has an AI core: the capsule does not list it.',
+            'Андроид — искусственное тело, которым управляет ядро ИИ, а не сознание. Это машина владельца ядра: она подчиняется пульту и тактическому планшету, соблюдает правила цели и входит в лимиты машин.\n\nВ тело с ядром ИИ перенестись нельзя: капсула его не показывает.'),
+        text('Assembly, in the body workshop: a packed body of any class, an AI core and a combat module. The body keeps its upgrades, charge and wear.\n\nThe reverse recipe takes the core out: the body, the core and the module come back whole.',
+            'Сборка — в сборочном цехе тел: упакованное тело любого класса, ядро ИИ и боевой модуль. Тело сохраняет улучшения, заряд и износ.\n\nОбратный рецепт вынимает ядро: тело, ядро и модуль возвращаются целыми.'),
+        recipe(P + 'workshop_android_basic_robot_body'),
+        recipe(P + 'workshop_android_core_out_basic_robot_body'),
+        text('Integrity: the structural bar is the body\'s own integrity; the critical bar is half of it. The repair wrench mends the structural bar with iron. At the maintenance station a packed android takes the body\'s materials (iron or synthetic fiber, actuators or circuit boards) and armor plates for the critical bar.',
+            'Целостность: структурная шкала — это целостность самого тела, критическая — её половина. Ремонтный ключ чинит структурную железом. На станции обслуживания упакованный андроид принимает материалы тела (железо или синтетическое волокно, приводы или платы) и бронепластины для критической шкалы.')
+    ]),
+    entry('combat_android', P + 'combat_module', 10, -2, ['androids', 'target_rules'], 'Combat Android', 'Боевой андроид', [
+        entity(P + 'android_basic_robot_body', 'A combat android: the visor and the core antenna glow in the colour of its faction.',
+            'Боевой андроид: визор и антенна ядра светятся цветом его фракции.'),
+        text('Right-click the android to open its gear: 36 slots (the first is the hand), armor and the off hand. Sneak + right-click packs it up; its gear falls out where it stood.\n\nIt fights with what it holds: a sword, an axe, a trident; a bow or a crossbow with arrows from its gear. A shield in the off hand blocks. Armor works as on a player. It never uses the guns of power armor.',
+            'ПКМ по андроиду открывает снаряжение: 36 ячеек (первая — в руке), броня и вторая рука. Shift + ПКМ упаковывает его; снаряжение выпадает на месте.\n\nОн сражается тем, что держит: мечом, топором, трезубцем; луком или арбалетом со стрелами из своего снаряжения. Щит во второй руке блокирует удары. Броня работает как у игрока. Оружие силовой брони андроид не использует никогда.'),
+        text('The gadgets of the body work: the jetpack lifts it over obstacles, plates and sealing protect it.\n\nThe better the body, the better the fighter: from the basic robot to the premium synthetic body the android is faster, reacts sooner, shoots more accurately and sees farther (16 to 32 blocks).',
+            'Улучшения тела работают: реактивный ранец переносит его через препятствия, пластины и герметизация защищают.\n\nЧем лучше тело, тем лучше боец: от базового робота до премиального синтетического тела андроид быстрее, раньше реагирует, точнее стреляет и дальше видит (от 16 до 32 блоков).'),
+        text('Orders from the console: guard a point, patrol a route, escort you, hold its place, go to the post, take cover.\n\nCharge: when it runs low, the android walks to the nearest charging pad within 32 blocks and waits there. With no charge left it stops in emergency mode, its visor blinks red and the console raises the alarm "no supply".',
+            'Приказы с пульта: охранять точку, патрулировать маршрут, сопровождать вас, держать позицию, к посту, укрыться.\n\nЗаряд: когда он садится, андроид идёт к ближайшей зарядной площадке в 32 блоках и ждёт на ней. Без заряда он замирает в аварийном режиме, визор мигает красным, а пульт поднимает тревогу «нет снабжения».')
     ])
 ]);
 

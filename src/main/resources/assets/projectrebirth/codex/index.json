@@ -130,7 +130,9 @@
         "machine_integrity",
         "target_rules",
         "console",
-        "tactical_tablet"
+        "tactical_tablet",
+        "androids",
+        "combat_android"
       ]
     }
   ]

@@ -35,6 +35,10 @@ public record AssemblyRecipe(ResourceLocation multiblock, Optional<Ingredient> i
     public static final String KEEP_NONE = "none";
     public static final String KEEP_UPGRADES = "upgrades";
     public static final String KEEP_ALL = "all";
+    /** 1.7.0, block E: the body keeps everything and takes the AI core and the module of the materials: an android. */
+    public static final String KEEP_ANDROID = "android";
+    /** The android gives its core and module back and is a body again. */
+    public static final String KEEP_STRIP_ANDROID = "strip_android";
     public static final int MAX_MATERIALS = 9;
 
     /**
@@ -138,8 +142,8 @@ public record AssemblyRecipe(ResourceLocation multiblock, Optional<Ingredient> i
                 return DataResult.error(() -> "A stage takes at most " + MAX_MATERIALS + " materials");
             }
         }
-        if (!List.of(KEEP_NONE, KEEP_UPGRADES, KEEP_ALL).contains(recipe.keep)) {
-            return DataResult.error(() -> "keep is none, upgrades or all, got " + recipe.keep);
+        if (!List.of(KEEP_NONE, KEEP_UPGRADES, KEEP_ALL, KEEP_ANDROID, KEEP_STRIP_ANDROID).contains(recipe.keep)) {
+            return DataResult.error(() -> "keep is none, upgrades, all, android or strip_android, got " + recipe.keep);
         }
         return DataResult.success(recipe);
     }
@@ -165,6 +169,10 @@ public record AssemblyRecipe(ResourceLocation multiblock, Optional<Ingredient> i
 
     /** Whether the item fits as the one this recipe starts from (a recipe without one takes none). */
     public boolean acceptsBase(ItemStack stack) {
+        boolean android = stack.has(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get());
+        if (KEEP_ANDROID.equals(keep) && android || KEEP_STRIP_ANDROID.equals(keep) && !android) {
+            return false;
+        }
         return input.map(ingredient -> ingredient.test(stack)).orElse(stack.isEmpty());
     }
 

@@ -227,6 +227,42 @@ public class GarrisonGameTests {
         });
     }
 
+    /** The workshop puts an AI core and a combat module into a packed body, and the reverse recipe takes them out whole (1.7.0). */
+    @GameTest(template = TEMPLATE, timeoutTicks = 1600)
+    public static void theWorkshopPutsACoreIntoABodyAndTakesItOut(GameTestHelper helper) {
+        MultiblockControllerBlockEntity entity = build(helper, MultiblockRegistry.BODY_WORKSHOP, MultiblockRegistry.WORKSHOP_CONTROLLER.get());
+        ItemStack body = new ItemStack(item("advanced_synthetic_body"));
+        Upgrades.putOnStack(body, InstalledUpgrades.EMPTY.with(new InstalledUpgrades.Installed(Optional.empty(), new ItemStack(UpgradeRegistry.COPPER_PLATING.get()))));
+        start(entity, "workshop_android_advanced_synthetic_body", body);
+        java.util.function.ToIntFunction<String> time = id -> MultiblockRegistry.recipesFor(helper.getLevel(), MultiblockRegistry.BODY_WORKSHOP).stream()
+                .filter(holder -> holder.id().equals(ProjectRebirth.id(id))).findFirst().orElseThrow().value().totalTime();
+        int attach = time.applyAsInt("workshop_android_advanced_synthetic_body");
+        int strip = time.applyAsInt("workshop_android_core_out_advanced_synthetic_body");
+        helper.runAfterDelay(attach + 40, () -> {
+            ItemStack out = entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT);
+            var parts = out.get(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get());
+            helper.assertTrue(out.is(item("advanced_synthetic_body")) && parts != null, "An android out of the workshop: " + out);
+            helper.assertTrue(parts.core().is(com.projectrebirth.garrison.GarrisonRegistry.AI_CORE.get())
+                    && parts.module().is(com.projectrebirth.garrison.GarrisonRegistry.COMBAT_MODULE.get()), "With the core and the module");
+            helper.assertTrue(Upgrades.ofStack(out).entries().stream().anyMatch(e -> e.stack().is(UpgradeRegistry.COPPER_PLATING.get())), "Its plates kept");
+            entity.items().setStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT, ItemStack.EMPTY);
+            start(entity, "workshop_android_core_out_advanced_synthetic_body", out);
+        });
+        helper.runAfterDelay(attach + 40 + strip + 40, () -> {
+            ItemStack out = entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT);
+            helper.assertTrue(out.is(item("advanced_synthetic_body")) && !out.has(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get()),
+                    "A plain body again: " + out);
+            boolean core = false, module = false;
+            for (int i = 0; i < entity.items().getSlots(); i++) {
+                ItemStack stack = entity.items().getStackInSlot(i);
+                core |= stack.is(com.projectrebirth.garrison.GarrisonRegistry.AI_CORE.get());
+                module |= stack.is(com.projectrebirth.garrison.GarrisonRegistry.COMBAT_MODULE.get());
+            }
+            helper.assertTrue(core && module, "The core and the module came back");
+            helper.succeed();
+        });
+    }
+
     /** The dock builds power armor and it rolls out through the gate on its own, not into the output slot. */
     @GameTest(template = TEMPLATE, timeoutTicks = 4600)
     public static void theHeavyDockAssemblesPowerArmorThatRollsOut(GameTestHelper helper) {

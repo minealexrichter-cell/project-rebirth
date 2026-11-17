@@ -1,0 +1,31 @@
+{
+  "icon": "projectrebirth:basic_robot_body",
+  "x": 8,
+  "y": -2,
+  "parents": [
+    "ai_core",
+    "body_workshop"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.androids.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.androids.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_android_basic_robot_body"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_android_core_out_basic_robot_body"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.androids.p5"
+    }
+  ]
+}

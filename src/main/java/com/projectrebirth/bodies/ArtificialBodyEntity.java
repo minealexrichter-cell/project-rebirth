@@ -174,8 +174,28 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         super.onAddedToLevel();
         if (!level().isClientSide) {
             applyClassStats();
-            BodyRegistry.get(getServer()).updateStanding(this);
+            if (registersAsBody()) {
+                BodyRegistry.get(getServer()).updateStanding(this);
+            }
         }
+    }
+
+    /**
+     * Whether this body stands in the world for its owner to move into (the register of bodies, the capsules). An android
+     * (1.7.0) does not: an AI core runs it.
+     */
+    protected boolean registersAsBody() {
+        return true;
+    }
+
+    /** Whether a player may move into this body: not while an AI core runs it (1.7.0). */
+    public boolean hostsConsciousness() {
+        return registersAsBody();
+    }
+
+    /** Whether the body stands still like an object (nobody controls it); an android that works does not. */
+    protected boolean parked() {
+        return true;
     }
 
     /** Re-applied on every load so that config changes reach existing bodies. A brand-new body starts at full integrity. */
@@ -222,7 +242,7 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
      * Turns the body back into an item; its inventory drops on the ground.
      * The entity is removed first, so it can never be packed twice.
      */
-    private void packUp(Player player) {
+    protected void packUp(Player player) {
         if (!isAlive()) {
             return;
         }
@@ -230,6 +250,22 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
             player.displayClientMessage(Component.translatable("message.projectrebirth.body.not_owner"), true);
             return;
         }
+        ItemStack stack = packedStack();
+        Upgrades.putOnStack(stack, upgrades());
+        entityData.set(UPGRADES, InstalledUpgrades.EMPTY);
+        if (owner != null && registersAsBody()) {
+            BodyRegistry.get(getServer()).remove(owner, getUUID());
+        }
+        InventoryUtil.dropAll(this, storedInventory);
+        storedInventory = new ListTag();
+        discard();
+        if (!player.getInventory().add(stack)) {
+            player.drop(stack, false);
+        }
+    }
+
+    /** The item this body packs into, with its integrity, name, charge and wear (the upgrades are added by the caller). */
+    protected ItemStack packedStack() {
         ItemStack stack = new ItemStack(BodyItems.item(bodyClass));
         if (getHealth() < getMaxHealth()) {
             stack.set(BodyComponents.STORED_INTEGRITY.get(), getHealth());
@@ -242,23 +278,13 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
         if (wear > 0.0f) {
             stack.set(BodyPowerRegistry.STORED_WEAR.get(), wear);
         }
-        Upgrades.putOnStack(stack, upgrades());
-        entityData.set(UPGRADES, InstalledUpgrades.EMPTY);
-        if (owner != null) {
-            BodyRegistry.get(getServer()).remove(owner, getUUID());
-        }
-        InventoryUtil.dropAll(this, storedInventory);
-        storedInventory = new ListTag();
-        discard();
-        if (!player.getInventory().add(stack)) {
-            player.drop(stack, false);
-        }
+        return stack;
     }
 
     @Override
     public void die(DamageSource source) {
         super.die(source);
-        if (!level().isClientSide && owner != null) {
+        if (!level().isClientSide && owner != null && registersAsBody()) {
             BodyRegistry.get(getServer()).markDestroyed(owner, getUUID(), level().dimension(), position());
         }
     }
@@ -312,16 +338,19 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
 
     @Override
     public boolean isPushable() {
-        return false;
+        return !parked() && super.isPushable();
     }
 
     @Override
     public boolean isPushedByFluid() {
-        return false;
+        return !parked() && super.isPushedByFluid();
     }
 
     @Override
     public void knockback(double strength, double x, double z) {
+        if (!parked()) {
+            super.knockback(strength, x, z);
+        }
     }
 
     @Override
@@ -331,13 +360,17 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
 
     @Override
     public void move(MoverType type, Vec3 movement) {
-        if (Parked.allowsMove(type)) {
+        if (!parked() || Parked.allowsMove(type)) {
             super.move(type, movement);
         }
     }
 
     @Override
     public void travel(Vec3 input) {
+        if (!parked()) {
+            super.travel(input);
+            return;
+        }
         Parked.keepOnlyFalling(this);
         super.travel(Vec3.ZERO);
     }
@@ -345,13 +378,17 @@ public class ArtificialBodyEntity extends PathfinderMob implements GeoEntity, Up
     @Override
     public void tick() {
         super.tick();
-        Parked.holdRotation(this);
+        if (parked()) {
+            Parked.holdRotation(this);
+        }
         if (!level().isClientSide && tickCount % 20 == 0) {
             BodyRules.tickSelfRepair(this, bodyClass);
             BodyPower.tickStanding(this);
             com.projectrebirth.bodies.power.BodyHeat.tickStanding(this);
             com.projectrebirth.environment.MachineBody.tickStanding(this);
-            BodyRegistry.get(getServer()).updateStanding(this);
+            if (registersAsBody()) {
+                BodyRegistry.get(getServer()).updateStanding(this);
+            }
         }
     }
 

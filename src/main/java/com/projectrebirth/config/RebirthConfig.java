@@ -277,6 +277,26 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue WORK_AREA_MINE_DEPTH;
     public static final ModConfigSpec.IntValue WORK_AREA_LUMBER;
     public static final ModConfigSpec.IntValue WORK_AREA_FARM;
+    // 1.7.0, block E: androids
+    public static final ModConfigSpec.DoubleValue ANDROID_CRITICAL_SHARE;
+    public static final ModConfigSpec.DoubleValue ANDROID_ENERGY_ACTIVE;
+    public static final ModConfigSpec.DoubleValue ANDROID_ENERGY_MOVING;
+    public static final ModConfigSpec.DoubleValue ANDROID_LOW_CHARGE;
+    public static final ModConfigSpec.DoubleValue ANDROID_CHARGED;
+    public static final ModConfigSpec.IntValue ANDROID_PAD_RADIUS;
+    public static final ModConfigSpec.IntValue ANDROID_GUARD_RADIUS;
+    public static final ModConfigSpec.IntValue ANDROID_HOLD_RADIUS;
+    public static final ModConfigSpec.IntValue ANDROID_THINK_TICKS;
+    public static final java.util.Map<com.projectrebirth.bodies.BodyClass, AndroidStats> ANDROID_STATS = new java.util.EnumMap<>(com.projectrebirth.bodies.BodyClass.class);
+
+    /** How an android of one body class moves and fights (from the worst to the best). */
+    public record AndroidStats(ModConfigSpec.DoubleValue speed, ModConfigSpec.IntValue reaction, ModConfigSpec.DoubleValue inaccuracy,
+                               ModConfigSpec.IntValue sight, ModConfigSpec.IntValue meleeCooldown) {
+    }
+
+    public static AndroidStats androidStats(com.projectrebirth.bodies.BodyClass bodyClass) {
+        return ANDROID_STATS.get(bodyClass);
+    }
     public static final ModConfigSpec.IntValue SELF_DEFENCE_SECONDS;
     public static final ModConfigSpec.IntValue SELF_DEFENCE_RADIUS;
     public static final ModConfigSpec.BooleanValue SCOUTING_ENABLED;
@@ -961,6 +981,33 @@ public final class RebirthConfig {
         WORK_AREA_MINE_DEPTH = builder.comment("A miner's area at most this many blocks deep").defineInRange("mineDepth", 64, 1, 384);
         WORK_AREA_LUMBER = builder.comment("A lumberjack's area at most this many blocks each side").defineInRange("lumberArea", 32, 1, 128);
         WORK_AREA_FARM = builder.comment("A farmer's area at most this many blocks each side").defineInRange("farmArea", 32, 1, 128);
+        builder.pop();
+        builder.comment("Androids (block E): artificial bodies run by an AI core. Their structural integrity is their body's integrity.").push("androids");
+        ANDROID_CRITICAL_SHARE = builder.comment("Critical integrity as a share of the body's integrity").defineInRange("criticalShare", 0.5, 0.05, 2.0);
+        ANDROID_ENERGY_ACTIVE = builder.comment("Charge (FE) a working android uses per second, times its body class's use").defineInRange("energyPerSecond", 5.0, 0.0, 100000.0);
+        ANDROID_ENERGY_MOVING = builder.comment("Charge (FE) more per second while it moves").defineInRange("energyMovingPerSecond", 15.0, 0.0, 100000.0);
+        ANDROID_LOW_CHARGE = builder.comment("Below this share of charge an android goes to the nearest charging pad").defineInRange("lowCharge", 0.2, 0.0, 1.0);
+        ANDROID_CHARGED = builder.comment("It leaves the pad at this share").defineInRange("charged", 0.9, 0.05, 1.0);
+        ANDROID_PAD_RADIUS = builder.comment("Blocks around in which it looks for a charging pad").defineInRange("padRadius", 32, 1, 128);
+        ANDROID_GUARD_RADIUS = builder.comment("Blocks around the point it guards in which it fights").defineInRange("guardRadius", 12, 1, 64);
+        ANDROID_HOLD_RADIUS = builder.comment("Blocks it may leave its place to fight when it holds a position").defineInRange("holdRadius", 4, 0, 32);
+        ANDROID_THINK_TICKS = builder.comment("Ticks between two looks for a target").defineInRange("thinkTicks", 10, 1, 100);
+        double[] speeds = {0.24, 0.26, 0.28, 0.30, 0.32};
+        int[] reactions = {16, 13, 10, 7, 4};
+        double[] inaccuracies = {10.0, 8.0, 6.0, 4.0, 2.0};
+        int[] sights = {16, 20, 24, 28, 32};
+        int[] cooldowns = {24, 22, 20, 18, 16};
+        for (com.projectrebirth.bodies.BodyClass bodyClass : com.projectrebirth.bodies.BodyClass.values()) {
+            int i = Math.min(bodyClass.ordinal(), speeds.length - 1);
+            builder.push(bodyClass.getSerializedName());
+            ANDROID_STATS.put(bodyClass, new AndroidStats(
+                    builder.comment("Movement speed (attribute)").defineInRange("speed", speeds[i], 0.05, 1.0),
+                    builder.comment("Ticks it takes to answer a new target").defineInRange("reaction", reactions[i], 0, 100),
+                    builder.comment("Spread of its arrows (0: dead on)").defineInRange("inaccuracy", inaccuracies[i], 0.0, 30.0),
+                    builder.comment("Blocks it sees targets at").defineInRange("sight", sights[i], 4, 64),
+                    builder.comment("Ticks between two blows").defineInRange("meleeCooldown", cooldowns[i], 4, 100)));
+            builder.pop();
+        }
         builder.pop(2);
 
         builder.comment("Scouting in the field (1.6.0, block F): the field analyzer in hand, the sensor module of bodies and the sensor unit of",

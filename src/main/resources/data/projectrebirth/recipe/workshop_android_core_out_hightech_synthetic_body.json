@@ -1,0 +1,22 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:body_workshop",
+  "sort": 23,
+  "input": {
+    "item": "projectrebirth:hightech_synthetic_body"
+  },
+  "keep": "strip_android",
+  "stages": [
+    {
+      "name": "ai_core",
+      "materials": [],
+      "time": 200,
+      "energy": 40,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:hightech_synthetic_body",
+    "count": 1
+  }
+}

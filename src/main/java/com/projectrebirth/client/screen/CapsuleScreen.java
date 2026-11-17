@@ -59,7 +59,7 @@ public class CapsuleScreen extends Screen {
     }
 
     private int panelHeight() {
-        return LIST_TOP + Math.max(1, Math.min(VISIBLE_ROWS, bodies.size())) * ROW_HEIGHT + 22;
+        return LIST_TOP + Math.max(1, Math.min(VISIBLE_ROWS, bodies.size())) * ROW_HEIGHT + 34;
     }
 
     @Override
@@ -122,6 +122,10 @@ public class CapsuleScreen extends Screen {
         graphics.drawString(font, title, left + 8, top + 7, 0x404040, false);
         Component range = Component.translatable("screen.projectrebirth.capsule.range", radius);
         graphics.drawString(font, range, left + WIDTH - 8 - font.width(range), top + 7, 0x606060, false);
+        // Bodies run by an AI core are machines, not bodies for a mind (1.7.0).
+        Component androids = Component.translatable("screen.projectrebirth.capsule.androids");
+        graphics.drawString(font, font.plainSubstrByWidth(androids.getString(), WIDTH - 16), left + 8,
+                top + panelHeight() - 33, 0x606060, false);
         if (bodies.isEmpty()) {
             graphics.drawWordWrap(font, Component.translatable("screen.projectrebirth.capsule.empty"),
                     left + 8, top + LIST_TOP + 4, WIDTH - 16, 0x404040);

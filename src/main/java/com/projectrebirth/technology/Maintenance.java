@@ -81,6 +81,19 @@ public final class Maintenance {
         return kind(stack) == Kind.SYNTHETIC_BODY ? TechItems.CIRCUIT_BOARD.get() : TechItems.ACTUATOR.get();
     }
 
+    // ---------- packed androids (1.7.0): the body item carries the AI core; plates mend its critical bar
+
+    /** Critical integrity of a packed android, or its maximum when the body is no android. */
+    public static float androidCritical(ItemStack stack) {
+        var packed = stack.get(com.projectrebirth.garrison.GarrisonRegistry.PACKED_MACHINE.get());
+        return packed != null && stack.has(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get())
+                ? packed.critical() : maxAndroidCritical(stack);
+    }
+
+    public static float maxAndroidCritical(ItemStack stack) {
+        return maxBodyIntegrity(stack) * RebirthConfig.ANDROID_CRITICAL_SHARE.get().floatValue();
+    }
+
     // ---------- packed machines (1.7.0): plates mend critical, iron structural, actuators take wear off
 
     private static com.projectrebirth.garrison.MachineCore.Packed machine(ItemStack stack) {
@@ -96,7 +109,8 @@ public final class Maintenance {
         return switch (kind(stack)) {
             case MACHINE -> machineNeeds(stack);
             case ARMOR -> armorCritical(stack) < maxCritical(stack) || armorStructural(stack) < maxStructural(stack);
-            case ROBOT_BODY, SYNTHETIC_BODY -> bodyIntegrity(stack) < maxBodyIntegrity(stack) || bodyWear(stack) > 0.0f;
+            case ROBOT_BODY, SYNTHETIC_BODY -> bodyIntegrity(stack) < maxBodyIntegrity(stack) || bodyWear(stack) > 0.0f
+                    || androidCritical(stack) < maxAndroidCritical(stack);
             case NONE -> false;
         };
     }
@@ -134,6 +148,9 @@ public final class Maintenance {
                 boolean synthetic = kind(stack) == Kind.SYNTHETIC_BODY;
                 Item integrityMaterial = synthetic ? TechItems.SYNTHETIC_FIBER.get() : Items.IRON_INGOT;
                 Item wearMaterial = wearMaterial(stack);
+                if (androidCritical(stack) < maxAndroidCritical(stack) && materials.has(PowerArmorRegistry.ARMOR_PLATE.get())) {
+                    return PowerArmorRegistry.ARMOR_PLATE.get();
+                }
                 if (bodyIntegrity(stack) < maxBodyIntegrity(stack) && materials.has(integrityMaterial)) {
                     return integrityMaterial;
                 }
@@ -178,6 +195,16 @@ public final class Maintenance {
             } else {
                 stack.set(PowerArmorRegistry.STORED_STRUCTURAL.get(), structural);
                 stack.set(PowerArmorRegistry.STORED_CRITICAL.get(), critical);
+            }
+            return;
+        }
+        if (material == PowerArmorRegistry.ARMOR_PLATE.get()) {
+            var packed = stack.get(com.projectrebirth.garrison.GarrisonRegistry.PACKED_MACHINE.get());
+            if (packed != null) {
+                float critical = Math.min(maxAndroidCritical(stack),
+                        packed.critical() + RebirthConfig.MACHINE_REPAIR_CRITICAL_PER_PLATE.get().floatValue());
+                stack.set(com.projectrebirth.garrison.GarrisonRegistry.PACKED_MACHINE.get(), new com.projectrebirth.garrison.MachineCore.Packed(
+                        packed.kind(), packed.structural(), critical, packed.wear(), packed.owner(), packed.ownerName(), packed.name()));
             }
             return;
         }

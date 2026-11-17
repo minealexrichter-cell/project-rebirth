@@ -221,8 +221,9 @@
                 }
             }
         }
-        // the parts of 1.6.0 (latest) after those of 1.5.0, so that the older ones keep their places
-        for (const c of [...cubes].filter(c => c.late).sort((a, b) => (a.latest ? 1 : 0) - (b.latest ? 1 : 0) || area(b) - area(a))) {
+        // the parts of 1.6.0 (latest) after those of 1.5.0, and those of 1.7.0 (newest) after them, so that the older ones keep their places
+        const rank = c => c.newest ? 2 : c.latest ? 1 : 0;
+        for (const c of [...cubes].filter(c => c.late).sort((a, b) => rank(a) - rank(b) || area(b) - area(a))) {
             if (c.uv || c.share) {
                 continue;
             }
@@ -653,7 +654,7 @@
     (function () {
         const white = '#dfe5ea', blue = '#2f6fc4', dark = '#20262e', cyan = '#55e8ff', grey = '#8a939c';
         SPECS.improved_robot_body = {
-            res: 64, seed: 202,
+            res: 64, seed: 202, visorHeight: 1, eyes: 27,
             joints: {knee: 6, elbow: 17},
             bones: bodyBones({
                 head: {c: white, n: 0.03,
@@ -2196,6 +2197,23 @@
             {name: 'upgrade_battery', parent: 'torso', pivot: torso.pivot, cubes: [cell]},
             {name: 'upgrade_cooling', parent: 'torso', pivot: torso.pivot, cubes: [fins, mirror(fins)]},
             {name: 'upgrade_shielding', parent: 'torso', pivot: torso.pivot, cubes: [mesh]}
+        );
+        // 1.7.0, block E: the combat android, a body run by an AI core. A visor across the eyes and an antenna with the core's
+        // light on top of the head, right side. Both are painted near white: the renderer tints them in the faction colour and lets them glow.
+        const NEW = {late: true, latest: true, newest: true};
+        const visorWidth = Math.max(4, Math.round(-2 * (headSide + 1)));
+        const crown = maxOf(head.cubes, 1);
+        const eyes = spec.eyes !== undefined ? spec.eyes : crown - 5;
+        // two halves sharing one texture area: the textures of the bodies have little room left
+        const half = visorWidth / 2;
+        const visor = C([-half, eyes + (spec.visorHeight === 1 ? 0.5 : 0), face - 1.25], [half, spec.visorHeight || 2, 1], {c: '#e6eef5', n: 0.02, edge: false,
+            f: [[0, 0, half, 1, '#ffffff']]}, NEW);
+        const stem = C([headSide + 1, crown, 1], [1, 3, 1], {c: '#4a525c', n: 0.03, edge: false}, NEW);
+        const tip = C([headSide + 1, crown + 3, 1], [1, 1, 1], {c: '#ffffff', n: 0, edge: false}, NEW);
+        spec.bones.push(
+            {name: 'android_visor', parent: 'head', pivot: head.pivot, cubes: [visor, mirror(visor)]},
+            {name: 'android_core', parent: 'head', pivot: head.pivot, cubes: [stem]},
+            {name: 'android_core_tip', parent: 'android_core', pivot: head.pivot, cubes: [tip]}
         );
     }
 

@@ -211,7 +211,7 @@ public final class TransferService {
     private static Optional<ArtificialBodyEntity> findBodyNear(ServerPlayer player, ServerLevel level, Vec3 center) {
         int radius = RebirthConfig.TRANSFER_RADIUS.get();
         return level.getEntitiesOfClass(ArtificialBodyEntity.class, new AABB(center, center).inflate(radius),
-                        body -> body.isAlive() && body.canBeUsedBy(player) && body.distanceToSqr(center) <= (double) radius * radius)
+                        body -> body.isAlive() && body.hostsConsciousness() && body.canBeUsedBy(player) && body.distanceToSqr(center) <= (double) radius * radius)
                 .stream()
                 .min(Comparator.comparingDouble(body -> body.distanceToSqr(center)));
     }

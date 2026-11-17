@@ -651,6 +651,33 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             switch (recipe.keep()) {
                 case AssemblyRecipe.KEEP_UPGRADES -> left.addAll(Upgrades.moveAll(level.registryAccess(), Upgrades.ofStack(base), result));
                 case AssemblyRecipe.KEEP_ALL -> result.applyComponents(base.getComponentsPatch());
+                case AssemblyRecipe.KEEP_ANDROID -> {
+                    // the body as it was, with the core and the module of the materials put into it
+                    result = base.copyWithCount(1);
+                    ItemStack aiCore = ItemStack.EMPTY, module = ItemStack.EMPTY;
+                    for (ItemStack used : consumed) {
+                        if (used.getItem() instanceof com.projectrebirth.garrison.AiCoreItem && aiCore.isEmpty()) {
+                            aiCore = used.copyWithCount(1);
+                        } else if ((used.is(com.projectrebirth.garrison.GarrisonRegistry.COMBAT_MODULE.get())
+                                || used.is(com.projectrebirth.garrison.GarrisonRegistry.WORK_MODULE.get())) && module.isEmpty()) {
+                            module = used.copyWithCount(1);
+                        }
+                    }
+                    result.set(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get(),
+                            new com.projectrebirth.garrison.GarrisonRegistry.AndroidParts(aiCore, module));
+                    result.remove(com.projectrebirth.garrison.GarrisonRegistry.PACKED_MACHINE.get());
+                }
+                case AssemblyRecipe.KEEP_STRIP_ANDROID -> {
+                    result = base.copyWithCount(1);
+                    var parts = result.remove(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get());
+                    result.remove(com.projectrebirth.garrison.GarrisonRegistry.PACKED_MACHINE.get());
+                    if (parts != null) {
+                        left.add(parts.core().copy());
+                        if (!parts.module().isEmpty()) {
+                            left.add(parts.module().copy());
+                        }
+                    }
+                }
                 default -> {
                 }
             }

@@ -1,0 +1,28 @@
+{
+  "icon": "projectrebirth:combat_module",
+  "x": 10,
+  "y": -2,
+  "parents": [
+    "androids",
+    "target_rules"
+  ],
+  "pages": [
+    {
+      "type": "entity",
+      "value": "projectrebirth:android_basic_robot_body",
+      "text": "codex.projectrebirth.combat_android.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.combat_android.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.combat_android.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.combat_android.p4"
+    }
+  ]
+}

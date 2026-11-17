@@ -86,6 +86,10 @@ public class MachineCore {
     private float structural;
     private float critical;
     private float wear;
+    private float structuralLimit = -1.0f;
+    private float criticalLimit = -1.0f;
+    /** An android: its body already wears and gathers contamination; here only the interference counts. */
+    private boolean environmentByBody;
     private State state = State.ACTIVE;
     private boolean intruderMode;
     private int secondsSinceDamage;
@@ -147,11 +151,27 @@ public class MachineCore {
     }
 
     public float maxStructural() {
-        return kind.maxStructural();
+        return structuralLimit > 0.0f ? structuralLimit : kind.maxStructural();
     }
 
     public float maxCritical() {
-        return kind.maxCritical();
+        return criticalLimit > 0.0f ? criticalLimit : kind.maxCritical();
+    }
+
+    /**
+     * Bars of its own instead of the kind's (an android: its body's integrity and a share of it); what is above the new limits
+     * is cut.
+     */
+    public void setEnvironmentByBody(boolean byBody) {
+        environmentByBody = byBody;
+    }
+
+    public void setLimits(float structural, float critical) {
+        structuralLimit = structural;
+        criticalLimit = critical;
+        this.structural = Math.min(this.structural, maxStructural());
+        this.critical = Math.min(this.critical, maxCritical());
+        changed.run();
     }
 
     public float wear() {
@@ -370,8 +390,13 @@ public class MachineCore {
         if (!Environment.isEnabled() || wreck()) {
             return;
         }
-        com.projectrebirth.shelter.Contamination.second(self);
         Exposure exposure = Environment.exposureAt(level, self.blockPosition());
+        boolean screened = BodyGadgets.has(level.registryAccess(), upgrades, Emi.SCREEN) || BodyGadgets.has(level.registryAccess(), upgrades, Emi.SHIELDING);
+        emiFault = !screened && Emi.disturbs(exposure.get(Hazard.EMI)) && !Emi.insideShelter(level, self.blockPosition());
+        if (environmentByBody) {
+            return;
+        }
+        com.projectrebirth.shelter.Contamination.second(self);
         float acid = exposure.get(Hazard.ACID);
         if (acid > 0.0f && !BodyGadgets.protects(level.registryAccess(), upgrades, BodyGadgets.ACID)) {
             setWear(wear + acid * RebirthConfig.MACHINE_ACID_WEAR_PER_SECOND.get().floatValue());
@@ -381,8 +406,6 @@ public class MachineCore {
             setWear(wear + dust * RebirthConfig.MACHINE_DUST_WEAR_PER_SECOND.get().floatValue());
             dusty = true;
         }
-        boolean screened = BodyGadgets.has(level.registryAccess(), upgrades, Emi.SCREEN) || BodyGadgets.has(level.registryAccess(), upgrades, Emi.SHIELDING);
-        emiFault = !screened && Emi.disturbs(exposure.get(Hazard.EMI)) && !Emi.insideShelter(level, self.blockPosition());
     }
 
     // ------------------------------------------------------------------ packing and saving

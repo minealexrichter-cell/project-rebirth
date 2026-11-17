@@ -205,6 +205,16 @@ public final class ConsoleNetwork {
         } else {
             return null;
         }
+        if (type == MachineTask.Type.AREA_PATROL) {
+            // 1.7.2, block D: no points; the walking machines spread out round their middle
+            BlockPos centre = console.orderArea(machine, group);
+            if (centre == null) {
+                return Component.translatable("message.projectrebirth.console.area_patrol_none");
+            }
+            sendView(player, console);
+            return Component.translatable("message.projectrebirth.console.ordered_area", RebirthConfig.AREA_PATROL_RADIUS.get(),
+                    centre.getX(), centre.getY(), centre.getZ());
+        }
         if (!needsPoints(type)) {
             MachineTask task = type == MachineTask.Type.ESCORT ? MachineTask.escort(player.getUUID()) : MachineTask.simple(type);
             return deliver(player, console, machine, group, type, task);

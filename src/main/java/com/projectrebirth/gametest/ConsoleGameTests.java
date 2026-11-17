@@ -101,6 +101,44 @@ public class ConsoleGameTests {
         helper.succeed();
     }
 
+    /** 1.7.2, block D: an area patrol spreads the machines round their middle, a sector each; the places they pick lie in it. */
+    @GameTest(template = TEMPLATE, batch = BATCH)
+    public static void anAreaPatrolGivesEachMachineItsSector(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        ConsoleBlockEntity console = console(helper, owner);
+        TestMachineEntity a = place(helper, owner, new BlockPos(3, 2, 5));
+        TestMachineEntity b = place(helper, owner, new BlockPos(7, 2, 5));
+        helper.assertTrue(a != null && b != null && console.knows(a.getUUID()) && console.knows(b.getUUID()), "Both linked");
+        second(a);
+        second(b);
+        BlockPos centre = console.orderArea(java.util.Optional.empty(), ConsoleBlockEntity.ALL);
+        helper.assertTrue(centre != null && centre.getX() == (a.blockPosition().getX() + b.blockPosition().getX()) / 2, "Round their middle: " + centre);
+        MachineTask ta = console.taskFor(a.getUUID()), tb = console.taskFor(b.getUUID());
+        helper.assertTrue(ta.type() == MachineTask.Type.AREA_PATROL && tb.type() == MachineTask.Type.AREA_PATROL, "Both sweep the area");
+        helper.assertTrue(ta.sector()[1] == 2 && tb.sector()[1] == 2 && ta.sector()[0] != tb.sector()[0], "In two different sectors");
+        second(a);
+        helper.assertTrue(a.machineCore().task().equals(ta), "The machine takes it");
+        double radius = RebirthConfig.AREA_PATROL_RADIUS.get();
+        MachineTask quarter = MachineTask.area(centre, 1, 4);
+        int inSector = 0;
+        for (int i = 0; i < 30; i++) {
+            net.minecraft.world.phys.Vec3 point = com.projectrebirth.garrison.AreaPatrol.pick(a, quarter);
+            helper.assertTrue(point != null, "A place");
+            double dx = point.x - (centre.getX() + 0.5), dz = point.z - (centre.getZ() + 0.5);
+            if (dx * dx + dz * dz < 1.0) {
+                continue; // none found (an unloaded chunk): the centre
+            }
+            double angle = Math.atan2(dz, dx);
+            helper.assertTrue(Math.hypot(dx, dz) <= radius + 1.0 && angle >= Math.PI / 2 - 0.05 && angle <= Math.PI + 0.05,
+                    "In the second quarter and the radius: " + dx + " " + dz);
+            inSector++;
+        }
+        helper.assertTrue(inSector > 0, "Some places in its sector");
+        a.discard();
+        b.discard();
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE, batch = BATCH)
     public static void groupsTakeOrdersAndTheirIntruderMode(GameTestHelper helper) {
         ServerPlayer owner = player(helper);

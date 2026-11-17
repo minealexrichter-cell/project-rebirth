@@ -240,6 +240,39 @@ public class ConsoleBlockEntity extends BlockEntity {
         return count;
     }
 
+    /**
+     * 1.7.2, block D: the order "area patrol" for one machine, a group or {@link #ALL}: the walking machines that get it (turrets
+     * keep their order) spread out round their middle (by the places last heard of them), each in its own sector. Returns the
+     * centre, or null when no walking machine gets it.
+     */
+    @Nullable
+    public BlockPos orderArea(java.util.Optional<UUID> machine, int group) {
+        java.util.List<Map.Entry<UUID, Link>> walkers = new java.util.ArrayList<>();
+        for (Map.Entry<UUID, Link> entry : machines.entrySet()) {
+            boolean gets = machine.isPresent() ? entry.getKey().equals(machine.get()) : group == ALL || entry.getValue().group == group;
+            if (gets && entry.getValue().kind != MachineKind.TURRET) {
+                walkers.add(entry);
+            }
+        }
+        if (walkers.isEmpty()) {
+            return null;
+        }
+        long x = 0, y = 0, z = 0;
+        for (Map.Entry<UUID, Link> entry : walkers) {
+            x += entry.getValue().pos.getX();
+            y += entry.getValue().pos.getY();
+            z += entry.getValue().pos.getZ();
+        }
+        int n = walkers.size();
+        BlockPos centre = new BlockPos((int) Math.floorDiv(x, n), (int) Math.floorDiv(y, n), (int) Math.floorDiv(z, n));
+        for (int i = 0; i < n; i++) {
+            walkers.get(i).getValue().task = MachineTask.area(centre, i, n);
+            beforeShelter.remove(walkers.get(i).getKey());
+        }
+        setChanged();
+        return centre;
+    }
+
     /** Whether a mech gets this order: the machine, or one of the group (block H: its patrol route is checked). */
     public boolean ordersMech(java.util.Optional<UUID> machine, int group) {
         for (Map.Entry<UUID, Link> entry : machines.entrySet()) {

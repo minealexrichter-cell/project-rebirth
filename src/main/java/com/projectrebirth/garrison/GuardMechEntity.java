@@ -133,6 +133,9 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private long ammoRetry;
     /** 1.7.2, block C: its jetpack (the small robot has none), and the stomp. */
     private final MechJetpack jetpack = new MechJetpack(this);
+    /** 1.7.2, block D: its walk in the order "area patrol". */
+    private final AreaPatrol areaPatrol = new AreaPatrol(this, mover);
+
     private int stompCooldown;
     private int stompWindup = -1;
 
@@ -527,6 +530,9 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             double radius = stats().guardRadius().get();
             return target.blockPosition().distSqr(task.point().get()) <= radius * radius;
         }
+        if (task.type() == MachineTask.Type.AREA_PATROL) {
+            return AreaPatrol.covers(task, target.blockPosition());
+        }
         return true;
     }
 
@@ -914,6 +920,9 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 if (goal == cameFrom) {
                     cameFrom = null;
                 }
+                if (machineCore().task().type() == MachineTask.Type.AREA_PATROL) {
+                    areaPatrol.arrived();
+                }
                 MachineTask task = machineCore().task();
                 if (task.type() == MachineTask.Type.PATROL && !task.route().isEmpty()) {
                     routeIndex = (routeIndex + 1) % task.route().size();
@@ -934,6 +943,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 case ESCORT -> task.escort().map(id -> level().getPlayerByUUID(id)).filter(p -> p.distanceToSqr(GuardMechEntity.this) < 64 * 64)
                         .map(Player::position).orElse(null);
                 case TO_POST, SHELTER -> postOrConsole(GuardMechEntity.this, machineCore());
+                case AREA_PATROL -> areaPatrol.goal(task);
                 // 1.7.2: no order to follow: back to where it was before it went to the post
                 default -> cameFrom;
             };

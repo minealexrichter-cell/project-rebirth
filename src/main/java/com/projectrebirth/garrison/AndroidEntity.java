@@ -96,6 +96,9 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     private int routeIndex;
     /** 1.7.2: how it gets to a place; with a jetpack among its gadgets it hops over what stands in the way. */
     private final MachineMover mover = new MachineMover(this);
+    /** 1.7.2, block D: its walk in the order "area patrol". */
+    private final AreaPatrol areaPatrol = new AreaPatrol(this, mover);
+
     private boolean stuckReported;
     private boolean noPostReported;
     /** 1.7.2: where it was when it set out to charge; with no order it walks back there after it was charged. */
@@ -618,6 +621,9 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             double radius = RebirthConfig.ANDROID_GUARD_RADIUS.get();
             return target.blockPosition().distSqr(task.point().get()) <= radius * radius;
         }
+        if (task.type() == MachineTask.Type.AREA_PATROL) {
+            return AreaPatrol.covers(task, target.blockPosition());
+        }
         return true;
     }
 
@@ -889,6 +895,9 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
                 if (goal == cameFrom) {
                     cameFrom = null;
                 }
+                if (core().task().type() == MachineTask.Type.AREA_PATROL) {
+                    areaPatrol.arrived();
+                }
                 if (core().task().type() == MachineTask.Type.PATROL && !core().task().route().isEmpty()) {
                     routeIndex = (routeIndex + 1) % core().task().route().size();
                 }
@@ -908,6 +917,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
                 case ESCORT -> task.escort().map(id -> level().getPlayerByUUID(id)).filter(p -> p.distanceToSqr(AndroidEntity.this) < 64 * 64)
                         .map(Player::position).orElse(null);
                 case TO_POST, SHELTER -> GuardMechEntity.postOrConsole(AndroidEntity.this, core());
+                case AREA_PATROL -> areaPatrol.goal(task);
                 // 1.7.2: no order to follow: back to where it was before it went to charge
                 default -> cameFrom;
             };

@@ -27,8 +27,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 public final class ConsoleOrders {
     /** The orders without a work kind, on two rows of buttons (1.7.1). */
-    public static final List<MachineTask.Type> ORDERS = List.of(MachineTask.Type.GUARD, MachineTask.Type.PATROL, MachineTask.Type.ESCORT,
-            MachineTask.Type.HOLD, MachineTask.Type.TO_POST, MachineTask.Type.SHELTER, MachineTask.Type.STAND_DOWN);
+    public static final List<MachineTask.Type> ORDERS = List.of(MachineTask.Type.GUARD, MachineTask.Type.PATROL, MachineTask.Type.AREA_PATROL,
+            MachineTask.Type.ESCORT, MachineTask.Type.HOLD, MachineTask.Type.TO_POST, MachineTask.Type.SHELTER, MachineTask.Type.STAND_DOWN);
     /** The panel's width and height. */
     public static final int PANEL_W = 240, PANEL_H = 72;
 

@@ -401,6 +401,8 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue MOVE_STUCK_DISTANCE;
     public static final ModConfigSpec.DoubleValue MOVE_STRAIGHT_DISTANCE;
     public static final ModConfigSpec.IntValue MOVE_GIVE_UP_CHECKS;
+    public static final ModConfigSpec.IntValue AREA_PATROL_RADIUS;
+    public static final ModConfigSpec.IntValue AREA_PATROL_PAUSE;
 
     public static AndroidStats androidStats(com.projectrebirth.bodies.BodyClass bodyClass) {
         return ANDROID_STATS.get(bodyClass);
@@ -1182,6 +1184,9 @@ public final class RebirthConfig {
         MOVE_STRAIGHT_DISTANCE = builder.comment("Within this many blocks of its goal a machine walks straight when the way is free (no path needed)")
                 .defineInRange("straightDistance", 8.0, 0.0, 32.0);
         MOVE_GIVE_UP_CHECKS = builder.comment("Checks in a row without getting on after which the machine reports that it is stuck").defineInRange("stuckReportChecks", 4, 1, 100);
+        AREA_PATROL_RADIUS = builder.comment("The order \"area patrol\" (1.7.2): blocks round the group's middle in which its machines spread out and walk")
+                .defineInRange("areaPatrolRadius", 50, 4, 256);
+        AREA_PATROL_PAUSE = builder.comment("Longest pause in seconds a machine of an area patrol makes at a point before it walks on").defineInRange("areaPatrolPauseSeconds", 6, 0, 600);
         builder.pop();
         builder.comment("The rules by which machines choose targets.").push("targeting");
         ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);

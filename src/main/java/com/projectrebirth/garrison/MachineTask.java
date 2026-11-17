@@ -31,7 +31,8 @@ import net.minecraft.network.codec.StreamCodec;
 public record MachineTask(Type type, Optional<BlockPos> point, List<BlockPos> route, Optional<BlockPos> from, Optional<BlockPos> to,
                           Optional<BlockPos> chest, Optional<UUID> escort, String work) {
     public enum Type {
-        STAND_DOWN, GUARD, PATROL, ESCORT, HOLD, WORK, TO_POST, SHELTER;
+        // 1.7.2: AREA_PATROL at the end (tablets keep an order's type by its place in this list)
+        STAND_DOWN, GUARD, PATROL, ESCORT, HOLD, WORK, TO_POST, SHELTER, AREA_PATROL;
 
         public String id() {
             return name().toLowerCase(Locale.ROOT);
@@ -81,6 +82,26 @@ public record MachineTask(Type type, Optional<BlockPos> point, List<BlockPos> ro
 
     public static MachineTask patrol(List<BlockPos> route) {
         return new MachineTask(Type.PATROL, Optional.empty(), List.copyOf(route), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), "");
+    }
+
+    /**
+     * 1.7.2, block D: patrol the area round a centre without a route; the machine walks the sector {@code sector} of {@code sectors}
+     * of the circle (kept in the work field as "sector/sectors"). The radius is the config's.
+     */
+    public static MachineTask area(BlockPos centre, int sector, int sectors) {
+        return new MachineTask(Type.AREA_PATROL, Optional.of(centre.immutable()), List.of(), Optional.empty(), Optional.empty(), Optional.empty(),
+                Optional.empty(), sector + "/" + Math.max(1, sectors));
+    }
+
+    /** For an area patrol: its sector (0-based) and the number of sectors; {0, 1} when it cannot be read. */
+    public int[] sector() {
+        String[] parts = work.split("/");
+        try {
+            int sectors = Math.max(1, Integer.parseInt(parts[1]));
+            return new int[] {Math.floorMod(Integer.parseInt(parts[0]), sectors), sectors};
+        } catch (RuntimeException e) {
+            return new int[] {0, 1};
+        }
     }
 
     public static MachineTask escort(UUID whom) {

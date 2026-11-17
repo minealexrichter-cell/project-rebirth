@@ -82,24 +82,25 @@ public class BodyRulesGameTests {
         helper.assertTrue(tryUse(helper, player, apple), "The premium body must eat golden apples");
         apple.finishUsingItem(helper.getLevel(), player);
         helper.assertTrue(apple.getCount() == 1, "The golden apple must be eaten");
-        // 1.7.1: no body feels effects, the premium one too
-        helper.assertFalse(player.hasEffect(MobEffects.REGENERATION) || player.hasEffect(MobEffects.ABSORPTION),
-                "The golden apple must give no effects to an artificial body");
+        helper.assertTrue(player.hasEffect(MobEffects.REGENERATION) && player.hasEffect(MobEffects.ABSORPTION),
+                "The golden apple must give its effects");
 
         ItemStack potion = potion();
         helper.assertTrue(tryUse(helper, player, potion), "The premium body must drink potions");
         potion.finishUsingItem(helper.getLevel(), player);
-        helper.assertFalse(player.hasEffect(MobEffects.DAMAGE_BOOST), "The potion must not work on an artificial body");
+        helper.assertTrue(player.hasEffect(MobEffects.DAMAGE_BOOST), "The potion must work");
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void noBodyIsAffectedByEffects(GameTestHelper helper) {
+    public static void onlyThePremiumBodyIsAffectedByEffects(GameTestHelper helper) {
         for (BodyClass bodyClass : BodyClass.values()) {
             ServerPlayer player = playerIn(helper, bodyClass);
             player.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
-            helper.assertFalse(player.hasEffect(MobEffects.POISON), bodyClass + " must be immune to effects");
-            helper.assertFalse(player.isAffectedByPotions(), bodyClass + " must be untouched by instant potions too");
+            boolean expected = bodyClass == BodyClass.PREMIUM_SYNTHETIC;
+            helper.assertTrue(player.hasEffect(MobEffects.POISON) == expected,
+                    bodyClass + (expected ? " must be poisoned" : " must be immune to effects"));
+            helper.assertTrue(player.isAffectedByPotions() == expected, bodyClass + ": instant potions follow the same rule");
         }
         ArtificialBodyEntity standing = helper.spawn(BodyEntities.type(BodyClass.BASIC_ROBOT), BODY_POS);
         standing.addEffect(new MobEffectInstance(MobEffects.WITHER, 200));

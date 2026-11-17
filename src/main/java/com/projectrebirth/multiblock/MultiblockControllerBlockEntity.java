@@ -707,13 +707,13 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     }
 
     /**
-     * A finished power armor in a plan with an exit (the heavy dock) is not put into the output slot: it stands where it was
-     * assembled, facing the gate, and rolls out by itself. Returns false when it cannot (no exit, not armor, no room).
+     * What a plan with an exit (the heavy dock) builds is not put into the output slot: it stands where it was assembled, facing
+     * the gate, and rolls out by itself. Power armor and (1.7.1) machines roll out as they are, a turret in its crate. Returns false
+     * when it cannot (no exit, nothing that rolls, no room, over a limit).
      */
     private boolean rollOut(ItemStack result) {
         MultiblockSchema schema = schema();
-        if (!(level instanceof ServerLevel server) || schema == null
-                || !(result.getItem() instanceof com.projectrebirth.powerarmor.PowerArmorItem armorItem)) {
+        if (!(level instanceof ServerLevel server) || schema == null) {
             return false;
         }
         net.minecraft.world.phys.Vec3 exit = schema.exitPoint(worldPosition, facing());
@@ -721,6 +721,15 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
             return false;
         }
         net.minecraft.world.phys.Vec3 at = schema.displayPoint(worldPosition, facing());
+        if (result.getItem() instanceof com.projectrebirth.garrison.TurretItem) {
+            return com.projectrebirth.garrison.TurretCrateEntity.rollOut(server, result, at, exit, facing().toYRot(), owner) != null;
+        }
+        if (result.getItem() instanceof com.projectrebirth.garrison.PackedMachineItem) {
+            return com.projectrebirth.garrison.PackedMachineItem.deployFromDock(server, result, at, exit, facing().toYRot(), owner) != null;
+        }
+        if (!(result.getItem() instanceof com.projectrebirth.powerarmor.PowerArmorItem armorItem)) {
+            return false;
+        }
         com.projectrebirth.powerarmor.PowerArmorEntity armor = com.projectrebirth.powerarmor.PowerArmorRegistry.POWER_ARMOR.get().create(server);
         if (armor == null) {
             return false;

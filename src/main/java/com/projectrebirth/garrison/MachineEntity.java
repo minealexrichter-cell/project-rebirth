@@ -68,6 +68,10 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
     private InstalledUpgrades upgrades = InstalledUpgrades.EMPTY;
     /** Set while it is being packed up: going from the world then is not a loss. */
     private boolean packing;
+    /** 1.7.1: where it rolls out of the heavy dock to, or null; not saved (unloaded halfway, it just stands there). */
+    @javax.annotation.Nullable
+    private Vec3 rolloutTarget;
+    private int rolloutStuck;
 
     protected MachineEntity(EntityType<? extends MachineEntity> type, Level level, MachineKind kind) {
         super(type, level);
@@ -196,9 +200,39 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
     @Override
     public void tick() {
         super.tick();
+        if (!level().isClientSide && rolloutTarget != null) {
+            tickRollout();
+        }
         if (!level().isClientSide && tickCount % 20 == 0) {
             core.second(this, upgrades);
         }
+    }
+
+    /** 1.7.1: the machine was just built in the heavy dock and rolls out through its gate, as power armor does. */
+    public void rollOutTo(Vec3 target) {
+        rolloutTarget = target;
+        rolloutStuck = 0;
+        level().playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.PISTON_EXTEND, net.minecraft.sounds.SoundSource.BLOCKS, 0.8f, 0.6f);
+    }
+
+    public boolean isRollingOut() {
+        return rolloutTarget != null;
+    }
+
+    private void tickRollout() {
+        Vec3 left = new Vec3(rolloutTarget.x - getX(), 0.0, rolloutTarget.z - getZ());
+        if (left.length() < 0.03 || rolloutStuck > 40 || !core.active()) {
+            rolloutTarget = null;
+            setDeltaMovement(Vec3.ZERO);
+            level().playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.IRON_DOOR_CLOSE, net.minecraft.sounds.SoundSource.BLOCKS, 0.7f, 0.7f);
+            return;
+        }
+        getNavigation().stop();
+        double speed = RebirthConfig.DOCK_ROLLOUT_SPEED.get();
+        Vec3 step = left.length() > speed ? left.normalize().scale(speed) : left;
+        Vec3 before = position();
+        move(net.minecraft.world.entity.MoverType.SELF, step);
+        rolloutStuck = position().distanceToSqr(before) < 1.0e-6 ? rolloutStuck + 1 : 0;
     }
 
     @Override
@@ -213,7 +247,7 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
 
     @Override
     protected boolean isImmobile() {
-        return super.isImmobile() || !core.active();
+        return super.isImmobile() || !core.active() || rolloutTarget != null;
     }
 
     @Override

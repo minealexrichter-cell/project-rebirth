@@ -672,6 +672,25 @@
         ]
     };
 
+    // 1.7.1: the crate a turret rolls out of the heavy dock in. An olive box in a steel frame with corner posts, rails top and
+    // bottom, a hazard band on the front and back, a steel lid. Swatches only; never placed, only drawn by the crate entity.
+    MODELS.turret_crate = (() => {
+        const parts = [];
+        [[0, 0], [14, 0], [0, 14], [14, 14]].forEach(([x, z]) => parts.push(box([x, 0, z], [x + 2, 14, z + 2], 'gun')));
+        [0, 12].forEach(y => {
+            parts.push(box([2, y, 0], [14, y + 2, 2], 'steel'));
+            parts.push(box([2, y, 14], [14, y + 2, 16], 'steel'));
+            parts.push(box([0, y, 2], [2, y + 2, 14], 'steel'));
+            parts.push(box([14, y, 2], [16, y + 2, 14], 'steel'));
+        });
+        parts.push(box([2, 0, 2], [14, 14, 14], 'olive', {down: 'dark'}));
+        parts.push(box([4, 6, 1], [12, 8, 2], 'hazard'));
+        parts.push(box([4, 6, 14], [12, 8, 15], 'hazard'));
+        parts.push(box([0, 14, 0], [16, 16, 16], 'gun', {up: 'mid'}));
+        return {parent: 'minecraft:block/block', textures: {parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/machine_parts'},
+            elements: parts};
+    })();
+
     // 1.7.0, block G: the turret mount. A heavy steel plinth with a ring on top the turret's feet stand on, an ammunition hatch
     // with a hazard band on each side and a green lamp. Swatches only.
     MODELS.turret_mount = {
@@ -1010,6 +1029,7 @@
         }));
     });
     STATES.irradiated_sludge = {variants: {'': variant('irradiated_sludge')}};
+    STATES.turret_crate = {variants: {'': variant('turret_crate')}};
 
     // ---------------------------------------------------------------- output
 

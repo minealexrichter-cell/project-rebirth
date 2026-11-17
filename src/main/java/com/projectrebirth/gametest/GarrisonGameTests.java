@@ -263,6 +263,57 @@ public class GarrisonGameTests {
         });
     }
 
+    /** 1.7.1: what the dock builds of the garrison rolls out too: the mech as it is, a turret in its crate. */
+    private static void dockRollsOut(GameTestHelper helper, String recipe, Class<? extends net.minecraft.world.entity.Entity> kind,
+                                     java.util.function.BiConsumer<GameTestHelper, net.minecraft.world.entity.Entity> outside) {
+        MultiblockControllerBlockEntity entity = build(helper, MultiblockRegistry.HEAVY_DOCK, MultiblockRegistry.DOCK_CONTROLLER.get());
+        start(entity, recipe, ItemStack.EMPTY);
+        helper.onEachTick(() -> entity.energy().load(entity.energy().getMaxEnergyStored()));
+        int time = MultiblockRegistry.recipesFor(helper.getLevel(), MultiblockRegistry.HEAVY_DOCK).stream()
+                .filter(holder -> holder.id().equals(ProjectRebirth.id(recipe))).findFirst().orElseThrow().value().totalTime();
+        Vec3 exit = entity.schema().exitPoint(entity.getBlockPos(), entity.facing());
+        Vec3 inside = entity.schema().displayPoint(entity.getBlockPos(), entity.facing());
+        net.minecraft.world.phys.AABB around = new net.minecraft.world.phys.AABB(inside, exit).inflate(3.0);
+        helper.runAfterDelay(time + 10, () -> {
+            helper.assertTrue(helper.getLevel().getEntitiesOfClass(kind, around).size() == 1, recipe + ": it stands in the dock");
+            helper.assertTrue(entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT).isEmpty(), "Nothing in the output slot");
+        });
+        helper.runAfterDelay(time + 200, () -> {
+            var found = helper.getLevel().getEntitiesOfClass(kind, around);
+            helper.assertTrue(found.size() == 1, "One of it");
+            var thing = found.get(0);
+            helper.assertTrue(thing.position().distanceTo(new Vec3(exit.x, thing.getY(), exit.z)) < 0.8,
+                    recipe + ": it rolled out to the exit: " + thing.position() + " / " + exit);
+            outside.accept(helper, thing);
+            thing.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 4200)
+    public static void theHeavyDockBuildsAMechThatRollsOut(GameTestHelper helper) {
+        dockRollsOut(helper, "dock_guard_mech_gun_rocket", com.projectrebirth.garrison.GuardMechEntity.class, (h, thing) -> {
+            var mech = (com.projectrebirth.garrison.GuardMechEntity) thing;
+            h.assertTrue(!mech.isRollingOut() && mech.working() && mech.energy() > mech.capacity() * 0.9f,
+                    "Out, charged, working: " + mech.isRollingOut() + " " + mech.working() + " " + mech.energy());
+            h.assertTrue(mech.node(com.projectrebirth.garrison.GuardMechEntity.LEFT) == com.projectrebirth.garrison.GuardMechEntity.Node.ROCKET,
+                    "The nodes of its recipe");
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 3000)
+    public static void theHeavyDockRollsATurretOutInACrate(GameTestHelper helper) {
+        dockRollsOut(helper, "dock_machine_gun_turret", com.projectrebirth.garrison.TurretCrateEntity.class, (h, thing) -> {
+            var crate = (com.projectrebirth.garrison.TurretCrateEntity) thing;
+            h.assertTrue(!crate.isRollingOut() && crate.getItem().is(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get()),
+                    "Out, with the turret inside: " + crate.getItem());
+            net.minecraft.server.level.ServerPlayer player = h.makeMockServerPlayerInLevel();
+            crate.interact(player, net.minecraft.world.InteractionHand.MAIN_HAND);
+            h.assertTrue(crate.isRemoved() && player.getInventory().countItem(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get()) == 1,
+                    "A right-click takes the turret out of the crate");
+        });
+    }
+
     /** The dock builds power armor and it rolls out through the gate on its own, not into the output slot. */
     @GameTest(template = TEMPLATE, timeoutTicks = 4600)
     public static void theHeavyDockAssemblesPowerArmorThatRollsOut(GameTestHelper helper) {

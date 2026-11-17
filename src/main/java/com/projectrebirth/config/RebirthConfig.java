@@ -234,6 +234,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
     public static final ModConfigSpec.BooleanValue GARRISON_ENABLED;
     public static final ModConfigSpec.BooleanValue MACHINES_IMMUNE_TO_EFFECTS;
+    public static final ModConfigSpec.DoubleValue DOCK_ROLLOUT_SPEED;
     public static final ModConfigSpec.BooleanValue MULTIBLOCKS_ENABLED;
     public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_CAPACITY;
     public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_RECEIVE;
@@ -751,8 +752,8 @@ public final class RebirthConfig {
                             "(golden apples and potions by default). Other food and drinks are never allowed")
                     .define("canConsume", bodyClass.defaultLivingBody());
             ModConfigSpec.BooleanValue immuneToEffects = builder
-                    .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs; 1.7.1: on for every class)")
-                    .define("immuneToEffects", true);
+                    .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs). Off for the premium body only")
+                    .define("immuneToEffects", !bodyClass.defaultLivingBody());
             ModConfigSpec.DoubleValue acidWear = builder
                     .comment("Wear (percent) acid rain adds per second per unit of acid to a body without a sealing module (1.5.0: acid no",
                             "longer takes integrity); better bodies wear more slowly")
@@ -1000,6 +1001,7 @@ public final class RebirthConfig {
         MULTIBLOCK_ENERGY_CAPACITY = builder.comment("Energy a controller holds").defineInRange("energyCapacity", 200000, 1, 1_000_000_000);
         MULTIBLOCK_ENERGY_RECEIVE = builder.comment("Energy a controller takes per tick through its energy ports").defineInRange("energyReceive", 2000, 1, 1_000_000_000);
         MULTIBLOCK_HOLOGRAM_SECONDS = builder.comment("Seconds the hologram of a construction stays on unless switched off").defineInRange("hologramSeconds", 60, 1, 3600);
+        DOCK_ROLLOUT_SPEED = builder.comment("1.7.1: blocks per tick a mech or a turret crate rolls out of the heavy dock").defineInRange("rolloutSpeed", 0.05, 0.01, 1.0);
         builder.pop();
         builder.comment("The player's machines (block C): the AI core, integrity, wrecks, packing, limits and the rules of targets.").push("machines");
         MACHINES_ENABLED = builder.comment("Whether machines can be placed (packed ones stay items when off)").define("enabled", true);

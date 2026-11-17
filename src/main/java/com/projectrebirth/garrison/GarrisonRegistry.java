@@ -142,6 +142,13 @@ public final class GarrisonRegistry {
     public static final DeferredHolder<net.minecraft.world.level.block.entity.BlockEntityType<?>, net.minecraft.world.level.block.entity.BlockEntityType<ServicePostBlockEntity>> SERVICE_POST_ENTITY =
             BLOCK_ENTITIES.register("service_post", () -> net.minecraft.world.level.block.entity.BlockEntityType.Builder.of(ServicePostBlockEntity::new, SERVICE_POST.get()).build(null));
 
+    /** 1.7.1: a turret rolled out of the heavy dock in its crate. */
+    public static final DeferredHolder<EntityType<?>, EntityType<TurretCrateEntity>> TURRET_CRATE = ENTITY_TYPES.register("turret_crate",
+            () -> EntityType.Builder.<TurretCrateEntity>of(TurretCrateEntity::new, MobCategory.MISC).sized(0.98f, 0.98f).clientTrackingRange(10).build("turret_crate"));
+    /** The look of the crate (no item: it is never placed). */
+    public static final net.neoforged.neoforge.registries.DeferredBlock<net.minecraft.world.level.block.Block> TURRET_CRATE_BLOCK = BLOCKS.registerSimpleBlock("turret_crate",
+            net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().mapColor(net.minecraft.world.level.material.MapColor.METAL).strength(2.0f).noLootTable());
+
     private static DeferredHolder<EntityType<?>, EntityType<DefenceTurretEntity>> turret(TurretType turret) {
         return ENTITY_TYPES.register(turret.id(), () -> EntityType.Builder.<DefenceTurretEntity>of((type, level) -> new DefenceTurretEntity(type, level, turret),
                 MobCategory.MISC).sized(0.95f, 1.9f).eyeHeight(1.5f).clientTrackingRange(10).build(turret.id()));

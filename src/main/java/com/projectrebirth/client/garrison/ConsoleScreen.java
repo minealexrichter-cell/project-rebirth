@@ -231,7 +231,7 @@ public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
             graphics.fill(LIST_X + 2, y + 3, LIST_X + 7, y + 8, ConsoleOrders.stateColor(row.state()));
             String group = row.group() < 0 ? " " : String.valueOf(row.group() + 1);
             graphics.drawString(font, group, LIST_X + 10, y + 2, 0xFFE0B33A, false);
-            graphics.drawString(font, font.plainSubstrByWidth(row.name(), 70), LIST_X + 18, y + 2, 0xFFEEEEEE, false);
+            graphics.drawString(font, font.substrByWidth(com.projectrebirth.garrison.ConsoleBlockEntity.display(row.name()), 70).getString(), LIST_X + 18, y + 2, 0xFFEEEEEE, false);
             Component task = ConsoleOrders.taskName(row.task());
             graphics.drawString(font, font.substrByWidth(task, 50).getString(), LIST_X + LIST_W - 52, y + 2, 0xFFAAAAAA, false);
         }
@@ -244,7 +244,7 @@ public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
             graphics.drawWordWrap(font, Component.translatable("screen.projectrebirth.console.choose"), x, 42, 94, 0x404040);
             return;
         }
-        graphics.drawString(font, font.plainSubstrByWidth(row.name(), 94), x, 42, 0x202020, false);
+        graphics.drawString(font, font.substrByWidth(com.projectrebirth.garrison.ConsoleBlockEntity.display(row.name()), 94).getString(), x, 42, 0x202020, false);
         graphics.drawString(font, ConsoleOrders.stateName(row.state()), x, 52, ConsoleOrders.stateColor(row.state()), false);
         graphics.drawString(font, Mth.ceil(row.structural()) + "/" + Mth.ceil(row.maxStructural()) + "  " + Mth.ceil(row.critical()) + "/"
                 + Mth.ceil(row.maxCritical()), x, 62, 0x404040, false);
@@ -338,7 +338,7 @@ public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
             }
             ConsoleAlarm alarm = ConsoleAlarm.byId(line.alarm());
             Component text = Component.translatable("screen.projectrebirth.console.log_line", ConsoleOrders.ago(line.secondsAgo()),
-                    Component.translatable("console_alarm.projectrebirth." + alarm.id() + (line.ended() ? "_ended" : "")), line.name(),
+                    Component.translatable("console_alarm.projectrebirth." + alarm.id() + (line.ended() ? "_ended" : "")), com.projectrebirth.garrison.ConsoleBlockEntity.display(line.name()),
                     line.x() + " " + line.y() + " " + line.z());
             graphics.drawString(font, font.substrByWidth(text, 236).getString(), 10, y, line.ended() ? 0xFF7FD07F : 0xFFFF7A6A, false);
             y += 10;

@@ -126,7 +126,7 @@ public class TabletScreen extends Screen {
             }
             graphics.fill(x + 10, ry + 3, x + 15, ry + 8, ConsoleOrders.stateColor(row.state()));
             graphics.drawString(font, row.group() < 0 ? " " : String.valueOf(row.group() + 1), x + 18, ry + 2, 0xFFE0B33A, false);
-            graphics.drawString(font, font.plainSubstrByWidth(row.name(), 104), x + 26, ry + 2, 0xFFEEEEEE, false);
+            graphics.drawString(font, font.substrByWidth(com.projectrebirth.garrison.ConsoleBlockEntity.display(row.name()), 104).getString(), x + 26, ry + 2, 0xFFEEEEEE, false);
             Component task = ConsoleOrders.taskName(row.task());
             graphics.drawString(font, font.substrByWidth(task, 72).getString(), x + 134, ry + 2, 0xFFAAAAAA, false);
             // a machine the console has not heard for a while is out of its reach: it gets its orders when it is back

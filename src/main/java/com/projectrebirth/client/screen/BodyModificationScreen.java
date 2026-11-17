@@ -50,7 +50,7 @@ public class BodyModificationScreen extends AbstractContainerScreen<BodyModifica
     private final Map<BodyClass, ArtificialBodyEntity> models = new EnumMap<>(BodyClass.class);
 
     public BodyModificationScreen(BodyModificationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = BodyModificationMenu.INVENTORY_Y + 82;
         inventoryLabelY = BodyModificationMenu.INVENTORY_Y - 11;

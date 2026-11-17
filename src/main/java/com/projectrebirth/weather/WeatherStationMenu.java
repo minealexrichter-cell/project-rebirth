@@ -17,7 +17,10 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 /** Weather station window: the forecast, the sky now, the last catastrophes, the module slot, energy and the inventory. */
 public class WeatherStationMenu extends AbstractContainerMenu {
-    public static final int MODULE_X = 152;
+    /** 1.7.1: the window is 216 wide so that Russian lines fit; the inventory stands in its middle. */
+    public static final int WIDTH = 216;
+    public static final int INVENTORY_X = (WIDTH - 162) / 2 + 1;
+    public static final int MODULE_X = WIDTH - 24;
     public static final int MODULE_Y = 18;
     public static final int INVENTORY_Y = 160;
 
@@ -41,11 +44,11 @@ public class WeatherStationMenu extends AbstractContainerMenu {
         });
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, INVENTORY_Y + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, 8 + col * 18, INVENTORY_Y + 58));
+            addSlot(new Slot(inventory, col, INVENTORY_X + col * 18, INVENTORY_Y + 58));
         }
         addDataSlots(data);
     }

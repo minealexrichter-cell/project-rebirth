@@ -168,6 +168,23 @@ public class ConsoleBlockEntity extends BlockEntity {
         return count;
     }
 
+    /**
+     * 1.7.1: the name of a machine without a name of its own is kept as its translation key ("@" and the key), so that each
+     * player reads it in their own language; {@link #display} turns it back into words.
+     */
+    static String nameKey(Entity machine) {
+        if (machine.getName().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents translatable
+                && translatable.getArgs().length == 0) {
+            return "@" + translatable.getKey();
+        }
+        return machine.getName().getString();
+    }
+
+    /** A machine's name as kept by the console, as words. */
+    public static Component display(String name) {
+        return name.startsWith("@") ? Component.translatable(name.substring(1)) : Component.literal(name);
+    }
+
     /** The name the console knows a machine by, or "". */
     public String nameOf(UUID machine) {
         Link link = machines.get(machine);
@@ -280,7 +297,7 @@ public class ConsoleBlockEntity extends BlockEntity {
 
     /** A machine reports (server, once a second while it is loaded and in range): its state, and what it should do now. */
     void heard(Entity machine, MachineCore core, Link link) {
-        link.name = core.name().isEmpty() ? machine.getName().getString() : core.name();
+        link.name = core.name().isEmpty() ? nameKey(machine) : core.name();
         link.kind = core.kind();
         link.state = core.state();
         link.structural = core.structural();
@@ -315,7 +332,7 @@ public class ConsoleBlockEntity extends BlockEntity {
         }
         if (level instanceof ServerLevel server && alarm.told()) {
             Component message = Component.translatable("message.projectrebirth.console_alarm." + alarm.id() + (on ? "" : "_ended"),
-                    link.name, link.pos.getX(), link.pos.getY(), link.pos.getZ()).withStyle(on ? ChatFormatting.RED : ChatFormatting.GREEN);
+                    display(link.name), link.pos.getX(), link.pos.getY(), link.pos.getZ()).withStyle(on ? ChatFormatting.RED : ChatFormatting.GREEN);
             for (ServerPlayer player : ShelterAlerts.recipients(server.getServer(), owner)) {
                 player.sendSystemMessage(message);
                 if (on) {

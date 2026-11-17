@@ -32,6 +32,15 @@ final class GuiShapes {
     }
 
     /** Player inventory (three rows) and hotbar slot frames, with the inventory's top-left item at (x, y). */
+    /** 1.7.1: a window's title that fits its width; a longer one (Russian names are long) is cut with "…". */
+    static net.minecraft.network.chat.Component fit(net.minecraft.network.chat.Component title, int width) {
+        net.minecraft.client.gui.Font font = net.minecraft.client.Minecraft.getInstance().font;
+        if (font.width(title) <= width) {
+            return title;
+        }
+        return net.minecraft.network.chat.Component.literal(font.plainSubstrByWidth(title.getString(), width - font.width("…")) + "…");
+    }
+
     static void playerInventory(GuiGraphics graphics, int x, int y) {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {

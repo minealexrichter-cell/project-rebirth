@@ -57,7 +57,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     private int startRow;
 
     public StationScreen(StationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = StationMenu.INVENTORY_Y + 82;
         inventoryLabelY = StationMenu.INVENTORY_Y - 11;

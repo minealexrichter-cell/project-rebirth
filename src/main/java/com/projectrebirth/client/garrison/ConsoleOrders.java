@@ -62,7 +62,7 @@ public final class ConsoleOrders {
         if (view != null && target.machine != null) {
             for (ConsoleView.Row row : view.rows()) {
                 if (row.id().equals(target.machine)) {
-                    return Component.translatable("screen.projectrebirth.console.target_machine", row.name());
+                    return Component.translatable("screen.projectrebirth.console.target_machine", com.projectrebirth.garrison.ConsoleBlockEntity.display(row.name()));
                 }
             }
         }

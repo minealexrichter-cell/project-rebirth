@@ -36,7 +36,7 @@ public class MaintenanceScreen extends AbstractContainerScreen<MaintenanceMenu> 
     private static final int EMPTY_HINT_WIDTH = 150;
 
     public MaintenanceScreen(MaintenanceMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = MaintenanceMenu.INVENTORY_Y + 82;
         inventoryLabelY = MaintenanceMenu.INVENTORY_Y - 11;

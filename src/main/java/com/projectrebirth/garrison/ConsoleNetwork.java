@@ -300,11 +300,11 @@ public final class ConsoleNetwork {
         }
         if (machine.isPresent()) {
             if (console.alarmOn(machine.get(), ConsoleAlarm.NO_SUPPLY)) {
-                return Component.translatable("message.projectrebirth.console.ordered_no_supply", name, console.nameOf(machine.get()));
+                return Component.translatable("message.projectrebirth.console.ordered_no_supply", name, ConsoleBlockEntity.display(console.nameOf(machine.get())));
             }
             long silent = console.silentSeconds(machine.get());
             if (silent < 0 || silent > 3) {
-                return Component.translatable("message.projectrebirth.console.ordered_far", name, console.nameOf(machine.get()),
+                return Component.translatable("message.projectrebirth.console.ordered_far", name, ConsoleBlockEntity.display(console.nameOf(machine.get())),
                         RebirthConfig.CONSOLE_RANGE.get());
             }
         }

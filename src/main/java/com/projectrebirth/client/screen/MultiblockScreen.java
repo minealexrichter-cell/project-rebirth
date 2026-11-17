@@ -48,7 +48,7 @@ public class MultiblockScreen extends AbstractContainerScreen<MultiblockMenu> {
     private List<Component> status = List.of();
 
     public MultiblockScreen(MultiblockMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = MultiblockMenu.INVENTORY_Y + 82;
         inventoryLabelY = MultiblockMenu.INVENTORY_Y - 11;

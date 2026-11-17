@@ -27,7 +27,7 @@ public class GeneratorScreen extends AbstractContainerScreen<GeneratorMenu> {
     private static final int ENERGY_H = 14;
 
     public GeneratorScreen(GeneratorMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = GeneratorMenu.INVENTORY_Y + 82;
         inventoryLabelY = GeneratorMenu.INVENTORY_Y - 11;

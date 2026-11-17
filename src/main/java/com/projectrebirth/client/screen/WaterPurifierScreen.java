@@ -21,7 +21,7 @@ public class WaterPurifierScreen extends AbstractContainerScreen<WaterPurifierMe
     private static final ResourceLocation ARROW = ResourceLocation.withDefaultNamespace("container/furnace/burn_progress");
 
     public WaterPurifierScreen(WaterPurifierMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = WaterPurifierMenu.INVENTORY_Y + 82;
         inventoryLabelY = WaterPurifierMenu.INVENTORY_Y - 11;

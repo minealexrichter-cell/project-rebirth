@@ -156,7 +156,7 @@ public class TabletItem extends Item {
     /** Whom a waiting order is for, as the player reads it. */
     public static Component target(TabletData.Pending pending) {
         if (pending.machine().isPresent()) {
-            return Component.literal(pending.label());
+            return ConsoleBlockEntity.display(pending.label());
         }
         return pending.group() == ConsoleBlockEntity.ALL ? Component.translatable("screen.projectrebirth.console.all_machines")
                 : Component.translatable("screen.projectrebirth.console.group", pending.group() + 1);

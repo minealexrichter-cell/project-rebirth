@@ -14,7 +14,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** Mounting window of a power armor: its model in the middle, a slot at each part of the hull. */
 public class ArmorMountingScreen extends AbstractContainerScreen<ArmorMountingMenu> {
     public ArmorMountingScreen(ArmorMountingMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = ArmorMountingMenu.INVENTORY_Y + 82;
         inventoryLabelY = ArmorMountingMenu.INVENTORY_Y - 11;

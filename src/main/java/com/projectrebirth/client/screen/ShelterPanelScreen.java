@@ -23,7 +23,7 @@ public class ShelterPanelScreen extends AbstractContainerScreen<ShelterPanelMenu
     private static final int ROW = 10;
 
     public ShelterPanelScreen(ShelterPanelMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 180));
         imageWidth = 196;
         imageHeight = 176;
     }

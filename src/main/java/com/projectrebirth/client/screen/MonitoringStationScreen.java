@@ -38,7 +38,7 @@ public class MonitoringStationScreen extends AbstractContainerScreen<MonitoringS
     private Component hover;
 
     public MonitoringStationScreen(MonitoringStationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, MonitoringStationMenu.WIDTH - 16));
         imageWidth = MonitoringStationMenu.WIDTH;
         imageHeight = MonitoringStationMenu.INVENTORY_Y + 82;
         inventoryLabelX = MonitoringStationMenu.INVENTORY_X;
@@ -99,7 +99,7 @@ public class MonitoringStationScreen extends AbstractContainerScreen<MonitoringS
                 graphics.drawString(font, lines.get(i), MAP_X + MAP_SIZE / 2 - font.width(lines.get(i)) / 2, MAP_Y + 44 + i * 10, 0xFFCCCCCC, false);
             }
         }
-        ContaminationMapView.legend(graphics, font, RIGHT, 16, 56, HEADER);
+        ContaminationMapView.legend(graphics, font, RIGHT, 16, 60, HEADER);
         graphics.drawString(font, Component.translatable("screen.projectrebirth.monitoring_station.graph"), RIGHT, GRAPH_Y - 10, HEADER, false);
         ContaminationMapView.graph(graphics, font, scan == null ? List.of() : scan.history(), RIGHT, GRAPH_Y, imageWidth - RIGHT - 8, 20, DIM);
     }

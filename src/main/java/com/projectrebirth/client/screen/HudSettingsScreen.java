@@ -22,7 +22,7 @@ import net.minecraft.util.Mth;
 public class HudSettingsScreen extends Screen {
     private static final int COLUMN_WIDTH = 200;
     private static final int ROW = 22;
-    private static final int ROWS_ONE_COLUMN = 12;
+    private static final int ROWS_ONE_COLUMN = 13;
     private static final int ROWS_TWO_COLUMNS = 9;
     /** The vanilla hearts start this far above the bottom of the screen and 91 left of its centre. */
     private static final int HEARTS_BOTTOM = 30;
@@ -45,7 +45,7 @@ public class HudSettingsScreen extends Screen {
         int y = Math.max(4, (height - rows() * ROW) / 2);
         int x2 = two ? width / 2 + 4 : x;
         int y2 = two ? y : y + 8 * ROW;
-        int last = two ? 8 : 11;
+        int last = two ? 8 : 12;
         addRenderableWidget(Button.builder(enabledMessage(), button -> {
             RebirthClientConfig.HUD_ENABLED.set(!HudLayout.enabled());
             button.setMessage(enabledMessage());
@@ -70,9 +70,9 @@ public class HudSettingsScreen extends Screen {
         toggle(x2, y2, "machine_bars", RebirthClientConfig.HUD_MACHINE_BARS);
         addRenderableWidget(new Slider(x2, y2 + ROW, "machine_bar_distance", 2, 64, 1, RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.get(),
                 value -> RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.set((int) value)));
-        int third = (COLUMN_WIDTH - 4) / 2;
-        toggleHalf(x2, y2 + 2 * ROW, third, "console_alarm", RebirthClientConfig.HUD_CONSOLE_ALARM);
-        toggleHalf(x2 + third + 4, y2 + 2 * ROW, third, "tablet_lines", RebirthClientConfig.HUD_TABLET_LINES);
+        // 1.7.1: one row each, so that the Russian words fit
+        toggle(x2, y2 + 2 * ROW, "console_alarm", RebirthClientConfig.HUD_CONSOLE_ALARM);
+        toggle(x2, y2 + 3 * ROW, "tablet_lines", RebirthClientConfig.HUD_TABLET_LINES);
         int half = (COLUMN_WIDTH - 4) / 2;
         addRenderableWidget(Button.builder(Component.translatable("screen.projectrebirth.hud_settings.reset"), button -> reset())
                 .bounds(x, y + last * ROW, half, 20).build());

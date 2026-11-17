@@ -26,7 +26,7 @@ public class AirFiltrationScreen extends AbstractContainerScreen<AirFiltrationMe
     private static final int TEXT = 0x404040;
 
     public AirFiltrationScreen(AirFiltrationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = AirFiltrationMenu.INVENTORY_Y + 82;
         inventoryLabelY = AirFiltrationMenu.INVENTORY_Y - 11;

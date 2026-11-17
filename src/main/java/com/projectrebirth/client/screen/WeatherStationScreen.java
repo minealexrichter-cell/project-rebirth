@@ -24,10 +24,11 @@ public class WeatherStationScreen extends AbstractContainerScreen<WeatherStation
     private static final int HISTORY_LINES = 4;
 
     public WeatherStationScreen(WeatherStationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
-        imageWidth = 176;
+        super(menu, inventory, GuiShapes.fit(title, WeatherStationMenu.WIDTH - 16));
+        imageWidth = WeatherStationMenu.WIDTH;
         imageHeight = WeatherStationMenu.INVENTORY_Y + 82;
         inventoryLabelY = WeatherStationMenu.INVENTORY_Y - 11;
+        inventoryLabelX = WeatherStationMenu.INVENTORY_X;
     }
 
     @Override
@@ -41,8 +42,8 @@ public class WeatherStationScreen extends AbstractContainerScreen<WeatherStation
         int x = leftPos, y = topPos;
         panel(graphics, x, y, imageWidth, imageHeight);
         slot(graphics, x + WeatherStationMenu.MODULE_X, y + WeatherStationMenu.MODULE_Y);
-        playerInventory(graphics, x + 8, y + WeatherStationMenu.INVENTORY_Y);
-        GuiAtlas.energyHorizontal(graphics, x + 8, y + 19, 136, 6, menu.energy(), menu.energyCapacity());
+        playerInventory(graphics, x + WeatherStationMenu.INVENTORY_X, y + WeatherStationMenu.INVENTORY_Y);
+        GuiAtlas.energyHorizontal(graphics, x + 8, y + 19, imageWidth - 40, 6, menu.energy(), menu.energyCapacity());
     }
 
     private static Component event(int index) {
@@ -64,7 +65,7 @@ public class WeatherStationScreen extends AbstractContainerScreen<WeatherStation
         graphics.drawString(font, Component.translatable("screen.projectrebirth.energy", EnergyUtil.format(menu.energy()),
                 EnergyUtil.format(menu.energyCapacity())), 8, 28, DIM, false);
         // the forecast
-        line(graphics, key("forecast"), 42, HEADER);
+        line(graphics, key("forecast"), 39, HEADER);
         int state = menu.get(WeatherStationBlockEntity.DATA_STATE);
         Component first, second = null;
         switch (state) {
@@ -87,12 +88,12 @@ public class WeatherStationScreen extends AbstractContainerScreen<WeatherStation
             case WeatherStationBlockEntity.STATE_NO_ENERGY -> first = key("no_energy");
             default -> first = key("none_here");
         }
-        line(graphics, first, 53, state == WeatherStationBlockEntity.STATE_FORECAST ? TEXT : DIM);
+        line(graphics, first, 49, state == WeatherStationBlockEntity.STATE_FORECAST ? TEXT : DIM);
         if (second != null) {
-            line(graphics, second, 63, state == WeatherStationBlockEntity.STATE_FORECAST && menu.get(WeatherStationBlockEntity.DATA_UNTIL) >= 0 ? TEXT : DIM);
+            line(graphics, second, 58, state == WeatherStationBlockEntity.STATE_FORECAST && menu.get(WeatherStationBlockEntity.DATA_UNTIL) >= 0 ? TEXT : DIM);
         }
         // the sky now
-        line(graphics, key("now"), 77, HEADER);
+        line(graphics, key("now"), 70, HEADER);
         int phase = menu.get(WeatherStationBlockEntity.DATA_NOW_PHASE);
         Component now;
         if (phase < 0 || phase >= EventPhase.values().length) {
@@ -107,16 +108,16 @@ public class WeatherStationScreen extends AbstractContainerScreen<WeatherStation
                 default -> key("now_calm");
             };
         }
-        line(graphics, now, 88, TEXT);
+        line(graphics, now, 80, TEXT);
         // the last catastrophes
-        line(graphics, key("history"), 102, HEADER);
+        line(graphics, key("history"), 92, HEADER);
         int count = Math.min(HISTORY_LINES, menu.get(WeatherStationBlockEntity.DATA_HISTORY));
         if (count <= 0) {
-            line(graphics, key("history_none"), 113, DIM);
+            line(graphics, key("history_none"), 102, DIM);
         }
         for (int i = 0; i < count; i++) {
             int at = WeatherStationBlockEntity.DATA_PAST + 4 * i;
-            line(graphics, key("history_entry", menu.get(at + 3), event(menu.get(at)), menu.get(at + 1), menu.get(at + 2)), 113 + 10 * i, TEXT);
+            line(graphics, key("history_entry", menu.get(at + 3), event(menu.get(at)), menu.get(at + 1), menu.get(at + 2)), 102 + 10 * i, TEXT);
         }
     }
 

@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** An android's gear (1.7.0, block E): its four rows (the first slot is in its hand), its armor and its off hand. */
 public class AndroidGearScreen extends AbstractContainerScreen<AndroidGearMenu> {
     public AndroidGearScreen(AndroidGearMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = AndroidGearMenu.INVENTORY_Y + 82;
         inventoryLabelY = AndroidGearMenu.INVENTORY_Y - 11;

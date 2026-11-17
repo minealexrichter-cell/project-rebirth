@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** The upgrade slots of a machine (1.7.0): one row of slots for armor upgrades above the player's inventory. */
 public class MachineMountingScreen extends AbstractContainerScreen<MachineMountingMenu> {
     public MachineMountingScreen(MachineMountingMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
+        super(menu, inventory, GuiShapes.fit(title, 160));
         imageWidth = 176;
         imageHeight = MachineMountingMenu.INVENTORY_Y + 82;
         inventoryLabelY = MachineMountingMenu.INVENTORY_Y - 11;
@@ -32,6 +32,11 @@ public class MachineMountingScreen extends AbstractContainerScreen<MachineMounti
             GuiShapes.slot(graphics, x + MachineMountingMenu.slotX(i, menu.count()), y + 36);
         }
         Component hint = Component.translatable("screen.projectrebirth.machine_mounting.hint");
-        graphics.drawString(font, hint, x + (imageWidth - font.width(hint)) / 2, y + 60, 0x404040, false);
+        // 1.7.1: wrapped and centred, so that the Russian words fit
+        int line = 0;
+        for (net.minecraft.util.FormattedCharSequence part : font.split(hint, imageWidth - 16)) {
+            graphics.drawString(font, part, x + (imageWidth - font.width(part)) / 2, y + 55 + line * 9, 0x404040, false);
+            line++;
+        }
     }
 }

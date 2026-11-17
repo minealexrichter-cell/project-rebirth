@@ -34,6 +34,18 @@ public class ChargingPadBlockEntity extends BlockEntity {
         super(BodyPowerRegistry.CHARGING_PAD_ENTITY.get(), pos, state);
     }
 
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        com.projectrebirth.garrison.LoadedSites.add(com.projectrebirth.garrison.LoadedSites.Kind.CHARGING_PAD, this);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        com.projectrebirth.garrison.LoadedSites.remove(com.projectrebirth.garrison.LoadedSites.Kind.CHARGING_PAD, this);
+    }
+
     public ModEnergyStorage energy() {
         return energy;
     }

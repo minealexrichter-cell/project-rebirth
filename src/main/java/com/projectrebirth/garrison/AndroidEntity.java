@@ -60,7 +60,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -95,11 +94,40 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     private BlockPos holdPoint;
     private MachineTask lastTask = MachineTask.STAND_DOWN;
     private int routeIndex;
+    /** 1.7.2: how it gets to a place; with a jetpack among its gadgets it hops over what stands in the way. */
+    private final MachineMover mover = new MachineMover(this);
+    private boolean stuckReported;
+    private boolean noPostReported;
+    /** 1.7.2: where it was when it set out to charge; with no order it walks back there after it was charged. */
+    @Nullable
+    private Vec3 cameFrom;
 
     public AndroidEntity(EntityType<? extends AndroidEntity> type, Level level, BodyClass bodyClass) {
         super(type, level, bodyClass);
         core();
         gear.addListener(container -> syncEquipment());
+        mover.setLift(this::jetpackHop);
+    }
+
+    /** 1.7.2: paths longer than a monster's (round long walls). */
+    @Override
+    protected net.minecraft.world.entity.ai.navigation.PathNavigation createNavigation(Level level) {
+        return new MachineNavigation(this, level);
+    }
+
+    /** 1.7.2: with a jetpack among its gadgets, a stuck android hops over what stands in the way (not down into a pit). */
+    private boolean jetpackHop(Vec3 goal) {
+        if (!BodyGadgets.has(registryAccess(), upgrades(), BodyGadgets.JETPACK) || goal.y < getY() - 0.5) {
+            return false;
+        }
+        Vec3 toward = goal.subtract(position()).multiply(1, 0, 1).normalize().scale(0.3);
+        setDeltaMovement(toward.x, 0.8, toward.z);
+        hasImpulse = true;
+        setCharge(charge() - (float) (RebirthConfig.BODY_ENERGY_JETPACK.get() * 0.5));
+        if (level() instanceof ServerLevel server) {
+            server.sendParticles(ParticleTypes.FLAME, getX(), getY(), getZ(), 8, 0.2, 0.1, 0.2, 0.02);
+        }
+        return true;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -545,15 +573,21 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             entityData.set(EMERGENCY, emergency);
             ConsoleLink.supply(this, machine, emergency);
             if (emergency) {
-                getNavigation().stop();
+                mover.stop();
                 setTarget(null);
                 playSound(com.projectrebirth.core.ModSounds.GARRISON_MACHINE_SHUTDOWN.get(), 1.0f, 0.9f);
             }
+        }
+        boolean stuckNow = machine.active() && mover.stuck();
+        if (stuckNow != stuckReported) {
+            stuckReported = stuckNow;
+            ConsoleLink.report(this, machine, ConsoleAlarm.STUCK, stuckNow);
         }
         double speed = RebirthConfig.androidStats(getBodyClass()).speed().get() * (machine.emiFault() ? 0.6 : 1.0);
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(speed);
         if (!machine.task().equals(lastTask)) {
             lastTask = machine.task();
+            cameFrom = null;
             holdPoint = blockPosition();
             routeIndex = 0;
         }
@@ -648,7 +682,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
 
         @Override
         public void stop() {
-            getNavigation().stop();
+            mover.stop();
             stopUsingItem();
         }
 
@@ -672,9 +706,9 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             boolean mayChase = !holding || target.blockPosition().distSqr(holdPoint) <= (leash + 2) * (leash + 2);
             if (hasRangedWeapon()) {
                 if ((distance > 144.0 || !seen) && mayChase) {
-                    getNavigation().moveTo(target, 1.0);
+                    mover.walk(target.position(), 1.0);
                 } else {
-                    getNavigation().stop();
+                    mover.stop();
                 }
                 if (seen && distance <= 400.0 && ready) {
                     performRangedAttack(target, 1.0f);
@@ -683,9 +717,9 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
                 return;
             }
             if (mayChase) {
-                getNavigation().moveTo(target, 1.15);
+                mover.walk(target.position(), 1.15);
             } else {
-                getNavigation().stop();
+                mover.stop();
             }
             boolean shield = getOffhandItem().getItem() instanceof ShieldItem;
             if (shield && distance < 25.0 && attackCooldown > 6 && !isUsingItem()) {
@@ -743,11 +777,39 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             }
             // canUse runs every other tick: about once a second
             wait = 10;
+            pad = place();
+            // 1.7.2: none in reach: its console hears of it
+            if ((pad == null) != noPostReported) {
+                noPostReported = pad == null;
+                ConsoleLink.report(AndroidEntity.this, core(), ConsoleAlarm.NO_POST, noPostReported);
+            }
+            return pad != null;
+        }
+
+        @Override
+        public void stop() {
+            mover.stop();
+        }
+
+        @Override
+        public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void start() {
+            if (pad != null && distanceToSqr(pad) > 9.0) {
+                cameFrom = position();
+            }
+        }
+
+        /** The nearest pad or service post, or null. */
+        @Nullable
+        private Vec3 place() {
             BlockPos found = nearestPad();
             Vec3 post = level() instanceof ServerLevel server ? ServicePostBlockEntity.nearest(server, blockPosition()) : null;
-            pad = found == null ? post : post != null && post.distanceToSqr(position()) < found.distToCenterSqr(position())
+            return found == null ? post : post != null && post.distanceToSqr(position()) < found.distToCenterSqr(position())
                     ? post : Vec3.atBottomCenterOf(found).add(0, 0.2, 0);
-            return pad != null;
         }
 
         @Override
@@ -761,10 +823,17 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
 
         @Override
         public void tick() {
+            // 1.7.2: a nearer one may have come up since it set out
+            if (tickCount % 40 == 0) {
+                Vec3 nearer = place();
+                if (nearer != null) {
+                    pad = nearer;
+                }
+            }
             if (pad != null && distanceToSqr(pad) > 0.5) {
-                getNavigation().moveTo(pad.x, pad.y, pad.z, 1.0);
+                mover.walk(pad, 1.0);
             } else {
-                getNavigation().stop();
+                mover.stop();
             }
         }
     }
@@ -775,36 +844,19 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         return level() instanceof ServerLevel server ? nearestPad(server, blockPosition()) : null;
     }
 
-    /** The nearest charging pad to a place within the config's radius, or null (1.7.1: the small robot looks for one too). */
+    /**
+     * The nearest loaded charging pad to a place within the search radius of service posts ([garrison.service_post] searchRadius),
+     * or null (1.7.1: the small robot looks for one too; 1.7.2: from the list of loaded pads, as far as posts).
+     */
     @Nullable
     public static BlockPos nearestPad(ServerLevel server, BlockPos from) {
-        int radius = RebirthConfig.ANDROID_PAD_RADIUS.get();
-        int chunks = (radius >> 4) + 1;
-        BlockPos best = null;
-        double bestDistance = (double) radius * radius;
-        for (int dx = -chunks; dx <= chunks; dx++) {
-            for (int dz = -chunks; dz <= chunks; dz++) {
-                LevelChunk chunk = server.getChunkSource().getChunkNow((from.getX() >> 4) + dx, (from.getZ() >> 4) + dz);
-                if (chunk == null) {
-                    continue;
-                }
-                for (BlockEntity found : chunk.getBlockEntities().values()) {
-                    double distance = found.getBlockPos().distSqr(from);
-                    if (found instanceof ChargingPadBlockEntity && distance < bestDistance) {
-                        best = found.getBlockPos();
-                        bestDistance = distance;
-                    }
-                }
-            }
-        }
-        return best;
+        ChargingPadBlockEntity pad = LoadedSites.nearest(server, LoadedSites.Kind.CHARGING_PAD, ChargingPadBlockEntity.class, from,
+                RebirthConfig.POST_RADIUS.get(), found -> true);
+        return pad == null ? null : pad.getBlockPos();
     }
 
     /** Follows its order when there is nothing to fight: guard, patrol, escort, hold, go to the post or take cover, stand down. */
     private final class TaskGoal extends Goal {
-        private Vec3 lastPlace = Vec3.ZERO;
-        private int stuck;
-
         TaskGoal() {
             setFlags(EnumSet.of(Flag.MOVE));
         }
@@ -812,6 +864,11 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         @Override
         public boolean canUse() {
             return working() && getTarget() == null && !work().active();
+        }
+
+        @Override
+        public void stop() {
+            mover.stop();
         }
 
         @Override
@@ -823,34 +880,21 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         public void tick() {
             Vec3 goal = goal();
             if (goal == null) {
-                getNavigation().stop();
+                mover.stop();
                 return;
             }
             double near = core().task().type() == MachineTask.Type.ESCORT ? 9.0 : 2.25;
             if (distanceToSqr(goal) <= near) {
-                getNavigation().stop();
+                mover.stop();
+                if (goal == cameFrom) {
+                    cameFrom = null;
+                }
                 if (core().task().type() == MachineTask.Type.PATROL && !core().task().route().isEmpty()) {
                     routeIndex = (routeIndex + 1) % core().task().route().size();
                 }
                 return;
             }
-            if (tickCount % 10 == 0) {
-                getNavigation().moveTo(goal.x, goal.y, goal.z, 1.0);
-            }
-            if (tickCount % 40 == 0) {
-                stuck = position().distanceToSqr(lastPlace) < 0.04 ? stuck + 1 : 0;
-                lastPlace = position();
-                if (stuck >= 1 && BodyGadgets.has(registryAccess(), upgrades(), BodyGadgets.JETPACK) && goal.y > getY() - 0.5) {
-                    // a jetpack lifts it over what stands in the way
-                    Vec3 toward = goal.subtract(position()).multiply(1, 0, 1).normalize().scale(0.3);
-                    setDeltaMovement(toward.x, 0.8, toward.z);
-                    hasImpulse = true;
-                    setCharge(charge() - (float) (RebirthConfig.BODY_ENERGY_JETPACK.get() * 0.5));
-                    if (level() instanceof ServerLevel server) {
-                        server.sendParticles(ParticleTypes.FLAME, getX(), getY(), getZ(), 8, 0.2, 0.1, 0.2, 0.02);
-                    }
-                }
-            }
+            mover.walk(goal, 1.0);
         }
 
         @Nullable
@@ -864,7 +908,8 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
                 case ESCORT -> task.escort().map(id -> level().getPlayerByUUID(id)).filter(p -> p.distanceToSqr(AndroidEntity.this) < 64 * 64)
                         .map(Player::position).orElse(null);
                 case TO_POST, SHELTER -> GuardMechEntity.postOrConsole(AndroidEntity.this, core());
-                default -> null;
+                // 1.7.2: no order to follow: back to where it was before it went to charge
+                default -> cameFrom;
             };
         }
     }

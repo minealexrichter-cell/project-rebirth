@@ -384,6 +384,12 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue POST_REPAIR_SECONDS;
     public static final ModConfigSpec.DoubleValue POST_PLATE_REPAIR;
     public static final ModConfigSpec.IntValue POST_RADIUS;
+    public static final ModConfigSpec.DoubleValue POST_RELOAD_SHARE;
+    public static final ModConfigSpec.IntValue POST_AMMO_WAIT_SECONDS;
+    public static final ModConfigSpec.IntValue MOVE_STUCK_TICKS;
+    public static final ModConfigSpec.DoubleValue MOVE_STUCK_DISTANCE;
+    public static final ModConfigSpec.DoubleValue MOVE_STRAIGHT_DISTANCE;
+    public static final ModConfigSpec.IntValue MOVE_GIVE_UP_CHECKS;
 
     public static AndroidStats androidStats(com.projectrebirth.bodies.BodyClass bodyClass) {
         return ANDROID_STATS.get(bodyClass);
@@ -1137,7 +1143,21 @@ public final class RebirthConfig {
         POST_CHARGE_PER_SECOND = builder.comment("Energy it gives a machine per second").defineInRange("chargePerSecond", 2000, 1, 1_000_000);
         POST_REPAIR_SECONDS = builder.comment("Seconds between two pieces it uses for repair").defineInRange("repairSeconds", 2, 1, 600);
         POST_PLATE_REPAIR = builder.comment("An armor plate mends this many times what an iron ingot does").defineInRange("plateRepair", 3.0, 1.0, 100.0);
-        POST_RADIUS = builder.comment("Blocks around in which machines look for a service post").defineInRange("radius", 64, 1, 256);
+        // 1.7.2: posts (and charging pads) are found among the loaded ones in this radius; the old key "radius" (64) is gone
+        POST_RADIUS = builder.comment("Blocks around in which machines look for a service post or a charging pad (among the loaded ones);",
+                "with none there they go to their console and report it").defineInRange("searchRadius", 256, 1, 1024);
+        POST_RELOAD_SHARE = builder.comment("A mech or a small robot goes to the post when its rounds or rockets fall to this share of its magazine")
+                .defineInRange("reloadShare", 0.1, 0.0, 1.0);
+        POST_AMMO_WAIT_SECONDS = builder.comment("Seconds it waits on the post for ammunition that does not come (an empty chest) before it goes back")
+                .defineInRange("ammoWaitSeconds", 10, 1, 600);
+        builder.pop();
+        builder.comment("How machines of the garrison find their way (1.7.2): a machine that does not get on is first made to jump, then to step",
+                "aside, then (a guard mech) to fly over on its jetpack; when nothing helps it reports to its console that it is stuck.").push("movement");
+        MOVE_STUCK_TICKS = builder.comment("Ticks between two checks whether a machine gets on").defineInRange("stuckCheckTicks", 40, 10, 400);
+        MOVE_STUCK_DISTANCE = builder.comment("A machine that moved less than this many blocks between two checks is stuck").defineInRange("stuckDistance", 0.5, 0.05, 5.0);
+        MOVE_STRAIGHT_DISTANCE = builder.comment("Within this many blocks of its goal a machine walks straight when the way is free (no path needed)")
+                .defineInRange("straightDistance", 8.0, 0.0, 32.0);
+        MOVE_GIVE_UP_CHECKS = builder.comment("Checks in a row without getting on after which the machine reports that it is stuck").defineInRange("stuckReportChecks", 4, 1, 100);
         builder.pop();
         builder.comment("The rules by which machines choose targets.").push("targeting");
         ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);
@@ -1168,7 +1188,7 @@ public final class RebirthConfig {
         ANDROID_ENERGY_MOVING = builder.comment("Charge (FE) more per second while it moves").defineInRange("energyMovingPerSecond", 15.0, 0.0, 100000.0);
         ANDROID_LOW_CHARGE = builder.comment("Below this share of charge an android goes to the nearest charging pad").defineInRange("lowCharge", 0.2, 0.0, 1.0);
         ANDROID_CHARGED = builder.comment("It leaves the pad at this share").defineInRange("charged", 0.9, 0.05, 1.0);
-        ANDROID_PAD_RADIUS = builder.comment("Blocks around in which it looks for a charging pad").defineInRange("padRadius", 32, 1, 128);
+        ANDROID_PAD_RADIUS = builder.comment("Unused since 1.7.2: pads are looked for as far as service posts ([garrison.service_post] searchRadius)").defineInRange("padRadius", 32, 1, 128);
         ANDROID_GUARD_RADIUS = builder.comment("Blocks around the point it guards in which it fights").defineInRange("guardRadius", 12, 1, 64);
         ANDROID_HOLD_RADIUS = builder.comment("Blocks it may leave its place to fight when it holds a position").defineInRange("holdRadius", 4, 0, 32);
         ANDROID_THINK_TICKS = builder.comment("Ticks between two looks for a target").defineInRange("thinkTicks", 10, 1, 100);

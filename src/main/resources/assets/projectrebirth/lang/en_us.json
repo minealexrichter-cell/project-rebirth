@@ -418,6 +418,14 @@
   "console_alarm.projectrebirth.chest_full_ended": "Chest full: over",
   "message.projectrebirth.console_alarm.chest_full": "Console: the chest is full or out of reach — %s at %s %s %s",
   "message.projectrebirth.console_alarm.chest_full_ended": "Console: the chest is fine again — %s at %s %s %s",
+  "console_alarm.projectrebirth.stuck": "Machine stuck",
+  "console_alarm.projectrebirth.stuck_ended": "Machine stuck: over",
+  "message.projectrebirth.console_alarm.stuck": "Console: a machine is stuck and cannot get through — %s at %s %s %s",
+  "message.projectrebirth.console_alarm.stuck_ended": "Console: the machine is moving again — %s at %s %s %s",
+  "console_alarm.projectrebirth.no_post": "No post near",
+  "console_alarm.projectrebirth.no_post_ended": "No post near: over",
+  "message.projectrebirth.console_alarm.no_post": "Console: a machine needs a service post or a charging pad and finds none near — %s at %s %s %s",
+  "message.projectrebirth.console_alarm.no_post_ended": "Console: the machine found a post — %s at %s %s %s",
   "item.projectrebirth.neural_matrix": "Neural Matrix",
   "item.projectrebirth.ai_core": "AI Core",
   "item.projectrebirth.damaged_ai_core": "Damaged AI Core",
@@ -1474,5 +1482,5 @@
   "codex.projectrebirth.small_robot.p4": "Its machine gun is built in and fires assault rifle rounds: right-click it with rounds to load them (192 at most), with an empty hand to see its charge and magazine. A service post fills its magazine from the post's chest.\n\nIt takes the orders of the console and the tablet as the mech does, and goes through doors where the mech cannot. Low on charge it walks to the nearest service post or charging pad and waits there; empty, it stops and the console hears of it.",
   "codex.projectrebirth.entry.service_post": "Service Post",
   "codex.projectrebirth.service_post.p1": "A station for your machines. Lay four post plates in a square of two by two, set the post console next to them, a chest next to the console, and bring the console energy by cable.\n\nA machine standing on the plates is charged, its structural integrity mended with iron ingots or armor plates from the chest, and a mech's magazine filled with rounds and rockets from it. Critical integrity is not mended here: pack the machine and take it to the maintenance station.",
-  "codex.projectrebirth.service_post.p4": "The order \"to the post\" sends androids and mechs to the nearest post (or to their console when there is none). Low on energy, mechs come by themselves; androids go to a post or to a charging pad, whichever is nearer. Turrets need no post: their mount feeds them.\n\nRight-click the post console to see its energy and the machines it serves."
+  "codex.projectrebirth.service_post.p4": "The order \"to the post\" sends androids and mechs to the nearest post (or to their console when there is none). Machines also go by themselves: mechs and small robots when their energy or their rounds and rockets run low, androids when their charge is low, to a post or a charging pad, whichever is nearer. A post is looked for within 256 blocks; with none there the machine tells its console. A served machine with no order walks back where it came from and leaves the plates free. With no ammunition in the chest a machine waits 10 seconds and goes. Turrets need no post: their mount feeds them.\n\nMachines walk round obstacles. A stuck machine jumps and steps aside; when it cannot get through for long its console raises the alarm \"Machine stuck\".\n\nRight-click the post console to see its energy and the machines it serves."
 }

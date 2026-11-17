@@ -245,6 +245,12 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
         }
     }
 
+    /** 1.7.2: paths longer than a monster's (round long walls). */
+    @Override
+    protected net.minecraft.world.entity.ai.navigation.PathNavigation createNavigation(Level level) {
+        return new MachineNavigation(this, level);
+    }
+
     @Override
     protected boolean isImmobile() {
         return super.isImmobile() || !core.active() || rolloutTarget != null;

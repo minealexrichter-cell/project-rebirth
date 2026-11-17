@@ -119,6 +119,15 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private BlockPos holdPoint;
     private MachineTask lastTask = MachineTask.STAND_DOWN;
     private int routeIndex;
+    /** 1.7.2: how it gets to a place (paths, straight ways, getting unstuck). */
+    protected final MachineMover mover = new MachineMover(this);
+    private boolean stuckReported;
+    private boolean noPostReported;
+    /** 1.7.2: where it was when it set out for the post; with no order it walks back there, off the plates, after it was served. */
+    @Nullable
+    private Vec3 cameFrom;
+    /** 1.7.2: the game time before which it does not go to the post for ammunition again (the post had none). */
+    private long ammoRetry;
 
     public GuardMechEntity(EntityType<? extends GuardMechEntity> type, Level level) {
         this(type, level, MachineKind.MECH);
@@ -360,7 +369,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         if (empty && !emergency || emergency && recovered) {
             emergency = empty;
             if (emergency) {
-                getNavigation().stop();
+                mover.stop();
                 setTarget(null);
                 playSound(com.projectrebirth.core.ModSounds.GARRISON_MACHINE_SHUTDOWN.get(), 1.0f, 0.8f);
             }
@@ -372,10 +381,16 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             lacking = now;
             ConsoleLink.supply(this, core, lacking);
         }
+        boolean stuckNow = core.active() && mover.stuck();
+        if (stuckNow != stuckReported) {
+            stuckReported = stuckNow;
+            ConsoleLink.report(this, core, ConsoleAlarm.STUCK, stuckNow);
+        }
         entityData.set(DOWN, !working());
         getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(stats().speed().get() * (core.emiFault() ? 0.6 : 1.0));
         if (!core.task().equals(lastTask)) {
             lastTask = core.task();
+            cameFrom = null;
             holdPoint = blockPosition();
             routeIndex = 0;
         }
@@ -473,7 +488,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             entityData.set(AIMING, false);
             lastTarget = null;
             lockTicks = 0;
-            getNavigation().stop();
+            mover.stop();
         }
 
         @Override
@@ -496,11 +511,9 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             boolean mayChase = !holding || target.blockPosition().distSqr(holdPoint) <= (leash + 2) * (leash + 2);
             double range = stats().range().get();
             if ((!sees || distance > range * 0.6) && mayChase) {
-                if (tickCount % 10 == 0) {
-                    getNavigation().moveTo(target, 1.0);
-                }
+                mover.walk(target.position(), 1.0);
             } else {
-                getNavigation().stop();
+                mover.stop();
             }
             if (target != lastTarget) {
                 lastTarget = target;
@@ -591,24 +604,64 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 found -> found != target && found.isAlive() && (found == this || TargetRules.friendly(this, found))).isEmpty();
     }
 
-    /** Low on energy: to the nearest service post, and stays on it until charged. */
-    /**
-     * 1.7.1: towards a place. The path of a mob this wide is found for its corner and ends a block or two short of the place, and a
-     * place that near gets no path at all: the last stretch (8 blocks) it walks straight.
-     */
-    private void walkTo(Vec3 goal) {
-        if (distanceToSqr(goal) < 64.0) {
-            getNavigation().stop();
-            getMoveControl().setWantedPosition(goal.x, goal.y, goal.z, 1.0);
-        } else if (tickCount % 10 == 0) {
-            getNavigation().moveTo(goal.x, goal.y, goal.z, 1.0);
-        }
+    /** 1.7.2: how it gets to places. Public for tests. */
+    public MachineMover mover() {
+        return mover;
     }
 
+    /** 1.7.2: towards a place, by the mover (a path, or straight when the way is free; it gets itself unstuck). */
+    private void walkTo(Vec3 goal) {
+        mover.walk(goal, 1.0);
+    }
+
+    /** 1.7.2: whether a weapon it carries is low on ammunition (at most the config's share of its magazine left). */
+    public boolean needsAmmo() {
+        double share = RebirthConfig.POST_RELOAD_SHARE.get();
+        for (int side = 0; side < 2; side++) {
+            switch (node(side)) {
+                case GUN -> {
+                    if (rounds <= stats().rounds().get() * share) {
+                        return true;
+                    }
+                }
+                case ROCKET -> {
+                    if (rockets <= stats().rockets().get() * share) {
+                        return true;
+                    }
+                }
+                default -> {
+                }
+            }
+        }
+        return false;
+    }
+
+    /** 1.7.2: whether its magazines are full for the weapons it carries. */
+    private boolean ammoFull() {
+        for (int side = 0; side < 2; side++) {
+            if (node(side) == Node.GUN && rounds < stats().rounds().get() || node(side) == Node.ROCKET && rockets < stats().rockets().get()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean lowEnergy() {
+        return energy <= capacity() * stats().lowEnergy().get();
+    }
+
+    /**
+     * Low on energy, or (1.7.2) on ammunition: to the nearest service post (for energy alone the small robot takes a charging pad
+     * too), and stays on it until charged and loaded. With no post in reach it reports that to its console; for energy it goes to
+     * the console. A post that gives no ammunition for a while (an empty chest) is left, and it does not come back for that soon.
+     */
     private final class ChargeGoal extends Goal {
         @Nullable
         private Vec3 post;
         private int wait;
+        private boolean forAmmo;
+        private int ammoWait;
+        private int lastAmmo;
 
         ChargeGoal() {
             setFlags(EnumSet.of(Flag.MOVE));
@@ -616,18 +669,59 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
 
         @Override
         public boolean canUse() {
-            if (!machineCore().active() || energy > capacity() * stats().lowEnergy().get() || --wait > 0
-                    || !(level() instanceof net.minecraft.server.level.ServerLevel server)) {
+            if (!machineCore().active() || isRollingOut() || --wait > 0 || !(level() instanceof net.minecraft.server.level.ServerLevel server)) {
                 return false;
             }
             wait = 10;
-            post = chargePoint(server);
+            boolean low = lowEnergy();
+            forAmmo = needsAmmo() && level().getGameTime() >= ammoRetry;
+            if (!low && !forAmmo) {
+                reportNoPost(false);
+                return false;
+            }
+            post = place(server, low);
+            reportNoPost(post == null);
+            if (post == null && low) {
+                // no post in reach: to its console, where its owner finds it
+                post = postOrConsole(GuardMechEntity.this, machineCore());
+            }
+            ammoWait = 0;
+            lastAmmo = rounds + rockets;
             return post != null;
         }
 
         @Override
+        public void start() {
+            if (post != null && distanceToSqr(post) > 9.0) {
+                cameFrom = position();
+            }
+        }
+
+        /** The post to go to (for energy alone the small robot takes a pad too), or null. */
+        @Nullable
+        private Vec3 place(net.minecraft.server.level.ServerLevel server, boolean low) {
+            Vec3 found = forAmmo ? ServicePostBlockEntity.nearest(server, blockPosition()) : chargePoint(server);
+            return found == null && forAmmo && low ? chargePoint(server) : found;
+        }
+
+        @Override
         public boolean canContinueToUse() {
-            return post != null && machineCore().active() && energy < capacity() * stats().charged().get();
+            if (post == null || !machineCore().active()) {
+                return false;
+            }
+            if (energy < capacity() * stats().charged().get()) {
+                return true;
+            }
+            return forAmmo && !ammoFull() && ammoWait < RebirthConfig.POST_AMMO_WAIT_SECONDS.get() * 20;
+        }
+
+        @Override
+        public void stop() {
+            mover.stop();
+            if (forAmmo && !ammoFull()) {
+                // the post had nothing to give: not again for five minutes (its console has the alarm of no ammunition)
+                ammoRetry = level().getGameTime() + 6000;
+            }
         }
 
         @Override
@@ -637,11 +731,29 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
 
         @Override
         public void tick() {
+            // a nearer post may have come up (or been built) since it set out
+            if (tickCount % 40 == 0 && level() instanceof net.minecraft.server.level.ServerLevel server) {
+                Vec3 nearer = place(server, lowEnergy());
+                if (nearer != null) {
+                    post = nearer;
+                }
+            }
             if (post != null && distanceToSqr(post) > 0.6) {
                 walkTo(post);
+                ammoWait = 0;
             } else {
-                getNavigation().stop();
+                mover.stop();
+                int ammo = rounds + rockets;
+                ammoWait = ammo > lastAmmo ? 0 : ammoWait + 1;
+                lastAmmo = ammo;
             }
+        }
+    }
+
+    private void reportNoPost(boolean on) {
+        if (on != noPostReported) {
+            noPostReported = on;
+            ConsoleLink.report(this, machineCore(), ConsoleAlarm.NO_POST, on);
         }
     }
 
@@ -657,6 +769,11 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         }
 
         @Override
+        public void stop() {
+            mover.stop();
+        }
+
+        @Override
         public boolean requiresUpdateEveryTick() {
             return true;
         }
@@ -665,13 +782,16 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         public void tick() {
             Vec3 goal = goal();
             if (goal == null) {
-                getNavigation().stop();
+                mover.stop();
                 return;
             }
             // 1.7.1: a mech is wide and its path ends a block or two short of the point: within three blocks it is there
             double near = machineCore().task().type() == MachineTask.Type.ESCORT ? 25.0 : 9.0;
             if (distanceToSqr(goal) <= near) {
-                getNavigation().stop();
+                mover.stop();
+                if (goal == cameFrom) {
+                    cameFrom = null;
+                }
                 MachineTask task = machineCore().task();
                 if (task.type() == MachineTask.Type.PATROL && !task.route().isEmpty()) {
                     routeIndex = (routeIndex + 1) % task.route().size();
@@ -692,7 +812,8 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 case ESCORT -> task.escort().map(id -> level().getPlayerByUUID(id)).filter(p -> p.distanceToSqr(GuardMechEntity.this) < 64 * 64)
                         .map(Player::position).orElse(null);
                 case TO_POST, SHELTER -> postOrConsole(GuardMechEntity.this, machineCore());
-                default -> null;
+                // 1.7.2: no order to follow: back to where it was before it went to the post
+                default -> cameFrom;
             };
         }
     }

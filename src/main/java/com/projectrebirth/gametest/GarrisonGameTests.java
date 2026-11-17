@@ -274,6 +274,13 @@ public class GarrisonGameTests {
         Vec3 exit = entity.schema().exitPoint(entity.getBlockPos(), entity.facing());
         Vec3 inside = entity.schema().displayPoint(entity.getBlockPos(), entity.facing());
         net.minecraft.world.phys.AABB around = new net.minecraft.world.phys.AABB(inside, exit).inflate(3.0);
+        // 1.7.2: a machine without ammunition walks off to a post once it is out, so its arrival at the exit is noted as it happens
+        boolean[] arrived = new boolean[1];
+        helper.onEachTick(() -> helper.getLevel().getEntitiesOfClass(kind, around).forEach(thing -> {
+            if (thing.position().distanceTo(new Vec3(exit.x, thing.getY(), exit.z)) < 0.8) {
+                arrived[0] = true;
+            }
+        }));
         helper.runAfterDelay(time + 10, () -> {
             helper.assertTrue(helper.getLevel().getEntitiesOfClass(kind, around).size() == 1, recipe + ": it stands in the dock");
             helper.assertTrue(entity.items().getStackInSlot(MultiblockControllerBlockEntity.OUTPUT_SLOT).isEmpty(), "Nothing in the output slot");
@@ -282,8 +289,7 @@ public class GarrisonGameTests {
             var found = helper.getLevel().getEntitiesOfClass(kind, around);
             helper.assertTrue(found.size() == 1, "One of it");
             var thing = found.get(0);
-            helper.assertTrue(thing.position().distanceTo(new Vec3(exit.x, thing.getY(), exit.z)) < 0.8,
-                    recipe + ": it rolled out to the exit: " + thing.position() + " / " + exit);
+            helper.assertTrue(arrived[0], recipe + ": it rolled out to the exit: " + thing.position() + " / " + exit);
             outside.accept(helper, thing);
             thing.discard();
             helper.succeed();

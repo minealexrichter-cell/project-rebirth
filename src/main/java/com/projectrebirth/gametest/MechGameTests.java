@@ -79,7 +79,8 @@ public class MechGameTests {
     public static void aMechWalksItsPatrolRoute(GameTestHelper helper) {
         ServerPlayer owner = player(helper);
         ItemStack stack = new ItemStack(GarrisonRegistry.GUARD_MECH_ITEM.get());
-        stack.set(GarrisonRegistry.MECH_LOADOUT.get(), new GuardMechEntity.Loadout(1, 1, GuardMechEntity.Loadout.FULL, 0, 0));
+        // 1.7.2: with its magazine full, else it would go to load at a post first
+        stack.set(GarrisonRegistry.MECH_LOADOUT.get(), new GuardMechEntity.Loadout(1, 1, GuardMechEntity.Loadout.FULL, RebirthConfig.GUARD_MECH_ROUNDS.get(), 0));
         GuardMechEntity mech = mech(helper, owner, stack, new BlockPos(2, 2, 2));
         BlockPos a = helper.absolutePos(new BlockPos(2, 1, 2)), b = helper.absolutePos(new BlockPos(7, 1, 7));
         mech.machineCore().setTask(com.projectrebirth.garrison.MachineTask.patrol(java.util.List.of(a, b)));

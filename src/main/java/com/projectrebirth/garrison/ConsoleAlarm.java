@@ -7,7 +7,8 @@ import java.util.Locale;
  * down, a machine lost (a wreck, or destroyed), a machine out of energy or ammunition (the machines of later blocks raise it). The
  * redstone signal of the console is the strength of the worst alarm going on. Block F adds the reports of work androids: the
  * area is done (or there is nothing to do; logged only, not told in chat, since a farm runs out of ripe crops time and again),
- * no tool, the chest is full.
+ * no tool, the chest is full. 1.7.2 adds: a machine is stuck on its way; a machine needs a service post (or a charging pad) and
+ * finds none in reach.
  */
 public enum ConsoleAlarm {
     INTRUDER(15, true),
@@ -17,7 +18,10 @@ public enum ConsoleAlarm {
     NO_SUPPLY(3, true),
     WORK_DONE(1, false),
     NO_TOOL(2, true),
-    CHEST_FULL(2, true);
+    CHEST_FULL(2, true),
+    // 1.7.2, block B (new ones only at the end: the console saves alarms by their place in this list)
+    STUCK(3, true),
+    NO_POST(3, true);
 
     private final int signal;
     private final boolean told;

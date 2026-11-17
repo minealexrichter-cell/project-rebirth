@@ -18,7 +18,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -184,31 +183,23 @@ public class ServicePostBlockEntity extends BlockEntity {
         energy.load(tag.getInt("energy"));
     }
 
-    /** The stand point of the nearest working service post within the config's radius (loaded chunks only), or null. */
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        LoadedSites.add(LoadedSites.Kind.SERVICE_POST, this);
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        LoadedSites.remove(LoadedSites.Kind.SERVICE_POST, this);
+    }
+
+    /** The stand point of the nearest working service post within the config's search radius (loaded ones only), or null. */
     @Nullable
     public static Vec3 nearest(ServerLevel level, BlockPos from) {
-        int radius = RebirthConfig.POST_RADIUS.get();
-        int chunks = (radius >> 4) + 1;
-        Vec3 best = null;
-        double bestDistance = (double) radius * radius;
-        for (int dx = -chunks; dx <= chunks; dx++) {
-            for (int dz = -chunks; dz <= chunks; dz++) {
-                LevelChunk chunk = level.getChunkSource().getChunkNow((from.getX() >> 4) + dx, (from.getZ() >> 4) + dz);
-                if (chunk == null) {
-                    continue;
-                }
-                for (BlockEntity found : chunk.getBlockEntities().values()) {
-                    if (found instanceof ServicePostBlockEntity post) {
-                        Vec3 stand = post.standPoint();
-                        double distance = stand == null ? Double.MAX_VALUE : stand.distanceToSqr(Vec3.atCenterOf(from));
-                        if (distance < bestDistance) {
-                            best = stand;
-                            bestDistance = distance;
-                        }
-                    }
-                }
-            }
-        }
-        return best;
+        ServicePostBlockEntity post = LoadedSites.nearest(level, LoadedSites.Kind.SERVICE_POST, ServicePostBlockEntity.class, from,
+                RebirthConfig.POST_RADIUS.get(), found -> found.standPoint() != null);
+        return post == null ? null : post.standPoint();
     }
 }

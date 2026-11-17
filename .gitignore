@@ -43,3 +43,9 @@ repo/
 ### Project: Rebirth ###
 runs/
 *.log
+
+# local MCP servers of the developer machine (Blockbench), never committed
+.mcp.json
+# heap dumps and profiler output
+*.hprof
+*.sparkprofile

@@ -630,15 +630,16 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 mover.stop();
             }
             // 1.7.2: up close it stomps; out of its reach on foot (high up, or no way to it), or now and then, it takes off over the target
-            if (!jetpack.flying() && canStomp() && onGround() && stompWindup < 0 && stompCooldown <= 0
-                    && distance <= RebirthConfig.GUARD_MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5) {
+            // 1.7.3: an enemy within the stomp's reach is stomped, never flown away from on a whim
+            boolean inReach = canStomp() && distance <= RebirthConfig.GUARD_MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5;
+            if (!jetpack.flying() && inReach && onGround() && stompWindup < 0 && stompCooldown <= 0) {
                 stompWindup = STOMP_WINDUP;
                 stompCooldown = RebirthConfig.GUARD_MECH_STOMP_COOLDOWN.get();
                 triggerAnim("main", "stomp");
             } else if (mayChase && !jetpack.flying() && jetpack.ready()) {
                 int chance = RebirthConfig.GUARD_MECH_COMBAT_FLIGHT_CHANCE.get();
                 boolean outOfReach = target.getY() - getY() > 2.5 || mover.stuck();
-                if (outOfReach || sees && chance > 0 && random.nextInt(chance) == 0) {
+                if (outOfReach || sees && !inReach && chance > 0 && random.nextInt(chance) == 0) {
                     jetpack.overFight(target);
                 }
             }

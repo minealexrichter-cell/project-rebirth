@@ -691,49 +691,72 @@
             elements: parts};
     })();
 
+    // 1.7.1, block G: the turret mount and the service post take textures with grain (build_textures.js, garrison_*), one pixel to
+    // a sixteenth of a block: the faces name only the texture and the game takes the uv from where the face is. The tiny lamps
+    // stay swatches of machine_parts.
+    const GARRISON_TEXTURES = {
+        steel: 'projectrebirth:block/garrison_steel', mid: 'projectrebirth:block/garrison_mid', gun: 'projectrebirth:block/garrison_gun',
+        dark: 'projectrebirth:block/garrison_dark', hazard: 'projectrebirth:block/garrison_hazard', cyan: 'projectrebirth:block/service_post_screen',
+        deck: 'projectrebirth:block/service_post_deck', parts: 'projectrebirth:block/machine_parts'
+    };
+    /** A cube in the garrison textures: a name of GARRISON_TEXTURES on all sides, the map replaces single sides; 'green' is a swatch. */
+    function gbox(from, to, color, faces, extra) {
+        const out = {from, to, faces: {}};
+        for (const dir of DIRS) {
+            const name = (faces && faces[dir]) || color;
+            out.faces[dir] = name === 'green' ? sw('green') : {texture: '#' + name};
+        }
+        return Object.assign(out, extra || {});
+    }
+    const garrisonTextures = (particle, names) => {
+        const map = {particle: GARRISON_TEXTURES[particle]};
+        names.forEach(name => { map[name] = GARRISON_TEXTURES[name]; });
+        return map;
+    };
+
     // 1.7.0, block G: the turret mount. A heavy steel plinth with a ring on top the turret's feet stand on, an ammunition hatch
-    // with a hazard band on each side and a green lamp. Swatches only.
+    // with a hazard band on each side and a green lamp.
     MODELS.turret_mount = {
         parent: 'minecraft:block/block',
-        textures: {parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/machine_parts'},
+        textures: garrisonTextures('steel', ['steel', 'mid', 'gun', 'dark', 'hazard', 'parts']),
         elements: [
-            box([0, 0, 0], [16, 3, 16], 'dark'),
-            box([1, 3, 1], [15, 13, 15], 'steel', {up: 'mid', down: 'dark'}),
-            box([0, 13, 0], [16, 16, 16], 'gun', {up: 'dark'}),
-            box([4, 5, 0.5], [12, 11, 1.5], 'mid'),
-            box([4, 5, 14.5], [12, 11, 15.5], 'mid'),
-            box([0.5, 5, 4], [1.5, 11, 12], 'mid'),
-            box([14.5, 5, 4], [15.5, 11, 12], 'mid'),
-            box([5, 9, 0], [11, 10, 1], 'hazard'),
-            box([5, 9, 15], [11, 10, 16], 'hazard'),
-            box([0, 9, 5], [1, 10, 11], 'hazard'),
-            box([15, 9, 5], [16, 10, 11], 'hazard'),
-            box([7, 11.5, 0], [9, 12.5, 1.5], 'green', null, GLOW)
+            gbox([0, 0, 0], [16, 3, 16], 'dark'),
+            gbox([1, 3, 1], [15, 13, 15], 'steel', {up: 'mid', down: 'dark'}),
+            gbox([0, 13, 0], [16, 16, 16], 'gun', {up: 'dark'}),
+            gbox([4, 5, 0.5], [12, 11, 1.5], 'mid'),
+            gbox([4, 5, 14.5], [12, 11, 15.5], 'mid'),
+            gbox([0.5, 5, 4], [1.5, 11, 12], 'mid'),
+            gbox([14.5, 5, 4], [15.5, 11, 12], 'mid'),
+            gbox([5, 9, 0], [11, 10, 1], 'hazard'),
+            gbox([5, 9, 15], [11, 10, 16], 'hazard'),
+            gbox([0, 9, 5], [1, 10, 11], 'hazard'),
+            gbox([15, 9, 5], [16, 10, 11], 'hazard'),
+            gbox([7, 11.5, 0], [9, 12.5, 1.5], 'green', null, GLOW)
         ]
     };
 
     // 1.7.0, block H: the service post. A plate: a low steel deck with a hazard rim and a grid, a machine stands on four of them.
-    // The post console: a squat cabinet with a screen and a green lamp. Swatches only.
+    // The post console: a squat cabinet with a screen and a green lamp.
     MODELS.service_post_plate = {
         parent: 'minecraft:block/block',
-        textures: {parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/machine_parts'},
+        textures: garrisonTextures('deck', ['deck', 'steel', 'mid', 'dark', 'hazard']),
         elements: [
-            box([0, 0, 0], [16, 4, 16], 'dark', {up: 'gun', north: 'hazard', south: 'hazard', west: 'hazard', east: 'hazard'}),
-            box([1, 4, 1], [15, 5, 15], 'steel'),
-            box([3, 4.5, 3], [13, 5.5, 13], 'mid')
+            gbox([0, 0, 0], [16, 4, 16], 'dark', {up: 'deck', north: 'hazard', south: 'hazard', west: 'hazard', east: 'hazard'}),
+            gbox([1, 4, 1], [15, 5, 15], 'steel', {up: 'deck'}),
+            gbox([3, 4.5, 3], [13, 5.5, 13], 'mid', {up: 'deck'})
         ]
     };
     MODELS.service_post = {
         parent: 'minecraft:block/block',
-        textures: {parts: 'projectrebirth:block/machine_parts', particle: 'projectrebirth:block/machine_parts'},
+        textures: garrisonTextures('steel', ['steel', 'mid', 'gun', 'dark', 'hazard', 'cyan', 'parts']),
         elements: [
-            box([1, 0, 1], [15, 2, 15], 'dark'),
-            box([2, 2, 2], [14, 12, 14], 'steel', {up: 'mid'}),
-            box([3, 6, 1], [13, 11, 2.5], 'dark'),
-            box([4, 7, 0.5], [12, 10, 1.5], 'cyan', null, GLOW),
-            box([11, 3, 1.5], [13, 5, 2.5], 'green', null, GLOW),
-            box([3, 3, 1.5], [9, 4, 2.5], 'hazard'),
-            box([5, 11, 5], [11, 14, 11], 'gun')
+            gbox([1, 0, 1], [15, 2, 15], 'dark'),
+            gbox([2, 2, 2], [14, 12, 14], 'steel', {up: 'mid'}),
+            gbox([3, 6, 1], [13, 11, 2.5], 'dark'),
+            gbox([4, 7, 0.5], [12, 10, 1.5], 'cyan', null, GLOW),
+            gbox([11, 3, 1.5], [13, 5, 2.5], 'green', null, GLOW),
+            gbox([3, 3, 1.5], [9, 4, 2.5], 'hazard'),
+            gbox([5, 11, 5], [11, 14, 11], 'gun')
         ]
     };
 

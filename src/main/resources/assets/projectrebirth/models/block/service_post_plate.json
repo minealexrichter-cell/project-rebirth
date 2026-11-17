@@ -1,8 +1,12 @@
 {
   "parent": "minecraft:block/block",
   "textures": {
-    "parts": "projectrebirth:block/machine_parts",
-    "particle": "projectrebirth:block/machine_parts"
+    "particle": "projectrebirth:block/service_post_deck",
+    "deck": "projectrebirth:block/service_post_deck",
+    "steel": "projectrebirth:block/garrison_steel",
+    "mid": "projectrebirth:block/garrison_mid",
+    "dark": "projectrebirth:block/garrison_dark",
+    "hazard": "projectrebirth:block/garrison_hazard"
   },
   "elements": [
     {
@@ -18,58 +22,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#parts",
-          "uv": [
-            13,
-            13,
-            15,
-            15
-          ]
+          "texture": "#hazard"
         },
         "south": {
-          "texture": "#parts",
-          "uv": [
-            13,
-            13,
-            15,
-            15
-          ]
+          "texture": "#hazard"
         },
         "west": {
-          "texture": "#parts",
-          "uv": [
-            13,
-            13,
-            15,
-            15
-          ]
+          "texture": "#hazard"
         },
         "east": {
-          "texture": "#parts",
-          "uv": [
-            13,
-            13,
-            15,
-            15
-          ]
+          "texture": "#hazard"
         },
         "up": {
-          "texture": "#parts",
-          "uv": [
-            9,
-            1,
-            11,
-            3
-          ]
+          "texture": "#deck"
         },
         "down": {
-          "texture": "#parts",
-          "uv": [
-            13,
-            1,
-            15,
-            3
-          ]
+          "texture": "#dark"
         }
       }
     },
@@ -86,58 +54,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#parts",
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ]
+          "texture": "#steel"
         },
         "south": {
-          "texture": "#parts",
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ]
+          "texture": "#steel"
         },
         "west": {
-          "texture": "#parts",
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ]
+          "texture": "#steel"
         },
         "east": {
-          "texture": "#parts",
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ]
+          "texture": "#steel"
         },
         "up": {
-          "texture": "#parts",
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ]
+          "texture": "#deck"
         },
         "down": {
-          "texture": "#parts",
-          "uv": [
-            1,
-            1,
-            3,
-            3
-          ]
+          "texture": "#steel"
         }
       }
     },
@@ -154,58 +86,22 @@
       ],
       "faces": {
         "north": {
-          "texture": "#parts",
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ]
+          "texture": "#mid"
         },
         "south": {
-          "texture": "#parts",
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ]
+          "texture": "#mid"
         },
         "west": {
-          "texture": "#parts",
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ]
+          "texture": "#mid"
         },
         "east": {
-          "texture": "#parts",
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ]
+          "texture": "#mid"
         },
         "up": {
-          "texture": "#parts",
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ]
+          "texture": "#deck"
         },
         "down": {
-          "texture": "#parts",
-          "uv": [
-            5,
-            1,
-            7,
-            3
-          ]
+          "texture": "#mid"
         }
       }
     }

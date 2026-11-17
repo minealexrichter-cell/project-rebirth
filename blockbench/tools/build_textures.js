@@ -3404,6 +3404,48 @@
     block('turret_casing_broken', () => wrecked(TEXTURES['block/turret_casing'](), 961, STEEL_TONES));
     block('turret_frame_broken', () => wrecked(TEXTURES['block/turret_frame'](), 962, IRON_DARK));
 
+    // 1.7.1, block G: the garrison's small blocks (the service post, its plate, the turret mount) had flat swatches stretched
+    // over whole faces. Now their faces take these textures one pixel to a sixteenth of a block (the models leave the uv to the
+    // game), in the same colours as before, with the grain of any other block.
+    /** Six tones of a colour, dark to light, for strokes(). */
+    const tones = c => [0.78, 0.86, 0.94, 1.0, 1.07, 1.15].map(f => shade(c, f));
+    const GARRISON = {steel: '#8c97a3', mid: '#59626c', gun: '#343a42', dark: '#1e2228'};
+    Object.entries(GARRISON).forEach(([name, c], i) => block('garrison_' + name, () => {
+        const p = strokes(new Painter(970 + i), tones(c), 970 + i, 34);
+        return name === 'steel' ? seams(p, tones(c)) : p;
+    }));
+    block('garrison_hazard', () => {
+        const p = new Painter(976);
+        for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+            p.rect(x, y, 1, 1, shade((x + y) % 4 < 2 ? '#f0c92f' : '#23262b', 1 + (p.rand() - 0.5) * 0.18));
+        }
+        // a few scuffs where the paint wore off
+        p.px('#5d6167', [3, 2], [11, 9], [6, 13]).px('#8a8f96', [12, 5]);
+        return p;
+    });
+    /** The post's screen: cyan lines of figures on a dark glass, a brighter row in the middle. */
+    block('service_post_screen', () => {
+        const p = new Painter(977);
+        p.noise(0, 0, 16, 16, '#0f3c46', 0.08);
+        for (let y = 1; y < 16; y += 2) for (let x = 1; x < 15; x++) {
+            if (p.rand() < 0.55) p.rect(x, y, 1, 1, shade('#37e6ff', 0.75 + p.rand() * 0.35));
+        }
+        p.rect(1, 7, 14, 1, '#9ef4ff');
+        return p;
+    });
+    /** The plate's deck seen from above: a gun-metal rim, a steel frame and a mid-grey grid deck the machine stands on. */
+    block('service_post_deck', () => {
+        const p = strokes(new Painter(978), tones(GARRISON.gun), 978, 30);
+        p.noise(1, 1, 14, 14, GARRISON.steel, 0.07);
+        p.rect(1, 1, 14, 1, shade(GARRISON.steel, 1.2)).rect(1, 14, 14, 1, shade(GARRISON.steel, 0.7));
+        p.noise(3, 3, 10, 10, GARRISON.mid, 0.08);
+        for (let k = 3; k < 13; k += 3) {
+            p.rect(k, 3, 1, 10, shade(GARRISON.mid, 0.7)).rect(3, k, 10, 1, shade(GARRISON.mid, 0.7));
+        }
+        p.rivets(shade(GARRISON.steel, 0.6), 2);
+        return p;
+    });
+
     // alarm lamp
     block('lamp_housing', () => seams(strokes(new Painter(941), HOUSING_TONES, 941), HOUSING_TONES));
     block('lamp_vents', () => {

@@ -58,10 +58,15 @@ public final class ConsoleLink {
 
     /** The machines of later blocks raise and end the alarm of no energy or no ammunition here. */
     public static void supply(Entity self, MachineCore core, boolean lacking) {
+        report(self, core, ConsoleAlarm.NO_SUPPLY, lacking);
+    }
+
+    /** A machine raises or ends one of its alarms (the reports of work androids, block F). */
+    public static void report(Entity self, MachineCore core, ConsoleAlarm alarm, boolean on) {
         if (self.level() instanceof ServerLevel level && core.console() != null) {
             ConsoleBlockEntity console = consoleFor(level, self, core.console());
             if (console != null) {
-                console.alarm(self.getUUID(), ConsoleAlarm.NO_SUPPLY, lacking);
+                console.alarm(self.getUUID(), alarm, on);
             }
         }
     }

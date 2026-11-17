@@ -1,0 +1,39 @@
+{
+  "icon": "projectrebirth:work_module",
+  "x": 10,
+  "y": -4,
+  "parents": [
+    "androids",
+    "tactical_tablet"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.work_android.p1"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:workshop_android_work_basic_robot_body"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.work_android.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.work_android.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.work_android.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.work_android.p6"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.work_android.p7"
+    }
+  ]
+}

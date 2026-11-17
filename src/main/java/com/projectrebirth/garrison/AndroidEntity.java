@@ -72,7 +72,7 @@ import net.minecraft.world.phys.Vec3;
  * arrows from its gear, a shield; never the guns of power armor (rule 1.2). Its body class decides how fast it moves, how soon it
  * answers a target, how well it shoots and how far it sees (config). Low on charge it goes to a charging pad; out of charge it
  * stands still in emergency and the console hears of it. Nobody moves into it while the core is in it: it is not in the
- * register of bodies.
+ * register of bodies. The work module (block F) mines, fells trees or farms instead ({@link AndroidWork}); it does not fight, it runs.
  */
 public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachine, RangedAttackMob {
     public static final int GEAR = 41;
@@ -82,6 +82,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     private static final EntityDataAccessor<Boolean> EMERGENCY = SynchedEntityData.defineId(AndroidEntity.class, EntityDataSerializers.BOOLEAN);
 
     private MachineCore core;
+    private AndroidWork work;
     private ItemStack coreItem = ItemStack.EMPTY;
     private ItemStack moduleItem = ItemStack.EMPTY;
     private final SimpleContainer gear = new SimpleContainer(GEAR);
@@ -114,6 +115,40 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     @Override
     public MachineCore machineCore() {
         return core();
+    }
+
+    private AndroidWork work() {
+        if (work == null) {
+            work = new AndroidWork(this);
+        }
+        return work;
+    }
+
+    /** A work android (block F): the work module instead of the combat module. */
+    public boolean isWorker() {
+        return moduleItem.is(GarrisonRegistry.WORK_MODULE.get());
+    }
+
+    /** For tests: whether its work raised this report. */
+    public boolean workReported(ConsoleAlarm alarm) {
+        return work().raised(alarm);
+    }
+
+    /** For tests: whether a block of its mine is a step of the stair it leaves. */
+    public boolean isMineStep(BlockPos pos) {
+        work().checkOrder();
+        return work().isStep(pos);
+    }
+
+    /** A blow of its tool, seen by everyone. */
+    void workSwing() {
+        swing(InteractionHand.MAIN_HAND);
+        triggerAnim(MAIN_CONTROLLER, INTERACT_ANIMATION);
+    }
+
+    @Override
+    protected Component getTypeName() {
+        return isWorker() ? Component.translatable(getType().getDescriptionId() + ".work") : super.getTypeName();
     }
 
     @Override
@@ -232,7 +267,9 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         hurtDuration = 10;
         level().broadcastDamageEvent(this, source);
         playHurtSound(source);
-        if (source.getEntity() instanceof LivingEntity attacker && getTarget() == null && TargetRules.mayAttack(this, attacker)) {
+        if (isWorker() && source.getEntity() instanceof LivingEntity) {
+            work().attacked();
+        } else if (source.getEntity() instanceof LivingEntity attacker && getTarget() == null && TargetRules.mayAttack(this, attacker)) {
             setTarget(attacker);
             targetSince = level().getGameTime();
         }
@@ -512,6 +549,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new ChargeGoal());
         goalSelector.addGoal(2, new FightGoal());
+        goalSelector.addGoal(2, work().new WorkGoal());
         goalSelector.addGoal(3, new TaskGoal());
         goalSelector.addGoal(5, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new ChooseTargetGoal());
@@ -549,7 +587,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
 
         @Override
         public boolean canUse() {
-            if (!working() || --wait > 0) {
+            if (!working() || isWorker() || --wait > 0) {
                 return false;
             }
             wait = RebirthConfig.ANDROID_THINK_TICKS.get();
@@ -586,7 +624,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
 
         @Override
         public boolean canUse() {
-            return working() && validTarget(getTarget());
+            return working() && !isWorker() && validTarget(getTarget());
         }
 
         @Override
@@ -745,7 +783,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
 
         @Override
         public boolean canUse() {
-            return working() && getTarget() == null;
+            return working() && getTarget() == null && !work().active();
         }
 
         @Override
@@ -845,6 +883,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         }
         tag.put("Gear", gearToList());
         tag.putBoolean("Emergency", emergency);
+        work().save(tag);
     }
 
     @Override
@@ -855,6 +894,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         moduleItem = tag.contains("Module") ? ItemStack.parseOptional(registryAccess(), tag.getCompound("Module")) : ItemStack.EMPTY;
         listToGear(tag.getList("Gear", Tag.TAG_COMPOUND));
         emergency = tag.getBoolean("Emergency");
+        work().load(tag);
         entityData.set(EMERGENCY, emergency);
         setOwner(core().owner());
     }

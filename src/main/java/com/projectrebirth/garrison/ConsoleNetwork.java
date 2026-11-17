@@ -192,11 +192,11 @@ public final class ConsoleNetwork {
                 int side = Math.max(Math.abs(a.getX() - b.getX()), Math.abs(a.getZ() - b.getZ())) + 1;
                 int depth = Math.abs(a.getY() - b.getY()) + 1;
                 int max = switch (kind) {
-                    case "mine" -> RebirthConfig.WORK_AREA_MINE.get();
+                    case "mine", "mine_ore" -> RebirthConfig.WORK_AREA_MINE.get();
                     case "lumber" -> RebirthConfig.WORK_AREA_LUMBER.get();
                     default -> RebirthConfig.WORK_AREA_FARM.get();
                 };
-                if (side > max || kind.equals("mine") && depth > RebirthConfig.WORK_AREA_MINE_DEPTH.get()) {
+                if (side > max || kind.startsWith("mine") && depth > RebirthConfig.WORK_AREA_MINE_DEPTH.get()) {
                     return Component.translatable("message.projectrebirth.console.area_too_big", max);
                 }
                 task = MachineTask.work(kind, a, b, marks.chest().get());

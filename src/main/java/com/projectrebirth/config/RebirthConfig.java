@@ -291,8 +291,21 @@ public final class RebirthConfig {
 
     /** How an android of one body class moves and fights (from the worst to the best). */
     public record AndroidStats(ModConfigSpec.DoubleValue speed, ModConfigSpec.IntValue reaction, ModConfigSpec.DoubleValue inaccuracy,
-                               ModConfigSpec.IntValue sight, ModConfigSpec.IntValue meleeCooldown) {
+                               ModConfigSpec.IntValue sight, ModConfigSpec.IntValue meleeCooldown, ModConfigSpec.DoubleValue workSpeed) {
     }
+
+    public static final ModConfigSpec.BooleanValue WORK_MINE;
+    public static final ModConfigSpec.BooleanValue WORK_LUMBER;
+    public static final ModConfigSpec.BooleanValue WORK_FARM;
+    public static final ModConfigSpec.DoubleValue WORK_ENERGY_PER_BLOCK;
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> WORK_ORE_BLOCKS;
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> WORK_FILLER_BLOCKS;
+    public static final ModConfigSpec.BooleanValue WORK_REPLANT_SAPLINGS;
+    public static final ModConfigSpec.BooleanValue WORK_CUT_LEAVES;
+    public static final ModConfigSpec.BooleanValue WORK_TILL;
+    public static final ModConfigSpec.IntValue WORK_KEEP_SEEDS;
+    public static final ModConfigSpec.IntValue WORK_REST_SECONDS;
+    public static final ModConfigSpec.IntValue WORK_FLEE_SECONDS;
 
     public static AndroidStats androidStats(com.projectrebirth.bodies.BodyClass bodyClass) {
         return ANDROID_STATS.get(bodyClass);
@@ -997,6 +1010,7 @@ public final class RebirthConfig {
         double[] inaccuracies = {10.0, 8.0, 6.0, 4.0, 2.0};
         int[] sights = {16, 20, 24, 28, 32};
         int[] cooldowns = {24, 22, 20, 18, 16};
+        double[] workSpeeds = {0.6, 0.75, 0.9, 1.05, 1.2};
         for (com.projectrebirth.bodies.BodyClass bodyClass : com.projectrebirth.bodies.BodyClass.values()) {
             int i = Math.min(bodyClass.ordinal(), speeds.length - 1);
             builder.push(bodyClass.getSerializedName());
@@ -1005,9 +1019,29 @@ public final class RebirthConfig {
                     builder.comment("Ticks it takes to answer a new target").defineInRange("reaction", reactions[i], 0, 100),
                     builder.comment("Spread of its arrows (0: dead on)").defineInRange("inaccuracy", inaccuracies[i], 0.0, 30.0),
                     builder.comment("Blocks it sees targets at").defineInRange("sight", sights[i], 4, 64),
-                    builder.comment("Ticks between two blows").defineInRange("meleeCooldown", cooldowns[i], 4, 100)));
+                    builder.comment("Ticks between two blows").defineInRange("meleeCooldown", cooldowns[i], 4, 100),
+                    builder.comment("Work speed (mining, felling, harvesting) as a share of a player's with the same tool").defineInRange("workSpeed", workSpeeds[i], 0.05, 10.0)));
             builder.pop();
         }
+        builder.comment("Work androids (block F): a miner, a lumberjack and a farmer in an area marked with the tactical tablet.").push("work");
+        WORK_MINE = builder.comment("Whether work androids mine").define("mine", true);
+        WORK_LUMBER = builder.comment("Whether work androids fell trees").define("lumber", true);
+        WORK_FARM = builder.comment("Whether work androids farm").define("farm", true);
+        WORK_ENERGY_PER_BLOCK = builder.comment("Charge (FE) a block broken or harvested takes, times the body class's use").defineInRange("energyPerBlock", 2.0, 0.0, 100000.0);
+        WORK_ORE_BLOCKS = builder.comment("Blocks the miner keeps in the 'ores only' work besides the tag c:ores").defineListAllowEmpty("oreBlocks",
+                java.util.List.of("minecraft:obsidian", "minecraft:crying_obsidian", "minecraft:amethyst_cluster", "minecraft:raw_iron_block",
+                        "minecraft:raw_copper_block", "minecraft:raw_gold_block"), () -> "minecraft:obsidian", o -> o instanceof String);
+        WORK_FILLER_BLOCKS = builder.comment("Blocks of its gear the miner plugs water and lava with (it keeps a stack of them)").defineListAllowEmpty("fillerBlocks",
+                java.util.List.of("minecraft:cobblestone", "minecraft:cobbled_deepslate", "minecraft:dirt", "minecraft:netherrack", "minecraft:stone",
+                        "minecraft:deepslate", "minecraft:andesite", "minecraft:diorite", "minecraft:granite", "minecraft:tuff"), () -> "minecraft:cobblestone",
+                o -> o instanceof String);
+        WORK_REPLANT_SAPLINGS = builder.comment("Whether the lumberjack plants a sapling where a tree stood").define("replantSaplings", true);
+        WORK_CUT_LEAVES = builder.comment("Whether the lumberjack cuts the leaves of a felled tree (else they fall by themselves and it picks up what drops)").define("cutLeaves", true);
+        WORK_TILL = builder.comment("Whether the farmer tills dirt and grass in its area with a hoe in hand (off: it only harvests and replants)").define("till", false);
+        WORK_KEEP_SEEDS = builder.comment("Seeds, saplings or fillers of one kind it keeps in its gear when it hands the rest in").defineInRange("keepSeeds", 16, 0, 64);
+        WORK_REST_SECONDS = builder.comment("Seconds it waits before it looks again when there is nothing to do, the chest is full or it has no tool").defineInRange("restSeconds", 30, 1, 3600);
+        WORK_FLEE_SECONDS = builder.comment("Seconds it runs to its chest when attacked").defineInRange("fleeSeconds", 10, 1, 600);
+        builder.pop();
         builder.pop(2);
 
         builder.comment("Scouting in the field (1.6.0, block F): the field analyzer in hand, the sensor module of bodies and the sensor unit of",

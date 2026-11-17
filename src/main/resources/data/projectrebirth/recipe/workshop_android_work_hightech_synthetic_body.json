@@ -1,0 +1,38 @@
+{
+  "type": "projectrebirth:assembly",
+  "multiblock": "projectrebirth:body_workshop",
+  "sort": 13,
+  "input": {
+    "item": "projectrebirth:hightech_synthetic_body"
+  },
+  "keep": "android",
+  "stages": [
+    {
+      "name": "ai_core",
+      "materials": [
+        {
+          "item": "projectrebirth:ai_core",
+          "count": 1
+        },
+        {
+          "item": "projectrebirth:work_module",
+          "count": 1
+        }
+      ],
+      "time": 400,
+      "energy": 40,
+      "model_stage": 3
+    },
+    {
+      "name": "calibration",
+      "materials": [],
+      "time": 200,
+      "energy": 40,
+      "model_stage": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:hightech_synthetic_body",
+    "count": 1
+  }
+}

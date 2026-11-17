@@ -25,6 +25,12 @@ public final class GarrisonEvents {
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(GarrisonEvents::onDamage);
+        // 1.7.0, block F: androids never trample farmland (the farmer walks its fields)
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.BlockEvent.FarmlandTrampleEvent event) -> {
+            if (event.getEntity() instanceof AndroidEntity) {
+                event.setCanceled(true);
+            }
+        });
     }
 
     private static void onDamage(LivingIncomingDamageEvent event) {

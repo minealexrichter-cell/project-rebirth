@@ -240,7 +240,8 @@ public final class BodyPower {
 
     @SubscribeEvent
     static void onBreak(BlockEvent.BreakEvent event) {
-        if (!event.getPlayer().level().isClientSide) {
+        // a fake player (another mod's machine, the stand-in of a work android) has no body and no connection to sync to
+        if (!event.getPlayer().level().isClientSide && !(event.getPlayer() instanceof net.neoforged.neoforge.common.util.FakePlayer)) {
             spend(event.getPlayer(), RebirthConfig.BODY_ENERGY_BLOCK.get());
             BodyHeat.add(event.getPlayer(), RebirthConfig.HEAT_BLOCK.get());
         }

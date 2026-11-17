@@ -132,7 +132,8 @@
         "console",
         "tactical_tablet",
         "androids",
-        "combat_android"
+        "combat_android",
+        "work_android"
       ]
     }
   ]

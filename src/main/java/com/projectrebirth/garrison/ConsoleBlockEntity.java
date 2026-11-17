@@ -277,7 +277,7 @@ public class ConsoleBlockEntity extends BlockEntity {
         while (log.size() > LOG_SIZE) {
             log.removeLast();
         }
-        if (level instanceof ServerLevel server) {
+        if (level instanceof ServerLevel server && alarm.told()) {
             Component message = Component.translatable("message.projectrebirth.console_alarm." + alarm.id() + (on ? "" : "_ended"),
                     link.name, link.pos.getX(), link.pos.getY(), link.pos.getZ()).withStyle(on ? ChatFormatting.RED : ChatFormatting.GREEN);
             for (ServerPlayer player : ShelterAlerts.recipients(server.getServer(), owner)) {

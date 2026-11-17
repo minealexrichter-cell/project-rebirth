@@ -26,7 +26,7 @@ import net.minecraft.network.codec.StreamCodec;
  * @param to     the other corner
  * @param chest  where the work is handed in
  * @param escort whom to escort
- * @param work   the work: mine, lumber, farm (for WORK)
+ * @param work   the work: mine, lumber, farm, or mine_ore (the whole area is mined, only ores are kept) (for WORK)
  */
 public record MachineTask(Type type, Optional<BlockPos> point, List<BlockPos> route, Optional<BlockPos> from, Optional<BlockPos> to,
                           Optional<BlockPos> chest, Optional<UUID> escort, String work) {
@@ -47,7 +47,7 @@ public record MachineTask(Type type, Optional<BlockPos> point, List<BlockPos> ro
         }
     }
 
-    public static final List<String> WORKS = List.of("mine", "lumber", "farm");
+    public static final List<String> WORKS = List.of("mine", "lumber", "farm", "mine_ore");
 
     public static final MachineTask STAND_DOWN = new MachineTask(Type.STAND_DOWN, Optional.empty(), List.of(), Optional.empty(), Optional.empty(),
             Optional.empty(), Optional.empty(), "");

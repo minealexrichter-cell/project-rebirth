@@ -24,17 +24,17 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities;
 
 /**
- * The tactical tablet (1.7.0, block D): the console's orders in the field.
+ * The tactical tablet: the console's orders in the field (1.7.0, block D; reworked in 1.7.1).
  *
  * <ul>
  *   <li>right-click a console: link the tablet to it;</li>
  *   <li>right-click a machine: link it to the tablet's console;</li>
- *   <li>right-click a block: set the mark of the current mode (a point to guard, a route point, a corner of the work area, the
- *   chest of the work); with Shift on a block in the route mode the route is cleared;</li>
- *   <li>Shift + right-click in the air: the next mode;</li>
- *   <li>right-click in the air: the short list of the machines and the quick orders.</li>
+ *   <li>right-click in the air: the screen with the console's machines and the orders;</li>
+ *   <li>an order that needs points (guard, patrol, work) waits on the tablet: right-click the blocks in the world (the guard point;
+ *   the route points one by one; two corners of the work area and then its chest). When the points are there, the order goes out.
+ *   For a route, right-click in the air sends it; otherwise right-click in the air (or Shift + right-click) cancels.</li>
  * </ul>
- * The marks are drawn in the world while the tablet is in hand.
+ * The marks of the last orders and the points of the waiting one are drawn in the world while the tablet is in hand.
  */
 public class TabletItem extends Item {
     /** Set by the client: opens the tablet's screen. */
@@ -52,12 +52,9 @@ public class TabletItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (player.isShiftKeyDown()) {
-            if (!level.isClientSide) {
-                TabletData next = data(stack).withMode(data(stack).mode() + 1);
-                stack.set(GarrisonRegistry.TABLET_DATA.get(), next);
-                player.displayClientMessage(Component.translatable("message.projectrebirth.tablet.mode",
-                        Component.translatable("tablet_mode.projectrebirth." + next.mode())), true);
+        if (data(stack).pending().isPresent()) {
+            if (player instanceof ServerPlayer server) {
+                say(player, air(server, stack));
             }
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
         }
@@ -79,29 +76,111 @@ public class TabletItem extends Item {
         }
         ItemStack stack = context.getItemInHand();
         BlockPos pos = context.getClickedPos();
-        TabletData data = data(stack);
         if (level.getBlockEntity(pos) instanceof ConsoleBlockEntity console) {
             if (!console.mayCommand(player)) {
-                say(player, "not_yours");
+                say(player, Component.translatable("message.projectrebirth.tablet.not_yours"));
             } else {
-                stack.set(GarrisonRegistry.TABLET_DATA.get(), data.withConsole(console.globalPos()));
-                say(player, "linked", pos.getX(), pos.getY(), pos.getZ());
+                stack.set(GarrisonRegistry.TABLET_DATA.get(), data(stack).withConsole(console.globalPos()));
+                say(player, Component.translatable("message.projectrebirth.tablet.linked", pos.getX(), pos.getY(), pos.getZ()));
             }
             return InteractionResult.CONSUME;
         }
-        TabletData next = switch (data.mode()) {
-            case TabletData.ROUTE -> player.isShiftKeyDown() ? data.withoutRoute() : data.withRoutePoint(pos, RebirthConfig.TABLET_ROUTE_POINTS.get());
-            case TabletData.AREA -> data.withAreaCorner(pos);
-            case TabletData.CHEST -> level.getCapability(Capabilities.ItemHandler.BLOCK, pos, null) != null ? data.withChest(pos) : null;
-            default -> data.withGuard(pos.above());
-        };
-        if (next == null) {
-            say(player, "not_a_chest");
-            return InteractionResult.CONSUME;
+        if (player instanceof ServerPlayer server) {
+            if (data(stack).pending().isPresent()) {
+                say(player, point(server, stack, pos));
+            } else {
+                say(player, Component.translatable("message.projectrebirth.tablet.no_order"));
+            }
         }
-        stack.set(GarrisonRegistry.TABLET_DATA.get(), next);
-        say(player, "marked_" + data.mode(), pos.getX(), pos.getY(), pos.getZ());
         return InteractionResult.CONSUME;
+    }
+
+    /**
+     * A block right-clicked while an order waits (server): it becomes the next point; when the order has all its points it goes out.
+     * Returns what to tell the player. Public for tests.
+     */
+    public static Component point(ServerPlayer player, ItemStack stack, BlockPos pos) {
+        TabletData data = data(stack);
+        if (data.pending().isEmpty()) {
+            return Component.translatable("message.projectrebirth.tablet.no_order");
+        }
+        TabletData.Pending pending = data.pending().get();
+        int have = pending.points().size();
+        if (pending.taskType() == MachineTask.Type.WORK && have == 2
+                && player.level().getCapability(Capabilities.ItemHandler.BLOCK, pos, null) == null) {
+            return Component.translatable("message.projectrebirth.tablet.not_a_chest");
+        }
+        TabletData.Pending next = pending.withPoint(pos);
+        if (pending.taskType() == MachineTask.Type.WORK && have == 1) {
+            Component problem = ConsoleNetwork.areaProblem(pending.work(), next.points().get(0), pos);
+            if (problem != null) {
+                return problem;
+            }
+        }
+        stack.set(GarrisonRegistry.TABLET_DATA.get(), data.withPending(next));
+        boolean complete = switch (pending.taskType()) {
+            case GUARD -> true;
+            case PATROL -> next.points().size() >= RebirthConfig.TABLET_ROUTE_POINTS.get();
+            case WORK -> next.points().size() >= 3;
+            default -> true;
+        };
+        if (!complete) {
+            return prompt(next);
+        }
+        Component answer = ConsoleNetwork.finish(player, stack);
+        if (data(stack).pending().isPresent()) {
+            // refused (the console out of reach, the area): the last point is taken back and the order still waits
+            stack.set(GarrisonRegistry.TABLET_DATA.get(), data.withPending(pending));
+        }
+        return answer;
+    }
+
+    /** A right-click in the air while an order waits (server): a route of two points or more goes out, anything else is cancelled. */
+    public static Component air(ServerPlayer player, ItemStack stack) {
+        TabletData data = data(stack);
+        if (data.pending().isEmpty()) {
+            return null;
+        }
+        TabletData.Pending pending = data.pending().get();
+        if (!player.isShiftKeyDown() && pending.taskType() == MachineTask.Type.PATROL && pending.points().size() >= 2) {
+            Component answer = ConsoleNetwork.finish(player, stack);
+            return answer;
+        }
+        stack.set(GarrisonRegistry.TABLET_DATA.get(), data.withoutPending());
+        if (pending.taskType() == MachineTask.Type.PATROL && !pending.points().isEmpty()) {
+            return Component.translatable("message.projectrebirth.tablet.route_short");
+        }
+        return Component.translatable("message.projectrebirth.tablet.cancelled");
+    }
+
+    /** Whom a waiting order is for, as the player reads it. */
+    public static Component target(TabletData.Pending pending) {
+        if (pending.machine().isPresent()) {
+            return Component.literal(pending.label());
+        }
+        return pending.group() == ConsoleBlockEntity.ALL ? Component.translatable("screen.projectrebirth.console.all_machines")
+                : Component.translatable("screen.projectrebirth.console.group", pending.group() + 1);
+    }
+
+    /** What the player should do next for a waiting order. */
+    public static Component prompt(TabletData.Pending pending) {
+        Component order = Component.translatable(pending.taskType().translationKey());
+        int have = pending.points().size();
+        String step = switch (pending.taskType()) {
+            case GUARD -> "guard";
+            case PATROL -> have == 0 ? "route_first" : "route_more";
+            case WORK -> have == 0 ? "corner_first" : have == 1 ? "corner_second" : "chest";
+            default -> "guard";
+        };
+        Component work = Component.translatable("work_kind.projectrebirth." + MachineTask.WORKS.get(pending.work()));
+        return Component.translatable("message.projectrebirth.tablet.step." + step, order, target(pending), have,
+                RebirthConfig.TABLET_ROUTE_POINTS.get(), work);
+    }
+
+    private static void say(Player player, @javax.annotation.Nullable Component message) {
+        if (message != null) {
+            player.displayClientMessage(message, true);
+        }
     }
 
     @Override
@@ -132,8 +211,8 @@ public class TabletItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         TabletData data = data(stack);
-        tooltip.add(Component.translatable("tooltip.projectrebirth.tablet.mode", Component.translatable("tablet_mode.projectrebirth." + data.mode()))
-                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("tooltip.projectrebirth.tablet.use").withStyle(ChatFormatting.GRAY));
+        data.pending().ifPresent(pending -> tooltip.add(prompt(pending).copy().withStyle(ChatFormatting.YELLOW)));
         data.console().ifPresentOrElse(where -> tooltip.add(Component.translatable("tooltip.projectrebirth.tablet.console",
                         where.pos().getX(), where.pos().getY(), where.pos().getZ()).withStyle(ChatFormatting.AQUA)),
                 () -> tooltip.add(Component.translatable("tooltip.projectrebirth.tablet.no_console").withStyle(ChatFormatting.GRAY)));

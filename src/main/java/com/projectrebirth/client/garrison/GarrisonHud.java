@@ -88,10 +88,25 @@ public final class GarrisonHud {
         }
     }
 
-    /** The tablet's lines: mode, console, and the marks it holds. */
+    /** The tablet's lines: the order that waits for its points and what to do next (1.7.1), the console, the marks it holds. */
     static List<Component> lines(TabletData data) {
         List<Component> lines = new ArrayList<>();
-        lines.add(Component.translatable("hud.projectrebirth.tablet.mode", Component.translatable("tablet_mode.projectrebirth." + data.mode())));
+        if (data.pending().isPresent()) {
+            TabletData.Pending pending = data.pending().get();
+            lines.add(Component.translatable("hud.projectrebirth.tablet.pending", Component.translatable(pending.taskType().translationKey()),
+                    TabletItem.target(pending)).withStyle(net.minecraft.ChatFormatting.YELLOW));
+            int have = pending.points().size();
+            String step = switch (pending.taskType()) {
+                case PATROL -> have == 0 ? "route_first" : "route_more";
+                case WORK -> have == 0 ? "corner_first" : have == 1 ? "corner_second" : "chest";
+                default -> "guard";
+            };
+            lines.add(Component.translatable("hud.projectrebirth.tablet.step." + step, have).withStyle(net.minecraft.ChatFormatting.YELLOW));
+            if (!step.equals("route_more")) {
+                lines.add(Component.translatable("hud.projectrebirth.tablet.cancel"));
+            }
+            return lines;
+        }
         lines.add(data.console().map(where -> Component.translatable("hud.projectrebirth.tablet.console", where.pos().getX(), where.pos().getY(), where.pos().getZ()))
                 .orElse(Component.translatable("hud.projectrebirth.tablet.no_console")));
         data.guard().ifPresent(p -> lines.add(Component.translatable("hud.projectrebirth.tablet.guard", p.getX(), p.getY(), p.getZ())));

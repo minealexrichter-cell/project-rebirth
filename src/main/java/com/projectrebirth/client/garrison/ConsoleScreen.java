@@ -26,7 +26,7 @@ import net.minecraft.world.entity.player.Inventory;
  */
 public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
     private static final int MACHINES = 0, MAP = 1, RULES = 2, LOG = 3;
-    private static final int LIST_X = 8, LIST_Y = 40, ROW = 11, ROWS = 9, LIST_W = 140;
+    private static final int LIST_X = 8, LIST_Y = 40, ROW = 11, ROWS = 9, LIST_W = 140, PANEL_Y = 156;
     private static int page = MACHINES;
     private final ConsoleOrders.Target target = new ConsoleOrders.Target();
     private int scroll;
@@ -34,7 +34,7 @@ public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
     public ConsoleScreen(ConsoleMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 256;
-        imageHeight = 226;
+        imageHeight = 234;
     }
 
     /** A fresh view came: buttons whose words depend on it are made again. */
@@ -84,8 +84,29 @@ public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
         }).bounds(x, topPos + 120, 94, 16).build();
         unlink.active = chosen(view) != null;
         addRenderableWidget(unlink);
-        addRenderableWidget(ConsoleOrders.targetButton(leftPos + 8, topPos + 142, 240, target, view, this::rebuildWidgets));
-        ConsoleOrders.orderButtons(leftPos + 8, topPos + 160, 58, 4, menu.pos(), target, false, this::addRenderableWidget, this::rebuildWidgets);
+        ConsoleOrders.panel(leftPos + 8, topPos + PANEL_Y, menu.pos(), target, false, this::addRenderableWidget, this::rebuildWidgets, this::pointOrder);
+    }
+
+    /**
+     * An order that needs points went to the player's tablet (1.7.1): with a tablet linked to this console the window closes, so
+     * that the points can be clicked in the world; without one the server says that a tablet is needed.
+     */
+    private void pointOrder() {
+        var player = net.minecraft.client.Minecraft.getInstance().player;
+        if (player == null) {
+            return;
+        }
+        for (net.minecraft.world.item.ItemStack stack : player.getInventory().items) {
+            if (stack.getItem() instanceof com.projectrebirth.garrison.TabletItem && com.projectrebirth.garrison.TabletItem.data(stack).console()
+                    .filter(where -> where.pos().equals(menu.pos())).isPresent()) {
+                onClose();
+                return;
+            }
+        }
+        if (player.getOffhandItem().getItem() instanceof com.projectrebirth.garrison.TabletItem && com.projectrebirth.garrison.TabletItem
+                .data(player.getOffhandItem()).console().filter(where -> where.pos().equals(menu.pos())).isPresent()) {
+            onClose();
+        }
     }
 
     private Component groupLabel(ConsoleView view) {
@@ -203,7 +224,8 @@ public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
         for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
             ConsoleView.Row row = rows.get(scroll + i);
             int y = LIST_Y + i * ROW;
-            if (row.id().equals(target.machine) && target.group < 0) {
+            if (row.id().equals(target.machine) && target.group == -1 || target.group >= 0 && row.group() == target.group
+                    || target.group == ConsoleBlockEntity.ALL) {
                 graphics.fill(LIST_X, y, LIST_X + LIST_W, y + ROW, 0x6037C6E8);
             }
             graphics.fill(LIST_X + 2, y + 3, LIST_X + 7, y + 8, ConsoleOrders.stateColor(row.state()));
@@ -213,6 +235,9 @@ public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
             Component task = ConsoleOrders.taskName(row.task());
             graphics.drawString(font, font.substrByWidth(task, 50).getString(), LIST_X + LIST_W - 52, y + 2, 0xFFAAAAAA, false);
         }
+        Component whom = ConsoleOrders.targetLabel(target, view);
+        graphics.drawString(font, font.substrByWidth(whom, 240).getString(), 8, PANEL_Y - 11, 0x202020, false);
+        ConsoleOrders.labels(graphics, font, 8, PANEL_Y, 0x404040);
         ConsoleView.Row row = chosen(view);
         int x = 154;
         if (row == null) {

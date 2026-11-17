@@ -51,6 +51,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
  */
 public class ConsoleBlockEntity extends BlockEntity {
     public static final int GROUPS = 8;
+    /** 1.7.1: the "group" of an order to every machine of the console. */
+    public static final int ALL = -2;
     private static final int LOG_SIZE = 30;
 
     /** One linked machine, as last heard. */
@@ -155,6 +157,29 @@ public class ConsoleBlockEntity extends BlockEntity {
         }
     }
 
+    /** How many machines an order to this group (or {@link #ALL}) reaches. */
+    public int members(int group) {
+        int count = 0;
+        for (Link link : machines.values()) {
+            if (group == ALL || link.group == group) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** The name the console knows a machine by, or "". */
+    public String nameOf(UUID machine) {
+        Link link = machines.get(machine);
+        return link == null ? "" : link.name;
+    }
+
+    /** Seconds since the machine last reported to the console, or -1 if never. */
+    public long silentSeconds(UUID machine) {
+        Link link = machines.get(machine);
+        return link == null || link.heard < 0 || level == null ? -1 : (level.getGameTime() - link.heard) / 20;
+    }
+
     public MachineTask taskFor(UUID machine) {
         Link link = machines.get(machine);
         return link == null ? MachineTask.STAND_DOWN : link.task;
@@ -184,11 +209,11 @@ public class ConsoleBlockEntity extends BlockEntity {
         }
     }
 
-    /** Gives every machine of a group the same order; returns how many got it. */
+    /** Gives every machine of a group (or {@link #ALL}) the same order; returns how many got it. */
     public int orderGroup(int group, MachineTask task) {
         int count = 0;
         for (Map.Entry<UUID, Link> entry : machines.entrySet()) {
-            if (entry.getValue().group == group) {
+            if (group == ALL || entry.getValue().group == group) {
                 entry.getValue().task = task;
                 beforeShelter.remove(entry.getKey());
                 count++;
@@ -201,7 +226,7 @@ public class ConsoleBlockEntity extends BlockEntity {
     /** Whether a mech gets this order: the machine, or one of the group (block H: its patrol route is checked). */
     public boolean ordersMech(java.util.Optional<UUID> machine, int group) {
         for (Map.Entry<UUID, Link> entry : machines.entrySet()) {
-            boolean gets = machine.isPresent() ? entry.getKey().equals(machine.get()) : entry.getValue().group == group;
+            boolean gets = machine.isPresent() ? entry.getKey().equals(machine.get()) : group == ALL || entry.getValue().group == group;
             if (gets && entry.getValue().kind == MachineKind.MECH) {
                 return true;
             }

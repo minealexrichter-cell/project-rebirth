@@ -74,6 +74,33 @@ public class MechGameTests {
         return post;
     }
 
+    /** 1.7.1: a wide mech walks its patrol route on and on: it counts a point reached within three blocks. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 900)
+    public static void aMechWalksItsPatrolRoute(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        ItemStack stack = new ItemStack(GarrisonRegistry.GUARD_MECH_ITEM.get());
+        stack.set(GarrisonRegistry.MECH_LOADOUT.get(), new GuardMechEntity.Loadout(1, 1, GuardMechEntity.Loadout.FULL, 0, 0));
+        GuardMechEntity mech = mech(helper, owner, stack, new BlockPos(2, 2, 2));
+        BlockPos a = helper.absolutePos(new BlockPos(2, 1, 2)), b = helper.absolutePos(new BlockPos(7, 1, 7));
+        mech.machineCore().setTask(com.projectrebirth.garrison.MachineTask.patrol(java.util.List.of(a, b)));
+        boolean[] reached = new boolean[2];
+        int[] laps = new int[1];
+        helper.onEachTick(() -> {
+            int at = mech.distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(b.above())) < 9.0 ? 1
+                    : mech.distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(a.above())) < 9.0 ? 0 : -1;
+            if (at == 1 && !reached[1]) {
+                reached[1] = true;
+            } else if (at == 0 && reached[1] && !reached[0]) {
+                reached[0] = true;
+                laps[0]++;
+            }
+        });
+        helper.runAfterDelay(860, () -> {
+            helper.assertTrue(reached[1] && reached[0], "Out to the far point and back: " + reached[1] + " " + reached[0] + " at " + mech.position());
+            helper.succeed();
+        });
+    }
+
     /** 1.7.1: a mech fresh from the dock (its recipe sets no energy) starts charged and takes orders at once. */
     @GameTest(template = TEMPLATE)
     public static void aFreshMechStartsCharged(GameTestHelper helper) {

@@ -64,23 +64,40 @@ public final class TabletMarks {
         Vec3 camera = event.getCamera().getPosition();
         MultiBufferSource.BufferSource buffers = Minecraft.getInstance().renderBuffers().bufferSource();
         VertexConsumer lines = buffers.getBuffer(RenderType.lines());
+        if (data.pending().isPresent()) {
+            // 1.7.1: while an order waits, only its points so far
+            TabletData.Pending pending = data.pending().get();
+            java.util.List<BlockPos> points = pending.points();
+            if (pending.taskType() == com.projectrebirth.garrison.MachineTask.Type.PATROL) {
+                route(pose, lines, camera, points);
+            } else if (pending.taskType() == com.projectrebirth.garrison.MachineTask.Type.WORK && !points.isEmpty()) {
+                area(pose, lines, camera, points.get(0), points.size() > 1 ? points.get(1) : points.get(0));
+            }
+            buffers.endBatch(RenderType.lines());
+            return;
+        }
         data.guard().ifPresent(pos -> box(pose, lines, camera, new AABB(pos).deflate(0.1), 0.3f, 0.75f, 1.0f));
+        route(pose, lines, camera, data.route());
+        data.areaFrom().ifPresent(from -> area(pose, lines, camera, from, data.areaTo().orElse(from)));
+        data.chest().ifPresent(pos -> box(pose, lines, camera, new AABB(pos).inflate(0.02), 1.0f, 0.55f, 0.1f));
+        buffers.endBatch(RenderType.lines());
+    }
+
+    private static void route(PoseStack pose, VertexConsumer lines, Vec3 camera, java.util.List<BlockPos> points) {
         BlockPos previous = null;
-        for (BlockPos point : data.route()) {
+        for (BlockPos point : points) {
             box(pose, lines, camera, new AABB(point.above()).deflate(0.3), 1.0f, 0.85f, 0.2f);
             if (previous != null) {
                 line(pose, lines, camera, Vec3.atCenterOf(previous.above()), Vec3.atCenterOf(point.above()));
             }
             previous = point;
         }
-        data.areaFrom().ifPresent(from -> {
-            BlockPos to = data.areaTo().orElse(from);
-            AABB area = new AABB(Math.min(from.getX(), to.getX()), Math.min(from.getY(), to.getY()), Math.min(from.getZ(), to.getZ()),
-                    Math.max(from.getX(), to.getX()) + 1, Math.max(from.getY(), to.getY()) + 1, Math.max(from.getZ(), to.getZ()) + 1);
-            box(pose, lines, camera, area, 0.35f, 0.95f, 0.35f);
-        });
-        data.chest().ifPresent(pos -> box(pose, lines, camera, new AABB(pos).inflate(0.02), 1.0f, 0.55f, 0.1f));
-        buffers.endBatch(RenderType.lines());
+    }
+
+    private static void area(PoseStack pose, VertexConsumer lines, Vec3 camera, BlockPos from, BlockPos to) {
+        AABB area = new AABB(Math.min(from.getX(), to.getX()), Math.min(from.getY(), to.getY()), Math.min(from.getZ(), to.getZ()),
+                Math.max(from.getX(), to.getX()) + 1, Math.max(from.getY(), to.getY()) + 1, Math.max(from.getZ(), to.getZ()) + 1);
+        box(pose, lines, camera, area, 0.35f, 0.95f, 0.35f);
     }
 
     private static void box(PoseStack pose, VertexConsumer lines, Vec3 camera, AABB box, float r, float g, float b) {

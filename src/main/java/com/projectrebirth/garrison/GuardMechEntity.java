@@ -546,6 +546,19 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     }
 
     /** Low on energy: to the nearest service post, and stays on it until charged. */
+    /**
+     * 1.7.1: towards a place. The path of a mob this wide is found for its corner and ends a block or two short of the place, and a
+     * place that near gets no path at all: the last stretch (8 blocks) it walks straight.
+     */
+    private void walkTo(Vec3 goal) {
+        if (distanceToSqr(goal) < 64.0) {
+            getNavigation().stop();
+            getMoveControl().setWantedPosition(goal.x, goal.y, goal.z, 1.0);
+        } else if (tickCount % 10 == 0) {
+            getNavigation().moveTo(goal.x, goal.y, goal.z, 1.0);
+        }
+    }
+
     private final class ChargeGoal extends Goal {
         @Nullable
         private Vec3 post;
@@ -579,9 +592,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         @Override
         public void tick() {
             if (post != null && distanceToSqr(post) > 0.6) {
-                if (tickCount % 10 == 0) {
-                    getNavigation().moveTo(post.x, post.y, post.z, 1.0);
-                }
+                walkTo(post);
             } else {
                 getNavigation().stop();
             }
@@ -611,7 +622,8 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 getNavigation().stop();
                 return;
             }
-            double near = machineCore().task().type() == MachineTask.Type.ESCORT ? 25.0 : 2.25;
+            // 1.7.1: a mech is wide and its path ends a block or two short of the point: within three blocks it is there
+            double near = machineCore().task().type() == MachineTask.Type.ESCORT ? 25.0 : 9.0;
             if (distanceToSqr(goal) <= near) {
                 getNavigation().stop();
                 MachineTask task = machineCore().task();
@@ -620,9 +632,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 }
                 return;
             }
-            if (tickCount % 10 == 0) {
-                getNavigation().moveTo(goal.x, goal.y, goal.z, 1.0);
-            }
+            walkTo(goal);
         }
 
         @Nullable
@@ -708,7 +718,8 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             setNode(RIGHT, Node.byId(tag.getInt("RightNode")));
             setNode(LEFT, Node.byId(tag.getInt("LeftNode")));
         }
-        energy = tag.getFloat("Energy");
+        // a mech summoned without its energy (a command) starts charged, as one from the dock
+        energy = tag.contains("Energy") ? tag.getFloat("Energy") : capacity();
         rounds = tag.getInt("Rounds");
         rockets = tag.getInt("Rockets");
         emergency = tag.getBoolean("Emergency");

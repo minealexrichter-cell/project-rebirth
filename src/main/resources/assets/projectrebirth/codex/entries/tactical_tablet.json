@@ -15,9 +15,13 @@
       "text": "codex.projectrebirth.tactical_tablet.p2"
     },
     {
+      "type": "text",
+      "text": "codex.projectrebirth.tactical_tablet.p3"
+    },
+    {
       "type": "recipe",
       "value": "projectrebirth:tactical_tablet",
-      "text": "codex.projectrebirth.tactical_tablet.p3"
+      "text": "codex.projectrebirth.tactical_tablet.p4"
     }
   ]
 }

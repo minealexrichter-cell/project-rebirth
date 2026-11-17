@@ -52,7 +52,7 @@ public final class ConsoleNetwork {
 
     /**
      * Client to server: a button. {@code machine} or {@code group} chooses whom an order or a group change is for; {@code value} is
-     * the task (as the ordinal of its type), the group, or a switch; {@code extra} the work (0 mine, 1 lumber, 2 farm).
+     * the task (as the ordinal of its type), the group, or a switch; {@code extra} the work (an index into MachineTask.WORKS). {@code group} may be ConsoleBlockEntity.ALL.
      */
     public record ActionPayload(BlockPos console, int action, Optional<UUID> machine, int group, int value, int extra, boolean fromTablet)
             implements CustomPacketPayload {
@@ -181,58 +181,133 @@ public final class ConsoleNetwork {
         return null;
     }
 
-    /** An order with the marks of the player's tablet linked to this console: to one machine, or to a group. */
+    /** Whether an order needs points marked in the world (1.7.1): those go to the tablet and wait for the player's clicks. */
+    public static boolean needsPoints(MachineTask.Type type) {
+        return type == MachineTask.Type.GUARD || type == MachineTask.Type.PATROL || type == MachineTask.Type.WORK;
+    }
+
+    /**
+     * An order from a button (the tablet's screen or the console's window), to one machine, a group or every machine. Orders without
+     * points go out at once; an order with points waits on the player's tablet linked to this console until the points are marked.
+     */
     static Component order(ServerPlayer player, ConsoleBlockEntity console, Optional<UUID> machine, int group, MachineTask.Type type, int work) {
+        String label;
+        if (machine.isPresent()) {
+            if (!console.knows(machine.get())) {
+                return null;
+            }
+            label = console.nameOf(machine.get());
+        } else if (group == ConsoleBlockEntity.ALL || group >= 0 && group < ConsoleBlockEntity.GROUPS) {
+            if (console.members(group) == 0) {
+                return Component.translatable("message.projectrebirth.console.group_empty");
+            }
+            label = "";
+        } else {
+            return null;
+        }
+        if (!needsPoints(type)) {
+            MachineTask task = type == MachineTask.Type.ESCORT ? MachineTask.escort(player.getUUID()) : MachineTask.simple(type);
+            return deliver(player, console, machine, group, type, task);
+        }
         ItemStack tablet = TabletItem.linkedTablet(player, console);
-        TabletData marks = tablet.isEmpty() ? TabletData.EMPTY : TabletItem.data(tablet);
+        if (tablet.isEmpty()) {
+            return Component.translatable("message.projectrebirth.console.need_tablet");
+        }
+        int kind = Math.floorMod(work, MachineTask.WORKS.size());
+        TabletData.Pending pending = new TabletData.Pending(machine, machine.isPresent() ? -1 : group, type.ordinal(), kind, label, java.util.List.of());
+        tablet.set(GarrisonRegistry.TABLET_DATA.get(), TabletItem.data(tablet).withPending(pending));
+        return TabletItem.prompt(pending);
+    }
+
+    /**
+     * The points of a waiting order are all there (server): the order goes to the console. Returns what to tell the player; the
+     * tablet keeps the points as its marks. A problem (the area too big, the console out of reach) is told and nothing is ordered.
+     */
+    public static Component finish(ServerPlayer player, ItemStack tablet) {
+        TabletData data = TabletItem.data(tablet);
+        if (data.pending().isEmpty() || data.console().isEmpty() || !(player.level() instanceof ServerLevel level)) {
+            return null;
+        }
+        TabletData.Pending pending = data.pending().get();
+        ConsoleBlockEntity console = ConsoleLink.consoleAt(level, data.console().get());
+        if (console == null) {
+            return Component.translatable("message.projectrebirth.tablet.console_out_of_reach");
+        }
+        if (!mayAct(player, console, true)) {
+            return Component.translatable("message.projectrebirth.console.not_yours");
+        }
+        java.util.List<BlockPos> points = pending.points();
+        MachineTask.Type type = pending.taskType();
         MachineTask task;
+        TabletData marks = data.withoutPending();
         switch (type) {
             case GUARD -> {
-                if (marks.guard().isEmpty()) {
-                    return Component.translatable("message.projectrebirth.console.need_guard");
-                }
-                task = MachineTask.at(MachineTask.Type.GUARD, marks.guard().get());
+                task = MachineTask.at(MachineTask.Type.GUARD, points.get(0).above());
+                marks = marks.withGuard(points.get(0).above());
             }
             case PATROL -> {
-                if (marks.route().size() < 2) {
-                    return Component.translatable("message.projectrebirth.console.need_route");
-                }
-                task = MachineTask.patrol(marks.route());
+                task = MachineTask.patrol(points);
+                marks = marks.withRoute(points);
             }
-            case ESCORT -> task = MachineTask.escort(player.getUUID());
             case WORK -> {
-                if (marks.areaFrom().isEmpty() || marks.areaTo().isEmpty() || marks.chest().isEmpty()) {
-                    return Component.translatable("message.projectrebirth.console.need_area");
+                Component problem = areaProblem(pending.work(), points.get(0), points.get(1));
+                if (problem != null) {
+                    return problem;
                 }
-                String kind = MachineTask.WORKS.get(Math.floorMod(work, MachineTask.WORKS.size()));
-                BlockPos a = marks.areaFrom().get(), b = marks.areaTo().get();
-                int side = Math.max(Math.abs(a.getX() - b.getX()), Math.abs(a.getZ() - b.getZ())) + 1;
-                int depth = Math.abs(a.getY() - b.getY()) + 1;
-                int max = switch (kind) {
-                    case "mine", "mine_ore" -> RebirthConfig.WORK_AREA_MINE.get();
-                    case "lumber" -> RebirthConfig.WORK_AREA_LUMBER.get();
-                    default -> RebirthConfig.WORK_AREA_FARM.get();
-                };
-                if (side > max || kind.startsWith("mine") && depth > RebirthConfig.WORK_AREA_MINE_DEPTH.get()) {
-                    return Component.translatable("message.projectrebirth.console.area_too_big", max);
-                }
-                task = MachineTask.work(kind, a, b, marks.chest().get());
+                task = MachineTask.work(MachineTask.WORKS.get(pending.work()), points.get(0), points.get(1), points.get(2));
+                marks = marks.withArea(points.get(0), points.get(1), points.get(2));
             }
-            default -> task = MachineTask.simple(type);
+            default -> {
+                return null;
+            }
         }
+        tablet.set(GarrisonRegistry.TABLET_DATA.get(), marks);
+        return deliver(player, console, pending.machine(), pending.group(), type, task);
+    }
+
+    /** Why a work area is not allowed (too wide or too deep for its work), or null. */
+    @javax.annotation.Nullable
+    public static Component areaProblem(int work, BlockPos a, BlockPos b) {
+        String kind = MachineTask.WORKS.get(Math.floorMod(work, MachineTask.WORKS.size()));
+        int side = Math.max(Math.abs(a.getX() - b.getX()), Math.abs(a.getZ() - b.getZ())) + 1;
+        int depth = Math.abs(a.getY() - b.getY()) + 1;
+        int max = switch (kind) {
+            case "mine", "mine_ore" -> RebirthConfig.WORK_AREA_MINE.get();
+            case "lumber" -> RebirthConfig.WORK_AREA_LUMBER.get();
+            default -> RebirthConfig.WORK_AREA_FARM.get();
+        };
+        if (side > max || kind.startsWith("mine") && depth > RebirthConfig.WORK_AREA_MINE_DEPTH.get()) {
+            return Component.translatable("message.projectrebirth.console.area_too_big", max);
+        }
+        return null;
+    }
+
+    /** Gives the order and tells the player how it went: given, or stored but not heard yet (no energy, the machine out of reach). */
+    private static Component deliver(ServerPlayer player, ConsoleBlockEntity console, Optional<UUID> machine, int group, MachineTask.Type type,
+                                     MachineTask task) {
         if (machine.isPresent()) {
             if (!console.knows(machine.get())) {
                 return null;
             }
             console.order(machine.get(), task);
-        } else if (group >= 0 && group < ConsoleBlockEntity.GROUPS) {
-            if (console.orderGroup(group, task) == 0) {
-                return Component.translatable("message.projectrebirth.console.group_empty");
-            }
-        } else {
-            return null;
+        } else if (console.orderGroup(group, task) == 0) {
+            return Component.translatable("message.projectrebirth.console.group_empty");
         }
         sendView(player, console);
+        Component name = Component.translatable(type.translationKey());
+        if (!console.powered()) {
+            return Component.translatable("message.projectrebirth.console.ordered_no_power", name);
+        }
+        if (machine.isPresent()) {
+            if (console.alarmOn(machine.get(), ConsoleAlarm.NO_SUPPLY)) {
+                return Component.translatable("message.projectrebirth.console.ordered_no_supply", name, console.nameOf(machine.get()));
+            }
+            long silent = console.silentSeconds(machine.get());
+            if (silent < 0 || silent > 3) {
+                return Component.translatable("message.projectrebirth.console.ordered_far", name, console.nameOf(machine.get()),
+                        RebirthConfig.CONSOLE_RANGE.get());
+            }
+        }
         if (type == MachineTask.Type.PATROL && console.ordersMech(machine, group)) {
             // block H: a mech is wide; the order goes out, but the player hears of the narrow places
             BlockPos narrow = GuardMechEntity.narrowPlace(player.level(), task.route());
@@ -240,6 +315,6 @@ public final class ConsoleNetwork {
                 return Component.translatable("message.projectrebirth.console.route_narrow", narrow.getX(), narrow.getY(), narrow.getZ());
             }
         }
-        return Component.translatable("message.projectrebirth.console.ordered", Component.translatable(type.translationKey()));
+        return Component.translatable("message.projectrebirth.console.ordered", name);
     }
 }

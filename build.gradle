@@ -227,6 +227,15 @@ publishing {
     }
 }
 
+// 1.7.3: the released jar carries no game tests. Their classes and the floors of their test plots
+// (data/projectrebirth/structure/floor_*.nbt, the data/projectrebirth_<group> namespaces) are used only by
+// runGameTestServer and the dev runs, which load the source sets directly, not the jar.
+tasks.named('jar', Jar).configure {
+    exclude 'com/projectrebirth/gametest/**'
+    exclude 'data/projectrebirth_*/**'
+    exclude 'data/projectrebirth/structure/floor_*.nbt'
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }

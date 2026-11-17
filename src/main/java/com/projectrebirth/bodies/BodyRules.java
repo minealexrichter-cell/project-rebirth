@@ -55,7 +55,20 @@ public final class BodyRules {
 
     /** Whether a status effect from outside may apply to this entity. */
     public static boolean allowsEffect(Entity entity) {
-        return ownAction || !bodyClassOf(entity).map(bodyClass -> RebirthConfig.bodyStats(bodyClass).immuneToEffects().get()).orElse(false);
+        if (ownAction) {
+            return true;
+        }
+        if (isMachine(entity)) {
+            // 1.7.1: robots, mechs, turrets and power armor feel no potions
+            return !RebirthConfig.MACHINES_IMMUNE_TO_EFFECTS.get();
+        }
+        return !bodyClassOf(entity).map(bodyClass -> RebirthConfig.bodyStats(bodyClass).immuneToEffects().get()).orElse(false);
+    }
+
+    /** The machines of the mod: the garrison's, the hostile robots, mechs and turrets, and power armor. */
+    public static boolean isMachine(Entity entity) {
+        return entity instanceof com.projectrebirth.garrison.GarrisonMachine || entity instanceof com.projectrebirth.hostile.WalkingGunner
+                || entity instanceof com.projectrebirth.hostile.GuardTurretEntity || entity instanceof com.projectrebirth.powerarmor.PowerArmorEntity;
     }
 
     /**

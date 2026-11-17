@@ -88,13 +88,17 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         }
     }
 
-    /** What a packed mech keeps: its nodes, energy and magazine. */
+    /**
+     * What a packed mech keeps: its nodes, energy and magazine. An energy of -1 is a mech fresh from the dock (1.7.1): it starts
+     * fully charged, else it would shut down at once and stand deaf to orders until it found a service post.
+     */
     public record Loadout(int right, int left, int energy, int rounds, int rockets) {
-        public static final Loadout DEFAULT = new Loadout(Node.GUN.ordinal(), Node.ROCKET.ordinal(), 0, 0, 0);
+        public static final int FULL = -1;
+        public static final Loadout DEFAULT = new Loadout(Node.GUN.ordinal(), Node.ROCKET.ordinal(), FULL, 0, 0);
         public static final Codec<Loadout> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.optionalFieldOf("right", 1).forGetter(Loadout::right),
                 Codec.INT.optionalFieldOf("left", 2).forGetter(Loadout::left),
-                Codec.INT.optionalFieldOf("energy", 0).forGetter(Loadout::energy),
+                Codec.INT.optionalFieldOf("energy", FULL).forGetter(Loadout::energy),
                 Codec.INT.optionalFieldOf("rounds", 0).forGetter(Loadout::rounds),
                 Codec.INT.optionalFieldOf("rockets", 0).forGetter(Loadout::rockets)).apply(i, Loadout::new));
         public static final StreamCodec<RegistryFriendlyByteBuf, Loadout> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(CODEC);
@@ -229,7 +233,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         Loadout loadout = stack.getOrDefault(GarrisonRegistry.MECH_LOADOUT.get(), Loadout.DEFAULT);
         setNode(RIGHT, Node.byId(loadout.right()));
         setNode(LEFT, Node.byId(loadout.left()));
-        energy = Mth.clamp(loadout.energy(), 0, capacity());
+        energy = loadout.energy() == Loadout.FULL ? capacity() : Mth.clamp(loadout.energy(), 0, capacity());
         rounds = loadout.rounds();
         rockets = loadout.rockets();
     }

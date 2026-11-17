@@ -74,6 +74,18 @@ public class MechGameTests {
         return post;
     }
 
+    /** 1.7.1: a mech fresh from the dock (its recipe sets no energy) starts charged and takes orders at once. */
+    @GameTest(template = TEMPLATE)
+    public static void aFreshMechStartsCharged(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        ItemStack stack = new ItemStack(GarrisonRegistry.GUARD_MECH_ITEM.get());
+        stack.set(GarrisonRegistry.MECH_LOADOUT.get(), new GuardMechEntity.Loadout(1, 1, GuardMechEntity.Loadout.FULL, 0, 0));
+        GuardMechEntity mech = mech(helper, owner, stack, new BlockPos(4, 2, 4));
+        helper.assertTrue(mech.energy() == mech.capacity(), "Full charge, got " + mech.energy());
+        helper.assertTrue(mech.working(), "It works at once");
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE)
     public static void aMechHasItsBarsNodesAndKeepsItsLoadWhenPacked(GameTestHelper helper) {
         ServerPlayer owner = player(helper);

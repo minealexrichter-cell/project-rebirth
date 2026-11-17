@@ -233,6 +233,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue PURIFIER_BUCKET_BOTTLES;
     public static final ModConfigSpec.IntValue WATER_BOTTLE_STACK;
     public static final ModConfigSpec.BooleanValue GARRISON_ENABLED;
+    public static final ModConfigSpec.BooleanValue MACHINES_IMMUNE_TO_EFFECTS;
     public static final ModConfigSpec.BooleanValue MULTIBLOCKS_ENABLED;
     public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_CAPACITY;
     public static final ModConfigSpec.IntValue MULTIBLOCK_ENERGY_RECEIVE;
@@ -750,8 +751,8 @@ public final class RebirthConfig {
                             "(golden apples and potions by default). Other food and drinks are never allowed")
                     .define("canConsume", bodyClass.defaultLivingBody());
             ModConfigSpec.BooleanValue immuneToEffects = builder
-                    .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs)")
-                    .define("immuneToEffects", !bodyClass.defaultLivingBody());
+                    .comment("Whether no status effects at all apply to the body (splash and lingering potions, beacons, mobs; 1.7.1: on for every class)")
+                    .define("immuneToEffects", true);
             ModConfigSpec.DoubleValue acidWear = builder
                     .comment("Wear (percent) acid rain adds per second per unit of acid to a body without a sealing module (1.5.0: acid no",
                             "longer takes integrity); better bodies wear more slowly")
@@ -991,6 +992,8 @@ public final class RebirthConfig {
 
         builder.comment("The garrison (1.7.0): multiblock assembly, the AI core and the player's own machines. Switched off, the mod plays as 1.6.0.").push("garrison");
         GARRISON_ENABLED = builder.comment("The whole garrison").define("enabled", true);
+        MACHINES_IMMUNE_TO_EFFECTS = builder.comment("1.7.1: no status effects apply to machines (androids, turrets, mechs, power armor, hostile robots)")
+                .define("machinesImmuneToEffects", true);
         builder.comment("Multiblocks (block A): a controller checks its construction from a plan in the data, takes energy and materials through its",
                 "ports and builds a recipe stage by stage.").push("multiblocks");
         MULTIBLOCKS_ENABLED = builder.comment("Whether multiblocks work").define("enabled", true);

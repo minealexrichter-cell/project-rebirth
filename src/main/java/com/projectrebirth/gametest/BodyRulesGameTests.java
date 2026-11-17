@@ -82,24 +82,24 @@ public class BodyRulesGameTests {
         helper.assertTrue(tryUse(helper, player, apple), "The premium body must eat golden apples");
         apple.finishUsingItem(helper.getLevel(), player);
         helper.assertTrue(apple.getCount() == 1, "The golden apple must be eaten");
-        helper.assertTrue(player.hasEffect(MobEffects.REGENERATION) && player.hasEffect(MobEffects.ABSORPTION),
-                "The golden apple must give its effects");
+        // 1.7.1: no body feels effects, the premium one too
+        helper.assertFalse(player.hasEffect(MobEffects.REGENERATION) || player.hasEffect(MobEffects.ABSORPTION),
+                "The golden apple must give no effects to an artificial body");
 
         ItemStack potion = potion();
         helper.assertTrue(tryUse(helper, player, potion), "The premium body must drink potions");
         potion.finishUsingItem(helper.getLevel(), player);
-        helper.assertTrue(player.hasEffect(MobEffects.DAMAGE_BOOST), "The potion must work");
+        helper.assertFalse(player.hasEffect(MobEffects.DAMAGE_BOOST), "The potion must not work on an artificial body");
         helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)
-    public static void onlyThePremiumBodyIsAffectedByEffects(GameTestHelper helper) {
+    public static void noBodyIsAffectedByEffects(GameTestHelper helper) {
         for (BodyClass bodyClass : BodyClass.values()) {
             ServerPlayer player = playerIn(helper, bodyClass);
             player.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
-            boolean expected = bodyClass == BodyClass.PREMIUM_SYNTHETIC;
-            helper.assertTrue(player.hasEffect(MobEffects.POISON) == expected,
-                    bodyClass + (expected ? " must be poisoned" : " must be immune to effects"));
+            helper.assertFalse(player.hasEffect(MobEffects.POISON), bodyClass + " must be immune to effects");
+            helper.assertFalse(player.isAffectedByPotions(), bodyClass + " must be untouched by instant potions too");
         }
         ArtificialBodyEntity standing = helper.spawn(BodyEntities.type(BodyClass.BASIC_ROBOT), BODY_POS);
         standing.addEffect(new MobEffectInstance(MobEffects.WITHER, 200));
@@ -108,6 +108,25 @@ public class BodyRulesGameTests {
         ServerPlayer robot = playerIn(helper, BodyClass.BASIC_ROBOT);
         BodyRules.addOwnEffect(robot, new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60));
         helper.assertTrue(robot.hasEffect(MobEffects.DAMAGE_RESISTANCE), "The mod's own protection effect must still apply");
+        helper.succeed();
+    }
+
+    /** 1.7.1: no machine of the mod feels potions, lasting or instant. */
+    @GameTest(template = TEMPLATE)
+    public static void machinesAreImmuneToPotions(GameTestHelper helper) {
+        java.util.List<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.LivingEntity>> types = java.util.List.of(
+                com.projectrebirth.garrison.Androids.type(BodyClass.BASIC_ROBOT), com.projectrebirth.garrison.GarrisonRegistry.GUARD_MECH.get(),
+                com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_TURRET.get(), com.projectrebirth.hostile.HostileRegistry.PATROL_ROBOT.get(),
+                com.projectrebirth.hostile.HostileRegistry.MECH.get(), com.projectrebirth.hostile.HostileRegistry.GUARD_TURRET.get(),
+                com.projectrebirth.powerarmor.PowerArmorRegistry.POWER_ARMOR.get());
+        for (var type : types) {
+            net.minecraft.world.entity.LivingEntity machine = helper.spawn(type, BODY_POS);
+            machine.addEffect(new MobEffectInstance(MobEffects.POISON, 200));
+            machine.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200));
+            helper.assertTrue(machine.getActiveEffects().isEmpty(), type.getDescriptionId() + " must take no effects");
+            helper.assertFalse(machine.isAffectedByPotions(), type.getDescriptionId() + " must be untouched by instant potions");
+            machine.discard();
+        }
         helper.succeed();
     }
 

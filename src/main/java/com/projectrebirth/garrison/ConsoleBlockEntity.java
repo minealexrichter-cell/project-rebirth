@@ -293,6 +293,12 @@ public class ConsoleBlockEntity extends BlockEntity {
                     link.name, link.pos.getX(), link.pos.getY(), link.pos.getZ()).withStyle(on ? ChatFormatting.RED : ChatFormatting.GREEN);
             for (ServerPlayer player : ShelterAlerts.recipients(server.getServer(), owner)) {
                 player.sendSystemMessage(message);
+                if (on) {
+                    player.playNotifySound(com.projectrebirth.core.ModSounds.GARRISON_CONSOLE_ALARM.get(), net.minecraft.sounds.SoundSource.BLOCKS, 0.6f, 1.0f);
+                }
+            }
+            if (on) {
+                server.playSound(null, worldPosition, com.projectrebirth.core.ModSounds.GARRISON_CONSOLE_ALARM.get(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
             }
         }
         setChanged();
@@ -345,6 +351,21 @@ public class ConsoleBlockEntity extends BlockEntity {
             weather(server);
         }
         refreshSignal();
+        // block I: the HUD mark of the worst alarm told in chat, for its owner and faction while it lasts
+        ConsoleAlarm worst = null;
+        for (Link link : machines.values()) {
+            for (ConsoleAlarm alarm : link.active) {
+                if (alarm.told() && (worst == null || alarm.signal() > worst.signal())) {
+                    worst = alarm;
+                }
+            }
+        }
+        if (worst != null) {
+            ConsoleNetwork.AlarmPayload payload = new ConsoleNetwork.AlarmPayload(worldPosition, worst.ordinal());
+            for (ServerPlayer player : ShelterAlerts.recipients(server.getServer(), owner)) {
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, payload);
+            }
+        }
         for (ServerPlayer player : server.players()) {
             if (player.containerMenu instanceof ConsoleMenu menu && menu.pos().equals(worldPosition)) {
                 ConsoleNetwork.sendView(player, this);

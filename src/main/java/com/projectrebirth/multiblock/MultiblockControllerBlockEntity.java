@@ -523,13 +523,14 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
         if (level == null) {
             return;
         }
+        // 1.7.0, block I: the garrison's own sounds for each stage
         net.minecraft.sounds.SoundEvent sound = switch (begun.name()) {
-            case "frame" -> net.minecraft.sounds.SoundEvents.SMITHING_TABLE_USE;
-            case "actuators" -> net.minecraft.sounds.SoundEvents.PISTON_EXTEND;
-            case "electronics" -> net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT;
-            case "plating" -> net.minecraft.sounds.SoundEvents.ANVIL_USE;
-            case "ai_core" -> net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE;
-            default -> net.minecraft.sounds.SoundEvents.NOTE_BLOCK_CHIME.value();
+            case "frame", "plating" -> com.projectrebirth.core.ModSounds.GARRISON_WELDING.get();
+            case "actuators", "weapon" -> com.projectrebirth.core.ModSounds.GARRISON_MANIPULATOR.get();
+            case "electronics" -> com.projectrebirth.core.ModSounds.GARRISON_ELECTRONICS.get();
+            case "ai_core" -> com.projectrebirth.core.ModSounds.GARRISON_CORE_BOOT.get();
+            case "calibration" -> com.projectrebirth.core.ModSounds.GARRISON_CALIBRATION.get();
+            default -> com.projectrebirth.core.ModSounds.GARRISON_MANIPULATOR.get();
         };
         level.playSound(null, worldPosition, sound, net.minecraft.sounds.SoundSource.BLOCKS, 0.8f, 1.0f);
     }
@@ -681,6 +682,9 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
                 default -> {
                 }
             }
+        }
+        if (level != null) {
+            level.playSound(null, worldPosition, com.projectrebirth.core.ModSounds.GARRISON_ASSEMBLY_DONE.get(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0f, 1.0f);
         }
         // 1.7.0, block G: a machine built here belongs to the owner of its AI core
         com.projectrebirth.garrison.PackedMachineItem.bindToCore(result, consumed);

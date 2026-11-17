@@ -80,6 +80,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     private static final EntityDataAccessor<Integer> STATE = SynchedEntityData.defineId(AndroidEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Optional<UUID>> OWNER = SynchedEntityData.defineId(AndroidEntity.class, EntityDataSerializers.OPTIONAL_UUID);
     private static final EntityDataAccessor<Boolean> EMERGENCY = SynchedEntityData.defineId(AndroidEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Float> CRITICAL = SynchedEntityData.defineId(AndroidEntity.class, EntityDataSerializers.FLOAT);
 
     private MachineCore core;
     private AndroidWork work;
@@ -157,6 +158,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         builder.define(STATE, 0);
         builder.define(OWNER, Optional.empty());
         builder.define(EMERGENCY, false);
+        builder.define(CRITICAL, 0.0f);
     }
 
     private void syncCore() {
@@ -165,6 +167,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         }
         entityData.set(STATE, core.state().ordinal());
         entityData.set(OWNER, Optional.ofNullable(core.owner()));
+        entityData.set(CRITICAL, core.critical());
         if (!level().isClientSide && getMaxHealth() > 0) {
             setHealth(Math.max(core.wreck() ? 0.5f : 1.0f, Math.min(getMaxHealth(), core.structural())));
         }
@@ -176,6 +179,11 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
 
     public Optional<UUID> shownOwner() {
         return entityData.get(OWNER);
+    }
+
+    /** Its critical integrity as the server last said (block I: the bars over it). */
+    public float shownCritical() {
+        return entityData.get(CRITICAL);
     }
 
     public boolean shownEmergency() {
@@ -259,8 +267,12 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         if (!source.is(DamageTypeTags.BYPASSES_ARMOR)) {
             amount = CombatRules.getDamageAfterAbsorb(this, amount, source, getArmorValue(), (float) getAttributeValue(Attributes.ARMOR_TOUGHNESS));
         }
+        boolean wasActive = core().active();
         if (!core().hurt(this, source, amount)) {
             return false;
+        }
+        if (wasActive && !core().active()) {
+            playSound(com.projectrebirth.core.ModSounds.GARRISON_MACHINE_SHUTDOWN.get(), 1.0f, 1.0f);
         }
         invulnerableTime = 20;
         hurtTime = 10;
@@ -530,6 +542,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             if (emergency) {
                 getNavigation().stop();
                 setTarget(null);
+                playSound(com.projectrebirth.core.ModSounds.GARRISON_MACHINE_SHUTDOWN.get(), 1.0f, 0.9f);
             }
         }
         double speed = RebirthConfig.androidStats(getBodyClass()).speed().get() * (machine.emiFault() ? 0.6 : 1.0);
@@ -611,6 +624,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             if (best != null) {
                 setTarget(best);
                 targetSince = level().getGameTime();
+                playSound(com.projectrebirth.core.ModSounds.GARRISON_TARGET_LOCK.get(), 0.8f, 1.1f);
             }
             return false;
         }

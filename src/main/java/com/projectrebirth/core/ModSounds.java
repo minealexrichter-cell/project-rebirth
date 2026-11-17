@@ -16,6 +16,17 @@ public final class ModSounds {
     private static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, ProjectRebirth.MOD_ID);
 
     public static final DeferredHolder<SoundEvent, SoundEvent> ROBOT_STEP = register("body.robot_step");
+    // 1.7.0, block I: the garrison
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_WELDING = register("garrison.welding");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_MANIPULATOR = register("garrison.manipulator");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_ELECTRONICS = register("garrison.electronics");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_CALIBRATION = register("garrison.calibration");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_CORE_BOOT = register("garrison.core_boot");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_ASSEMBLY_DONE = register("garrison.assembly_done");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_MACHINE_BEEP = register("garrison.machine_beep");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_TARGET_LOCK = register("garrison.target_lock");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_MACHINE_SHUTDOWN = register("garrison.machine_shutdown");
+    public static final DeferredHolder<SoundEvent, SoundEvent> GARRISON_CONSOLE_ALARM = register("garrison.console_alarm");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROBOT_HURT = register("body.robot_hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> ROBOT_DESTROYED = register("body.robot_destroyed");
     public static final DeferredHolder<SoundEvent, SoundEvent> ARMOR_STEP = register("armor.step");

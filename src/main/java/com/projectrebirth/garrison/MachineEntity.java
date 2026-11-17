@@ -152,6 +152,7 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
             return false;
         }
         boolean wasWreck = core.wreck();
+        boolean wasActive = core.active();
         amount *= 1.0f - platingShare();
         if (!core.hurt(this, source, amount)) {
             return false;
@@ -159,6 +160,9 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
         invulnerableTime = 20;
         level().broadcastDamageEvent(this, source);
         playSound(SoundEvents.IRON_GOLEM_HURT, 0.8f, 1.2f);
+        if (wasActive && !core.active()) {
+            playSound(com.projectrebirth.core.ModSounds.GARRISON_MACHINE_SHUTDOWN.get(), 1.0f, 1.0f);
+        }
         if (!wasWreck && core.wreck()) {
             playSound(SoundEvents.GENERIC_EXPLODE.value(), 0.6f, 1.4f);
             if (level() instanceof ServerLevel server) {

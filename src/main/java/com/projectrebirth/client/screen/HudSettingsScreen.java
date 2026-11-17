@@ -22,7 +22,8 @@ import net.minecraft.util.Mth;
 public class HudSettingsScreen extends Screen {
     private static final int COLUMN_WIDTH = 200;
     private static final int ROW = 22;
-    private static final int ROWS = 9;
+    private static final int ROWS_ONE_COLUMN = 12;
+    private static final int ROWS_TWO_COLUMNS = 9;
     /** The vanilla hearts start this far above the bottom of the screen and 91 left of its centre. */
     private static final int HEARTS_BOTTOM = 30;
     private static final int HEARTS_LEFT = 91;
@@ -38,8 +39,13 @@ public class HudSettingsScreen extends Screen {
 
     @Override
     protected void init() {
-        int x = (width - COLUMN_WIDTH) / 2;
-        int y = Math.max(4, (height - ROWS * ROW) / 2);
+        // 1.7.0, block I: the settings of the machines go in a second column when the screen is wide enough
+        boolean two = twoColumns();
+        int x = two ? width / 2 - COLUMN_WIDTH - 4 : (width - COLUMN_WIDTH) / 2;
+        int y = Math.max(4, (height - rows() * ROW) / 2);
+        int x2 = two ? width / 2 + 4 : x;
+        int y2 = two ? y : y + 8 * ROW;
+        int last = two ? 8 : 11;
         addRenderableWidget(Button.builder(enabledMessage(), button -> {
             RebirthClientConfig.HUD_ENABLED.set(!HudLayout.enabled());
             button.setMessage(enabledMessage());
@@ -60,11 +66,41 @@ public class HudSettingsScreen extends Screen {
         }).bounds(x, y + 6 * ROW, COLUMN_WIDTH, 20).build());
         addRenderableWidget(new Slider(x, y + 7 * ROW, "animation_seconds", 1.0, 10.0, 0.5, RebirthClientConfig.TRANSFER_ANIMATION_SECONDS.get(),
                 RebirthClientConfig.TRANSFER_ANIMATION_SECONDS::set));
+        // 1.7.0, block I: the machines' bars, the console's alarm mark, the tablet's lines
+        toggle(x2, y2, "machine_bars", RebirthClientConfig.HUD_MACHINE_BARS);
+        addRenderableWidget(new Slider(x2, y2 + ROW, "machine_bar_distance", 2, 64, 1, RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.get(),
+                value -> RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.set((int) value)));
+        int third = (COLUMN_WIDTH - 4) / 2;
+        toggleHalf(x2, y2 + 2 * ROW, third, "console_alarm", RebirthClientConfig.HUD_CONSOLE_ALARM);
+        toggleHalf(x2 + third + 4, y2 + 2 * ROW, third, "tablet_lines", RebirthClientConfig.HUD_TABLET_LINES);
         int half = (COLUMN_WIDTH - 4) / 2;
         addRenderableWidget(Button.builder(Component.translatable("screen.projectrebirth.hud_settings.reset"), button -> reset())
-                .bounds(x, y + 8 * ROW, half, 20).build());
+                .bounds(x, y + last * ROW, half, 20).build());
         addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, button -> onClose())
-                .bounds(x + half + 4, y + 8 * ROW, half, 20).build());
+                .bounds(x + half + 4, y + last * ROW, half, 20).build());
+    }
+
+    private boolean twoColumns() {
+        return width >= 2 * COLUMN_WIDTH + 16;
+    }
+
+    private int rows() {
+        return twoColumns() ? ROWS_TWO_COLUMNS : ROWS_ONE_COLUMN;
+    }
+
+    private void toggle(int x, int y, String key, net.neoforged.neoforge.common.ModConfigSpec.BooleanValue value) {
+        toggleHalf(x, y, COLUMN_WIDTH, key, value);
+    }
+
+    private void toggleHalf(int x, int y, int w, String key, net.neoforged.neoforge.common.ModConfigSpec.BooleanValue value) {
+        addRenderableWidget(Button.builder(toggleMessage(key, value), button -> {
+            value.set(!value.get());
+            button.setMessage(toggleMessage(key, value));
+        }).bounds(x, y, w, 20).build());
+    }
+
+    private static Component toggleMessage(String key, net.neoforged.neoforge.common.ModConfigSpec.BooleanValue value) {
+        return Component.translatable("screen.projectrebirth.hud_settings." + key, value.get() ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF);
     }
 
     private static Component enabledMessage() {
@@ -86,6 +122,10 @@ public class HudSettingsScreen extends Screen {
         RebirthClientConfig.HUD_BAR_OFFSET_Y.set(RebirthClientConfig.HUD_BAR_OFFSET_Y.getDefault());
         RebirthClientConfig.TRANSFER_ANIMATION_ENABLED.set(RebirthClientConfig.TRANSFER_ANIMATION_ENABLED.getDefault());
         RebirthClientConfig.TRANSFER_ANIMATION_SECONDS.set(RebirthClientConfig.TRANSFER_ANIMATION_SECONDS.getDefault());
+        RebirthClientConfig.HUD_MACHINE_BARS.set(RebirthClientConfig.HUD_MACHINE_BARS.getDefault());
+        RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.set(RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.getDefault());
+        RebirthClientConfig.HUD_CONSOLE_ALARM.set(RebirthClientConfig.HUD_CONSOLE_ALARM.getDefault());
+        RebirthClientConfig.HUD_TABLET_LINES.set(RebirthClientConfig.HUD_TABLET_LINES.getDefault());
         rebuildWidgets();
     }
 
@@ -100,7 +140,7 @@ public class HudSettingsScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        int titleY = Math.max(4, (height - ROWS * ROW) / 2) - 12;
+        int titleY = Math.max(4, (height - rows() * ROW) / 2) - 12;
         graphics.drawCenteredString(font, title, width / 2, Math.max(0, titleY), 0xFFFFFF);
         if (HudLayout.enabled()) {
             float scale = HudLayout.scale();

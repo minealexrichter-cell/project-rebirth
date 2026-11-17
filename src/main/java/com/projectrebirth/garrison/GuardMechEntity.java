@@ -312,6 +312,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             if (emergency) {
                 getNavigation().stop();
                 setTarget(null);
+                playSound(com.projectrebirth.core.ModSounds.GARRISON_MACHINE_SHUTDOWN.get(), 1.0f, 0.8f);
             }
         }
         boolean noAmmo = node(RIGHT) != Node.NONE || node(LEFT) != Node.NONE
@@ -454,7 +455,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             if (target != lastTarget) {
                 lastTarget = target;
                 lockTicks = 0;
-                playSound(SoundEvents.NOTE_BLOCK_BIT.value(), 1.2f, 1.3f);
+                playSound(com.projectrebirth.core.ModSounds.GARRISON_TARGET_LOCK.get(), 1.0f, 1.0f);
             }
             if (!sees || distance > range) {
                 return;

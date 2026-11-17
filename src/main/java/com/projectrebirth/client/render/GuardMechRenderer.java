@@ -55,6 +55,8 @@ public class GuardMechRenderer extends GeoEntityRenderer<GuardMechEntity> {
     public void render(GuardMechEntity mech, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
         flashes.clear();
         super.render(mech, entityYaw, partialTick, poseStack, buffers, light);
+        MachineBars.draw(mech, mech.shownOwner(), mech.shownStructural(), mech.machineCore().maxStructural(), mech.shownCritical(),
+                mech.machineCore().maxCritical(), poseStack, buffers);
         for (PoseStack.Pose pose : flashes) {
             MuzzleFlash.draw(pose, buffers, MuzzleFlash.age(mech.getId(), partialTick), MuzzleFlash.seed(mech.getId()), 1.0f);
         }

@@ -77,6 +77,22 @@ public final class ConsoleNetwork {
         }
     }
 
+    /** Block I: the worst alarm going on at a console, sent once a second to its owner and faction while there is one (the HUD mark). */
+    public record AlarmPayload(BlockPos console, int alarm) implements CustomPacketPayload {
+        public static final Type<AlarmPayload> TYPE = new Type<>(ProjectRebirth.id("console_alarm"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, AlarmPayload> STREAM_CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, AlarmPayload::console, ByteBufCodecs.VAR_INT, AlarmPayload::alarm, AlarmPayload::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /** Set by the client: takes the alarm mark for the HUD. */
+    public static Consumer<AlarmPayload> alarmHandler = payload -> {
+    };
+
     /** Set by the client: takes a view for the open window or the tablet. */
     public static Consumer<ViewPayload> clientHandler = payload -> {
     };
@@ -92,6 +108,7 @@ public final class ConsoleNetwork {
         var registrar = event.registrar("1");
         registrar.playToClient(ViewPayload.TYPE, ViewPayload.STREAM_CODEC, (payload, context) -> clientHandler.accept(payload));
         registrar.playToServer(ActionPayload.TYPE, ActionPayload.STREAM_CODEC, ConsoleNetwork::onAction);
+        registrar.playToClient(AlarmPayload.TYPE, AlarmPayload.STREAM_CODEC, (payload, context) -> alarmHandler.accept(payload));
     }
 
     public static void sendView(ServerPlayer player, ConsoleBlockEntity console) {

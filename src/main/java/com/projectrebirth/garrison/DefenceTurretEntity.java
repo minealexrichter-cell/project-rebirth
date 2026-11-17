@@ -227,7 +227,7 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
         if (target != lastTarget) {
             lastTarget = target;
             lockTicks = 0;
-            playSound(SoundEvents.NOTE_BLOCK_BIT.value(), 1.0f, 1.4f);
+            playSound(com.projectrebirth.core.ModSounds.GARRISON_TARGET_LOCK.get(), 1.0f, 1.0f);
         }
         if (lockTicks < turret.lockTicks()) {
             lockTicks++;

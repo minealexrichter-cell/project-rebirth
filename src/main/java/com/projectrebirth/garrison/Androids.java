@@ -140,6 +140,7 @@ public final class Androids {
         MachineRegistry.get(level.getServer()).update(android, core);
         ConsoleLink.linkNearest(level, android, core, player);
         level.gameEvent(player, GameEvent.ENTITY_PLACE, pos);
+        level.playSound(null, pos, com.projectrebirth.core.ModSounds.GARRISON_CORE_BOOT.get(), net.minecraft.sounds.SoundSource.NEUTRAL, 1.0f, 1.0f);
         stack.consume(1, player);
         return android;
     }

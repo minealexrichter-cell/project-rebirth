@@ -19,6 +19,10 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec.IntValue HUD_BAR_OFFSET_X;
     public static final ModConfigSpec.IntValue HUD_BAR_OFFSET_Y;
     public static final ModConfigSpec.BooleanValue TRANSFER_ANIMATION_ENABLED;
+    public static final ModConfigSpec.BooleanValue HUD_MACHINE_BARS;
+    public static final ModConfigSpec.IntValue HUD_MACHINE_BAR_DISTANCE;
+    public static final ModConfigSpec.BooleanValue HUD_CONSOLE_ALARM;
+    public static final ModConfigSpec.BooleanValue HUD_TABLET_LINES;
     public static final ModConfigSpec.DoubleValue TRANSFER_ANIMATION_SECONDS;
     public static final ModConfigSpec.DoubleValue TRANSFER_ANIMATION_HEIGHT;
     public static final ModConfigSpec.BooleanValue ZONES_VISUALS;
@@ -40,6 +44,11 @@ public final class RebirthClientConfig {
                 .defineInRange("barOffsetX", 0, -4000, 4000);
         HUD_BAR_OFFSET_Y = builder.comment("Vertical shift of the body's integrity bar; positive is down.")
                 .defineInRange("barOffsetY", 0, -4000, 4000);
+        // 1.7.0, block I: the player's machines
+        HUD_MACHINE_BARS = builder.comment("Show the two integrity bars over your own machines nearby.").define("machineBars", true);
+        HUD_MACHINE_BAR_DISTANCE = builder.comment("Blocks within which the bars of a machine show.").defineInRange("machineBarDistance", 16, 2, 64);
+        HUD_CONSOLE_ALARM = builder.comment("Show the mark of a console alarm going on (your consoles and your faction's).").define("consoleAlarm", true);
+        HUD_TABLET_LINES = builder.comment("Show the lines of the tactical tablet in hand: its mode, console and marks.").define("tabletLines", true);
         builder.pop();
         builder.push("weapons");
         WEAPON_SCOPE_FOV = builder.comment("The field of view is multiplied by this while aiming through a scope; less is closer.")

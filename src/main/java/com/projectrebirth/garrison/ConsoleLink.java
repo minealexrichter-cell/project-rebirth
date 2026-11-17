@@ -46,7 +46,11 @@ public final class ConsoleLink {
             return;
         }
         if (console.powered()) {
-            core.setTask(console.taskFor(id));
+            MachineTask given = console.taskFor(id);
+            if (!given.equals(core.task())) {
+                self.level().playSound(null, self.blockPosition(), com.projectrebirth.core.ModSounds.GARRISON_MACHINE_BEEP.get(), net.minecraft.sounds.SoundSource.NEUTRAL, 1.0f, 1.0f);
+            }
+            core.setTask(given);
             core.setIntruderMode(console.intruderModeFor(id));
         }
         console.heard(self, core, link);

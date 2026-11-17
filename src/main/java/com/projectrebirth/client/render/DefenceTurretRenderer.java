@@ -56,6 +56,8 @@ public class DefenceTurretRenderer extends GeoEntityRenderer<DefenceTurretEntity
     public void render(DefenceTurretEntity turret, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
         flashes.clear();
         super.render(turret, entityYaw, partialTick, poseStack, buffers, light);
+        MachineBars.draw(turret, turret.shownOwner(), turret.shownStructural(), turret.machineCore().maxStructural(), turret.shownCritical(),
+                turret.machineCore().maxCritical(), poseStack, buffers);
         for (PoseStack.Pose pose : flashes) {
             MuzzleFlash.draw(pose, buffers, MuzzleFlash.age(turret.getId(), partialTick), MuzzleFlash.seed(turret.getId()), 0.8f);
         }

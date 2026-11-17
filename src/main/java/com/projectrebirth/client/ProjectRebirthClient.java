@@ -99,6 +99,7 @@ public class ProjectRebirthClient {
         com.projectrebirth.client.multiblock.MultiblockClient.register();
         com.projectrebirth.client.garrison.TabletMarks.register();
         BodyHud.register(modEventBus);
+        com.projectrebirth.client.garrison.GarrisonHud.register(modEventBus);
         JetpackClient.register();
         TransferAnimation.register();
         BodySounds.register();

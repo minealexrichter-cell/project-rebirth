@@ -453,5 +453,95 @@
         "name": "projectrebirth:scouting/map_print"
       }
     ]
+  },
+  "garrison.welding": {
+    "subtitle": "subtitles.projectrebirth.garrison.welding",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/welding",
+        "volume": 0.9
+      }
+    ]
+  },
+  "garrison.manipulator": {
+    "subtitle": "subtitles.projectrebirth.garrison.manipulator",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/manipulator",
+        "volume": 0.8
+      }
+    ]
+  },
+  "garrison.electronics": {
+    "subtitle": "subtitles.projectrebirth.garrison.electronics",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/electronics",
+        "volume": 0.7
+      }
+    ]
+  },
+  "garrison.calibration": {
+    "subtitle": "subtitles.projectrebirth.garrison.calibration",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/calibration",
+        "volume": 0.7
+      }
+    ]
+  },
+  "garrison.core_boot": {
+    "subtitle": "subtitles.projectrebirth.garrison.core_boot",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/core_boot",
+        "volume": 0.9
+      }
+    ]
+  },
+  "garrison.assembly_done": {
+    "subtitle": "subtitles.projectrebirth.garrison.assembly_done",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/assembly_done",
+        "volume": 0.9
+      }
+    ]
+  },
+  "garrison.machine_beep": {
+    "subtitle": "subtitles.projectrebirth.garrison.machine_beep",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/machine_beep",
+        "volume": 0.6
+      }
+    ]
+  },
+  "garrison.target_lock": {
+    "subtitle": "subtitles.projectrebirth.garrison.target_lock",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/target_lock",
+        "volume": 0.8
+      }
+    ]
+  },
+  "garrison.machine_shutdown": {
+    "subtitle": "subtitles.projectrebirth.garrison.machine_shutdown",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/machine_shutdown",
+        "volume": 0.9
+      }
+    ]
+  },
+  "garrison.console_alarm": {
+    "subtitle": "subtitles.projectrebirth.garrison.console_alarm",
+    "sounds": [
+      {
+        "name": "projectrebirth:garrison/console_alarm",
+        "volume": 0.8
+      }
+    ]
   }
 }

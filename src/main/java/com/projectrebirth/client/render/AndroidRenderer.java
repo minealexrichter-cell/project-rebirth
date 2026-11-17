@@ -64,6 +64,16 @@ public class AndroidRenderer extends ArtificialBodyRenderer {
     }
 
     @Override
+    public void render(ArtificialBodyEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
+        super.render(entity, entityYaw, partialTick, poseStack, buffers, light);
+        if (entity instanceof com.projectrebirth.garrison.AndroidEntity android) {
+            // block I: its bars; structural is its health, critical a share of the body's integrity
+            MachineBars.draw(android, android.shownOwner(), android.getHealth(), android.getMaxHealth(), android.shownCritical(),
+                    android.getMaxHealth() * com.projectrebirth.config.RebirthConfig.ANDROID_CRITICAL_SHARE.get().floatValue(), poseStack, buffers);
+        }
+    }
+
+    @Override
     public void renderRecursively(PoseStack poseStack, ArtificialBodyEntity animatable, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource,
                                   VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
         String name = bone.getName();

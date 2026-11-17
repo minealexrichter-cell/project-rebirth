@@ -126,6 +126,7 @@ public class PackedMachineItem extends Item {
         MachineRegistry.get(level.getServer()).update(machine, core);
         ConsoleLink.linkNearest(level, machine, core, player);
         level.gameEvent(player, GameEvent.ENTITY_PLACE, pos);
+        level.playSound(null, pos, com.projectrebirth.core.ModSounds.GARRISON_CORE_BOOT.get(), net.minecraft.sounds.SoundSource.NEUTRAL, 1.0f, 1.0f);
         stack.consume(1, player);
         return machine;
     }

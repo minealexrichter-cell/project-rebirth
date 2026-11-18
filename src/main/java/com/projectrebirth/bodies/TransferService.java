@@ -435,6 +435,8 @@ public final class TransferService {
     // ---------------------------------------------------------------- attributes
 
     public static void applyBodyModifiers(ServerPlayer player, BodyClass bodyClass) {
+        // 1.7.3: removing the old modifiers cuts the health down to a human's maximum; keep what the body had (on every login)
+        float health = player.getHealth();
         removeBodyModifiers(player);
         RebirthConfig.BodyStats stats = RebirthConfig.bodyStats(bodyClass);
         AttributeInstance maxHealth = player.getAttribute(Attributes.MAX_HEALTH);
@@ -449,9 +451,7 @@ public final class TransferService {
                 AttributeModifier.Operation.ADD_VALUE);
         addModifier(player, Attributes.ARMOR_TOUGHNESS, PLATING_TOUGHNESS_MODIFIER, BodyGadgets.toughnessBonus(player.registryAccess(), upgrades),
                 AttributeModifier.Operation.ADD_VALUE);
-        if (player.getHealth() > player.getMaxHealth()) {
-            player.setHealth(player.getMaxHealth());
-        }
+        player.setHealth(Math.min(health, player.getMaxHealth()));
         BodyPower.applyLimits(player);
         com.projectrebirth.bodies.power.BodyHeat.applyLimits(player);
         com.projectrebirth.bodies.power.BodyWear.applyLimits(player);

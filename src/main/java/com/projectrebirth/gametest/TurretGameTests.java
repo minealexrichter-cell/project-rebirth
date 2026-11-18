@@ -68,6 +68,31 @@ public class TurretGameTests {
         return (DefenceTurretEntity) item.place(helper.getLevel(), owner, new ItemStack(item), helper.absolutePos(mount.above()), 0.0f);
     }
 
+    /**
+     * 1.7.3: a right click on the top of a mount with a turret in the hand sets the turret up (the mount used to answer with its
+     * state and keep the click); a click with rockets still loads the mount. Goes the way of a real click (block first, then item).
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aClickWithATurretOnAMountSetsItUp(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        BlockPos at = new BlockPos(4, 1, 4);
+        TurretMountBlockEntity mount = mount(helper, at, ItemStack.EMPTY);
+        BlockPos abs = helper.absolutePos(at);
+        net.minecraft.world.phys.BlockHitResult top = new net.minecraft.world.phys.BlockHitResult(
+                net.minecraft.world.phys.Vec3.atCenterOf(abs).add(0.0, 0.5, 0.0), net.minecraft.core.Direction.UP, abs, false);
+        owner.moveTo(abs.getX() + 0.5, abs.getY() + 1.0, abs.getZ() + 2.5);
+        owner.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(GarrisonRegistry.ROCKET.get(), 4));
+        helper.useBlock(at, owner, top);
+        helper.assertTrue(mount.ammo().getStackInSlot(0).is(GarrisonRegistry.ROCKET.get()), "Rockets still go into the mount");
+        owner.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, new ItemStack(GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get()));
+        helper.useBlock(at, owner, top);
+        java.util.List<DefenceTurretEntity> turrets = helper.getLevel().getEntitiesOfClass(DefenceTurretEntity.class,
+                new net.minecraft.world.phys.AABB(abs.above()).inflate(1.0));
+        helper.assertTrue(turrets.size() == 1, "The click with the turret sets it up on the mount: " + turrets.size());
+        helper.assertTrue(owner.getMainHandItem().isEmpty(), "The turret item is used up");
+        helper.succeed();
+    }
+
     private static Zombie zombie(GameTestHelper helper, BlockPos at) {
         Zombie zombie = helper.spawn(EntityType.ZOMBIE, at);
         zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));

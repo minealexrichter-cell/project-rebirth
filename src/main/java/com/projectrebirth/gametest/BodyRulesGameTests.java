@@ -57,6 +57,23 @@ public class BodyRulesGameTests {
         return PotionContents.createItemStack(Items.POTION, Potions.STRENGTH);
     }
 
+    /**
+     * 1.7.3: the body's modifiers are put on again at every login; the health above a human's 20 must stay (it was cut to 20,
+     * found loading old worlds).
+     */
+    @GameTest(template = TEMPLATE)
+    public static void aBodyKeepsItsHealthWhenItsModifiersArePutOnAgain(GameTestHelper helper) {
+        ServerPlayer player = playerIn(helper, BodyClass.IMPROVED_ROBOT);
+        float full = player.getMaxHealth();
+        helper.assertTrue(full > 20.0f, "An improved body has more than 20: " + full);
+        TransferService.applyBodyModifiers(player, BodyClass.IMPROVED_ROBOT);
+        helper.assertTrue(player.getHealth() == full, "Full health is kept: " + player.getHealth() + " of " + full);
+        player.setHealth(23.0f);
+        TransferService.applyBodyModifiers(player, BodyClass.IMPROVED_ROBOT);
+        helper.assertTrue(player.getHealth() == 23.0f, "A wounded body keeps its health: " + player.getHealth());
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE)
     public static void robotAndSyntheticBodiesCannotEatOrDrinkAnything(GameTestHelper helper) {
         for (BodyClass bodyClass : new BodyClass[] {BodyClass.BASIC_ROBOT, BodyClass.IMPROVED_ROBOT,

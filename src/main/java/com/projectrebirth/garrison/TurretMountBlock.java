@@ -47,6 +47,10 @@ public class TurretMountBlock extends BaseEntityBlock {
     @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
                                               BlockHitResult hit) {
+        if (stack.getItem() instanceof TurretItem) {
+            // 1.7.3: let the turret item set itself up on the mount (it used to show the mount's state and take the click)
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        }
         if (!TurretMountBlockEntity.isAmmo(stack)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }

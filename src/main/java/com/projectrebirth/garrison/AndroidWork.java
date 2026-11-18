@@ -91,6 +91,8 @@ final class AndroidWork {
     private static final int SCAN_PER_TICK = 512;
     /** Ticks it tries to reach a job before it gives it up for this pass. */
     private static final int GIVE_UP_TICKS = 200;
+    /** A job whose place this many path searches in a row did not reach is skipped for this pass (1.7.3, block F). */
+    private static final int UNREACHABLE_SEARCHES = 2;
     private static final double REACH = 4.5;
     private static final int TREE_LOGS = 320;
     private static final int TREE_LEAVES = 600;
@@ -120,6 +122,8 @@ final class AndroidWork {
     private float progress;
     private int stage = -1;
     private int approach;
+    /** Path searches in a row that did not reach the current job's place (1.7.3, block F). */
+    private int failedPaths;
     private boolean unloading;
     private int rest;
     private int flee;
@@ -705,6 +709,10 @@ final class AndroidWork {
         }
         if (approach % 20 == 0) {
             android.getNavigation().moveTo(pos.getX() + 0.5, tall ? android.getY() : pos.getY() + 1, pos.getZ() + 0.5, 1.0);
+            // 1.7.3, block F: a search that cannot reach the place goes through the whole range of a machine's path (up to
+            // thousands of nodes, several ms); count them, so that doJob skips such a place after two instead of ten
+            net.minecraft.world.level.pathfinder.Path path = android.getNavigation().getPath();
+            failedPaths = path == null || !path.canReach() ? failedPaths + 1 : 0;
         }
         return false;
     }
@@ -716,8 +724,11 @@ final class AndroidWork {
             finishJob(false);
             return;
         }
+        if (approach == 0) {
+            failedPaths = 0;
+        }
         if (!reach(now.pos(), now.tall())) {
-            if (++approach > GIVE_UP_TICKS) {
+            if (++approach > GIVE_UP_TICKS || failedPaths >= UNREACHABLE_SEARCHES) {
                 skipped.add(now.pos().asLong());
                 queue.clear();
                 finishJob(false);

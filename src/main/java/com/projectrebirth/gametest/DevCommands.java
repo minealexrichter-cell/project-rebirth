@@ -73,11 +73,56 @@ public final class DevCommands {
                                 .executes(ctx -> order(ctx, null))
                                 .then(Commands.argument("point", BlockPosArgument.blockPos())
                                         .executes(ctx -> order(ctx, BlockPosArgument.getLoadedBlockPos(ctx, "point")))))));
+        root.then(Commands.literal("android")
+                .then(Commands.argument("body", StringArgumentType.word())
+                        .then(Commands.argument("module", StringArgumentType.word())
+                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                        .executes(DevCommands::android)))));
+        root.then(Commands.literal("work")
+                .then(Commands.argument("console", BlockPosArgument.blockPos())
+                        .then(Commands.argument("machine", net.minecraft.commands.arguments.EntityArgument.entity())
+                                .then(Commands.argument("kind", StringArgumentType.word())
+                                        .then(Commands.argument("from", BlockPosArgument.blockPos())
+                                                .then(Commands.argument("to", BlockPosArgument.blockPos())
+                                                        .then(Commands.argument("chest", BlockPosArgument.blockPos())
+                                                                .executes(DevCommands::work))))))));
         root.then(Commands.literal("workshop")
                 .then(Commands.argument("corner", BlockPosArgument.blockPos())
                         .then(Commands.argument("recipe", StringArgumentType.word())
                                 .executes(DevCommands::workshop))));
         event.getDispatcher().register(root);
+    }
+
+    /** Sets an android up from a packed body with an AI core and a module (combat or work), as the item in the hand does. */
+    private static int android(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = player(ctx);
+        com.projectrebirth.bodies.BodyClass bodyClass = com.projectrebirth.bodies.BodyClass.byId(StringArgumentType.getString(ctx, "body"));
+        Item bodyItem = BuiltInRegistries.ITEM.get(ProjectRebirth.id(bodyClass.id()));
+        Item module = "work".equals(StringArgumentType.getString(ctx, "module"))
+                ? com.projectrebirth.garrison.GarrisonRegistry.WORK_MODULE.get() : com.projectrebirth.garrison.GarrisonRegistry.COMBAT_MODULE.get();
+        ItemStack stack = new ItemStack(bodyItem);
+        stack.set(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get(), new com.projectrebirth.garrison.GarrisonRegistry.AndroidParts(
+                new ItemStack(com.projectrebirth.garrison.GarrisonRegistry.AI_CORE.get()), new ItemStack(module)));
+        var android = com.projectrebirth.garrison.Androids.place(player.serverLevel(), player, stack, bodyClass,
+                BlockPosArgument.getLoadedBlockPos(ctx, "pos"), 0.0f);
+        ctx.getSource().sendSuccess(() -> Component.literal(android == null ? "not placed" : "placed " + android.getUUID()), false);
+        return android == null ? 0 : 1;
+    }
+
+    /** Gives one machine of the console the order "work" in an area with a chest, as the tablet does. */
+    private static int work(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        if (!(ctx.getSource().getLevel().getBlockEntity(BlockPosArgument.getLoadedBlockPos(ctx, "console")) instanceof ConsoleBlockEntity console)) {
+            ctx.getSource().sendFailure(Component.literal("not a console"));
+            return 0;
+        }
+        net.minecraft.world.entity.Entity machine = net.minecraft.commands.arguments.EntityArgument.getEntity(ctx, "machine");
+        com.projectrebirth.garrison.MachineTask task = com.projectrebirth.garrison.MachineTask.work(StringArgumentType.getString(ctx, "kind"),
+                BlockPosArgument.getLoadedBlockPos(ctx, "from"), BlockPosArgument.getLoadedBlockPos(ctx, "to"),
+                BlockPosArgument.getLoadedBlockPos(ctx, "chest"));
+        console.order(machine.getUUID(), task);
+        ctx.getSource().sendSuccess(() -> Component.literal("work " + task.work() + " to " + machine.getName().getString()
+                + (console.knows(machine.getUUID()) ? "" : " (not linked to this console)")), false);
+        return 1;
     }
 
     /**

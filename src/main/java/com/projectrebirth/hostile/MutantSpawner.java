@@ -42,11 +42,20 @@ public final class MutantSpawner {
             return;
         }
         ServerLevel level = player.serverLevel();
-        if (!MutantEntity.enabled() || level.getDifficulty() == Difficulty.PEACEFUL || player.isSpectator()
+        if (!spawningAllowed(level) || player.isSpectator()
                 || level.random.nextDouble() >= RebirthConfig.MUTANTS_CHANCE.get() || !contaminated(level, player.blockPosition())) {
             return;
         }
         trySpawn(level, player.blockPosition(), level.random);
+    }
+
+    /**
+     * Whether mutants may come now at all: switched on, not peaceful, and the world lets creatures spawn (1.7.3: the game rule
+     * doMobSpawning was ignored, so mutants came where an operator had turned spawning off).
+     */
+    public static boolean spawningAllowed(ServerLevel level) {
+        return MutantEntity.enabled() && level.getDifficulty() != Difficulty.PEACEFUL
+                && level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING);
     }
 
     /** Whether mutants live here: a contaminated chunk or the contamination zone. */

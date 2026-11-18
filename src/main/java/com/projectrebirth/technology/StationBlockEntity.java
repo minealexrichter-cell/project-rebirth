@@ -45,7 +45,9 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
     public static final int DATA_CAPACITY_HIGH = 6;
     /** 1 while an electromagnetic storm holds the station back (block E of 1.5.0). */
     public static final int DATA_EMI = 7;
-    public static final int DATA_COUNT = 8;
+    /** 1.7.3: 1 when the chosen recipe is a classic one that moved to a multiblock (worlds from before 1.7.0). */
+    public static final int DATA_MOVED = 8;
+    public static final int DATA_COUNT = 9;
 
     private final ItemStackHandler items = new ItemStackHandler(INPUT_SLOTS + 1) {
         @Override
@@ -77,6 +79,7 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
                 case DATA_CAPACITY_LOW -> EnergyUtil.low(energy.getMaxEnergyStored());
                 case DATA_CAPACITY_HIGH -> EnergyUtil.high(energy.getMaxEnergyStored());
                 case DATA_EMI -> emiFactor < 1.0f ? 1 : 0;
+                case DATA_MOVED -> movedRecipe() ? 1 : 0;
                 default -> 0;
             };
         }
@@ -143,6 +146,19 @@ public class StationBlockEntity extends BlockEntity implements MenuProvider {
                 .filter(holder -> holder.value() instanceof FabricationRecipe recipe && recipe.available())
                 .map(StationBlockEntity::cast)
                 .orElse(null);
+    }
+
+    /**
+     * Whether the chosen recipe is a classic one (a synthetic body, a power armor) that is now made in a multiblock: a station of a
+     * world from before 1.7.0 still has it chosen and its materials in the inputs (1.7.3, found loading old worlds). Public for tests.
+     */
+    public boolean movedRecipe() {
+        if (selected == null || level == null) {
+            return false;
+        }
+        return level.getRecipeManager().byKey(selected)
+                .map(holder -> holder.value() instanceof FabricationRecipe recipe && !recipe.available())
+                .orElse(false);
     }
 
     @SuppressWarnings("unchecked")

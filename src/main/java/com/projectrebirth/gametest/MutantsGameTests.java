@@ -44,6 +44,26 @@ public class MutantsGameTests {
         helper.succeed();
     }
 
+    /** 1.7.3: with the game rule doMobSpawning off no mutants come either (found in block D: they came all the same). */
+    @GameTest(template = TEMPLATE, batch = "scouting_mutants_rule")
+    public static void mutantsKeepTheSpawningGameRule(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        net.minecraft.world.level.GameRules.BooleanValue rule = level.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DOMOBSPAWNING);
+        boolean before = rule.get();
+        net.minecraft.world.Difficulty difficulty = level.getDifficulty();
+        try {
+            level.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+            rule.set(true, level.getServer());
+            helper.assertTrue(MutantSpawner.spawningAllowed(level), "Mutants may come while spawning is on");
+            rule.set(false, level.getServer());
+            helper.assertFalse(MutantSpawner.spawningAllowed(level), "No mutants while doMobSpawning is off");
+        } finally {
+            rule.set(before, level.getServer());
+            level.getServer().setDifficulty(difficulty, true);
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = TEMPLATE, batch = "scouting_mutants_ground")
     public static void mutantsComeOnlyToContaminatedGround(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();

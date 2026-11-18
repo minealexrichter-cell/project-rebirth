@@ -94,6 +94,11 @@ public class StationMenu extends AbstractContainerMenu {
         return data.get(StationBlockEntity.DATA_SELECTED);
     }
 
+    /** The chosen recipe moved to a multiblock (1.7.3). */
+    public boolean movedRecipe() {
+        return data.get(StationBlockEntity.DATA_MOVED) != 0;
+    }
+
     /** Production progress from 0 to 1. */
     public float progress() {
         int total = data.get(StationBlockEntity.DATA_TOTAL);

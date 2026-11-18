@@ -101,7 +101,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     private Component status() {
         FabricationRecipe recipe = selectedRecipe();
         if (recipe == null) {
-            return Component.translatable("screen.projectrebirth.station.select");
+            return Component.translatable(menu.movedRecipe() ? "screen.projectrebirth.station.moved" : "screen.projectrebirth.station.select");
         }
         if (!recipe.missing(inputs()).isEmpty()) {
             return Component.translatable("screen.projectrebirth.station.missing");

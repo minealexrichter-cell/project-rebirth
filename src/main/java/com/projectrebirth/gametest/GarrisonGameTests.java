@@ -384,4 +384,30 @@ public class GarrisonGameTests {
         }
         helper.succeed();
     }
+
+    /**
+     * 1.7.3: a station of a world from before 1.7.0 with a synthetic body chosen (a classic recipe, now made in the body workshop)
+     * says that the recipe moved instead of "select a recipe"; a recipe of today does not.
+     */
+    @GameTest(template = TEMPLATE, batch = "garrison_moved_recipe")
+    public static void anOldStationTellsThatItsRecipeMovedToAMultiblock(GameTestHelper helper) {
+        boolean before = RebirthConfig.MULTIBLOCKS_ENABLED.get();
+        try {
+            RebirthConfig.MULTIBLOCKS_ENABLED.set(true);
+            BlockPos at = new BlockPos(4, 1, 4);
+            helper.setBlock(at, net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(ProjectRebirth.id("assembly_station")));
+            com.projectrebirth.technology.StationBlockEntity station = helper.getBlockEntity(at);
+            net.minecraft.nbt.CompoundTag old = new net.minecraft.nbt.CompoundTag();
+            old.putString("selected", "projectrebirth:advanced_synthetic_body");
+            station.loadCustomOnly(old, helper.getLevel().registryAccess());
+            helper.assertTrue(station.movedRecipe(), "The synthetic body moved to the workshop");
+            net.minecraft.nbt.CompoundTag today = new net.minecraft.nbt.CompoundTag();
+            today.putString("selected", "projectrebirth:ai_core");
+            station.loadCustomOnly(today, helper.getLevel().registryAccess());
+            helper.assertFalse(station.movedRecipe(), "The AI core is still made here");
+        } finally {
+            RebirthConfig.MULTIBLOCKS_ENABLED.set(before);
+        }
+        helper.succeed();
+    }
 }

@@ -73,7 +73,8 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20.0).add(Attributes.MOVEMENT_SPEED, 0.0)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0).add(Attributes.FOLLOW_RANGE, 48.0);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE, 1.0)
+                .add(Attributes.FOLLOW_RANGE, 48.0);
     }
 
     public TurretType turret() {
@@ -135,8 +136,19 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
         return false;
     }
 
+    /** 1.7.3, block F: a turret stays on its mount; blows, charges and blasts do not move it sideways (they used to throw it off). */
+    @Override
+    public void push(double x, double y, double z) {
+    }
+
+    @Override
+    public void knockback(double strength, double x, double z) {
+    }
+
     @Override
     public void tick() {
+        // the speed a blast or a blow gave since the last tick must not move it this tick either
+        setDeltaMovement(0.0, getDeltaMovement().y, 0.0);
         super.tick();
         yBodyRot = getYRot();
         yBodyRotO = getYRot();

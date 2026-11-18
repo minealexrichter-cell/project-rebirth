@@ -89,7 +89,11 @@ public final class DevCommands {
         root.then(Commands.literal("workshop")
                 .then(Commands.argument("corner", BlockPosArgument.blockPos())
                         .then(Commands.argument("recipe", StringArgumentType.word())
-                                .executes(DevCommands::workshop))));
+                                .executes(ctx -> workshop(ctx, false)))));
+        root.then(Commands.literal("dock")
+                .then(Commands.argument("corner", BlockPosArgument.blockPos())
+                        .then(Commands.argument("recipe", StringArgumentType.word())
+                                .executes(ctx -> workshop(ctx, true)))));
         event.getDispatcher().register(root);
     }
 
@@ -129,10 +133,13 @@ public final class DevCommands {
      * Builds a whole body workshop facing south with its lowest layer at the corner, and starts a recipe with the materials of
      * all its stages and full energy (as the game tests do).
      */
-    private static int workshop(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static int workshop(CommandContext<CommandSourceStack> ctx, boolean dock) throws CommandSyntaxException {
         ServerLevel level = ctx.getSource().getLevel();
         BlockPos corner = BlockPosArgument.getLoadedBlockPos(ctx, "corner");
-        net.minecraft.resources.ResourceLocation id = com.projectrebirth.multiblock.MultiblockRegistry.BODY_WORKSHOP;
+        net.minecraft.resources.ResourceLocation id = dock ? com.projectrebirth.multiblock.MultiblockRegistry.HEAVY_DOCK
+                : com.projectrebirth.multiblock.MultiblockRegistry.BODY_WORKSHOP;
+        net.minecraft.world.level.block.Block controllerBlock = dock ? com.projectrebirth.multiblock.MultiblockRegistry.DOCK_CONTROLLER.get()
+                : com.projectrebirth.multiblock.MultiblockRegistry.WORKSHOP_CONTROLLER.get();
         com.projectrebirth.multiblock.MultiblockSchema schema = com.projectrebirth.multiblock.MultiblockRegistry.schema(level.registryAccess(), id);
         net.minecraft.core.Direction facing = net.minecraft.core.Direction.SOUTH;
         int[] controllerCell = null;
@@ -161,7 +168,7 @@ public final class DevCommands {
                         continue;
                     }
                     net.minecraft.world.level.block.state.BlockState state = cell.controller()
-                            ? com.projectrebirth.multiblock.MultiblockRegistry.WORKSHOP_CONTROLLER.get().defaultBlockState()
+                            ? controllerBlock.defaultBlockState()
                                     .setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, facing)
                             : cell.display();
                     level.setBlock(schema.worldPos(controller, facing, x, y, z), state, 3);
@@ -183,7 +190,7 @@ public final class DevCommands {
             }
         }
         entity.energy().load(entity.energy().getMaxEnergyStored());
-        ctx.getSource().sendSuccess(() -> Component.literal("workshop at " + controller.toShortString() + ", whole " + check.complete()), false);
+        ctx.getSource().sendSuccess(() -> Component.literal((dock ? "dock at " : "workshop at ") + controller.toShortString() + ", whole " + check.complete()), false);
         return 1;
     }
 

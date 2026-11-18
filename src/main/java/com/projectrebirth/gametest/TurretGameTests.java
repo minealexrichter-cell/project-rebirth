@@ -93,6 +93,28 @@ public class TurretGameTests {
         helper.succeed();
     }
 
+    /** 1.7.3, block F: a blast next to it, a blow with knockback and a push do not throw a turret off its mount. */
+    @GameTest(template = TEMPLATE)
+    public static void blastsAndBlowsDoNotThrowATurretOffItsMount(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        BlockPos at = new BlockPos(4, 1, 4);
+        mount(helper, at, ItemStack.EMPTY);
+        DefenceTurretEntity gun = turret(helper, owner, GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get(), at);
+        helper.assertTrue(gun != null, "The turret stands");
+        net.minecraft.world.phys.Vec3 home = gun.position();
+        net.minecraft.world.phys.Vec3 blast = home.add(1.5, 0.0, 0.5);
+        helper.getLevel().explode(null, blast.x, blast.y, blast.z, 2.0f, net.minecraft.world.level.Level.ExplosionInteraction.NONE);
+        gun.knockback(2.0, 1.0, 0.0);
+        gun.push(1.0, 0.0, 1.0);
+        gun.setDeltaMovement(gun.getDeltaMovement().add(1.5, 0.0, -1.5));
+        helper.runAfterDelay(20, () -> {
+            double moved = gun.position().subtract(home).horizontalDistance();
+            helper.assertTrue(moved < 0.01, "The turret stays on its mount: moved " + moved);
+            helper.assertTrue(gun.mount() != null, "and still has its mount under it");
+            helper.succeed();
+        });
+    }
+
     private static Zombie zombie(GameTestHelper helper, BlockPos at) {
         Zombie zombie = helper.spawn(EntityType.ZOMBIE, at);
         zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));

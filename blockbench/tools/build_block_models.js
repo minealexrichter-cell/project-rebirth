@@ -783,24 +783,23 @@
         const all = t => ({north: {...t}, south: {...t}, west: {...t}, east: {...t}, up: {...t}, down: {...t}});
         const el = (from, to, faces, extra) => Object.assign({from, to, faces: faces.texture ? all(faces) : faces}, extra || {});
         const lampTextures = decorTextures({housing: 'lamp_housing', vents: 'lamp_vents', glass: 'lamp_glass', bulb: 'lamp_bulb', metal: 'lamp_metal'}, 'lamp_housing');
+        // 1.7.3, block G (the owner: "too big, make it small and not a whole block"): a small warning lamp, 6 by 6 and half a block
+        // high: a base plate, the housing with its vents, a glass dome with the bulb inside, four cage bars and a cap.
         const lamp = [
-            el([1, 0, 1], [15, 5, 15], {north: tex('housing'), south: tex('vents'), west: tex('vents'), east: tex('vents'), up: tex('housing'), down: tex('housing')}),
-            el([5, 1.5, 0.75], [11, 3, 1], {north: tex('glass'), west: tex('glass'), east: tex('glass'), up: tex('glass'), down: tex('glass')}, GLOW),
-            el([2, 5, 2], [14, 6, 14], metal),
-            el([2, 6, 2], [3.5, 13, 3.5], metal), el([12.5, 6, 2], [14, 13, 3.5], metal),
-            el([2, 6, 12.5], [3.5, 13, 14], metal), el([12.5, 6, 12.5], [14, 13, 14], metal),
-            without(el([3.5, 6, 3.5], [12.5, 13, 12.5], glass, GLOW), 'up', 'down'),
-            el([6, 6.5, 6], [10, 12, 10], bulb, GLOW),
-            el([7.5, 6, 3], [8.5, 13, 3.5], metal), el([7.5, 6, 12.5], [8.5, 13, 13], metal),
-            el([3, 6, 7.5], [3.5, 13, 8.5], metal), el([12.5, 6, 7.5], [13, 13, 8.5], metal),
-            el([2, 13, 2], [14, 14, 14], metal),
-            el([4, 14, 4], [12, 15, 12], housing),
-            el([6, 15, 6], [10, 16, 10], metal)
+            el([5, 0, 5], [11, 1, 11], metal),
+            el([5.5, 1, 5.5], [10.5, 3, 10.5], {north: tex('vents'), south: tex('vents'), west: tex('vents'), east: tex('vents'), up: tex('housing'), down: tex('housing')}),
+            without(el([6, 3, 6], [10, 7, 10], glass, GLOW), 'up', 'down'),
+            el([7, 3, 7], [9, 6, 9], bulb, GLOW),
+            el([5.75, 3, 5.75], [6.25, 7, 6.25], metal), el([9.75, 3, 5.75], [10.25, 7, 6.25], metal),
+            el([5.75, 3, 9.75], [6.25, 7, 10.25], metal), el([9.75, 3, 9.75], [10.25, 7, 10.25], metal),
+            el([5.5, 7, 5.5], [10.5, 7.75, 10.5], housing),
+            el([7, 7.75, 7], [9, 8.25, 9], metal)
         ];
         placeUv(lamp);
         MODELS.emergency_lamp = {parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures, elements: lamp};
+        // on the side of a post: a bracket from the base plate across to the post
         MODELS.emergency_lamp_post = {parent: 'minecraft:block/block', render_type: 'minecraft:translucent', textures: lampTextures,
-            elements: [...lamp, ...placeUv([without(el([6, -6, 6], [10, 0, 10], tex('metal')), 'up'), el([5, -6.5, 5], [11, -5.5, 11], tex('metal'))])]};
+            elements: [...lamp, ...placeUv([without(el([7, -6, 7], [9, 0, 9], tex('metal')), 'up'), el([6, -6.5, 6], [10, -5.5, 10], tex('metal'))])]};
     })();
 
     // Turret (after the owner's drawing), three blocks, looking north. The base: four dark feet, a stepped light casing, a dark
@@ -946,6 +945,22 @@
         return y ? {y} : {};
     }
 
+    // ---------------------------------------------------------------- ores (1.7.3, block G)
+    // The game's own stone or deepslate under the mineral (a clear texture of build_textures.js): two whole layers, as the vanilla
+    // grass_block lays its overlay over the dirt. Nothing of the game's is copied: the model only names its textures.
+    const ORE_IDS = [];
+    ['tin', 'aluminum', 'silver', 'lithium', 'titanium', 'uranium'].forEach(ore => {
+        [['', 'minecraft:block/stone'], ['deepslate_', 'minecraft:block/deepslate']].forEach(([prefix, base]) => {
+            const id = prefix + ore + '_ore';
+            const faces = texture => Object.fromEntries(['north', 'south', 'east', 'west', 'up', 'down']
+                .map(dir => [dir, {texture, cullface: dir}]));
+            MODELS[id] = {parent: 'minecraft:block/block', render_type: 'minecraft:cutout',
+                textures: {particle: base, base, ore: 'projectrebirth:block/' + id},
+                elements: [{from: [0, 0, 0], to: [16, 16, 16], faces: faces('#base')}, {from: [0, 0, 0], to: [16, 16, 16], faces: faces('#ore')}]};
+            ORE_IDS.push(id);
+        });
+    });
+
     const STATES = {};
     ['electronics_fabricator', 'assembly_station', 'armor_workstation', 'maintenance_station', 'implant_fabricator', 'body_modification_station', 'armor_upgrade_fabricator', 'weapon_workshop'].forEach(id => {
         const variants = {};
@@ -1075,7 +1090,8 @@
                 out.push(id + ': part ' + i + ' is outside the block');
             }
             model.elements.forEach((o, j) => {
-                if (j <= i || e.rotation || o.rotation) {
+                // an ore's mineral lies over its stone on purpose, face on face (the vanilla way of an overlay)
+            if (j <= i || e.rotation || o.rotation || ORE_IDS.includes(id)) {
                     return;
                 }
                 for (const [dir, [n, u, v, far]] of Object.entries(axes)) {

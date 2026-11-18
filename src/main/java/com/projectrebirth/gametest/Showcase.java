@@ -83,7 +83,8 @@ public final class Showcase {
             x = entity(commands, x, z, "android_basic_robot_body", android
                     + "AiCore:{id:\"" + P + "ai_core\",count:1},Module:{id:\"" + P + "work_module\",count:1}", state[0] + " rabochii");
             if ("stoit".equals(state[0])) {
-                x = entity(commands, x, z, "turret_crate", "", state[0]);
+                // an empty crate removes itself: it carries a turret
+                x = entity(commands, x, z, "turret_crate", "Item:{id:\"" + P + "machine_gun_turret\",count:1}", state[0]);
             }
         }
         // the bodies, their wrecks and the three armors

@@ -258,10 +258,27 @@
             '.............dd.']}
     };
 
+    // 1.7.3, block G (the owner: "make them like the vanilla ores"): an ore texture is now only the mineral on a clear background;
+    // the block model lays it over the game's own stone or deepslate (build_block_models.js), as grass_block lays its overlay.
+    // Each grain: a shadow under and to the right of it, a dark edge and a light pixel, like the vanilla ores.
+    function mineral(rows, c) {
+        const p = new Painter();
+        const at = (x, y) => y >= 0 && y < 16 && x >= 0 && x < 16 && rows[y][x] !== '.';
+        p.grid(rows, c);
+        // the grain's lower-right rim catches no light
+        rows.forEach((row, y) => [...row].forEach((ch, x) => {
+            if (ch !== '.' && (!at(x + 1, y) || !at(x, y + 1)) && ch === 'o') {
+                p.rect(x, y, 1, 1, c.d);
+            }
+        }));
+        return p;
+    }
     Object.entries(ORES).forEach(([id, ore]) => {
-        block(id + '_ore', () => stone(new Painter(id.length * 97)).grid(ore.rows, ore.c));
-        const dark = {h: ore.c.h, o: shade(ore.c.o, 0.92), d: shade(ore.c.d, 0.72), s: ore.c.s};
-        block('deepslate_' + id + '_ore', () => deepslate(new Painter(id.length * 131)).grid(ore.rows, dark));
+        block(id + '_ore', () => mineral(ore.rows, ore.c));
+        const dark = {h: shade(ore.c.h, 0.94), o: shade(ore.c.o, 0.9), d: shade(ore.c.d, 0.72), s: ore.c.s};
+        block('deepslate_' + id + '_ore', () => mineral(ore.rows, dark));
+        CLEAR_BLOCKS.add(id + '_ore');
+        CLEAR_BLOCKS.add('deepslate_' + id + '_ore');
     });
 
     // ---------------------------------------------------------------- functional blocks
@@ -1138,23 +1155,52 @@
 
     // ---------------------------------------------------------------- items: tools
 
-    item('repair_wrench', () => icon([
-        '................',
-        '............kk..',
-        '..........kkLLk.',
-        '.........kLLLk..',
-        '.........kLLk...',
-        '.........kLLk.kk',
-        '........kLLLkkLk',
-        '.......kLLLLLLLk',
-        '......kLLLdddLk.',
-        '.....kLLdkkkkk..',
-        '....kLLdk.......',
-        '...kyydk........',
-        '..kyyok.........',
-        '.kyyok..........',
-        '.kook...........',
-        '..kk............'], {k: '#1a1d22', L: '#d6dee6', d: '#8a95a0', y: '#f0c92f', o: '#b58a14'}));
+    // 1.7.3, block G (the owner: "does not look enough like a wrench"): a steel combination spanner lying corner to corner, drawn by
+    // its shape: the open jaw at the top right with its slot toward the corner, a straight shank, the closed ring at the bottom left.
+    // A dark outline, the light on the upper left edges and the shadow on the lower right ones, as the vanilla tools are lit.
+    item('repair_wrench', () => {
+        const p = new Painter();
+        const segment = (x, y, ax, ay, bx, by) => {
+            const vx = bx - ax, vy = by - ay;
+            const t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy)));
+            return Math.hypot(x - (ax + t * vx), y - (ay + t * vy));
+        };
+        const metal = (x, y) => {
+            const cx = x + 0.5, cy = y + 0.5;
+            // the jaw: a round head with a slot to the top right corner
+            const jx = cx - 12, jy = cy - 4;
+            const jaw = Math.hypot(jx, jy) <= 3.4;
+            const along = (jx - jy) / Math.SQRT2, across = Math.abs(jx + jy) / Math.SQRT2;
+            const slot = along > -0.4 && across < 1.15;
+            // the ring: a round end with a hole
+            const rd = Math.hypot(cx - 3.6, cy - 12.4);
+            const ring = rd <= 2.7 && rd > 1.05;
+            const shank = segment(cx, cy, 10.2, 5.8, 5.2, 10.8) <= 1.25;
+            return (jaw && !slot) || ring || shank;
+        };
+        const inside = (x, y) => x >= 0 && y >= 0 && x < 16 && y < 16 && metal(x, y);
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                if (inside(x, y)) {
+                    p.rect(x, y, 1, 1, '#aab4be');
+                }
+            }
+        }
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                if (!inside(x, y)) {
+                    if (inside(x + 1, y) || inside(x - 1, y) || inside(x, y + 1) || inside(x, y - 1)) {
+                        p.rect(x, y, 1, 1, '#1a1d22');
+                    }
+                } else if (!inside(x - 1, y) || !inside(x, y - 1)) {
+                    p.rect(x, y, 1, 1, '#e6edf3');
+                } else if (!inside(x + 1, y) || !inside(x, y + 1)) {
+                    p.rect(x, y, 1, 1, '#6d7782');
+                }
+            }
+        }
+        return p;
+    });
 
     item('rescue_tool', () => icon([
         '................',
@@ -3669,5 +3715,75 @@
         return {blocks: blocks.length, items: items.length};
     }
 
-    window.RebirthTextures = {TEXTURES, saveAll, sheet, showcase, clearPixels};
+    /**
+     * The mod's icon in the mods list (1.7.3, block G, the owner: "a flask with a specimen"): 32 by 32 pixels drawn here, written
+     * 4 times larger (128) without smoothing to src/main/resources/projectrebirth_logo.png (logoBlur=false in neoforge.mods.toml).
+     */
+    function logo() {
+        const c = document.createElement('canvas');
+        c.width = c.height = 32;
+        const g = c.getContext('2d');
+        const r = random(3232);
+        const fill = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+        const noisy = (x, y, w, h, col, a) => {
+            for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) fill(i, j, 1, 1, shade(col, 1 + (r() - 0.5) * 2 * a));
+        };
+        // the cap: dark steel with a light top edge and two bolts
+        fill(8, 2, 16, 6, '#14181d');
+        noisy(9, 3, 14, 4, '#59626c', 0.06);
+        fill(9, 3, 14, 1, '#8c97a3');
+        fill(9, 6, 14, 1, '#343a42');
+        fill(11, 4, 1, 1, '#c6ced6'); fill(20, 4, 1, 1, '#c6ced6');
+        fill(13, 1, 6, 2, '#14181d'); fill(14, 1, 4, 1, '#59626c');
+        // the glass: a dark rim, the liquid getting deeper toward the bottom
+        fill(7, 7, 18, 19, '#14181d');
+        for (let y = 8; y < 25; y++) {
+            const t = (y - 8) / 16;
+            noisy(8, y, 16, 1, mix('#4fe3bc', '#0f6b5c', t), 0.04);
+        }
+        // the specimen: a curled dark body with a glowing rim, a head and a tail
+        const body = [
+            '....xxxx....',
+            '..xxxxxxxx..',
+            '.xxxxxxxxxx.',
+            '.xxxx..xxxxx',
+            'xxxx....xxxx',
+            'xxx......xxx',
+            'xxx...xx.xxx',
+            '.xxx.xxx.xx.',
+            '.xxxxxxx.x..',
+            '..xxxxx..x..',
+            '.........xx.',
+            '..........x.'];
+        const at = (x, y) => y >= 0 && y < body.length && x >= 0 && x < 12 && body[y][x] === 'x';
+        body.forEach((row, y) => [...row].forEach((ch, x) => {
+            if (ch !== 'x') {
+                return;
+            }
+            const rim = !at(x - 1, y) || !at(x + 1, y) || !at(x, y - 1) || !at(x, y + 1);
+            fill(10 + x, 10 + y, 1, 1, rim ? '#9dffe0' : shade('#1d3a35', 1 + (r() - 0.5) * 0.2));
+        }));
+        fill(13, 15, 1, 1, '#ffd84a'); // an eye
+        // bubbles rising
+        [[20, 9], [21, 12], [19, 15], [11, 22], [22, 20]].forEach(([x, y]) => fill(x, y, 1, 1, '#c8fff0'));
+        // the glare on the glass
+        for (let y = 8; y < 24; y++) fill(9, y, 1, 1, y % 5 === 0 ? '#ffffff' : '#bff7e8');
+        fill(10, 8, 1, 4, '#e8fff8');
+        fill(23, 8, 1, 17, '#0b3f37');
+        // the base: steel with a hazard stripe and two lamps
+        fill(6, 25, 20, 6, '#14181d');
+        noisy(7, 26, 18, 4, '#59626c', 0.06);
+        fill(7, 26, 18, 1, '#8c97a3');
+        for (let x = 8; x < 24; x++) fill(x, 28, 1, 1, Math.floor((x - 8) / 2) % 2 ? '#1e2228' : '#f0c92f');
+        fill(9, 27, 1, 1, '#ff5040'); fill(22, 27, 1, 1, '#5dff9a');
+        const big = document.createElement('canvas');
+        big.width = big.height = 128;
+        const bg = big.getContext('2d');
+        bg.imageSmoothingEnabled = false;
+        bg.drawImage(c, 0, 0, 32, 32, 0, 0, 128, 128);
+        savePng(big, ROOT + 'src/main/resources/projectrebirth_logo.png');
+        return 'logo written';
+    }
+
+    window.RebirthTextures = {TEXTURES, saveAll, sheet, showcase, clearPixels, logo};
 })();

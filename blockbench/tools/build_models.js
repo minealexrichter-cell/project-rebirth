@@ -672,7 +672,7 @@
                 leg: {c: steel, n: 0.08, all: [[0, 0, 4, 2, joint], [0, 5, 4, 2, joint], [0, -1, 4, 1, dark]]},
                 legX: [
                     C([-4.5, 6, -2.5], [5, 2, 5], {c: rust, n: 0.12}),
-                    C([-4.5, 0, -3], [5, 2, 6], {c: dark, f: [[1, 0, 3, 1, joint]]})
+                    C([-4.5, -0.1, -3], [5, 2, 6], {c: dark, f: [[1, 0, 3, 1, joint]]})
                 ]
             }),
             animations: bodyAnimations({
@@ -728,7 +728,7 @@
                 leg: {c: white, n: 0.03, all: [[0, 5, 4, 1, dark], [0, -1, 4, 1, dark]]},
                 legX: [
                     C([-4.5, 2, -2.5], [5, 4, 1], {c: blue, n: 0.04, f: [[2, 0, 1, 4, cyan]]}),
-                    C([-4.5, 0, -3.5], [5, 2, 6], {c: dark, n: 0.04, tp: [[0, 0, 5, 2, grey]]}),
+                    C([-4.5, -0.1, -3.5], [5, 2, 6], {c: dark, n: 0.04, tp: [[0, 0, 5, 2, grey]]}),
                     C([-4.5, 8, -2.5], [5, 3, 1], {c: blue, n: 0.04})
                 ]
             }),
@@ -774,7 +774,7 @@
                 armX: [],
                 leg: {c: suit, n: 0.03,
                     all: [[0, 5, 4, 1, seam], [0, -3, 4, 3, dark]], f: [[1, 0, 1, 12, dark]]},
-                legX: [C([-4.25, 0, -2.75], [4.5, 2, 5], {c: dark, n: 0.03, tp: [[0, 0, 5, 1, skin]]})]
+                legX: [C([-4.25, -0.1, -2.75], [4.5, 2, 5], {c: dark, n: 0.03, tp: [[0, 0, 5, 1, skin]]})]
             }),
             animations: bodyAnimations({
                 // A mannequin learning to walk: already a human gait, but careful and a little too even.
@@ -818,7 +818,7 @@
                 armX: [C([-7.5, 21.5, -2.5], [4, 3, 5], {c: plate, n: 0.03, sd: [[0, 1, 5, 1, cyan]]})],
                 leg: {c: suit, n: 0.02,
                     all: [[1, 0, 1, 7, cyan], [0, -4, 4, 4, plate]], f: [[1, 7, 2, 1, cyan]]},
-                legX: [C([-4.25, 0, -3], [4.5, 2, 5.5], {c: plate, n: 0.03, f: [[0, 1, 5, 1, cyan]]})]
+                legX: [C([-4.25, -0.1, -3], [4.5, 2, 5.5], {c: plate, n: 0.03, f: [[0, 1, 5, 1, cyan]]})]
             }),
             animations: bodyAnimations({
                 // An athlete: collected and leaning into the movement, long steps, a real sprinter's run.
@@ -869,7 +869,7 @@
                     all: [[0, 0, 4, 1, gold], [0, -4, 4, 1, gold], [0, -3, 4, 3, skin]]},
                 armX: [],
                 leg: {c: dark, n: 0.02, all: [[0, -3, 4, 3, shade(dark, 0.7)], [0, 0, 4, 1, shade(dark, 1.2)]], f: [[2, 1, 1, 8, shade(dark, 1.3)]]},
-                legX: [C([-4.25, 0, -3], [4.5, 2, 5.5], {c: '#1c1a1e', n: 0.02, f: [[0, 0, 5, 1, gold]]})]
+                legX: [C([-4.25, -0.1, -3], [4.5, 2, 5.5], {c: '#1c1a1e', n: 0.02, f: [[0, 0, 5, 1, gold]]})]
             }),
             animations: bodyAnimations({
                 // A person: relaxed, the weight goes from foot to foot, hips and shoulders turn against each other, arms trail.

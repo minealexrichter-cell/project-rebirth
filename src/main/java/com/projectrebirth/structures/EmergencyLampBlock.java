@@ -28,13 +28,14 @@ public class EmergencyLampBlock extends FaceAttachedHorizontalDirectionalBlock {
     /** On the side of a thin post (a fence or a stone wall): the model has a bracket reaching across to it. */
     public static final net.minecraft.world.level.block.state.properties.BooleanProperty POST =
             net.minecraft.world.level.block.state.properties.BooleanProperty.create("post");
-    private static final VoxelShape FLOOR = Block.box(1, 0, 1, 15, 16, 15);
-    private static final VoxelShape CEILING = FLOOR;
+    // 1.7.3, block G: a small lamp, 6 by 6 and half a block high (it was nearly a whole block)
+    private static final VoxelShape FLOOR = Block.box(5, 0, 5, 11, 8.25, 11);
+    private static final VoxelShape CEILING = Block.box(5, 7.75, 5, 11, 16, 11);
     private static final Map<Direction, VoxelShape> WALL = new EnumMap<>(Direction.class);
 
     static {
         for (Direction facing : Direction.Plane.HORIZONTAL) {
-            WALL.put(facing, DecorBlock.turned(facing, 1, 1, 0, 15, 15, 16));
+            WALL.put(facing, DecorBlock.turned(facing, 5, 5, 7.75, 11, 11, 16));
         }
     }
 

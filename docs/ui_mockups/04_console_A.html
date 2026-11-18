@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Пульт управления гарнизоном</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.win{background:#2b2e31;border:2px solid #0b0c0d;box-shadow:inset 2px 2px 0 #4c5055,inset -2px -2px 0 #16181a}
+.inset{background:#0e1311;border:2px solid #08090a;box-shadow:inset 2px 2px 0 #040505,inset -1px -1px 0 #3a3f43}
+.lbl{font-size:11px;letter-spacing:1px;color:#a3aab0;text-transform:uppercase}
+.digits{font-family:'VT323',monospace}
+.card{display:flex;gap:8px;padding:6px;background:#22262a;border:2px solid #16181a}
+.ico{width:30px;height:30px;flex-shrink:0;background:#14171a;box-shadow:inset 1px 1px 0 #000,inset -1px -1px 0 #3d4145;display:flex;align-items:center;justify-content:center}
+.bar{height:5px;background:#14171a}
+.tab{font-family:inherit;font-size:12px;padding:5px 10px;background:#22262a;border:2px solid #16181a;color:#d6d3cc;cursor:pointer;display:flex;gap:6px;align-items:center}
+.ord{font-family:inherit;font-size:12px;padding:7px 10px;background:#3a3e42;border:2px solid #0b0c0d;box-shadow:inset 1px 1px 0 #5a5f64;color:#e6e3dc;cursor:pointer;display:flex;gap:6px;align-items:center}
+.sw{width:30px;height:16px;border:2px solid #0b0c0d;position:relative;flex-shrink:0;box-sizing:border-box}
+.dot{position:absolute;width:12px;height:12px;border-radius:50%}
+</style>
+
+</head>
+<body>
+
+
+<div style="width:1280px;height:760px;box-sizing:border-box;background:#141618;font-family:'Pixelify Sans',monospace;color:#e6e3dc;padding:16px">
+<div class="win" style="width:100%;height:100%;box-sizing:border-box;padding:0 12px 12px;display:flex;flex-direction:column;gap:10px">
+
+  <div style="height:44px;display:flex;align-items:center;gap:10px;border-bottom:2px solid #16181a">
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8" fill="none" stroke="#ffb648" stroke-width="2"/><path d="M11 3v16M3 11h16" stroke="#ffb648" stroke-width="1"/></svg>
+    <span style="font-size:17px;font-weight:600;letter-spacing:2px">ПУЛЬТ УПРАВЛЕНИЯ</span>
+    <span style="color:#a3aab0;font-size:13px">· Фракция «Северный пост» · связь 256 бл.</span>
+    <div style="flex-grow:1"></div>
+    <button class="tab" style="border-color:#ffb648;background:#2a2416;color:#ffcf85">Все · 9</button>
+    <button class="tab"><span style="width:8px;height:8px;background:#ff6b5d"></span>1 Периметр · 4</button>
+    <button class="tab"><span style="width:8px;height:8px;background:#ffd23f"></span>2 Шахта · 3</button>
+    <button class="tab"><span style="width:8px;height:8px;background:#5fb8ff"></span>3 Конвой · 2</button>
+    <button class="tab" aria-label="Новая группа">+</button>
+    <button aria-label="Обучение и справка" style="width:30px;height:30px;background:#3a3e42;border:2px solid #0b0c0d;color:#ffb648;font-family:inherit;font-size:16px;cursor:pointer">?</button>
+  </div>
+
+  <div style="flex-grow:1;display:flex;gap:10px;min-height:0">
+    <!-- machine list -->
+    <div style="width:290px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;gap:4px">
+        <button class="tab" style="padding:3px 8px;font-size:11px;border-color:#ffb648;color:#ffcf85">Все</button>
+        <button class="tab" style="padding:3px 8px;font-size:11px">В бою</button>
+        <button class="tab" style="padding:3px 8px;font-size:11px">Работают</button>
+        <button class="tab" style="padding:3px 8px;font-size:11px;color:#ff8a7a">Проблемы · 2</button>
+      </div>
+      <div class="card" style="border-color:#ffb648;background:#2a2416">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="5" y="2" width="10" height="9" fill="#8f979e"/><rect x="3" y="11" width="5" height="7" fill="#6c737a"/><rect x="12" y="11" width="5" height="7" fill="#6c737a"/></svg></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:#ffcf85">Мех «Бастион»</span><span style="font-size:11px;color:#ff6b5d">■ 1</span></div>
+          <div class="bar"><div style="width:84%;height:100%;background:#7bd88f"></div></div>
+          <div class="bar"><div style="width:100%;height:100%;background:#4f9f66"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#a3aab0"><span>⚡ 72% · ▮ 188/256 · ✦ 12</span><span style="color:#ffb648">В бою</span></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:#ffb648;background:#2a2416">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="2" width="6" height="6" fill="#8f979e"/><rect x="6" y="8" width="8" height="10" fill="#6c737a"/></svg></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:#ffcf85">Малый робот R-3</span><span style="font-size:11px;color:#ff6b5d">■ 1</span></div>
+          <div class="bar"><div style="width:46%;height:100%;background:#ffb648"></div></div>
+          <div class="bar"><div style="width:90%;height:100%;background:#4f9f66"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#a3aab0"><span>⚡ 41% · ▮ 64/192</span><span style="color:#ffb648">В бою</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="8" y="2" width="4" height="10" fill="#8f979e"/><rect x="4" y="12" width="12" height="6" fill="#6c737a"/></svg></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:13px">Пулемётная турель Т-1</span><span style="font-size:11px;color:#ff6b5d">■ 1</span></div>
+          <div class="bar"><div style="width:100%;height:100%;background:#7bd88f"></div></div>
+          <div class="bar"><div style="width:100%;height:100%;background:#4f9f66"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#a3aab0"><span>⚡ сеть · ▮ 410</span><span>Охрана</span></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:#7a3a33">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="2" width="6" height="6" fill="#c9b79a"/><rect x="6" y="8" width="8" height="10" fill="#9c8a6c"/></svg></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:13px">Рабочий андроид Т3</span><span style="font-size:11px;color:#ffd23f">■ 2</span></div>
+          <div class="bar"><div style="width:100%;height:100%;background:#7bd88f"></div></div>
+          <div class="bar"><div style="width:100%;height:100%;background:#4f9f66"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#a3aab0"><span>⚡ 63% · шахтёр</span><span style="color:#ff8a7a">⚠ Сундук полон</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="2" width="6" height="6" fill="#c9b79a"/><rect x="6" y="8" width="8" height="10" fill="#9c8a6c"/></svg></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:13px">Рабочий андроид Т1</span><span style="font-size:11px;color:#ffd23f">■ 2</span></div>
+          <div class="bar"><div style="width:100%;height:100%;background:#7bd88f"></div></div>
+          <div class="bar"><div style="width:100%;height:100%;background:#4f9f66"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#a3aab0"><span>⚡ 88% · лесоруб</span><span>Работает</span></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:#7a3a33">
+        <div class="ico"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="2" width="6" height="6" fill="#8f979e"/><rect x="6" y="8" width="8" height="10" fill="#6c737a"/></svg></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between"><span style="font-size:13px">Боевой андроид Т4</span><span style="font-size:11px;color:#5fb8ff">■ 3</span></div>
+          <div class="bar"><div style="width:0%;height:100%;background:#7bd88f"></div></div>
+          <div class="bar"><div style="width:62%;height:100%;background:#4f9f66"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#a3aab0"><span>⚡ 12%</span><span style="color:#ff8a7a">✕ Отключён</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- map -->
+    <div class="inset" style="flex-grow:1;position:relative;overflow:hidden;background-color:#101a14;background-image:linear-gradient(#1f2b23 1px,transparent 1px),linear-gradient(90deg,#1f2b23 1px,transparent 1px);background-size:32px 32px">
+      <div style="position:absolute;left:96px;top:64px;width:352px;height:288px;background:rgba(255,182,72,.07);border:2px solid rgba(255,182,72,.45)"></div>
+      <span style="position:absolute;left:102px;top:68px;font-size:11px;color:#c7a46a">Территория фракции</span>
+      <div style="position:absolute;left:224px;top:160px;width:64px;height:64px;background:rgba(79,195,255,.15);border:2px solid #4fc3ff"></div>
+      <span style="position:absolute;left:226px;top:226px;font-size:11px;color:#9fdcff">Убежище</span>
+      <div style="position:absolute;left:310px;top:250px;width:28px;height:28px;background:#2a3540;border:2px solid #9fdcff;display:flex;align-items:center;justify-content:center;font-size:12px;color:#9fdcff">П</div>
+      <span style="position:absolute;left:300px;top:282px;font-size:11px;color:#9fdcff">Пост обсл.</span>
+      <div style="position:absolute;left:330px;top:66px;width:160px;height:160px;border-radius:50%;border:2px dashed rgba(255,107,93,.5)"></div>
+      <div style="position:absolute;left:404px;top:140px;width:12px;height:12px;background:#ff6b5d;border:2px solid #000"></div>
+      <div style="position:absolute;left:70px;top:330px;width:120px;height:80px;border:2px dashed #ffd23f;background:rgba(255,210,63,.06)"></div>
+      <span style="position:absolute;left:74px;top:334px;font-size:11px;color:#ffd23f">Шахта · 16×16</span>
+      <div style="position:absolute;left:120px;top:370px;width:10px;height:10px;background:#ffd23f;border:2px solid #000"></div>
+      <svg width="700" height="560" viewBox="0 0 700 560" aria-hidden="true" style="position:absolute;left:0;top:0"><path d="M470 400 L560 330 L600 420 L520 480 Z" fill="none" stroke="#5fb8ff" stroke-width="2" stroke-dasharray="6 5"/><circle cx="470" cy="400" r="4" fill="#5fb8ff"/><circle cx="560" cy="330" r="4" fill="#5fb8ff"/><circle cx="600" cy="420" r="4" fill="#5fb8ff"/><circle cx="520" cy="480" r="4" fill="#5fb8ff"/><path d="M372 128 L470 112" stroke="#ffb648" stroke-width="2" stroke-dasharray="3 4"/><path d="M388 196 L470 112" stroke="#ffb648" stroke-width="2" stroke-dasharray="3 4"/></svg>
+      <div style="position:absolute;left:556px;top:404px;width:12px;height:12px;background:#5fb8ff;border:2px solid #000;transform:rotate(45deg)"></div>
+      <div style="position:absolute;left:340px;top:100px;width:70px;height:120px;border:2px dashed #ffb648;background:rgba(255,182,72,.06)"></div>
+      <div style="position:absolute;left:356px;top:118px;width:16px;height:16px;background:#ff6b5d;border:2px solid #ffb648;transform:rotate(45deg)"></div>
+      <div style="position:absolute;left:376px;top:186px;width:12px;height:12px;background:#ff6b5d;border:2px solid #ffb648;transform:rotate(45deg)"></div>
+      <div style="position:absolute;left:462px;top:98px;width:20px;height:20px;border:2px solid #ffb648;border-radius:50%;box-sizing:border-box"></div>
+      <div style="position:absolute;left:492px;top:84px;background:#2a2416;border:2px solid #ffb648;padding:4px 8px;font-size:12px;color:#ffcf85">ПКМ: «Охранять здесь» · 2 машины</div>
+      <div style="position:absolute;left:150px;top:470px;width:14px;height:14px;background:#ff8a7a;border-radius:50%;box-shadow:0 0 0 6px rgba(255,138,122,.25)"></div>
+      <span style="position:absolute;left:172px;top:468px;font-size:11px;color:#ff8a7a">Андроид Т4 отключён</span>
+      <div style="position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:4px">
+        <button aria-label="Приблизить" style="width:28px;height:28px;background:#3a3e42;border:2px solid #0b0c0d;color:#e6e3dc;font-family:inherit;cursor:pointer">+</button>
+        <button aria-label="Отдалить" style="width:28px;height:28px;background:#3a3e42;border:2px solid #0b0c0d;color:#e6e3dc;font-family:inherit;cursor:pointer">−</button>
+      </div>
+      <div style="position:absolute;left:10px;bottom:10px;background:rgba(14,19,17,.9);border:2px solid #2d3430;padding:6px 8px;font-size:11px;color:#a3aab0;display:flex;gap:12px">
+        <span>ЛКМ / рамка — выбрать</span><span>ПКМ — приказ сюда</span><span>Shift+ПКМ — точки маршрута</span><span>Тянуть ПКМ — область работы</span>
+      </div>
+    </div>
+
+    <!-- right column -->
+    <div style="width:290px;display:flex;flex-direction:column;gap:8px">
+      <div class="inset" style="padding:10px;display:flex;flex-direction:column;gap:8px">
+        <span class="lbl" style="color:#ffb648">По кому стрелять · группа 1</span>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px"><button class="sw" aria-label="Монстры и мутанты: бить" style="background:#2f5a3a"><span class="dot" style="right:1px;top:0;background:#7bd88f"></span></button><span>Монстры и мутанты — <b style="color:#7bd88f">бить</b></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px"><button class="sw" aria-label="Враги по войне: бить" style="background:#2f5a3a"><span class="dot" style="right:1px;top:0;background:#7bd88f"></span></button><span>Враги по войне — <b style="color:#7bd88f">бить</b></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px"><button class="sw" aria-label="Чужие на нашей земле: не бить" style="background:#2a2d30"><span class="dot" style="left:1px;top:0;background:#7d848a"></span></button><span>Чужие на нашей земле — <b style="color:#c9d0d6">не бить</b></span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#a3aab0"><svg width="30" height="16" viewBox="0 0 30 16" aria-hidden="true"><rect x="10" y="7" width="10" height="8" fill="#7d848a"/><path d="M12 7V4a3 3 0 0 1 6 0v3" fill="none" stroke="#7d848a" stroke-width="2"/></svg><span>Отвечать на удар — всегда</span></div>
+      </div>
+      <div class="inset" style="flex-grow:1;padding:10px;display:flex;flex-direction:column;gap:8px">
+        <span class="lbl" style="color:#ff8a7a">Тревоги · 3</span>
+        <div style="background:#2b1c1a;border:2px solid #7a3a33;padding:6px 8px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#ffc2b8">✕ Боевой андроид Т4 отключён</span><span class="digits" style="color:#a3aab0;font-size:15px">14:02</span></div>
+          <span style="font-size:11px;color:#c9d0d6">→ Почините ключом на месте или отправьте к посту, когда бой закончится.</span>
+          <button class="ord" style="align-self:flex-start;padding:3px 8px;font-size:11px">Показать на карте</button>
+        </div>
+        <div style="background:#2a2416;border:2px solid #6b5326;padding:6px 8px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#ffcf85">⚠ Сундук сдачи полон</span><span class="digits" style="color:#a3aab0;font-size:15px">13:57</span></div>
+          <span style="font-size:11px;color:#c9d0d6">→ Освободите сундук или отметьте другой планшетом. Андроид ждёт.</span>
+          <button class="ord" style="align-self:flex-start;padding:3px 8px;font-size:11px">Показать на карте</button>
+        </div>
+        <div style="background:#22262a;border:2px solid #16181a;padding:6px 8px;display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span>● Контакт: 4 мутанта у восточной стены</span><span class="digits" style="color:#a3aab0;font-size:15px">13:55</span></div>
+          <span style="font-size:11px;color:#a3aab0">Группа 1 вступила в бой.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;position:relative">
+    <span style="font-size:12px;color:#ffcf85;min-width:200px">Выбрано: 2 · Мех «Бастион», Малый робот R-3</span>
+    <button class="ord" style="border-color:#ffb648;background:#4a3a1e">Охранять</button>
+    <button class="ord">Патруль</button>
+    <button class="ord">Обход</button>
+    <button class="ord">Сопровождать</button>
+    <button class="ord">Держать</button>
+    <button class="ord" disabled style="opacity:.45;cursor:not-allowed">Работа</button>
+    <button class="ord">К посту</button>
+    <button class="ord">Укрыться</button>
+    <button class="ord" style="color:#ff8a7a">Отбой</button>
+    <div style="position:absolute;left:640px;bottom:44px;background:#0e1311;border:2px solid #a3aab0;padding:5px 8px;font-size:11px;color:#c9d0d6;white-space:nowrap">Недоступно: работу выполняют только рабочие андроиды</div>
+  </div>
+</div>
+</div>
+
+
+</body>
+</html>

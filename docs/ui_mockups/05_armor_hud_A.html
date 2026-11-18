@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Шлем боевой силовой брони</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.digits{font-family:'VT323',monospace}
+.lbl{font-size:11px;letter-spacing:1px;color:#d9c9a8;text-transform:uppercase;text-shadow:1px 1px 0 #000}
+.hud{background:rgba(14,19,17,.72);border:2px solid rgba(255,182,72,.55)}
+.key{display:inline-block;padding:0 4px;border:1px solid #ffb648;color:#ffb648;font-size:11px;margin-right:4px}
+.hslot{width:40px;height:40px;box-sizing:border-box;background:rgba(20,22,24,.7);border:2px solid #3a3e42;position:relative;display:flex;align-items:center;justify-content:center}
+</style>
+
+</head>
+<body>
+
+
+<div style="position:relative;width:1280px;height:720px;overflow:hidden;font-family:'Pixelify Sans',monospace;color:#f1e6cf;background:#3f4b37">
+  <div style="position:absolute;inset:0;background:linear-gradient(#2c372b 0,#4c5a3e 46%,#6f7650 58%,#2b3326 58%,#1d241a 100%)"></div>
+  <div style="position:absolute;left:0;top:330px;width:1280px;height:90px;display:flex;align-items:flex-end">
+    <div style="width:120px;height:40px;background:#26301f"></div><div style="width:80px;height:70px;background:#222b1c"></div><div style="width:160px;height:30px;background:#26301f"></div>
+    <div style="width:60px;height:88px;background:#30362e;border-top:6px solid #232822"></div><div style="width:40px;height:50px;background:#30362e"></div><div style="width:100px;height:70px;background:#30362e;border-top:6px solid #232822"></div>
+    <div style="width:220px;height:36px;background:#26301f"></div><div style="width:90px;height:60px;background:#222b1c"></div><div style="width:410px;height:26px;background:#26301f"></div>
+  </div>
+  <div style="position:absolute;inset:0;background:repeating-linear-gradient(100deg,rgba(150,220,90,.10) 0 1px,transparent 1px 22px);opacity:.8"></div>
+
+  <svg width="1280" height="720" viewBox="0 0 1280 720" aria-hidden="true" style="position:absolute;left:0;top:0">
+    <path d="M0 0H220L170 34H40L0 90Z" fill="rgba(10,12,12,.78)"/><path d="M40 34H170" stroke="#ffb648" stroke-width="2" opacity=".6"/>
+    <path d="M1280 0H1060L1110 34H1240L1280 90Z" fill="rgba(10,12,12,.78)"/><path d="M1110 34H1240" stroke="#ffb648" stroke-width="2" opacity=".6"/>
+    <path d="M0 720H180L140 690H30L0 640Z" fill="rgba(10,12,12,.78)"/>
+    <path d="M1280 720H1100L1140 690H1250L1280 640Z" fill="rgba(10,12,12,.78)"/>
+    <path d="M630 360h-14M650 360h14M640 350v-14M640 370v14" stroke="#ffe2b0" stroke-width="2"/><rect x="638" y="358" width="4" height="4" fill="#ffb648"/>
+  </svg>
+
+  <div style="position:absolute;left:380px;top:14px;width:520px;display:flex;flex-direction:column;align-items:center;gap:8px">
+    <div class="hud" style="position:relative;width:520px;height:30px;box-sizing:border-box;overflow:hidden;background:rgba(14,19,17,.6)">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,182,72,.6) 0 1px,transparent 1px 26px);height:6px;top:auto;bottom:0"></div>
+      <span class="digits" style="position:absolute;left:58px;top:2px;font-size:20px;color:#d9c9a8">З</span>
+      <span class="digits" style="position:absolute;left:252px;top:2px;font-size:22px;color:#ffb648">С</span>
+      <span class="digits" style="position:absolute;left:446px;top:2px;font-size:20px;color:#d9c9a8">В</span>
+      <span style="position:absolute;left:300px;top:6px;font-size:11px;color:#9fdcff">▲ Убежище 240</span>
+      <span style="position:absolute;left:150px;top:6px;font-size:11px;color:#c9b7ff">◆ Тело 1.2к</span>
+      <span style="position:absolute;left:380px;top:6px;font-size:11px;color:#ffcf85">■ Пульт 260</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:rgba(58,46,16,.85);border:2px solid #ffb648;padding:6px 12px;font-size:13px">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l7 14H1z" fill="none" stroke="#ffb648" stroke-width="2"/><path d="M8 6v4M8 12v1" stroke="#ffb648" stroke-width="2"/></svg>
+      <span style="color:#ffcf85">КИСЛОТНЫЙ ДОЖДЬ</span><span class="digits" style="font-size:18px">ещё 2:40</span><span style="color:#d9c9a8">· пилот защищён, обшивка изнашивается</span>
+    </div>
+  </div>
+
+  <div style="position:absolute;left:24px;top:110px;display:flex;flex-direction:column;gap:6px">
+    <div class="hud" style="padding:6px 10px;display:flex;flex-direction:column;gap:5px;font-size:12px">
+      <span class="lbl" style="color:#ffb648">Системы</span>
+      <span><span class="key">N</span>Прожектор · <span style="color:#7bd88f">вкл</span></span>
+      <span><span class="key">9</span>Способность · усиленный удар</span>
+      <span style="color:#7bd88f">✓ ЭМИ-экран</span>
+      <span style="color:#7bd88f">✓ Сенсорный блок</span>
+      <span style="color:#d9c9a8">Обшивка: титан · 2/2</span>
+    </div>
+  </div>
+
+  <div class="hud" style="position:absolute;left:24px;bottom:24px;width:330px;box-sizing:border-box;padding:10px 12px;display:flex;gap:12px;align-items:center">
+    <svg width="70" height="110" viewBox="0 0 70 110" aria-hidden="true">
+      <rect x="24" y="2" width="22" height="18" fill="#7bd88f"/><rect x="28" y="8" width="14" height="5" fill="#0e1311"/>
+      <rect x="16" y="22" width="38" height="34" fill="#7bd88f"/>
+      <rect x="2" y="24" width="12" height="34" fill="#ffb648"/><rect x="56" y="24" width="12" height="34" fill="#7bd88f"/>
+      <rect x="18" y="58" width="15" height="48" fill="#7bd88f"/><rect x="37" y="58" width="15" height="48" fill="#ff6b5d"/>
+    </svg>
+    <div style="flex-grow:1;display:flex;flex-direction:column;gap:6px">
+      <span style="font-size:14px;color:#ffcf85">Боевая силовая броня</span>
+      <div style="display:flex;justify-content:space-between;font-size:11px"><span class="lbl">Структурная</span><span class="digits" style="font-size:17px">72 / 100</span></div>
+      <div style="height:9px;background:#1b1e21;border:1px solid #000"><div style="width:72%;height:100%;background:repeating-linear-gradient(90deg,#7bd88f 0 10px,#5fb874 10px 12px)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px"><span class="lbl">Критическая</span><span class="digits" style="font-size:17px">50 / 50</span></div>
+      <div style="height:9px;background:#1b1e21;border:1px solid #000"><div style="width:100%;height:100%;background:repeating-linear-gradient(90deg,#4f9f66 0 10px,#3e8053 10px 12px)"></div></div>
+      <span style="font-size:11px;color:#ff8a7a">Левая нога: сильный износ</span>
+    </div>
+  </div>
+
+  <div class="hud" style="position:absolute;right:24px;bottom:24px;width:300px;box-sizing:border-box;padding:10px 12px;display:flex;flex-direction:column;gap:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><span class="lbl" style="color:#ffb648">Штурмовая винтовка</span><span style="font-size:11px;color:#d9c9a8">очередь</span></div>
+    <div style="display:flex;align-items:flex-end;gap:10px">
+      <span class="digits" style="font-size:64px;line-height:.8;color:#ffe2b0">24</span>
+      <span class="digits" style="font-size:28px;color:#d9c9a8;line-height:1">/ 30</span>
+      <div style="flex-grow:1"></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end"><span class="digits" style="font-size:24px;line-height:1">180</span><span style="font-size:10px;color:#d9c9a8">в запасе</span></div>
+    </div>
+    <div style="display:flex;gap:2px">
+      <div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#ffb648"></div><div style="flex-grow:1;height:6px;background:#4a3a1e"></div><div style="flex-grow:1;height:6px;background:#4a3a1e"></div>
+    </div>
+    <span style="font-size:11px;color:#d9c9a8"><span class="key">R</span>перезарядка · <span class="key">ПКМ</span>прицел</span>
+  </div>
+
+  <div style="position:absolute;left:452px;bottom:14px;display:flex;gap:2px">
+    <div class="hslot" style="border-color:#ffe2b0"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="11" width="20" height="5" fill="#5d636a"/><rect x="8" y="16" width="4" height="6" fill="#5d636a"/></svg></div>
+    <div class="hslot"><svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="10" width="22" height="6" fill="#5d636a"/></svg></div>
+    <div class="hslot"></div><div class="hslot"></div><div class="hslot"></div><div class="hslot"></div><div class="hslot"></div><div class="hslot"></div>
+    <div class="hslot" style="border-color:#ffb648;background:rgba(58,46,16,.85)"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19L12 4l7 15z" fill="none" stroke="#ffb648" stroke-width="2"/><path d="M12 10v5" stroke="#ffb648" stroke-width="2"/></svg></div>
+  </div>
+</div>
+
+
+</body>
+</html>

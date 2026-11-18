@@ -23,11 +23,15 @@ import net.neoforged.neoforge.items.SlotItemHandler;
  * slot and the player's inventory. Slot positions are shared with the screen.
  */
 public class StationMenu extends AbstractContainerMenu {
-    public static final int INPUT_X = 26;
-    public static final int INPUT_Y = 68;
-    public static final int OUTPUT_X = 124;
-    public static final int OUTPUT_Y = 77;
-    public static final int INVENTORY_Y = 122;
+    /** 1.8.0: the window of style A (docs/ui_mockups/01_station_A.html); inputs in two columns, 20 px apart. */
+    public static final int INPUT_X = 159;
+    public static final int INPUT_Y = 55;
+    public static final int INPUT_COLUMNS = 2;
+    public static final int INPUT_STEP = 20;
+    public static final int OUTPUT_X = 355;
+    public static final int OUTPUT_Y = 41;
+    public static final int INVENTORY_X = 8;
+    public static final int INVENTORY_Y = 167;
 
     private final Station station;
     private final BlockPos pos;
@@ -59,7 +63,7 @@ public class StationMenu extends AbstractContainerMenu {
         this.recipes = TechRecipes.recipesFor(inventory.player.level(), station);
 
         for (int i = 0; i < StationBlockEntity.INPUT_SLOTS; i++) {
-            addSlot(new SlotItemHandler(items, i, INPUT_X + (i % 3) * 18, INPUT_Y + (i / 3) * 18));
+            addSlot(new SlotItemHandler(items, i, inputX(i), inputY(i)));
         }
         addSlot(new SlotItemHandler(items, StationBlockEntity.OUTPUT_SLOT, OUTPUT_X, OUTPUT_Y) {
             @Override
@@ -69,13 +73,21 @@ public class StationMenu extends AbstractContainerMenu {
         });
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, INVENTORY_Y + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, 8 + col * 18, INVENTORY_Y + 58));
+            addSlot(new Slot(inventory, col, INVENTORY_X + col * 18, INVENTORY_Y + 58));
         }
         addDataSlots(data);
+    }
+
+    public static int inputX(int slot) {
+        return INPUT_X + (slot % INPUT_COLUMNS) * INPUT_STEP;
+    }
+
+    public static int inputY(int slot) {
+        return INPUT_Y + (slot / INPUT_COLUMNS) * INPUT_STEP;
     }
 
     private static Station stationAt(Player player, BlockPos pos) {

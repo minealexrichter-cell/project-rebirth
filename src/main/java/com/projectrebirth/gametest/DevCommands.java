@@ -94,7 +94,25 @@ public final class DevCommands {
                 .then(Commands.argument("corner", BlockPosArgument.blockPos())
                         .then(Commands.argument("recipe", StringArgumentType.word())
                                 .executes(ctx -> workshop(ctx, true)))));
+        root.then(Commands.literal("use")
+                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(DevCommands::use)));
         event.getDispatcher().register(root);
+    }
+
+    /**
+     * 1.8.0: right-clicks a block with an empty hand as the player who runs the command (`execute as <player> run rbdev use x y z`),
+     * so a window opens without aiming at the block: for screenshots of windows and the layout check.
+     */
+    private static int use(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        BlockPos pos = BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        ServerLevel level = player.serverLevel();
+        net.minecraft.world.phys.BlockHitResult hit = new net.minecraft.world.phys.BlockHitResult(
+                net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
+        net.minecraft.world.InteractionResult result = level.getBlockState(pos).useWithoutItem(level, player, hit);
+        ctx.getSource().sendSuccess(() -> Component.literal("use " + pos.toShortString() + ": " + result), false);
+        return result.consumesAction() ? 1 : 0;
     }
 
     /** Sets an android up from a packed body with an AI core and a module (combat or work), as the item in the hand does. */

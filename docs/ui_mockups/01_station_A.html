@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Сборочная станция — индустриальный терминал</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.win{background:#2b2e31;border:2px solid #0b0c0d;box-shadow:inset 2px 2px 0 #4c5055,inset -2px -2px 0 #16181a}
+.inset{background:#0e1311;border:2px solid #08090a;box-shadow:inset 2px 2px 0 #040505,inset -1px -1px 0 #3a3f43}
+.slot{width:36px;height:36px;box-sizing:border-box;background:#1b1e21;box-shadow:inset 2px 2px 0 #0a0b0c,inset -2px -2px 0 #41464b;position:relative;display:flex;align-items:center;justify-content:center}
+.cnt{position:absolute;right:3px;bottom:0;font-family:'VT323',monospace;font-size:18px;color:#ffffff;text-shadow:1px 1px 0 #000}
+.rivet{position:absolute;width:6px;height:6px;border-radius:50%;background:#62686e;box-shadow:inset -1px -1px 0 #1d1f21}
+.lbl{font-size:11px;letter-spacing:1px;color:#a3aab0;text-transform:uppercase}
+.rec{display:flex;align-items:center;gap:8px;padding:5px 6px;border:2px solid transparent}
+.digits{font-family:'VT323',monospace}
+</style>
+
+</head>
+<body>
+
+
+<div style="width:960px;height:600px;box-sizing:border-box;background:#141618;font-family:'Pixelify Sans',monospace;color:#e6e3dc;display:flex;align-items:center;justify-content:center">
+  <div class="win" style="position:relative;width:892px;height:548px;box-sizing:border-box;padding:0 14px 14px;display:flex;flex-direction:column;gap:10px">
+    <div class="rivet" style="left:6px;top:6px"></div><div class="rivet" style="right:6px;top:6px"></div><div class="rivet" style="left:6px;bottom:6px"></div><div class="rivet" style="right:6px;bottom:6px"></div>
+    <div style="height:42px;display:flex;align-items:center;gap:10px;padding:0 10px;border-bottom:2px solid #16181a">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="16" height="16" fill="none" stroke="#ffb648" stroke-width="2"/><path d="M7 11h8M11 7v8" stroke="#ffb648" stroke-width="2"/></svg>
+      <span style="font-size:18px;font-weight:600;letter-spacing:2px">СБОРОЧНАЯ СТАНЦИЯ</span>
+      <div style="flex-grow:1;height:8px;margin:0 8px;background:repeating-linear-gradient(135deg,#d9a326 0 8px,#1b1c1d 8px 16px);opacity:.7"></div>
+      <button aria-label="Открыть запись Кодекса" style="width:28px;height:28px;background:#3a3e42;border:2px solid #0b0c0d;box-shadow:inset 1px 1px 0 #5a5f64;color:#ffb648;font-family:inherit;font-size:16px;cursor:pointer">?</button>
+      <button aria-label="Закрыть" style="width:28px;height:28px;background:#3a3e42;border:2px solid #0b0c0d;box-shadow:inset 1px 1px 0 #5a5f64;color:#e6e3dc;font-family:inherit;font-size:14px;cursor:pointer">✕</button>
+    </div>
+
+    <div style="display:flex;gap:12px;height:256px">
+      <div class="inset" style="width:250px;box-sizing:border-box;padding:8px;display:flex;flex-direction:column;gap:6px">
+        <label style="display:flex;align-items:center;gap:6px;background:#1a201d;border:2px solid #2d3430;padding:4px 6px">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="6" cy="6" r="4" fill="none" stroke="#8fa39a" stroke-width="2"/><path d="M9 9l4 4" stroke="#8fa39a" stroke-width="2"/></svg>
+          <input placeholder="Поиск рецепта" style="background:transparent;border:0;outline:0;color:#e6e3dc;font-family:inherit;font-size:13px;width:180px">
+        </label>
+        <div style="display:flex;gap:6px">
+          <button style="flex-grow:1;background:#3d3420;border:2px solid #ffb648;color:#ffcf85;font-family:inherit;font-size:11px;padding:3px">✓ Могу сделать</button>
+          <button style="flex-grow:1;background:#22282a;border:2px solid #343c3f;color:#a3aab0;font-family:inherit;font-size:11px;padding:3px">Все</button>
+        </div>
+        <div class="rec"><div class="slot" style="width:30px;height:30px"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="5" fill="#8a9097"/><circle cx="9" cy="9" r="2" fill="#2b2e31"/></svg></div><div style="display:flex;flex-direction:column"><span style="font-size:13px">Привод</span><span style="font-size:11px;color:#7bd88f">✓ хватает</span></div></div>
+        <div class="rec" style="border-color:#ffb648;background:#2a2416"><div class="slot" style="width:30px;height:30px"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="6" fill="#c6873a"/><circle cx="9" cy="9" r="2" fill="#2b2e31"/><rect x="8" y="1" width="2" height="4" fill="#c6873a"/></svg></div><div style="display:flex;flex-direction:column"><span style="font-size:13px;color:#ffcf85">Тяжёлый привод</span><span style="font-size:11px;color:#7bd88f">✓ хватает · идёт</span></div></div>
+        <div class="rec"><div class="slot" style="width:30px;height:30px"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="3" y="4" width="12" height="10" fill="#d8d0e6"/><path d="M3 8h12M3 11h12" stroke="#a79bbd"/></svg></div><div style="display:flex;flex-direction:column"><span style="font-size:13px">Синтетическая ткань</span><span style="font-size:11px;color:#7bd88f">✓ хватает</span></div></div>
+        <div class="rec"><div class="slot" style="width:30px;height:30px"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="5" y="2" width="8" height="14" fill="#4fc3ff"/><rect x="7" y="4" width="4" height="4" fill="#0e1311"/></svg></div><div style="display:flex;flex-direction:column"><span style="font-size:13px">Ядро ИИ</span><span style="font-size:11px;color:#ff8a7a">✕ нет: 2 × процессор</span></div></div>
+        <div class="rec"><div class="slot" style="width:30px;height:30px"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><rect x="6" y="2" width="6" height="5" fill="#9aa1a7"/><rect x="4" y="7" width="10" height="9" fill="#6c737a"/></svg></div><div style="display:flex;flex-direction:column"><span style="font-size:13px">Базовое тело-робот</span><span style="font-size:11px;color:#ff8a7a">✕ нет: 4 × привод</span></div></div>
+      </div>
+
+      <div style="flex-grow:1;display:flex;flex-direction:column;gap:8px">
+        <span class="lbl">Вход</span>
+        <div style="display:flex;gap:14px;align-items:center">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px">
+            <div class="slot"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="5" fill="#8a9097"/><circle cx="9" cy="9" r="2" fill="#2b2e31"/></svg><span class="cnt">4</span></div>
+            <div class="slot"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 12l3-6h8l1 6z" fill="#c9d3dd"/></svg><span class="cnt">2</span></div>
+            <div class="slot"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><rect x="5" y="3" width="8" height="12" fill="#56c271"/><rect x="7" y="1" width="4" height="2" fill="#56c271"/></svg><span class="cnt">1</span></div>
+            <div class="slot" style="outline:2px dashed #ff8a7a;outline-offset:-4px"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true" style="opacity:.35"><path d="M3 12l3-6h8l1 6z" fill="#d79a52"/></svg><span class="cnt" style="color:#ff8a7a">0/2</span></div>
+          </div>
+          <div class="inset" style="flex-grow:1;height:150px;box-sizing:border-box;padding:10px 12px;display:flex;flex-direction:column;gap:8px;color:#ffb648">
+            <span class="digits" style="font-size:20px;letter-spacing:1px">&gt; СБОРКА: ТЯЖЁЛЫЙ ПРИВОД</span>
+            <div style="flex-grow:1;display:flex;align-items:center;justify-content:center;gap:18px">
+              <svg width="120" height="70" viewBox="0 0 120 70" aria-hidden="true"><rect x="10" y="44" width="100" height="10" fill="none" stroke="#ffb648" stroke-width="2"/><circle cx="60" cy="30" r="16" fill="none" stroke="#ffb648" stroke-width="2"/><circle cx="60" cy="30" r="5" fill="#ffb648"/><path d="M60 0v10M44 30h-14M76 30h14" stroke="#ffb648" stroke-width="2" stroke-dasharray="3 3"/><path d="M92 18l8-8M28 18l-8-8" stroke="#4fd1c5" stroke-width="2"/></svg>
+              <div style="display:flex;flex-direction:column;gap:2px"><span class="digits" style="font-size:42px;line-height:1">62%</span><span class="digits" style="font-size:18px;color:#c7a46a">осталось 0:41</span></div>
+            </div>
+            <div style="height:10px;background:#2a2213;border:1px solid #6b5326"><div style="width:62%;height:100%;background:#ffb648"></div></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;background:#3a2321;border:2px solid #ff8a7a;padding:5px 8px;font-size:12px;color:#ffc2b8">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 1l6 12H1z" fill="none" stroke="#ff8a7a" stroke-width="2"/><path d="M7 6v3" stroke="#ff8a7a" stroke-width="2"/></svg>
+          Следующий цикл: не хватает 2 × бронзовый слиток
+        </div>
+      </div>
+
+      <div style="width:150px;display:flex;flex-direction:column;gap:8px">
+        <span class="lbl">Выход</span>
+        <div class="slot" style="width:56px;height:56px;box-shadow:inset 2px 2px 0 #0a0b0c,inset -2px -2px 0 #41464b,0 0 0 2px #ffb648"><svg width="34" height="34" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="6" fill="#c6873a"/><circle cx="9" cy="9" r="2" fill="#2b2e31"/><rect x="8" y="1" width="2" height="4" fill="#c6873a"/></svg><span class="cnt">3</span></div>
+        <span class="lbl" style="margin-top:6px">Энергия</span>
+        <div style="display:flex;gap:8px;align-items:stretch">
+          <div class="inset" style="width:22px;height:110px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:flex-end;padding:2px"><div style="height:70%;background:repeating-linear-gradient(0deg,#4fc3ff 0 6px,#2a7fb0 6px 8px)"></div></div>
+          <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:12px">
+            <span class="digits" style="font-size:20px;color:#9fdcff">84 000</span>
+            <span style="color:#a3aab0">из 120 000 FE</span>
+            <span style="color:#7bd88f">+40 FE/т</span>
+            <span style="color:#ffb648">−32 FE/т</span>
+          </div>
+        </div>
+        <div style="margin-top:auto;display:flex;align-items:center;gap:6px;background:#1d2f22;border:2px solid #7bd88f;padding:4px 8px;font-size:13px;color:#b9f0c4"><span style="width:8px;height:8px;background:#7bd88f;border-radius:50%"></span>Работает</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:14px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="lbl">Инвентарь</span>
+        <div style="display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:2px">
+          <div class="slot"></div><div class="slot"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><path d="M3 12l3-6h8l1 6z" fill="#c9d3dd"/></svg><span class="cnt">14</span></div><div class="slot"></div><div class="slot"></div><div class="slot"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="5" fill="#8a9097"/><circle cx="9" cy="9" r="2" fill="#2b2e31"/></svg><span class="cnt">9</span></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+          <div class="slot"></div><div class="slot"></div><div class="slot"><svg width="22" height="22" viewBox="0 0 18 18" aria-hidden="true"><rect x="5" y="3" width="8" height="12" fill="#56c271"/><rect x="7" y="1" width="4" height="2" fill="#56c271"/></svg><span class="cnt">5</span></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+          <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:2px;margin-top:4px">
+          <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+        </div>
+      </div>
+      <div class="inset" style="flex-grow:1;height:150px;box-sizing:border-box;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:12px;color:#c9d0d6">
+        <span class="lbl" style="color:#ffb648">Тяжёлый привод</span>
+        <span>Основа силовой брони и меха. Собирается за 1:50 при 32 FE/т.</span>
+        <span style="color:#a3aab0">Используется: силовой каркас, бронекорпуса, мех охраны.</span>
+        <span style="margin-top:auto;color:#a3aab0">Воронка сверху — материалы, снизу — готовое.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</body>
+</html>

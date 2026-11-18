@@ -56,8 +56,17 @@ public class CodexScreen extends Screen {
     @Nullable
     private Component hoveredText;
 
+    /** The window the Codex was opened from by its "?" button (1.8.0); Escape and closing go back to it. */
+    @Nullable
+    private final net.minecraft.client.gui.screens.Screen parent;
+
     public CodexScreen() {
+        this(null);
+    }
+
+    private CodexScreen(@Nullable net.minecraft.client.gui.screens.Screen parent) {
         super(Component.translatable("item.projectrebirth.rebirth_codex"));
+        this.parent = parent;
         if (category == null || categories.stream().noneMatch(c -> c.id().equals(category))) {
             category = categories.isEmpty() ? "" : categories.get(0).id();
         }
@@ -77,6 +86,31 @@ public class CodexScreen extends Screen {
                 layout = CodexPages.layout(font, entry, pageWidth(), pageHeight());
                 spread = Mth.clamp(spread, 0, lastSpread());
             }
+        }
+    }
+
+    /**
+     * Opens the Codex on an entry from a window's "?" button (1.8.0). Closing the Codex returns to that window, which stays
+     * open on the server meanwhile (as JEI does with its recipe view). An unknown entry opens the Codex where it was.
+     */
+    public static CodexScreen openFrom(net.minecraft.client.gui.screens.Screen parent, String entryId) {
+        CodexScreen screen = new CodexScreen(parent);
+        CodexBook.Entry entry = CodexBook.entries().get(entryId);
+        if (entry != null) {
+            category = entry.category();
+            openEntry = entry.id();
+            spread = 0;
+            CodexReadState.markRead(entry.id());
+        }
+        return screen;
+    }
+
+    @Override
+    public void onClose() {
+        if (parent != null && minecraft != null) {
+            minecraft.setScreen(parent);
+        } else {
+            super.onClose();
         }
     }
 
@@ -445,6 +479,10 @@ public class CodexScreen extends Screen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (openEntry != null) {
+            if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE && parent != null) {
+                onClose();
+                return true;
+            }
             if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE || keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_BACKSPACE) {
                 open(null);
                 return true;

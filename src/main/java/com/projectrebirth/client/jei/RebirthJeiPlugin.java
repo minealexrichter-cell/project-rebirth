@@ -110,7 +110,7 @@ public class RebirthJeiPlugin implements IModPlugin {
         registration.addGuiContainerHandler(StationScreen.class, new IGuiContainerHandler<>() {
             @Override
             public Collection<IGuiClickableArea> getGuiClickableAreas(StationScreen screen, double mouseX, double mouseY) {
-                return List.of(IGuiClickableArea.createBasic(StationScreen.ARROW_X, StationScreen.ARROW_Y, 24, 16,
+                return List.of(IGuiClickableArea.createBasic(StationScreen.PROCESS_X + 76, StationScreen.PROCESS_Y + 28, StationScreen.PROCESS_W - 80, 34,
                         TYPES.get(screen.getMenu().station())));
             }
         });

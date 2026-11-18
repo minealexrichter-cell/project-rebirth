@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Визор тела: Т1 и Т5</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&amp;family=VT323&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.digits{font-family:'VT323',monospace}
+.scene{position:absolute;inset:0;background:linear-gradient(#5b6b77 0,#8e9a8f 52%,#4e6a3c 52%,#3d5530 100%)}
+.tag{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#141618;border:2px solid #ffb648;color:#ffcf85;font-size:13px;padding:4px 10px;white-space:nowrap}
+</style>
+
+</head>
+<body>
+
+
+<div style="width:1280px;height:720px;display:flex;font-family:'Pixelify Sans',monospace">
+
+  <div style="position:relative;width:638px;height:720px;overflow:hidden">
+    <div class="scene"></div>
+    <div style="position:absolute;left:60px;top:300px;width:90px;height:76px;background:#6a6f63"></div><div style="position:absolute;left:420px;top:280px;width:140px;height:96px;background:#5a5f55"></div>
+    <div style="position:absolute;inset:0;background:rgba(30,90,40,.35);mix-blend-mode:multiply"></div>
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 2px,transparent 2px 4px)"></div>
+    <svg width="638" height="720" viewBox="0 0 638 720" aria-hidden="true" style="position:absolute;left:0;top:0">
+      <path d="M0 0H638V720H0Z M30 40 L120 18 H520 L608 40 V680 L520 702 H120 L30 680 Z" fill="rgba(4,10,6,.92)" fill-rule="evenodd"/>
+      <path d="M30 40 L120 18 H520 L608 40 V680 L520 702 H120 L30 680 Z" fill="none" stroke="#5cff7a" stroke-width="2" opacity=".55"/>
+      <path d="M608 120 L560 150 L575 190 L540 230" fill="none" stroke="#c9ffd2" stroke-width="2" opacity=".7"/>
+      <path d="M575 190 L600 210" fill="none" stroke="#c9ffd2" stroke-width="1" opacity=".6"/>
+      <path d="M40 600 L90 570 L85 540" fill="none" stroke="#c9ffd2" stroke-width="2" opacity=".5"/>
+      <rect x="40" y="250" width="560" height="6" fill="#5cff7a" opacity=".18"/>
+      <path d="M312 360h14M319 353v14" stroke="#5cff7a" stroke-width="2"/>
+    </svg>
+    <div class="digits" style="position:absolute;left:58px;top:56px;color:#5cff7a;font-size:20px;line-height:1.1;text-shadow:0 0 6px rgba(92,255,122,.6)">
+      <div>Т1 · БАЗОВЫЙ РОБОТ · ПО v0.9</div>
+      <div style="margin-top:10px">ПРОЧН  [######....] 14/20</div>
+      <div>ЗАРЯД  [##........] 18%</div>
+      <div>НАГРЕВ [####......] 41</div>
+      <div>ИЗНОС  [#####.....] 52%</div>
+    </div>
+    <div class="digits" style="position:absolute;left:58px;bottom:62px;color:#5cff7a;font-size:18px;text-shadow:0 0 6px rgba(92,255,122,.6)">МОДУЛИ: ГЕРМ.[ОК] ПЛАСТИНЫ[ОК]</div>
+    <div class="digits" style="position:absolute;left:50%;transform:translateX(-50%);top:430px;background:#5cff7a;color:#041006;font-size:24px;padding:2px 10px">!! НИЗКИЙ ЗАРЯД — 3 МИН !!</div>
+    <div class="digits" style="position:absolute;left:50%;transform:translateX(-50%);top:466px;color:#5cff7a;font-size:18px;white-space:nowrap">&gt; ИЗНОС 50%: САМОРЕМОНТ МЕДЛЕННЕЕ</div>
+    <div class="tag">Т1 — грубый одноцветный дисплей, шум, трещины при уроне</div>
+  </div>
+
+  <div style="width:4px;background:#ffb648"></div>
+
+  <div style="position:relative;width:638px;height:720px;overflow:hidden">
+    <div class="scene"></div>
+    <div style="position:absolute;left:60px;top:300px;width:90px;height:76px;background:#6a6f63"></div><div style="position:absolute;left:420px;top:280px;width:140px;height:96px;background:#5a5f55"></div>
+    <svg width="638" height="720" viewBox="0 0 638 720" aria-hidden="true" style="position:absolute;left:0;top:0">
+      <path d="M8 60V8H60M578 8H630V60M8 660V712H60M578 712H630V660" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+      <circle cx="319" cy="360" r="3" fill="none" stroke="#ffffff" stroke-width="1.5" opacity=".9"/>
+    </svg>
+    <div style="position:absolute;left:24px;bottom:24px;width:220px;display:flex;flex-direction:column;gap:6px;font-size:11px;color:#ffffff;text-shadow:1px 1px 0 rgba(0,0,0,.6)">
+      <div style="display:flex;justify-content:space-between"><span>Прочность</span><span class="digits" style="font-size:16px">38 / 40</span></div>
+      <div style="height:3px;background:rgba(255,255,255,.2)"><div style="width:95%;height:100%;background:#e9f6ff"></div></div>
+      <div style="display:flex;gap:10px">
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px"><span style="opacity:.8">Заряд 81%</span><div style="height:3px;background:rgba(255,255,255,.2)"><div style="width:81%;height:100%;background:#7fd3ff"></div></div></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px"><span style="opacity:.8">Нагрев 22</span><div style="height:3px;background:rgba(255,255,255,.2)"><div style="width:22%;height:100%;background:#ffb27a"></div></div></div>
+        <div style="flex-grow:1;display:flex;flex-direction:column;gap:3px"><span style="opacity:.8">Износ 8%</span><div style="height:3px;background:rgba(255,255,255,.2)"><div style="width:8%;height:100%;background:#d8d0ff"></div></div></div>
+      </div>
+    </div>
+    <div style="position:absolute;right:24px;bottom:24px;display:flex;gap:6px">
+      <span style="font-size:11px;color:#fff;background:rgba(0,0,0,.35);padding:3px 6px">Джетпак 100%</span>
+      <span style="font-size:11px;color:#fff;background:rgba(0,0,0,.35);padding:3px 6px">Сенсор</span>
+      <span style="font-size:11px;color:#fff;background:rgba(0,0,0,.35);padding:3px 6px">Охлаждение</span>
+    </div>
+    <div style="position:absolute;left:50%;transform:translateX(-50%);top:80px;font-size:12px;color:#fff;background:rgba(0,0,0,.4);border-left:3px solid #ffb648;padding:5px 10px;white-space:nowrap">Через 6 мин — пыльная буря. Герметизация установлена.</div>
+    <div class="tag">Т5 — почти незаметный интерфейс, только нужное</div>
+  </div>
+</div>
+
+
+</body>
+</html>

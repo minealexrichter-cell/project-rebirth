@@ -38,12 +38,14 @@ mkdir -p build/releases && cp build/libs/projectrebirth-<версия>.jar build
 ## 4. Коммит и тег
 
 ```bash
-git add -A -- . ':!.mcp.json'
+git add -A          # .mcp.json уже в .gitignore; исключение ':!.mcp.json' для игнорируемого файла роняет git add
 git commit -m "Version <версия> release: <коротко>
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git show HEAD:gradle.properties | grep "^mod_version"   # тег — только если тут <версия> без -dev
 git tag v<версия>
 ```
+Тег ставить **отдельной командой после проверки**, что коммит выпуска создан (в 1.7.3 `git add` упал, коммита не было, и тег встал на предыдущий коммит с `-dev`).
 Если репозиторий на GitHub: `git push && git push --tags`, затем `gh run watch` — дождаться зелёной проверки.
 
 ## 5. После выпуска

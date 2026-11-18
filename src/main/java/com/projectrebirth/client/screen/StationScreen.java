@@ -6,7 +6,6 @@ import java.util.Locale;
 
 import javax.annotation.Nullable;
 
-import com.projectrebirth.client.codex.CodexScreen;
 import com.projectrebirth.client.ui.UiBars;
 import com.projectrebirth.client.ui.UiButton;
 import com.projectrebirth.client.ui.UiColors;
@@ -22,10 +21,7 @@ import com.projectrebirth.technology.energy.EnergyUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -92,6 +88,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     private SizedIngredient[] lacking = new SizedIngredient[0];
     private int startRow;
     private boolean scrolledToSelected;
+    private boolean wasRunning;
 
     public StationScreen(StationMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -118,8 +115,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
                 () -> setFilter(false)).selected(() -> !canMakeOnly));
 
         int buttonY = topPos + 4;
-        addRenderableWidget(UiButton.icon(leftPos + WIDTH - 37, buttonY, 13, UiSprites.ICON_HELP, 7,
-                Component.translatable("screen.projectrebirth.ui.help"), this::openCodex));
+        addRenderableWidget(UiButton.help(leftPos + WIDTH - 37, buttonY, this, menu.station().id()));
         addRenderableWidget(UiButton.icon(leftPos + WIDTH - 21, buttonY, 13, UiSprites.ICON_CLOSE, 7,
                 Component.translatable("screen.projectrebirth.ui.close"), this::onClose));
         refreshAvailability();
@@ -141,12 +137,6 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         refreshList();
     }
 
-    private void openCodex() {
-        if (minecraft != null) {
-            minecraft.setScreen(CodexScreen.openFrom(this, menu.station().id()));
-        }
-    }
-
     // ---------------------------------------------------------------- state
 
     @Override
@@ -159,6 +149,11 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         }
         energyHistory[ticks % energyHistory.length] = menu.energy();
         progressHistory[ticks % progressHistory.length] = Math.round(menu.progress() * 10000);
+        boolean nowRunning = running();
+        if (ticks > progressHistory.length + 1 && nowRunning != wasRunning) {
+            (nowRunning ? com.projectrebirth.client.ui.UiSounds.WORK_START : com.projectrebirth.client.ui.UiSounds.WORK_END).play();
+        }
+        wasRunning = nowRunning;
         if (ticks % 10 == 0) {
             refreshAvailability();
             if (canMakeOnly) {
@@ -423,8 +418,8 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         FabricationRecipe recipe = selectedRecipe();
         List<Integer> ghostSlots = ghostSlots(recipe);
         for (int i = 0; i < StationBlockEntity.INPUT_SLOTS; i++) {
-            UiSprites.draw(graphics, ghostSlots.contains(i) ? UiSprites.SLOT_MISSING : UiSprites.SLOT,
-                    leftPos + StationMenu.inputX(i) - 1, topPos + StationMenu.inputY(i) - 1, 18, 18);
+            com.projectrebirth.client.ui.UiSlots.frame(graphics, ghostSlots.contains(i) ? com.projectrebirth.client.ui.UiSlots.Kind.MISSING
+                    : com.projectrebirth.client.ui.UiSlots.Kind.INPUT, leftPos + StationMenu.inputX(i), topPos + StationMenu.inputY(i));
         }
     }
 
@@ -610,13 +605,8 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
             int need = need(recipe, lack);
             int x = leftPos + StationMenu.inputX(slots.get(i));
             int y = topPos + StationMenu.inputY(slots.get(i));
-            graphics.renderFakeItem(displayStack(lack), x, y);
-            graphics.fill(RenderType.guiGhostRecipeOverlay(), x, y, x + 16, y + 16, 0xA01B1E21);
-            Component count = Component.literal((need - lack.count()) + "/" + need);
-            graphics.pose().pushPose();
-            graphics.pose().translate(0.0f, 0.0f, 200.0f);
-            UiText.scaled(graphics, count, x + 17 - font.width(count) * 0.8f, y + 10, 0.8f, UiColors.ERROR);
-            graphics.pose().popPose();
+            com.projectrebirth.client.ui.UiSlots.ghost(graphics, displayStack(lack), x, y);
+            com.projectrebirth.client.ui.UiSlots.count(graphics, Component.literal((need - lack.count()) + "/" + need), x, y, UiColors.ERROR);
             if (mouseX >= x && mouseX < x + 16 && mouseY >= y && mouseY < y + 16 && menu.getCarried().isEmpty()) {
                 hints.add(x, y, 16, 16, tr("ghost", need - lack.count(), need, displayStack(lack).getHoverName()));
             }
@@ -722,7 +712,7 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         int index = recipeAt(mouseX, mouseY);
         if (index >= 0 && minecraft != null && minecraft.gameMode != null) {
-            minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.0f));
+            com.projectrebirth.client.ui.UiSounds.CLICK.play();
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, index);
             search.setFocused(false);
             return true;

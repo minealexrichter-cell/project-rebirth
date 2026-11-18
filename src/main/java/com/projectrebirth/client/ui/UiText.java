@@ -18,6 +18,13 @@ public final class UiText {
     /** Smaller than this the game font gets blurry at GUI scale 2. */
     public static final float MIN_SCALE = 0.8f;
 
+    /**
+     * Development check (/rbdev ui check): while not null, every line that had to be cut is written here. Lines that only
+     * got a little smaller are fine and not written.
+     */
+    @javax.annotation.Nullable
+    public static java.util.Set<String> audit;
+
     private UiText() {
     }
 
@@ -44,6 +51,9 @@ public final class UiText {
         }
         String cut = font.plainSubstrByWidth(text.getString(), (int) ((maxWidth - font.width("…") * MIN_SCALE) / MIN_SCALE)) + "…";
         scaled(graphics, Component.literal(cut).withStyle(text.getStyle()), x, y + (1.0f - MIN_SCALE) * 4.0f, MIN_SCALE, color);
+        if (audit != null) {
+            audit.add(text.getString());
+        }
         return true;
     }
 
@@ -73,6 +83,9 @@ public final class UiText {
         int fit = Math.max(1, maxHeight / 9);
         for (int i = 0; i < Math.min(fit, lines.size()); i++) {
             graphics.drawString(font, lines.get(i), x, y + i * 9, color, false);
+        }
+        if (lines.size() > fit && audit != null) {
+            audit.add(text.getString());
         }
         return lines.size() > fit;
     }

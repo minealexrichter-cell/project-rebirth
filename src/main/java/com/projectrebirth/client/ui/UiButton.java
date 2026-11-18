@@ -64,14 +64,33 @@ public class UiButton extends AbstractButton {
         }
     }
 
+    /**
+     * The "?" button of a window: opens the Codex on the entry about this window; closing the Codex returns to it.
+     */
+    public static UiButton help(int x, int y, net.minecraft.client.gui.screens.Screen window, String codexEntry) {
+        return icon(x, y, 13, UiSprites.ICON_HELP, 7, Component.translatable("screen.projectrebirth.ui.help"),
+                () -> net.minecraft.client.Minecraft.getInstance().setScreen(com.projectrebirth.client.codex.CodexScreen.openFrom(window, codexEntry)));
+    }
+
+    private boolean wasHovered;
+
     @Override
     public void onPress() {
         action.run();
     }
 
     @Override
+    public void playDownSound(net.minecraft.client.sounds.SoundManager manager) {
+        UiSounds.CLICK.play();
+    }
+
+    @Override
     protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         boolean lit = selected.getAsBoolean();
+        if (isHovered() && !wasHovered && active) {
+            UiSounds.HOVER.play();
+        }
+        wasHovered = isHovered();
         ResourceLocation sprite = switch (look) {
             case METAL -> !active ? UiSprites.BUTTON_DISABLED : isHoveredOrFocused() ? UiSprites.BUTTON_HOVER : UiSprites.BUTTON;
             case CHIP -> lit ? UiSprites.CHIP_ON : isHoveredOrFocused() ? UiSprites.CHIP_OFF_HOVER : UiSprites.CHIP_OFF;

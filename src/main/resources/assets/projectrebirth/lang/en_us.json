@@ -1532,5 +1532,13 @@
   "screen.projectrebirth.station.info.cycle": "Cycle %s · %s FE/t · %s FE in all",
   "screen.projectrebirth.station.info.cycle_free": "Cycle %s",
   "screen.projectrebirth.station.info.automation": "Hoppers: materials into the input, products from the output.",
-  "screen.projectrebirth.station.ghost": "%s of %s × %s"
+  "screen.projectrebirth.station.ghost": "%s of %s × %s",
+  "subtitles.projectrebirth.ui.click": "Interface click",
+  "subtitles.projectrebirth.ui.hover": "Interface tick",
+  "subtitles.projectrebirth.ui.toggle": "Switch flips",
+  "subtitles.projectrebirth.ui.error": "Interface error buzz",
+  "subtitles.projectrebirth.ui.work_start": "Machine starts work",
+  "subtitles.projectrebirth.ui.work_end": "Machine finishes work",
+  "subtitles.projectrebirth.ui.alarm": "Interface alarm",
+  "screen.projectrebirth.ui.map.chunk": "Chunk %s, %s"
 }

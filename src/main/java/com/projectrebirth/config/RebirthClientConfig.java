@@ -28,6 +28,10 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec.BooleanValue ZONES_VISUALS;
     public static final ModConfigSpec.DoubleValue ZONES_PARTICLES;
     public static final ModConfigSpec.DoubleValue ZONES_TINT;
+    public static final ModConfigSpec.BooleanValue UI_SOUNDS;
+    public static final ModConfigSpec.BooleanValue UI_HOVER_SOUND;
+    public static final ModConfigSpec.BooleanValue UI_ANIMATIONS;
+    public static final ModConfigSpec.BooleanValue UI_REDUCED_MOTION;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -74,6 +78,14 @@ public final class RebirthClientConfig {
                 .defineInRange("from", 1.5, 0.0, 10000.0);
         RADIATION_GRAIN_FULL = builder.comment("Radiation at which the grain is as strong as in the strongest burst.")
                 .defineInRange("full", 12.0, 0.1, 10000.0);
+        builder.pop();
+        builder.comment("Interface (1.8.0): the windows, HUD and tooltips in the mod's own style.").push("ui");
+        UI_SOUNDS = builder.comment("Short mechanical sounds of the interface: clicks, switches, errors, start and end of work, alarms.")
+                .define("sounds", true);
+        UI_HOVER_SOUND = builder.comment("A very quiet tick when the mouse comes onto a button.").define("hoverSound", false);
+        UI_ANIMATIONS = builder.comment("Smooth bars and the small animations of windows (the picture of a station's work).")
+                .define("animations", true);
+        UI_REDUCED_MOTION = builder.comment("Less motion: no blinking of alarms and no shaking.").define("reducedMotion", false);
         builder.pop();
         CLIENT_SPEC = builder.build();
     }

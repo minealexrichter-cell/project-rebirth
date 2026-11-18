@@ -1532,5 +1532,13 @@
   "screen.projectrebirth.station.info.cycle": "Цикл %s · %s FE/т · всего %s FE",
   "screen.projectrebirth.station.info.cycle_free": "Цикл %s",
   "screen.projectrebirth.station.info.automation": "Воронки: материалы — во вход, готовое — из выхода.",
-  "screen.projectrebirth.station.ghost": "%s из %s × %s"
+  "screen.projectrebirth.station.ghost": "%s из %s × %s",
+  "subtitles.projectrebirth.ui.click": "Щелчок интерфейса",
+  "subtitles.projectrebirth.ui.hover": "Тик интерфейса",
+  "subtitles.projectrebirth.ui.toggle": "Щелчок переключателя",
+  "subtitles.projectrebirth.ui.error": "Ошибка интерфейса",
+  "subtitles.projectrebirth.ui.work_start": "Машина начинает работу",
+  "subtitles.projectrebirth.ui.work_end": "Машина закончила работу",
+  "subtitles.projectrebirth.ui.alarm": "Тревога интерфейса",
+  "screen.projectrebirth.ui.map.chunk": "Чанк %s, %s"
 }

@@ -200,7 +200,92 @@ function icons() {
     icon('station', P.amber, ['#########', '#.......#', '#...#...#', '#...#...#', '#.#####.#', '#...#...#', '#...#...#', '#.......#', '#########']);
 }
 
+// ---------------------------------------------------------------- the rest of the library (block A)
+
+/** A raised panel inside a window: slightly lighter metal with its own bevel, no rivets. */
+function innerPanel() {
+    const s = new Sprite(16, 16);
+    const fill = shade(P.body, 1.12);
+    s.rect(0, 0, 16, 16, fill);
+    s.frame(0, 0, 16, 16, P.bevelDark);
+    s.rect(1, 1, 14, 1, shade(P.bevelLight, 1.05)); s.rect(1, 1, 1, 14, shade(P.bevelLight, 1.05));
+    s.rect(1, 14, 14, 1, shade(P.body, 0.8)); s.rect(14, 1, 1, 14, shade(P.body, 0.8));
+    save('panel', s, nine(16, 16, 2));
+}
+
+/** A switch 15 x 8: green with the knob on the right when on, grey with the knob on the left when off. */
+function toggles() {
+    for (const [name, on] of [['toggle_on', true], ['toggle_off', false]]) {
+        const s = new Sprite(15, 8);
+        s.rect(0, 0, 15, 8, on ? P.okBack : P.chipOff);
+        s.frame(0, 0, 15, 8, on ? P.ok : P.chipOffEdge);
+        const kx = on ? 8 : 1;
+        s.rect(kx, 1, 6, 6, on ? P.ok : '#8A9096');
+        s.rect(kx, 1, 6, 1, on ? '#B9F0C4' : '#B4BAC0');
+        s.rect(kx, 6, 6, 1, on ? '#4F9F66' : '#5F656B');
+        save(name, s);
+    }
+}
+
+/** Tabs on top of a panel: the open one is lit amber and has no bottom edge (it joins the panel below). */
+function tabs() {
+    const make = (name, fill, edge, top, open) => {
+        const s = new Sprite(12, 12);
+        s.rect(0, 0, 12, 12, fill);
+        s.rect(0, 0, 12, 1, edge); s.rect(0, 0, 1, 12, edge); s.rect(11, 0, 1, 12, edge);
+        if (!open) s.rect(0, 11, 12, 1, edge);
+        s.rect(1, 1, 10, 1, top);
+        save(name, s, nine(12, 12, 2));
+    };
+    make('tab_on', P.chipOn, P.amber, P.amberLight, true);
+    make('tab_off', P.chipOff, P.chipOffEdge, shade(P.chipOff, 1.3), false);
+    make('tab_hover', mix(P.chipOff, P.chipOffEdge, 0.5), mix(P.chipOffEdge, P.amber, 0.4), shade(P.chipOff, 1.5), false);
+}
+
+/** Slots with a mark in the corner: an upgrade (violet chip) and fuel (a flame). */
+function markedSlots() {
+    let s = new Sprite(18, 18); slotBase(s, 0, 0, 18, 18);
+    for (const [x, y] of [[13, 2], [14, 2], [15, 2], [15, 3], [15, 4]]) s.set(x, y, '#B49CFF');
+    for (const [x, y] of [[2, 13], [2, 14], [2, 15], [3, 15], [4, 15]]) s.set(x, y, '#B49CFF');
+    save('slot_upgrade', s);
+    s = new Sprite(18, 18); slotBase(s, 0, 0, 18, 18);
+    for (const [x, y] of [[14, 12], [13, 13], [14, 13], [15, 13], [13, 14], [14, 14], [15, 14], [14, 15]]) s.set(x, y, '#FF9A3C');
+    s.set(14, 14, '#FFD27A');
+    save('slot_fuel', s);
+}
+
+/** The frame of the mod's tooltips and toasts: a dark screen with an amber edge. */
+function tooltip() {
+    const s = new Sprite(12, 12);
+    s.rect(0, 0, 12, 12, '#0E1311');
+    s.frame(0, 0, 12, 12, P.outline);
+    s.frame(1, 1, 10, 10, mix(P.amber, '#0E1311', 0.45));
+    save('tooltip', s, nine(12, 12, 3));
+    // a card of a list: a sunken screen with a lighter edge
+    const c = new Sprite(12, 12);
+    c.rect(0, 0, 12, 12, '#121916');
+    c.frame(0, 0, 12, 12, '#2A332E');
+    c.rect(1, 1, 10, 1, '#1A231F');
+    save('card', c, nine(12, 12, 2));
+    save('card_selected', (() => { const t = new Sprite(12, 12); t.rect(0, 0, 12, 12, P.amberBack); t.frame(0, 0, 12, 12, P.amber); return t; })(), nine(12, 12, 2));
+    // a toast: the window metal with an amber stripe on the left
+    const t = new Sprite(32, 32);
+    t.rect(0, 0, 32, 32, P.body);
+    t.frame(0, 0, 32, 32, P.outline);
+    t.bevel(1, 1, 30, 30, P.bevelLight, P.bevelDark);
+    t.rect(2, 2, 2, 28, P.amber);
+    save('toast', t, nine(32, 32, 5));
+}
+
+function moreIcons() {
+    icon('arrow_down', P.text, ['#######', '.#####.', '..###..', '...#...']);
+    icon('arrow_up', P.text, ['...#...', '..###..', '.#####.', '#######']);
+    icon('info', '#9FDCFF', ['...#...', '.......', '..##...', '...#...', '...#...', '...#...', '..###..']);
+    icon('alarm', P.error, ['..###..', '.#...#.', '.#...#.', '.#...#.', '#######', '...#...', '.......']);
+}
+
 // ---------------------------------------------------------------- run
 
 windowBody(); screen(); divider(); hazard(); slots(); buttons(); icons();
+innerPanel(); toggles(); tabs(); markedSlots(); tooltip(); moreIcons();
 console.log('Wrote ' + written.length + ' sprites to ' + OUT);

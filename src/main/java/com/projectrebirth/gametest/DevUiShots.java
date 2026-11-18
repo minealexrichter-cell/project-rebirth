@@ -16,6 +16,8 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * Development only (the gametest package is not in the jar), 1.8.0: screenshots of windows on request, without touching
  * the game window. Write a name into {@code <game dir>/ui_shot.txt}; on the next tick the client saves the frame as
  * {@code screenshots/<name>.png} and deletes the request. Used for the window gallery (docs/screenshots/ui/).
+ * A command (without "/") written into {@code <game dir>/ui_cmd.txt} runs as if typed in the chat: a client command such as
+ * {@code rbdev ui check}, or else a server command.
  */
 @EventBusSubscriber(modid = ProjectRebirth.MOD_ID, value = Dist.CLIENT)
 public final class DevUiShots {
@@ -27,6 +29,18 @@ public final class DevUiShots {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null || minecraft.level.getGameTime() % 10 != 0) {
             return;
+        }
+        Path command = minecraft.gameDirectory.toPath().resolve("ui_cmd.txt");
+        if (Files.exists(command)) {
+            try {
+                String text = Files.readString(command).trim();
+                Files.delete(command);
+                if (!net.neoforged.neoforge.client.ClientCommandHandler.runCommand(text) && minecraft.getConnection() != null) {
+                    minecraft.getConnection().sendCommand(text);
+                }
+            } catch (Exception e) {
+                ProjectRebirth.LOGGER.warn("UI command failed", e);
+            }
         }
         Path request = minecraft.gameDirectory.toPath().resolve("ui_shot.txt");
         if (!Files.exists(request)) {

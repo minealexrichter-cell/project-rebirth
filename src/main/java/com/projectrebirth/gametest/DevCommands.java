@@ -94,10 +94,39 @@ public final class DevCommands {
                 .then(Commands.argument("corner", BlockPosArgument.blockPos())
                         .then(Commands.argument("recipe", StringArgumentType.word())
                                 .executes(ctx -> workshop(ctx, true)))));
+        root.then(Commands.literal("ui").then(Commands.literal("bench")
+                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(DevCommands::uiBench))));
         root.then(Commands.literal("use")
                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
                         .executes(DevCommands::use)));
         event.getDispatcher().register(root);
+    }
+
+    /**
+     * 1.8.0: puts every block of the mod that has a window in a row along +x (two blocks apart) for /rbdev ui check, which
+     * then opens them one by one; the list and the places are in DevUiBench, shared with the client.
+     */
+    private static int uiBench(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        BlockPos origin = BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        ServerLevel level = ctx.getSource().getLevel();
+        int placed = 0;
+        for (int i = 0; i < DevUiBench.BLOCKS.size(); i++) {
+            BlockPos pos = DevUiBench.place(origin, i);
+            var block = BuiltInRegistries.BLOCK.getOptional(ProjectRebirth.id(DevUiBench.BLOCKS.get(i)));
+            if (block.isEmpty()) {
+                continue;
+            }
+            for (int up = 0; up < 3; up++) {
+                level.setBlock(pos.above(up), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+            }
+            level.setBlock(pos.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+            level.setBlock(pos, block.get().defaultBlockState(), 3);
+            placed++;
+        }
+        int count = placed;
+        ctx.getSource().sendSuccess(() -> Component.literal("ui bench: " + count + " blocks"), false);
+        return count;
     }
 
     /**

@@ -47,6 +47,37 @@ public final class UiPanels {
         return cut;
     }
 
+    /** A raised panel inside a window (a group of controls). */
+    public static void inner(GuiGraphics graphics, int x, int y, int width, int height) {
+        UiSprites.draw(graphics, UiSprites.PANEL, x, y, width, height);
+    }
+
+    /** A horizontal line between parts of a window. */
+    public static void divider(GuiGraphics graphics, int x, int y, int width) {
+        UiSprites.draw(graphics, UiSprites.DIVIDER, x, y, width, 2);
+    }
+
+    /** A card of a list (a body, a machine, an alarm); the chosen one is framed amber. */
+    public static void card(GuiGraphics graphics, int x, int y, int width, int height, boolean selected) {
+        UiSprites.draw(graphics, selected ? UiSprites.CARD_SELECTED : UiSprites.CARD, x, y, width, height);
+    }
+
+    /**
+     * An alarm: an error plate whose edge blinks (twice a second; steady with "less motion"), with an alarm icon.
+     * Returns true if the text was cut.
+     */
+    public static boolean alarm(GuiGraphics graphics, Component text, int x, int y, int width) {
+        boolean cut = plate(graphics, UiSprites.Tone.ERROR, text, x, y, width);
+        boolean lit = UiSounds.reducedMotion() || (System.currentTimeMillis() / 500) % 2 == 0;
+        if (lit) {
+            graphics.fill(x, y, x + width, y + 1, UiColors.ERROR);
+            graphics.fill(x, y + PLATE_HEIGHT - 1, x + width, y + PLATE_HEIGHT, UiColors.ERROR);
+            graphics.fill(x, y, x + 2, y + PLATE_HEIGHT, UiColors.ERROR);
+        }
+        UiSprites.draw(graphics, UiSprites.ICON_ALARM, x + 4, y + 4, 7, 7);
+        return cut;
+    }
+
     /** A sunken screen: lists, the process, descriptions, maps. */
     public static void screen(GuiGraphics graphics, int x, int y, int width, int height) {
         UiSprites.draw(graphics, UiSprites.SCREEN, x, y, width, height);

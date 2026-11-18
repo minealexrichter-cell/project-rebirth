@@ -64,6 +64,14 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> LOW_CHARGE = register("power.low_charge");
     public static final DeferredHolder<SoundEvent, SoundEvent> OVERHEAT_ALARM = register("power.overheat_alarm");
     public static final DeferredHolder<SoundEvent, SoundEvent> CHARGING_HUM = register("power.charging_hum");
+    // 1.8.0, block A: interface sounds (played only on the client, see client/ui/UiSounds)
+    public static final DeferredHolder<SoundEvent, SoundEvent> UI_CLICK = register("ui.click");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UI_HOVER = register("ui.hover");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UI_TOGGLE = register("ui.toggle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UI_ERROR = register("ui.error");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UI_WORK_START = register("ui.work_start");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UI_WORK_END = register("ui.work_end");
+    public static final DeferredHolder<SoundEvent, SoundEvent> UI_ALARM = register("ui.alarm");
 
     private ModSounds() {
     }

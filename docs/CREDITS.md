@@ -140,3 +140,7 @@ http://creativecommons.org/publicdomain/zero/1.0/
 Все модели и текстуры сделаны для мода программно: тела и броня — скриптом в Blockbench
 `blockbench/tools/build_models.js`, текстуры блоков и предметов — скриптом `blockbench/tools/build_textures.js`, объёмные модели блоков — скриптом `blockbench/tools/build_block_models.js`.
 Сторонних моделей и текстур нет.
+
+## Звуки интерфейса (1.8.0)
+
+**Решение владельца:** синтез, ничего не скачано. Скрипт `assets_src/sounds/ui/make_ui_sounds.sh` делает через ffmpeg из синусов и шума (моно, 44,1 кГц, `.ogg`) семь коротких звуков в `assets/projectrebirth/sounds/ui/`: `click`, `hover`, `toggle`, `error`, `work_start`, `work_end`, `alarm`.

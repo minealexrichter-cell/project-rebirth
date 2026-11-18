@@ -543,5 +543,47 @@
         "volume": 0.8
       }
     ]
+  },
+  "ui.click": {
+    "subtitle": "subtitles.projectrebirth.ui.click",
+    "sounds": [
+      "projectrebirth:ui/click"
+    ]
+  },
+  "ui.hover": {
+    "subtitle": "subtitles.projectrebirth.ui.hover",
+    "sounds": [
+      "projectrebirth:ui/hover"
+    ]
+  },
+  "ui.toggle": {
+    "subtitle": "subtitles.projectrebirth.ui.toggle",
+    "sounds": [
+      "projectrebirth:ui/toggle"
+    ]
+  },
+  "ui.error": {
+    "subtitle": "subtitles.projectrebirth.ui.error",
+    "sounds": [
+      "projectrebirth:ui/error"
+    ]
+  },
+  "ui.work_start": {
+    "subtitle": "subtitles.projectrebirth.ui.work_start",
+    "sounds": [
+      "projectrebirth:ui/work_start"
+    ]
+  },
+  "ui.work_end": {
+    "subtitle": "subtitles.projectrebirth.ui.work_end",
+    "sounds": [
+      "projectrebirth:ui/work_end"
+    ]
+  },
+  "ui.alarm": {
+    "subtitle": "subtitles.projectrebirth.ui.alarm",
+    "sounds": [
+      "projectrebirth:ui/alarm"
+    ]
   }
 }

@@ -56,7 +56,8 @@ public class RadiationPurgeStationBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof RadiationPurgeStationBlockEntity station) {
-            serverPlayer.displayClientMessage(station.status(serverPlayer), true);
+            // 1.8.0: a window instead of the line in the action bar
+            com.projectrebirth.technology.energy.EnergyPanelMenu.open(serverPlayer, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

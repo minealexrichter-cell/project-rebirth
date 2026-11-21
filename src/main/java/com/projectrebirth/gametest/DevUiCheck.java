@@ -132,6 +132,18 @@ public final class DevUiCheck {
             targets.add(new Target("codex", null, CodexScreen::new));
             targets.add(new Target("hud_settings", null, () -> new HudSettingsScreen(null)));
             targets.add(new Target("faction", null, FactionScreen::new));
+            // a faction of the checking player, so the five tabs can be seen (made once; the server answers before the next window)
+            targets.add(new Target("faction_create", null, () -> {
+                if (com.projectrebirth.factions.ClientFactionCache.local().isEmpty()) {
+                    net.neoforged.neoforge.network.PacketDistributor.sendToServer(new com.projectrebirth.factions.FactionSync.ActionPayload(
+                            com.projectrebirth.factions.FactionSync.Action.CREATE, "UiCheck", net.minecraft.ChatFormatting.AQUA.getId()));
+                }
+                return new FactionScreen();
+            }));
+            for (int tab = 0; tab < 5; tab++) {
+                int index = tab;
+                targets.add(new Target("faction_tab" + tab, null, () -> FactionScreen.onTab(index)));
+            }
             targets.add(new Target("widgets", null, DevUiWidgetsScreen::new));
             say("ui check: " + targets.size() + " windows × " + languages.size() + " languages × " + scales.size() + " scales");
         }

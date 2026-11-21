@@ -17,11 +17,12 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 /** Window of an air filtration unit: the room, the energy, the cartridge in use, spare and spent ones. */
 public class AirFiltrationMenu extends AbstractContainerMenu {
-    public static final int ACTIVE_X = 8;
-    public static final int SPARE_X = 30;
-    public static final int SPENT_X = 152;
-    public static final int SLOT_Y = 90;
-    public static final int INVENTORY_Y = 118;
+    /** 1.8.0: the window of style A (320 x 226): the cartridges on the right of the room screen. */
+    public static final int ACTIVE_X = 218;
+    public static final int SPARE_X = 238;
+    public static final int SPENT_X = 289;
+    public static final int SLOT_Y = 41;
+    public static final int INVENTORY_Y = 144;
 
     private final BlockPos pos;
     private final ContainerData data;

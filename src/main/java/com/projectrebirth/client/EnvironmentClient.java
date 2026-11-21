@@ -80,7 +80,13 @@ public final class EnvironmentClient {
         }
         Font font = minecraft.font;
         HudLayout.pushPanel(graphics);
-        int y = FIRST_ROW;
+        // 1.8.0: the panel of style A behind the lines: a dark screen with an amber edge and its title
+        int rows = 4 + (Float.isNaN(last.temperature()) ? 0 : 1) + (last.shelter() != EnvironmentStatusPayload.SHELTER_NONE ? 1 : 0)
+                + (last.contamination() >= 0.5f ? 1 : 0) + (last.zone() != 0 ? 1 : 0);
+        com.projectrebirth.client.hud.HudDraw.panel(graphics, -3, 0, HudLayout.PANEL_WIDTH, FIRST_ROW + rows * ROW + 1);
+        com.projectrebirth.client.ui.UiText.line(graphics, com.projectrebirth.client.ui.UiText.upper(Component.translatable("hud.projectrebirth.human.title")),
+                1, 2, HudLayout.PANEL_WIDTH - 8, com.projectrebirth.client.ui.UiColors.AMBER);
+        int y = FIRST_ROW + 1;
         // Dose: nobody feels radiation; only a dosimeter tells.
         if (carriesDosimeter(player)) {
             int stage = HumanBody.doseStage(last.dose());
@@ -216,8 +222,9 @@ public final class EnvironmentClient {
 
     private static void bar(GuiGraphics graphics, Font font, int y, Component label, float fraction, int color, String text) {
         graphics.drawString(font, label, 0, y, 0xFFFFFFFF);
-        GuiAtlas.bar(graphics, LABEL_WIDTH, y, BAR_WIDTH, 9, Mth.clamp(fraction, 0.0f, 1.0f), color);
-        graphics.drawString(font, text, LABEL_WIDTH + BAR_WIDTH + 4, y, 0xFFFFFFFF);
+        // 1.8.0: the gauge of style A, with notches; the value and the stage in the bar's colour
+        com.projectrebirth.client.ui.UiBars.horizontal(graphics, LABEL_WIDTH, y, BAR_WIDTH, 9, Mth.clamp(fraction, 0.0f, 1.0f), color);
+        graphics.drawString(font, text, LABEL_WIDTH + BAR_WIDTH + 4, y, color == 0xFF81C784 ? 0xFFFFFFFF : color);
     }
 
     private static int stageColor(int stage, int last) {

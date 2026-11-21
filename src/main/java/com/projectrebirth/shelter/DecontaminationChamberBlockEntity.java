@@ -58,6 +58,11 @@ public class DecontaminationChamberBlockEntity extends BlockEntity implements Li
         super(ShelterRegistry.DECONTAMINATION_CHAMBER_ENTITY.get(), pos, state);
     }
 
+    /** Contamination the solution already poured in can still wash off (1.8.0: for the window). */
+    public float solutionLeft() {
+        return solutionLeft;
+    }
+
     public ItemStackHandler items() {
         return items;
     }

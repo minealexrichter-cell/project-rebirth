@@ -1,131 +1,183 @@
 package com.projectrebirth.client.screen;
 
-import com.projectrebirth.client.GuiAtlas;
+import com.projectrebirth.client.ui.UiBars;
+import com.projectrebirth.client.ui.UiColors;
+import com.projectrebirth.client.ui.UiEnergy;
+import com.projectrebirth.client.ui.UiMachineScreen;
+import com.projectrebirth.client.ui.UiPanels;
+import com.projectrebirth.client.ui.UiSlots;
+import com.projectrebirth.client.ui.UiSprites;
+import com.projectrebirth.client.ui.UiTable;
+import com.projectrebirth.client.ui.UiText;
+import com.projectrebirth.client.ui.UiTooltip;
 import com.projectrebirth.environment.Environment;
 import com.projectrebirth.environment.EventPhase;
-import com.projectrebirth.technology.energy.EnergyUtil;
 import com.projectrebirth.weather.WeatherStationBlockEntity;
 import com.projectrebirth.weather.WeatherStationMenu;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-import static com.projectrebirth.client.screen.GuiShapes.panel;
-import static com.projectrebirth.client.screen.GuiShapes.playerInventory;
-import static com.projectrebirth.client.screen.GuiShapes.slot;
+/**
+ * Weather station in the style "Industrial terminal" (1.8.0 block D): the forecast screen (the coming catastrophe, the time
+ * until it in display digits, its strength and length, what to do), the sky now, the long range module, energy, and the
+ * last catastrophes as a table.
+ */
+public class WeatherStationScreen extends UiMachineScreen<WeatherStationMenu> {
+    private static final int W = WeatherStationMenu.WIDTH;
+    private static final int H = 243;
+    private static final int SCREEN_W = 226;
+    private static final int RIGHT_X = 239;
 
-/** Weather station window: energy, the forecast, the sky now and the last catastrophes, with the slot of the long range module. */
-public class WeatherStationScreen extends AbstractContainerScreen<WeatherStationMenu> {
-    private static final int HEADER = 0x404040;
-    private static final int TEXT = 0x2F4F6F;
-    private static final int DIM = 0x707070;
-    private static final int HISTORY_LINES = 4;
+    private final UiEnergy energy = new UiEnergy();
 
     public WeatherStationScreen(WeatherStationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, GuiShapes.fit(title, WeatherStationMenu.WIDTH - 16));
-        imageWidth = WeatherStationMenu.WIDTH;
-        imageHeight = WeatherStationMenu.INVENTORY_Y + 82;
-        inventoryLabelY = WeatherStationMenu.INVENTORY_Y - 11;
-        inventoryLabelX = WeatherStationMenu.INVENTORY_X;
-    }
-
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
-    }
-
-    @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        int x = leftPos, y = topPos;
-        panel(graphics, x, y, imageWidth, imageHeight);
-        slot(graphics, x + WeatherStationMenu.MODULE_X, y + WeatherStationMenu.MODULE_Y);
-        playerInventory(graphics, x + WeatherStationMenu.INVENTORY_X, y + WeatherStationMenu.INVENTORY_Y);
-        GuiAtlas.energyHorizontal(graphics, x + 8, y + 19, imageWidth - 40, 6, menu.energy(), menu.energyCapacity());
-    }
-
-    private static Component event(int index) {
-        String id = index >= 0 && index < Environment.EVENTS.size() ? Environment.EVENTS.get(index) : "none";
-        return Component.translatable("environment.projectrebirth.event." + id);
+        super(menu, inventory, title, W, H, "weather_station");
     }
 
     private static Component key(String key, Object... args) {
         return Component.translatable("screen.projectrebirth.weather_station." + key, args);
     }
 
-    private void line(GuiGraphics graphics, Component text, int y, int color) {
-        graphics.drawString(font, font.plainSubstrByWidth(text.getString(), imageWidth - 16), 8, y, color, false);
+    private static String eventId(int index) {
+        return index >= 0 && index < Environment.EVENTS.size() ? Environment.EVENTS.get(index) : "none";
+    }
+
+    private static Component event(int index) {
+        return Component.translatable("environment.projectrebirth.event." + eventId(index));
+    }
+
+    private static String clock(int seconds) {
+        return String.format(java.util.Locale.ROOT, "%d:%02d", seconds / 60, seconds % 60);
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        super.renderLabels(graphics, mouseX, mouseY);
-        graphics.drawString(font, Component.translatable("screen.projectrebirth.energy", EnergyUtil.format(menu.energy()),
-                EnergyUtil.format(menu.energyCapacity())), 8, 28, DIM, false);
-        // the forecast
-        line(graphics, key("forecast"), 39, HEADER);
+    protected void containerTick() {
+        super.containerTick();
+        energy.tick(menu.energy(), 0);
+    }
+
+    @Override
+    protected void drawBody(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
         int state = menu.get(WeatherStationBlockEntity.DATA_STATE);
-        Component first, second = null;
+        int sx = x + 7;
+        int sy = y + 25;
+        UiPanels.screen(graphics, sx, sy, SCREEN_W, 96);
+        text(graphics, Component.literal("> ").append(UiText.upper(key("forecast"))), sx + 5, sy + 5, SCREEN_W - 10, UiColors.AMBER);
+        UiSprites.Tone tone;
+        Component plate;
         switch (state) {
             case WeatherStationBlockEntity.STATE_FORECAST -> {
-                Component name = event(menu.get(WeatherStationBlockEntity.DATA_EVENT));
+                int eventIndex = menu.get(WeatherStationBlockEntity.DATA_EVENT);
+                text(graphics, UiText.upper(event(eventIndex)), sx + 5, sy + 18, SCREEN_W - 10, UiColors.AMBER_LIGHT);
                 int until = menu.get(WeatherStationBlockEntity.DATA_UNTIL);
                 if (until >= 0) {
-                    first = key("exact", name, String.format("%d:%02d", until / 60, until % 60));
-                    second = key("details", menu.get(WeatherStationBlockEntity.DATA_INTENSITY),
-                            Math.max(1, (menu.get(WeatherStationBlockEntity.DATA_LENGTH) + 59) / 60));
+                    UiText.scaled(graphics, Component.literal(clock(until)), sx + 5, sy + 30, 2.0f, UiColors.AMBER);
+                    text(graphics, key("until"), sx + 70, sy + 37, SCREEN_W - 75, UiColors.AMBER_DIM);
+                    int intensity = menu.get(WeatherStationBlockEntity.DATA_INTENSITY);
+                    UiBars.meter(graphics, null, sx + 5, sy + 52, SCREEN_W - 10, intensity / 100.0f, UiColors.WARNING,
+                            Component.literal(intensity + "%"));
+                    text(graphics, key("lasts", Math.max(1, (menu.get(WeatherStationBlockEntity.DATA_LENGTH) + 59) / 60)), sx + 5, sy + 64,
+                            SCREEN_W - 10, UiColors.SCREEN_TEXT);
                 } else {
-                    int low = menu.get(WeatherStationBlockEntity.DATA_ROUGH_LOW), high = menu.get(WeatherStationBlockEntity.DATA_ROUGH_HIGH);
-                    first = low <= 0 ? key("rough_soon", name, high) : key("rough", name, low, high);
-                    second = key("module_hint");
+                    int low = menu.get(WeatherStationBlockEntity.DATA_ROUGH_LOW);
+                    int high = menu.get(WeatherStationBlockEntity.DATA_ROUGH_HIGH);
+                    UiText.scaled(graphics, Component.literal(low <= 0 ? "< " + high : low + "–" + high), sx + 5, sy + 30, 2.0f, UiColors.AMBER);
+                    text(graphics, key("minutes"), sx + 90, sy + 37, SCREEN_W - 95, UiColors.AMBER_DIM);
+                    text(graphics, key("module_hint"), sx + 5, sy + 52, SCREEN_W - 10, UiColors.TEXT_SECONDARY);
                 }
+                tone = UiSprites.Tone.WARNING;
+                plate = Component.translatable("hud.projectrebirth.catastrophe.advice." + eventId(eventIndex));
             }
-            case WeatherStationBlockEntity.STATE_CLEAR -> first = key("clear", menu.get(WeatherStationBlockEntity.DATA_HORIZON));
-            case WeatherStationBlockEntity.STATE_ACTIVE -> first = key("going_on");
-            case WeatherStationBlockEntity.STATE_NO_SKY -> first = key("no_sky");
-            case WeatherStationBlockEntity.STATE_NO_ENERGY -> first = key("no_energy");
-            default -> first = key("none_here");
+            case WeatherStationBlockEntity.STATE_CLEAR -> {
+                UiText.wrapped(graphics, key("clear", menu.get(WeatherStationBlockEntity.DATA_HORIZON)), sx + 5, sy + 20, SCREEN_W - 10, 30, UiColors.OK);
+                tone = UiSprites.Tone.OK;
+                plate = key("todo.clear");
+            }
+            case WeatherStationBlockEntity.STATE_ACTIVE -> {
+                text(graphics, key("going_on"), sx + 5, sy + 20, SCREEN_W - 10, UiColors.ERROR);
+                tone = UiSprites.Tone.ERROR;
+                plate = key("todo.active");
+            }
+            case WeatherStationBlockEntity.STATE_NO_SKY -> {
+                text(graphics, key("no_sky"), sx + 5, sy + 20, SCREEN_W - 10, UiColors.ERROR);
+                tone = UiSprites.Tone.ERROR;
+                plate = key("todo.no_sky");
+            }
+            case WeatherStationBlockEntity.STATE_NO_ENERGY -> {
+                text(graphics, key("no_energy"), sx + 5, sy + 20, SCREEN_W - 10, UiColors.WARNING);
+                tone = UiSprites.Tone.WARNING;
+                plate = Component.translatable("screen.projectrebirth.station.plate.no_energy");
+            }
+            default -> {
+                text(graphics, key("none_here"), sx + 5, sy + 20, SCREEN_W - 10, UiColors.TEXT_SECONDARY);
+                tone = UiSprites.Tone.INFO;
+                plate = key("none_here");
+            }
         }
-        line(graphics, first, 49, state == WeatherStationBlockEntity.STATE_FORECAST ? TEXT : DIM);
-        if (second != null) {
-            line(graphics, second, 58, state == WeatherStationBlockEntity.STATE_FORECAST && menu.get(WeatherStationBlockEntity.DATA_UNTIL) >= 0 ? TEXT : DIM);
-        }
-        // the sky now
-        line(graphics, key("now"), 70, HEADER);
-        int phase = menu.get(WeatherStationBlockEntity.DATA_NOW_PHASE);
-        Component now;
-        if (phase < 0 || phase >= EventPhase.values().length) {
-            now = Component.literal("—");
-        } else {
-            Component name = event(menu.get(WeatherStationBlockEntity.DATA_NOW_EVENT));
-            int left = menu.get(WeatherStationBlockEntity.DATA_NOW_LEFT);
-            now = switch (EventPhase.values()[phase]) {
-                case WARNING -> key("now_warning", name);
-                case ACTIVE -> key("now_active", name, Math.max(1, (left + 59) / 60));
-                case AFTERMATH -> key("now_aftermath", name);
-                default -> key("now_calm");
-            };
-        }
-        line(graphics, now, 80, TEXT);
-        // the last catastrophes
-        line(graphics, key("history"), 92, HEADER);
-        int count = Math.min(HISTORY_LINES, menu.get(WeatherStationBlockEntity.DATA_HISTORY));
+        // the sky now, at the bottom of the screen
+        graphics.fill(sx + 4, sy + 77, sx + SCREEN_W - 4, sy + 78, 0xFF2A332E);
+        text(graphics, Component.literal(UiText.upper(key("now")).getString() + ": ").append(now()), sx + 5, sy + 82, SCREEN_W - 10, UiColors.SCREEN_TEXT);
+
+        // module, energy, state
+        int rx = x + RIGHT_X;
+        int rw = W - 7 - RIGHT_X;
+        UiPanels.label(graphics, key("label.module"), rx, y + 26, rw);
+        UiSlots.frame(graphics, UiSlots.Kind.UPGRADE, x + WeatherStationMenu.MODULE_X, y + WeatherStationMenu.MODULE_Y);
+        text(graphics, key(menu.getSlot(0).hasItem() ? "module_in" : "module_out"), x + WeatherStationMenu.MODULE_X + 23, y + 46,
+                x + W - 7 - (x + WeatherStationMenu.MODULE_X + 23), UiColors.TEXT_SECONDARY);
+        energy.draw(this, graphics, rx, y + 66, rw, 26, menu.energy(), menu.energyCapacity());
+        badge(graphics, tone, key("badge." + state), rx, y + 104, rw);
+        plate(graphics, tone == UiSprites.Tone.OK ? UiSprites.Tone.INFO : tone, plate, x + 7, y + 126, W - 14);
+
+        // inventory and history
+        inventory(graphics, x + WeatherStationMenu.INVENTORY_X, y + WeatherStationMenu.INVENTORY_Y);
+        int ix = x + 176;
+        int iy = y + WeatherStationMenu.INVENTORY_Y - 11;
+        int iw = W - 7 - 176;
+        UiPanels.screen(graphics, ix, iy, iw, H - 7 - (WeatherStationMenu.INVENTORY_Y - 11));
+        text(graphics, UiText.upper(key("history")), ix + 5, iy + 5, iw - 10, UiColors.AMBER);
+        int count = Math.min(5, menu.get(WeatherStationBlockEntity.DATA_HISTORY));
         if (count <= 0) {
-            line(graphics, key("history_none"), 102, DIM);
+            text(graphics, key("history_none"), ix + 5, iy + 18, iw - 10, UiColors.TEXT_DIM);
+            return;
         }
+        UiTable table = new UiTable().column(key("col.day"), 18).column(key("col.event"), iw - 10 - 18 - 28 - 20)
+                .column(key("col.strength"), 28).column(key("col.minutes"), 20);
         for (int i = 0; i < count; i++) {
             int at = WeatherStationBlockEntity.DATA_PAST + 4 * i;
-            line(graphics, key("history_entry", menu.get(at + 3), event(menu.get(at)), menu.get(at + 1), menu.get(at + 2)), 102 + 10 * i, TEXT);
+            table.row(UiTable.Cell.text(Component.literal(String.valueOf(menu.get(at + 3)))), UiTable.Cell.text(event(menu.get(at))),
+                    UiTable.Cell.text(Component.literal(menu.get(at + 1) + "%")), UiTable.Cell.text(Component.literal(String.valueOf(menu.get(at + 2)))));
+        }
+        table.render(graphics, ix + 5, iy + 16, 11, hints);
+    }
+
+    private Component now() {
+        int phase = menu.get(WeatherStationBlockEntity.DATA_NOW_PHASE);
+        if (phase < 0 || phase >= EventPhase.values().length) {
+            return Component.literal("—");
+        }
+        Component name = event(menu.get(WeatherStationBlockEntity.DATA_NOW_EVENT));
+        int left = menu.get(WeatherStationBlockEntity.DATA_NOW_LEFT);
+        return switch (EventPhase.values()[phase]) {
+            case WARNING -> key("now_warning", name);
+            case ACTIVE -> key("now_active", name, Math.max(1, (left + 59) / 60));
+            case AFTERMATH -> key("now_aftermath", name);
+            default -> key("now_calm");
+        };
+    }
+
+    @Override
+    protected void drawOver(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        if (!menu.getSlot(0).hasItem()) {
+            tooltip(x + WeatherStationMenu.MODULE_X, y + WeatherStationMenu.MODULE_Y, 16, 16,
+                    () -> UiTooltip.of(key("module_slot")).text(key("module_hint"), UiColors.TEXT_SECONDARY));
         }
     }
 
     @Override
-    protected void renderTooltip(GuiGraphics graphics, int x, int y) {
-        super.renderTooltip(graphics, x, y);
-        if (menu.getCarried().isEmpty() && hoveredSlot != null && hoveredSlot.index == WeatherStationBlockEntity.MODULE_SLOT && !hoveredSlot.hasItem()) {
-            graphics.renderTooltip(font, key("module_slot"), x, y);
-        }
+    public boolean isPauseScreen() {
+        return false;
     }
 }

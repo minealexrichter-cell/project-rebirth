@@ -122,13 +122,16 @@ public final class ScoutingClient {
         Component title = Component.translatable(reading.sensor() ? "hud.projectrebirth.sensor.title" : "hud.projectrebirth.analyzer.title");
         width = Math.max(width, minecraft.font.width(title) + 4);
         int height = 11 + lines.length * 10 + size + 4;
-        graphics.fill(-2, -2, width, height, 0x90000000);
-        graphics.drawString(minecraft.font, title, 0, y, 0xFF8FD3F5);
+        // 1.8.0 block D: the panel of style A (a dark screen with an amber edge), the title in amber capitals, the map in a frame
+        com.projectrebirth.client.hud.HudDraw.panel(graphics, -3, -2, width + 3, height + 2);
+        com.projectrebirth.client.ui.UiText.line(graphics, com.projectrebirth.client.ui.UiText.upper(title), 0, y, width - 2,
+                com.projectrebirth.client.ui.UiColors.AMBER);
         y += 11;
         for (Component line : lines) {
-            graphics.drawString(minecraft.font, line, 0, y, 0xFFE0E0E0);
+            graphics.drawString(minecraft.font, line, 0, y, com.projectrebirth.client.ui.UiColors.SCREEN_TEXT);
             y += 10;
         }
+        graphics.fill(0, y, size + 2, y + size + 2, 0xFF1F2B23);
         ContaminationMapView.draw(graphics, snapshot, 1, y + 1, cell, Integer.MIN_VALUE / 2, Integer.MIN_VALUE / 2);
         graphics.pose().popPose();
     }

@@ -100,3 +100,9 @@
 | Визор тела (три вида) | T1–T2 зелёный дисплей, T3–T4 терминал, T5 тонкие линии; предупреждения, трещины и помехи | `ui/c_visor_t1.png`, `ui/c_visor_t1_damaged.png`, `ui/c_visor_t3.png`, `ui/c_visor_t5.png` | — |
 | Шлем силовой брони | Рамка, компас, корпус, оружие, системы; аварийный режим | `ui/c_helmet_combat.png`, `ui/c_helmet_weapon.png`, `ui/c_helmet_emergency.png` | — |
 | Редактор HUD (H) | Рамки элементов, перетаскивание, размер, выключение | `ui/c_hud_editor.png` | — |
+| Панель «Человек», оверлей анализатора | Панель стиля A, оверлей с картой в рамке | `ui/d_hud_human.png` | — |
+| Баннер катастрофы и прогноза | Что идёт, время, что делать | `ui/d_hud_warning.png`, `ui/d_hud_event.png` | — |
+| Обогреватель, камера дезактивации, станция очистки | Новые окна вместо строки | `ui/d_heater.png`, `ui/d_decontamination_chamber.png`, `ui/d_radiation_purge_station.png` | — |
+| Фильтровальная установка, водоочиститель, панель убежища, метеостанция | Окна стиля A | `ui/d_air_filtration_unit.png`, `ui/d_water_purifier.png`, `ui/d_shelter_control_panel.png`, `ui/d_weather_station.png` | — |
+| Станция мониторинга | Карта на общем виджете, слои, печать | `ui/d_monitoring_station.png` | — |
+| Окно фракции (G) | Пять вкладок: участники, территория, союзы и войны, права ролей, настройки | `ui/d_faction_tab0.png` … `ui/d_faction_tab4.png` | — |

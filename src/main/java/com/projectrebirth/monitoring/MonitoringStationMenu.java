@@ -20,12 +20,13 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 /** Monitoring station window: the map (from {@link MonitoringPayload}), paper in, the printed map out, the print button, energy. */
 public class MonitoringStationMenu extends AbstractContainerMenu {
-    public static final int WIDTH = 238;
-    public static final int PAPER_X = 118;
-    public static final int MAP_X = 182;
-    public static final int SLOT_Y = 58;
-    public static final int INVENTORY_X = 38;
-    public static final int INVENTORY_Y = 132;
+    /** 1.8.0: the window of style A (360 x 250): the map on the left, the print row in the right column. */
+    public static final int WIDTH = 360;
+    public static final int PAPER_X = 214;
+    public static final int MAP_X = 334;
+    public static final int SLOT_Y = 118;
+    public static final int INVENTORY_X = 8;
+    public static final int INVENTORY_Y = 167;
 
     private final BlockPos pos;
     private final ContainerData data;

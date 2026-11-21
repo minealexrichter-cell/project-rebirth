@@ -179,8 +179,9 @@ public class DecontaminationChamberBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         DecontaminationChamberBlockEntity chamber = chamber(level, pos, state);
-        if (!level.isClientSide && chamber != null) {
-            player.displayClientMessage(chamber.status(player), true);
+        // 1.8.0: a window instead of the line in the action bar
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer && chamber != null) {
+            com.projectrebirth.technology.energy.EnergyPanelMenu.open(serverPlayer, chamber.getBlockPos());
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

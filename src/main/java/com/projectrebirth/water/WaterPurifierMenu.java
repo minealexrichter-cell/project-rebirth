@@ -18,11 +18,12 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 /** Water purifier window: polluted water in, the cartridge, clean water out, progress, energy and the player's inventory. */
 public class WaterPurifierMenu extends AbstractContainerMenu {
-    public static final int INPUT_X = 44;
-    public static final int CARTRIDGE_X = 80;
-    public static final int OUTPUT_X = 116;
-    public static final int SLOT_Y = 26;
-    public static final int INVENTORY_Y = 92;
+    /** 1.8.0: the window of style A (300 x 214): the water's way left to right across the process screen. */
+    public static final int INPUT_X = 18;
+    public static final int CARTRIDGE_X = 92;
+    public static final int OUTPUT_X = 166;
+    public static final int SLOT_Y = 56;
+    public static final int INVENTORY_Y = 132;
 
     private final BlockPos pos;
     private final ContainerData data;

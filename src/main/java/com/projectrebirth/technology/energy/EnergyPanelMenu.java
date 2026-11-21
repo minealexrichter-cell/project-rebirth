@@ -23,7 +23,9 @@ import net.minecraft.world.item.ItemStack;
  */
 public class EnergyPanelMenu extends AbstractContainerMenu {
     public enum Kind {
-        SOLAR, ISOTOPE, BATTERY, BACKUP
+        SOLAR, ISOTOPE, BATTERY, BACKUP,
+        /** 1.8.0 block D: the devices of the shelter and the human, with the same window. */
+        HEATER, DECON, PURGE
     }
 
     /** States of a solar panel. */
@@ -44,7 +46,8 @@ public class EnergyPanelMenu extends AbstractContainerMenu {
     private static final int DATA_CAPACITY_HIGH = 5;
     private static final int DATA_MAKES = 6;
     private static final int DATA_EXTRA = 7;
-    private static final int DATA_COUNT = 8;
+    private static final int DATA_EXTRA2 = 8;
+    private static final int DATA_COUNT = 9;
 
     private final BlockPos pos;
     private final ContainerData data;
@@ -67,6 +70,15 @@ public class EnergyPanelMenu extends AbstractContainerMenu {
      */
     @javax.annotation.Nullable
     public static SimpleMenuProvider providerFor(net.minecraft.world.level.Level level, BlockPos pos) {
+        return providerFor(level, pos, null);
+    }
+
+    /**
+     * The window of the device at that place for this player (the chamber and the purge station tell about the player in
+     * them), or null if it is not one. Public for tests.
+     */
+    @javax.annotation.Nullable
+    public static SimpleMenuProvider providerFor(net.minecraft.world.level.Level level, BlockPos pos, @javax.annotation.Nullable ServerPlayer player) {
         Component title = level.getBlockState(pos).getBlock().getName();
         net.minecraft.world.level.block.entity.BlockEntity entity = level.getBlockEntity(pos);
         if (entity instanceof SolarPanelBlockEntity panel) {
@@ -84,6 +96,21 @@ public class EnergyPanelMenu extends AbstractContainerMenu {
         if (entity instanceof BatteryBlockEntity battery) {
             return provider(pos, title, Kind.BATTERY, battery.energy(), () -> 0, () -> 0, () -> 0);
         }
+        if (entity instanceof com.projectrebirth.environment.HeaterBlockEntity heater) {
+            return provider(pos, title, Kind.HEATER, heater.energy(), () -> heater.working() ? 1 : 0, () -> 0,
+                    () -> Math.round(heater.around() * 10), () -> (int) Math.round(com.projectrebirth.config.RebirthConfig.HEATER_THERMOSTAT.get() * 10));
+        }
+        if (entity instanceof com.projectrebirth.shelter.DecontaminationChamberBlockEntity chamber) {
+            return provider(pos, title, Kind.DECON, chamber.energy(), () -> chamber.items().getStackInSlot(0).getCount(), () -> 0,
+                    () -> Math.round(chamber.solutionLeft()),
+                    () -> player == null ? 0 : Math.round(10 * com.projectrebirth.shelter.Contamination.of(
+                            player.getVehicle() instanceof com.projectrebirth.powerarmor.PowerArmorEntity armor ? armor : player)));
+        }
+        if (entity instanceof com.projectrebirth.shelter.RadiationPurgeStationBlockEntity station) {
+            return provider(pos, title, Kind.PURGE, station.energy(), () -> player == null ? 0 : station.reasonFor(player).ordinal(), () -> 0,
+                    () -> player == null ? 0 : Math.round(10 * com.projectrebirth.environment.HumanBody.biology(player).dose()),
+                    () -> (int) Math.round(com.projectrebirth.config.RebirthConfig.PURGE_DOSE_PER_SECOND.get() * 10));
+        }
         if (entity instanceof BackupBatteryBlockEntity battery) {
             return provider(pos, title, Kind.BACKUP, battery.energy(), () -> battery.isOnReserve() ? BACKUP_FEEDING : BACKUP_WAITING,
                     () -> 0, battery::supported);
@@ -93,7 +120,7 @@ public class EnergyPanelMenu extends AbstractContainerMenu {
 
     /** Opens the window of the energy block at that place for the player (server side); nothing if it is not one. */
     public static void open(ServerPlayer player, BlockPos pos) {
-        SimpleMenuProvider provider = providerFor(player.level(), pos);
+        SimpleMenuProvider provider = providerFor(player.level(), pos, player);
         if (provider != null) {
             player.openMenu(provider, buf -> buf.writeBlockPos(pos));
         }
@@ -101,6 +128,11 @@ public class EnergyPanelMenu extends AbstractContainerMenu {
 
     private static SimpleMenuProvider provider(BlockPos pos, Component title, Kind kind, ModEnergyStorage energy,
                                                IntSupplier state, IntSupplier makes, IntSupplier extra) {
+        return provider(pos, title, kind, energy, state, makes, extra, () -> 0);
+    }
+
+    private static SimpleMenuProvider provider(BlockPos pos, Component title, Kind kind, ModEnergyStorage energy,
+                                               IntSupplier state, IntSupplier makes, IntSupplier extra, IntSupplier extra2) {
         ContainerData data = new ContainerData() {
             @Override
             public int get(int index) {
@@ -113,6 +145,7 @@ public class EnergyPanelMenu extends AbstractContainerMenu {
                     case DATA_CAPACITY_HIGH -> EnergyUtil.high(energy.getMaxEnergyStored());
                     case DATA_MAKES -> makes.getAsInt();
                     case DATA_EXTRA -> extra.getAsInt();
+                    case DATA_EXTRA2 -> extra2.getAsInt();
                     default -> 0;
                 };
             }
@@ -158,6 +191,10 @@ public class EnergyPanelMenu extends AbstractContainerMenu {
 
     public int extra() {
         return data.get(DATA_EXTRA);
+    }
+
+    public int extra2() {
+        return data.get(DATA_EXTRA2);
     }
 
     @Override

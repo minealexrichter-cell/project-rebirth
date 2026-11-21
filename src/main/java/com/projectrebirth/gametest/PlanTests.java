@@ -26,6 +26,8 @@ public final class PlanTests {
     public static final String SCOUTING = ProjectRebirth.MOD_ID + "_scouting";
     /** Version 1.7.0 «Garrison»: multiblocks, the AI core, the machines. */
     public static final String GARRISON = ProjectRebirth.MOD_ID + "_garrison";
+    /** Version 1.8.0 «Interface»: the resources and server parts of the new windows and HUD (docs/PLAN_1.8.md). */
+    public static final String INTERFACE = ProjectRebirth.MOD_ID + "_interface";
 
     private PlanTests() {
     }

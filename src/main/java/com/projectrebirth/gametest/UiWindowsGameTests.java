@@ -29,7 +29,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
  * battery and the backup battery open a window of their kind (before, they only wrote a line in the action bar); the
  * capsule's rows carry the charge and wear of a body standing in a loaded place (unknown, -1, otherwise).
  */
-@GameTestHolder(ProjectRebirth.MOD_ID)
+@GameTestHolder(PlanTests.INTERFACE)
 @PrefixGameTestTemplate(false)
 public class UiWindowsGameTests {
     private static ServerPlayer player(GameTestHelper helper) {
@@ -64,6 +64,37 @@ public class UiWindowsGameTests {
             helper.assertTrue(menu.kind() == kinds.get(i), blocks.get(i) + " opens the window of its kind, got " + menu.kind());
             helper.assertTrue(menu.energyCapacity() > 0, blocks.get(i) + " tells its capacity");
             helper.assertTrue(menu.stillValid(player), "the window stays open next to the block");
+        }
+        helper.succeed();
+    }
+
+    /**
+     * 1.8.0 block D: the heater, the decontamination chamber and the radiation purge station open the same window as the
+     * energy blocks (before, they only wrote a line in the action bar), each of its kind, with what it tells: the heater
+     * its thermostat, the purge station why it would not purge this person (no dose here).
+     */
+    @GameTest(template = "floor_3x3")
+    public static void shelterDevicesOpenTheirWindows(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        List<Block> blocks = List.of(com.projectrebirth.environment.TemperatureRegistry.HEATER.get(), ShelterRegistry.DECONTAMINATION_CHAMBER.get(),
+                ShelterRegistry.RADIATION_PURGE_STATION.get());
+        List<EnergyPanelMenu.Kind> kinds = List.of(EnergyPanelMenu.Kind.HEATER, EnergyPanelMenu.Kind.DECON, EnergyPanelMenu.Kind.PURGE);
+        for (int i = 0; i < blocks.size(); i++) {
+            BlockPos at = new BlockPos(i * 2 % 4, 2, i / 2 * 2);
+            helper.setBlock(at, blocks.get(i));
+            var provider = EnergyPanelMenu.providerFor(helper.getLevel(), helper.absolutePos(at), player);
+            helper.assertTrue(provider != null, blocks.get(i) + " has the device window");
+            EnergyPanelMenu menu = (EnergyPanelMenu) provider.createMenu(0, player.getInventory(), player);
+            helper.assertTrue(menu.kind() == kinds.get(i), blocks.get(i) + " opens the window of its kind, got " + menu.kind());
+            helper.assertTrue(menu.energyCapacity() > 0, blocks.get(i) + " tells its capacity");
+            if (kinds.get(i) == EnergyPanelMenu.Kind.HEATER) {
+                int thermostat = (int) Math.round(com.projectrebirth.config.RebirthConfig.HEATER_THERMOSTAT.get() * 10);
+                helper.assertTrue(menu.extra2() == thermostat, "the heater tells its thermostat, got " + menu.extra2());
+            }
+            if (kinds.get(i) == EnergyPanelMenu.Kind.PURGE) {
+                helper.assertTrue(menu.state() == com.projectrebirth.shelter.RadiationPurgeStationBlockEntity.Reason.NO_DOSE.ordinal(),
+                        "the purge station tells it has nothing to purge, got " + menu.state());
+            }
         }
         helper.succeed();
     }

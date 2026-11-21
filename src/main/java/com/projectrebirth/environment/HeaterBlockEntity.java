@@ -34,6 +34,11 @@ public class HeaterBlockEntity extends BlockEntity {
         return energy;
     }
 
+    /** The temperature around it without heaters, for its window (1.8.0). */
+    public float around() {
+        return around;
+    }
+
     public boolean working() {
         return working;
     }

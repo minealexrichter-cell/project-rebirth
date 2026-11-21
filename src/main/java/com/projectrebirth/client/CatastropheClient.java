@@ -426,7 +426,39 @@ public final class CatastropheClient {
         renderLine(graphics, minecraft, text, state.event(), color);
     }
 
+    /**
+     * 1.8.0: the banner of style A at the top of the screen (a movable HUD element): the hazard's mark, the catastrophe and
+     * its time in words, and what to do about it on a second line. The forecast of a weather station shows the same way.
+     */
     private static void renderLine(GuiGraphics graphics, Minecraft minecraft, Component text, String event, int color) {
+        com.projectrebirth.client.hud.HudElement element = com.projectrebirth.client.hud.HudElement.CATASTROPHE;
+        if (!element.visible()) {
+            return;
+        }
+        boolean active = state.phase() == EventPhase.ACTIVE && event.equals(state.event());
+        boolean forecastOnly = state.phase() == EventPhase.CALM || state.event().isEmpty();
+        com.projectrebirth.client.ui.UiSprites.Tone tone = forecastOnly ? com.projectrebirth.client.ui.UiSprites.Tone.INFO
+                : active ? com.projectrebirth.client.ui.UiSprites.Tone.ERROR : com.projectrebirth.client.ui.UiSprites.Tone.WARNING;
+        Component advice = Component.translatable("hud.projectrebirth.catastrophe.advice." + event);
+        int width = Math.min(element.width, Math.max(minecraft.font.width(text), minecraft.font.width(advice)) + 22);
+        int[] at = element.position(graphics.guiWidth(), graphics.guiHeight());
+        graphics.pose().pushPose();
+        graphics.pose().translate(at[0] + (element.width - width) * element.scale() / 2.0f, at[1], 0.0f);
+        graphics.pose().scale(element.scale(), element.scale(), 1.0f);
+        com.projectrebirth.client.ui.UiSprites.draw(graphics, tone.plate, 0, 0, width, 26);
+        com.projectrebirth.environment.Hazard hazard = hazardOf(event);
+        boolean lit = !(state.phase() == EventPhase.WARNING) || com.projectrebirth.client.hud.HudDraw.blinkOn(500);
+        if (hazard != null && lit) {
+            GuiAtlas.hazardMark(graphics, 4, 4, hazard);
+        }
+        com.projectrebirth.client.ui.UiText.line(graphics, text, 16, 4, width - 20, tone == com.projectrebirth.client.ui.UiSprites.Tone.INFO ? 0xFF9FDCFF : tone.text);
+        com.projectrebirth.client.ui.UiText.line(graphics, advice, 16, 15, width - 20, com.projectrebirth.client.ui.UiColors.TEXT);
+        graphics.pose().popPose();
+    }
+
+    /** The line in the status panel before 1.8.0; kept for reference of the panel row (HudLayout.CATASTROPHE_ROW). */
+    @SuppressWarnings("unused")
+    private static void renderPanelLine(GuiGraphics graphics, Minecraft minecraft, Component text, String event, int color) {
         com.projectrebirth.environment.Hazard hazard = hazardOf(event);
         int textX = hazard == null ? 0 : 11;
         int width = textX + minecraft.font.width(text);

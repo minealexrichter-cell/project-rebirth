@@ -97,7 +97,8 @@ public class UiButton extends AbstractButton {
         };
         UiSprites.draw(graphics, sprite, getX(), getY(), width, height);
         int alpha = active ? 255 : 115;
-        boolean hasText = icon == null || look == Look.CHIP;
+        // a square button is an icon alone (its text is the tooltip); a wide one shows the icon and the text
+        boolean hasText = icon == null || look == Look.CHIP || width > height + 8;
         int contentWidth = (icon != null ? iconSize : 0) + (hasText ? minecraftFont().width(getMessage()) + (icon != null ? 3 : 0) : 0);
         int left = getX() + Math.max(3, (width - contentWidth) / 2);
         if (icon != null) {

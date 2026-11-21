@@ -31,7 +31,9 @@ public enum HudElement {
     /** The armor's systems: floodlight, mining mode, ability, upgrades. */
     ARMOR_SYSTEMS(120, 60),
     /** The compass at the top of the helmet. */
-    COMPASS(200, 16);
+    COMPASS(200, 16),
+    /** 1.8.0 block D: the banner of a coming or going catastrophe and the weather station's forecast. */
+    CATASTROPHE(260, 26);
 
     public final int width;
     public final int height;
@@ -142,6 +144,7 @@ public enum HudElement {
             case ARMOR_WEAPON -> new int[] {guiWidth - 6 - w, guiHeight - 6 - h};
             case ARMOR_SYSTEMS -> new int[] {6, guiHeight / 2 - 4 - h};
             case COMPASS -> new int[] {(guiWidth - w) / 2, 4};
+            case CATASTROPHE -> new int[] {(guiWidth - w) / 2, 24};
         };
     }
 

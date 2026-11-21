@@ -21,7 +21,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
  * their "nine slice" or "tile" scaling; the texts of the station window are there in both languages. (The look itself is
  * checked in the game with /rbdev ui check.)
  */
-@GameTestHolder(com.projectrebirth.ProjectRebirth.MOD_ID)
+@GameTestHolder(PlanTests.INTERFACE)
 @PrefixGameTestTemplate(false)
 public class UiAssetsGameTests {
     private static final List<String> SOUNDS = List.of("ui.click", "ui.hover", "ui.toggle", "ui.error", "ui.work_start",

@@ -121,6 +121,10 @@ public final class DevCommands {
                 level.setBlock(pos.above(up), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
             }
             level.setBlock(pos.below(), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+            // a floor where the check puts the player (in front of the block), so a bench put up in the air works too
+            for (int back = 1; back <= 3; back++) {
+                level.setBlock(pos.below().north(back), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+            }
             level.setBlock(pos, block.get().defaultBlockState(), 3);
             placed++;
         }

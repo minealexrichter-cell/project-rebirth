@@ -332,6 +332,16 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         return rounds;
     }
 
+    @Override
+    public float consoleEnergy() {
+        return capacity() <= 0 ? -1.0f : Mth.clamp(energy / capacity(), 0.0f, 1.0f);
+    }
+
+    @Override
+    public int consoleAmmo() {
+        return rounds + rockets;
+    }
+
     public int rockets() {
         return rockets;
     }

@@ -46,6 +46,16 @@ public final class LoadedSites {
         }
     }
 
+    /** 1.8.0: the places of a kind listed within the radius (not checked again: for a map). */
+    public static java.util.List<BlockPos> within(ServerLevel level, Kind kind, BlockPos from, int radius) {
+        Map<ResourceKey<Level>, Set<BlockPos>> byLevel = SITES.get(kind);
+        Set<BlockPos> sites = byLevel == null ? null : byLevel.get(level.dimension());
+        if (sites == null) {
+            return java.util.List.of();
+        }
+        return sites.stream().filter(pos -> pos.distSqr(from) <= (double) radius * radius).toList();
+    }
+
     /** The nearest loaded site of a kind within the radius that passes the test, or null. */
     @Nullable
     public static <T extends BlockEntity> T nearest(ServerLevel level, Kind kind, Class<T> type, BlockPos from, int radius, Predicate<T> test) {

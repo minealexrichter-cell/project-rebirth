@@ -8,6 +8,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.projectrebirth.monitoring.Snapshot;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 
 /**
@@ -15,10 +16,46 @@ import net.minecraft.core.UUIDUtil;
  * as last heard, the groups, the alarm log and, when a monitoring station stands near, its contamination map under the machines.
  */
 public record ConsoleView(int energy, int capacity, boolean powered, boolean intruderAllowed, boolean intruderMode, boolean weatherLink,
-                          boolean sheltering, List<Row> rows, List<Group> groups, List<Line> log, Optional<Snapshot> map, int range) {
+                          boolean sheltering, List<Row> rows, List<Group> groups, List<Line> log, Optional<Snapshot> map, int range,
+                          int rules, List<Site> sites) {
+    /**
+     * 1.8.0: the facts of a machine for the console's cards and map: energy share (-1: none), rounds (-1: none), how far it shoots,
+     * a work android, the points of its order (guard point, route, area corners and chest, area centre) and its alarms going on.
+     */
+    public record Facts(float energy, int ammo, int range, boolean worker, List<BlockPos> points, List<Integer> alarms) {
+        public static final Facts NONE = new Facts(-1.0f, -1, 0, false, List.of(), List.of());
+        public static final Codec<Facts> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.FLOAT.fieldOf("energy").forGetter(Facts::energy),
+                Codec.INT.fieldOf("ammo").forGetter(Facts::ammo),
+                Codec.INT.fieldOf("range").forGetter(Facts::range),
+                Codec.BOOL.fieldOf("worker").forGetter(Facts::worker),
+                BlockPos.CODEC.listOf().fieldOf("points").forGetter(Facts::points),
+                Codec.INT.listOf().fieldOf("alarms").forGetter(Facts::alarms)).apply(i, Facts::new));
+    }
+
+    /** 1.8.0: a service post (kind 0) or a charging pad (kind 1) near the console. */
+    public record Site(int kind, int x, int y, int z) {
+        public static final Codec<Site> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.INT.fieldOf("kind").forGetter(Site::kind),
+                Codec.INT.fieldOf("x").forGetter(Site::x),
+                Codec.INT.fieldOf("y").forGetter(Site::y),
+                Codec.INT.fieldOf("z").forGetter(Site::z)).apply(i, Site::new));
+    }
+
+    /** The points of an order the map shows: the guard point or area centre, the route, the work area's corners and chest. */
+    public static List<BlockPos> taskPoints(MachineTask task) {
+        return switch (task.type()) {
+            case GUARD, AREA_PATROL -> task.point().map(List::of).orElse(List.of());
+            case PATROL -> task.route();
+            case WORK -> task.from().isPresent() && task.to().isPresent() && task.chest().isPresent()
+                    ? List.of(task.from().get(), task.to().get(), task.chest().get()) : List.of();
+            default -> List.of();
+        };
+    }
+
     /** One machine: id, name, kind, group (-1: none), state, both bars, where (block x, z, and whether it is in this dimension), its task, seconds since it was heard. */
     public record Row(UUID id, String name, String kind, int group, int state, float structural, float maxStructural, float critical,
-                      float maxCritical, int x, int y, int z, int task, int heardSeconds) {
+                      float maxCritical, int x, int y, int z, int task, int heardSeconds, Facts facts) {
         public static final Codec<Row> CODEC = RecordCodecBuilder.create(i -> i.group(
                 UUIDUtil.CODEC.fieldOf("id").forGetter(Row::id),
                 Codec.STRING.fieldOf("name").forGetter(Row::name),
@@ -33,14 +70,16 @@ public record ConsoleView(int energy, int capacity, boolean powered, boolean int
                 Codec.INT.fieldOf("y").forGetter(Row::y),
                 Codec.INT.fieldOf("z").forGetter(Row::z),
                 Codec.INT.fieldOf("task").forGetter(Row::task),
-                Codec.INT.fieldOf("heard").forGetter(Row::heardSeconds)).apply(i, Row::new));
+                Codec.INT.fieldOf("heard").forGetter(Row::heardSeconds),
+                Facts.CODEC.optionalFieldOf("facts", Facts.NONE).forGetter(Row::facts)).apply(i, Row::new));
     }
 
-    /** One group: how many machines, whether its intruder mode is on. */
-    public record Group(int members, boolean intruders) {
+    /** One group: how many machines, whether its intruder mode is on, its target rules (1.8.0). */
+    public record Group(int members, boolean intruders, int rules) {
         public static final Codec<Group> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.fieldOf("members").forGetter(Group::members),
-                Codec.BOOL.fieldOf("intruders").forGetter(Group::intruders)).apply(i, Group::new));
+                Codec.BOOL.fieldOf("intruders").forGetter(Group::intruders),
+                Codec.INT.optionalFieldOf("rules", OrderRules.DEFAULT_RULES).forGetter(Group::rules)).apply(i, Group::new));
     }
 
     /** One line of the alarm log: the alarm, whether it ended, the machine, where, seconds ago. */
@@ -67,5 +106,7 @@ public record ConsoleView(int energy, int capacity, boolean powered, boolean int
             Group.CODEC.listOf().fieldOf("groups").forGetter(ConsoleView::groups),
             Line.CODEC.listOf().fieldOf("log").forGetter(ConsoleView::log),
             Snapshot.CODEC.optionalFieldOf("map").forGetter(ConsoleView::map),
-            Codec.INT.fieldOf("range").forGetter(ConsoleView::range)).apply(i, ConsoleView::new));
+            Codec.INT.fieldOf("range").forGetter(ConsoleView::range),
+            Codec.INT.optionalFieldOf("rules", OrderRules.DEFAULT_RULES).forGetter(ConsoleView::rules),
+            Site.CODEC.listOf().optionalFieldOf("sites", List.of()).forGetter(ConsoleView::sites)).apply(i, ConsoleView::new));
 }

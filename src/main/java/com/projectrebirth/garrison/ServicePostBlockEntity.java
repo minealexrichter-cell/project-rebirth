@@ -103,6 +103,27 @@ public class ServicePostBlockEntity extends BlockEntity {
         return null;
     }
 
+    /** 1.8.0: the chest next to the console, for its window (null when there is none). */
+    @Nullable
+    public IItemHandler stock() {
+        return level == null ? null : chest();
+    }
+
+    /** 1.8.0: how many of an item the chest holds. */
+    public int count(net.minecraft.world.item.Item item) {
+        IItemHandler chest = stock();
+        int count = 0;
+        if (chest != null) {
+            for (int slot = 0; slot < chest.getSlots(); slot++) {
+                ItemStack stack = chest.getStackInSlot(slot);
+                if (stack.is(item)) {
+                    count += stack.getCount();
+                }
+            }
+        }
+        return count;
+    }
+
     /** Public for tests. */
     public void serverTick() {
         if (!(level instanceof ServerLevel) || (level.getGameTime() + worldPosition.hashCode()) % 20 != 0) {

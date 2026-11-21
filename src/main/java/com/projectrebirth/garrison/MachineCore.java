@@ -92,6 +92,8 @@ public class MachineCore {
     private boolean environmentByBody;
     private State state = State.ACTIVE;
     private boolean intruderMode;
+    /** 1.8.0: whom it fights besides intruders (OrderRules bits), set by its console; machines of older worlds keep the old rules. */
+    private int rules = OrderRules.DEFAULT_RULES;
     private int secondsSinceDamage;
     private int registryCountdown;
     /** Not saved: whom this machine fights back, with the game time until when it remembers them. */
@@ -196,6 +198,14 @@ public class MachineCore {
 
     public boolean intruderMode() {
         return intruderMode;
+    }
+
+    public int rules() {
+        return rules;
+    }
+
+    public void setRules(int rules) {
+        this.rules = rules & OrderRules.DEFAULT_RULES;
     }
 
     public void setIntruderMode(boolean intruderMode) {
@@ -434,6 +444,7 @@ public class MachineCore {
         core.putFloat("wear", wear);
         core.putInt("state", state.ordinal());
         core.putBoolean("intruders", intruderMode);
+        core.putInt("rules", rules);
         if (console != null) {
             core.putString("console_dimension", console.dimension().location().toString());
             core.putLong("console", console.pos().asLong());
@@ -455,6 +466,7 @@ public class MachineCore {
         wear = core.getFloat("wear");
         state = State.byId(core.getInt("state"));
         intruderMode = core.getBoolean("intruders");
+        rules = core.contains("rules") ? core.getInt("rules") & OrderRules.DEFAULT_RULES : OrderRules.DEFAULT_RULES;
         console = core.contains("console") ? net.minecraft.core.GlobalPos.of(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
                 net.minecraft.resources.ResourceLocation.parse(core.getString("console_dimension"))), net.minecraft.core.BlockPos.of(core.getLong("console"))) : null;
         task = core.contains("task") ? MachineTask.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, core.get("task")).result().orElse(MachineTask.STAND_DOWN)

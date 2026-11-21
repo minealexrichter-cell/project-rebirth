@@ -102,6 +102,11 @@ public final class GarrisonRegistry {
 
     public static final DeferredHolder<MenuType<?>, MenuType<MachineMountingMenu>> MACHINE_MOUNTING =
             MENUS.register("machine_mounting", () -> IMenuTypeExtension.create(MachineMountingMenu::new));
+    /** 1.8.0, block E: the windows of the turret mount and of the service post. */
+    public static final DeferredHolder<MenuType<?>, MenuType<TurretMountMenu>> TURRET_MOUNT_MENU =
+            MENUS.register("turret_mount", () -> IMenuTypeExtension.create(TurretMountMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<ServicePostMenu>> SERVICE_POST_MENU =
+            MENUS.register("service_post", () -> IMenuTypeExtension.create(ServicePostMenu::new));
 
     /** Block G: the defence turrets, their mount, their parts and ammunition. */
     public static final DeferredItem<Item> ROCKET = ITEMS.registerSimpleItem("rocket", new Item.Properties().stacksTo(16));

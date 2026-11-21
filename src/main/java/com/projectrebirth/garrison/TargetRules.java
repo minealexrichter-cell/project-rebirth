@@ -30,6 +30,7 @@ import net.minecraft.world.entity.player.Player;
  *   <li>with the intruder mode on (a console's switch; the server may forbid it): any outsider on the faction's own land,
  *   in peace too, while the machine itself stands on that land.</li>
  * </ul>
+ * 1.8.0: a console may switch off the monsters, the enemies at war or fighting back (OrderRules bits, by group); "never" stays never.
  */
 public final class TargetRules {
     private TargetRules() {
@@ -52,9 +53,9 @@ public final class TargetRules {
         if (theirs == null) {
             // a creature: monsters always, neutral ones when they attacked, peaceful ones never
             if (target instanceof Enemy) {
-                return true;
+                return (core.rules() & OrderRules.MONSTERS) != 0 || (core.rules() & OrderRules.RETALIATE) != 0 && core.attackedBy(target, now);
             }
-            return target instanceof NeutralMob && core.attackedBy(target, now);
+            return target instanceof NeutralMob && (core.rules() & OrderRules.RETALIATE) != 0 && core.attackedBy(target, now);
         }
         if (mine == null) {
             // a machine nobody owns (only in tests) defends itself and fights monsters only
@@ -69,10 +70,10 @@ public final class TargetRules {
         if (ours.isPresent() && other.isPresent() && (ours.get().id().equals(other.get().id()) || ours.get().allies().contains(other.get().id()))) {
             return false;
         }
-        if (core.attackedBy(target, now)) {
+        if ((core.rules() & OrderRules.RETALIATE) != 0 && core.attackedBy(target, now)) {
             return true;
         }
-        if (ours.isPresent() && other.isPresent() && atWar(server, self, target, ours.get(), other.get())) {
+        if ((core.rules() & OrderRules.WAR) != 0 && ours.isPresent() && other.isPresent() && atWar(server, self, target, ours.get(), other.get())) {
             return true;
         }
         return ours.isPresent() && intruder(server, machine, target, ours.get());

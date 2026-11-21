@@ -98,6 +98,7 @@ public class ProjectRebirthClient {
         ScoutingClient.register(modEventBus);
         com.projectrebirth.client.multiblock.MultiblockClient.register();
         com.projectrebirth.client.garrison.TabletMarks.register();
+        com.projectrebirth.client.garrison.MachineWindow.register();
         com.projectrebirth.client.hud.BodyVisor.register(modEventBus);
         com.projectrebirth.client.hud.ArmorHelmet.register(modEventBus);
         BodyHud.register(modEventBus);
@@ -115,6 +116,8 @@ public class ProjectRebirthClient {
         event.register(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_MOUNTING.get(), com.projectrebirth.client.screen.MachineMountingScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.CONSOLE_MENU.get(), com.projectrebirth.client.garrison.ConsoleScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_GEAR.get(), com.projectrebirth.client.screen.AndroidGearScreen::new);
+        event.register(com.projectrebirth.garrison.GarrisonRegistry.TURRET_MOUNT_MENU.get(), com.projectrebirth.client.garrison.TurretMountScreen::new);
+        event.register(com.projectrebirth.garrison.GarrisonRegistry.SERVICE_POST_MENU.get(), com.projectrebirth.client.garrison.ServicePostScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
         event.register(TechMenus.ENERGY_PANEL.get(), com.projectrebirth.client.screen.EnergyPanelScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_MENU.get(), com.projectrebirth.client.screen.AirFiltrationScreen::new);

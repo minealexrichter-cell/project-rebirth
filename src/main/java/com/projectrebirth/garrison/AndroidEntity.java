@@ -156,6 +156,25 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         return work;
     }
 
+    @Override
+    public float consoleEnergy() {
+        if (!com.projectrebirth.bodies.power.BodyPower.enabled()) {
+            return -1.0f;
+        }
+        float capacity = com.projectrebirth.bodies.power.BodyPower.capacity(this);
+        return capacity <= 0 ? -1.0f : net.minecraft.util.Mth.clamp(charge() / capacity, 0.0f, 1.0f);
+    }
+
+    @Override
+    public boolean consoleWorker() {
+        return isWorker();
+    }
+
+    @Override
+    public java.util.List<net.minecraft.world.item.ItemStack> consoleUpgrades() {
+        return upgrades().entries().stream().map(com.projectrebirth.upgrades.InstalledUpgrades.Installed::stack).toList();
+    }
+
     /** A work android (block F): the work module instead of the combat module. */
     public boolean isWorker() {
         return moduleItem.is(GarrisonRegistry.WORK_MODULE.get());

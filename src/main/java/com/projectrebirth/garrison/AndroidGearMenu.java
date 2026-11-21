@@ -17,13 +17,24 @@ import net.minecraft.world.item.ItemStack;
  * player's inventory. Opened by its owner or a manager of the faction with an empty hand.
  */
 public class AndroidGearMenu extends AbstractContainerMenu {
-    public static final int GEAR_Y = 18;
-    public static final int EXTRA_Y = 96;
-    public static final int INVENTORY_Y = 122;
+    /** 1.8.0 block E: the window of style A, the model and armor on the left, the pack and the player's inventory on the right. */
+    public static final int GEAR_X = 106;
+    public static final int GEAR_Y = 37;
+    public static final int ARMOR_X = 83;
+    public static final int ARMOR_Y = 26;
+    public static final int OFFHAND_Y = 102;
+    public static final int INVENTORY_X = 106;
+    public static final int INVENTORY_Y = 132;
     private static final EquipmentSlot[] ARMOR = {EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD};
 
     @Nullable
     private final AndroidEntity android;
+
+    /** The android of the window (on the client, the one the server named), for its model; null when it is not known. */
+    @Nullable
+    public AndroidEntity android() {
+        return android;
+    }
     private final Container gear;
 
     public AndroidGearMenu(int containerId, Inventory inventory, RegistryFriendlyByteBuf buf) {
@@ -40,12 +51,12 @@ public class AndroidGearMenu extends AbstractContainerMenu {
         this.gear = client || android == null ? new SimpleContainer(AndroidEntity.GEAR) : android.gear();
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(gear, row * 9 + col, 8 + col * 18, GEAR_Y + row * 18));
+                addSlot(new Slot(gear, row * 9 + col, GEAR_X + col * 18, GEAR_Y + row * 18));
             }
         }
         for (int i = 0; i < 4; i++) {
             EquipmentSlot slot = ARMOR[i];
-            addSlot(new Slot(gear, 36 + i, 8 + i * 18, EXTRA_Y) {
+            addSlot(new Slot(gear, 36 + i, ARMOR_X, ARMOR_Y + (3 - i) * 18) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return stack.canEquip(slot, inventory.player);
@@ -57,14 +68,14 @@ public class AndroidGearMenu extends AbstractContainerMenu {
                 }
             });
         }
-        addSlot(new Slot(gear, AndroidEntity.OFFHAND, 98, EXTRA_Y));
+        addSlot(new Slot(gear, AndroidEntity.OFFHAND, ARMOR_X, OFFHAND_Y));
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, INVENTORY_Y + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, 8 + col * 18, INVENTORY_Y + 58));
+            addSlot(new Slot(inventory, col, INVENTORY_X + col * 18, INVENTORY_Y + 58));
         }
     }
 

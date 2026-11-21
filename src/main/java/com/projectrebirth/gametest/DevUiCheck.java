@@ -62,6 +62,8 @@ public final class DevUiCheck {
                 .then(Commands.literal("widgets").executes(ctx -> widgets(0))
                         .then(Commands.argument("page", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 1))
                                 .executes(ctx -> widgets(com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "page")))))
+                .then(Commands.literal("mouse").then(Commands.argument("spec", StringArgumentType.greedyString())
+                        .executes(ctx -> mouse(StringArgumentType.getString(ctx, "spec")))))
                 .then(Commands.literal("check")
                         .executes(ctx -> start("ru_ru,en_us", "2,3,4,0"))
                         .then(Commands.argument("languages", StringArgumentType.word())
@@ -69,6 +71,51 @@ public final class DevUiCheck {
                                 .then(Commands.argument("scales", StringArgumentType.word())
                                         .executes(ctx -> start(StringArgumentType.getString(ctx, "languages"),
                                                 StringArgumentType.getString(ctx, "scales"))))))));
+    }
+
+    /**
+     * 1.8.0 block E: sends the open window the same mouse events a player's hand would (GUI pixels from the window's corner for a
+     * container window, from the screen's corner otherwise): "click x y", "right x y", "double x y", "drag x1 y1 x2 y2",
+     * "rdrag x1 y1 x2 y2", "scroll x y amount". For checking the console's map without a person at the mouse.
+     */
+    private static int mouse(String spec) {
+        Minecraft minecraft = Minecraft.getInstance();
+        minecraft.tell(() -> {
+            Screen screen = minecraft.screen;
+            if (screen == null) {
+                return;
+            }
+            String[] parts = spec.trim().split("\s+");
+            int ox = screen instanceof AbstractContainerScreen<?> container ? container.getGuiLeft() : 0;
+            int oy = screen instanceof AbstractContainerScreen<?> container ? container.getGuiTop() : 0;
+            double x = ox + Double.parseDouble(parts[1]);
+            double y = oy + Double.parseDouble(parts[2]);
+            switch (parts[0]) {
+                case "click", "right", "double" -> {
+                    int button = parts[0].equals("right") ? 1 : 0;
+                    int times = parts[0].equals("double") ? 2 : 1;
+                    for (int i = 0; i < times; i++) {
+                        screen.mouseClicked(x, y, button);
+                        screen.mouseReleased(x, y, button);
+                    }
+                }
+                case "drag", "rdrag" -> {
+                    int button = parts[0].equals("rdrag") ? 1 : 0;
+                    double x2 = ox + Double.parseDouble(parts[3]);
+                    double y2 = oy + Double.parseDouble(parts[4]);
+                    screen.mouseClicked(x, y, button);
+                    for (int step = 1; step <= 4; step++) {
+                        double px = x + (x2 - x) * step / 4, py = y + (y2 - y) * step / 4;
+                        screen.mouseDragged(px, py, button, (x2 - x) / 4, (y2 - y) / 4);
+                    }
+                    screen.mouseReleased(x2, y2, button);
+                }
+                case "scroll" -> screen.mouseScrolled(x, y, 0, Double.parseDouble(parts[3]));
+                default -> {
+                }
+            }
+        });
+        return 1;
     }
 
     private static int widgets(int page) {

@@ -66,6 +66,14 @@ public class ConsoleBlockEntity extends BlockEntity {
         BlockPos pos = BlockPos.ZERO;
         long heard = -1;
         final Set<ConsoleAlarm> active = EnumSet.noneOf(ConsoleAlarm.class);
+        /** 1.8.0, not saved (heard again within a second of loading): energy share (-1: none), rounds (-1: none), a work android. */
+        float energyShare = -1.0f;
+        /** A name given in the console's window, waiting for the machine to take it (not saved: the name is saved on the link). */
+        @Nullable
+        String renamed;
+        int ammo = -1;
+        int range;
+        boolean worker;
     }
 
     /** One line of the log. */
@@ -78,6 +86,9 @@ public class ConsoleBlockEntity extends BlockEntity {
     private UUID owner;
     private final Map<UUID, Link> machines = new LinkedHashMap<>();
     private final boolean[] groupIntruders = new boolean[GROUPS];
+    /** 1.8.0: the target rules (OrderRules bits) of each group, and of the machines without a group. */
+    private final int[] groupRules = new int[GROUPS];
+    private int rules = OrderRules.DEFAULT_RULES;
     private boolean intruderMode;
     private boolean weatherLink;
     private boolean sheltering;
@@ -89,6 +100,7 @@ public class ConsoleBlockEntity extends BlockEntity {
 
     public ConsoleBlockEntity(BlockPos pos, BlockState state) {
         super(GarrisonRegistry.CONSOLE_ENTITY.get(), pos, state);
+        java.util.Arrays.fill(groupRules, OrderRules.DEFAULT_RULES);
     }
 
     public ModEnergyStorage energy() {
@@ -216,6 +228,43 @@ public class ConsoleBlockEntity extends BlockEntity {
         return intruderMode || group >= 0 && groupIntruders[group];
     }
 
+    /** 1.8.0: the target rules a machine of this console follows: its group's, or the console's for a machine without a group. */
+    public int rulesFor(UUID machine) {
+        int group = groupOf(machine);
+        return group >= 0 ? groupRules[group] : rules;
+    }
+
+    /** 1.8.0: the target rules of a group, or ({@link #ALL} or -1) of the machines without a group. */
+    public int rules(int group) {
+        return group >= 0 && group < GROUPS ? groupRules[group] : rules;
+    }
+
+    public void setRules(int group, int value) {
+        if (group >= 0 && group < GROUPS) {
+            groupRules[group] = value & OrderRules.DEFAULT_RULES;
+        } else {
+            rules = value & OrderRules.DEFAULT_RULES;
+        }
+        setChanged();
+    }
+
+    /** 1.8.0: why this machine cannot carry out the order (a translation key), or null; null too for a machine it does not know. */
+    @Nullable
+    public String problem(UUID machine, MachineTask.Type type) {
+        Link link = machines.get(machine);
+        return link == null ? null : OrderRules.problem(link.kind, link.worker, type);
+    }
+
+    /** 1.8.0: renames a machine as the console knows it; the machine takes the name when next heard. */
+    public void rename(UUID machine, String name) {
+        Link link = machines.get(machine);
+        if (link != null) {
+            link.name = name;
+            link.renamed = name;
+            setChanged();
+        }
+    }
+
     /** Gives one machine an order. */
     public void order(UUID machine, MachineTask task) {
         Link link = machines.get(machine);
@@ -330,7 +379,17 @@ public class ConsoleBlockEntity extends BlockEntity {
 
     /** A machine reports (server, once a second while it is loaded and in range): its state, and what it should do now. */
     void heard(Entity machine, MachineCore core, Link link) {
+        if (link.renamed != null) {
+            core.setName(link.renamed);
+            link.renamed = null;
+        }
         link.name = core.name().isEmpty() ? nameKey(machine) : core.name();
+        if (machine instanceof GarrisonMachine garrison) {
+            link.energyShare = garrison.consoleEnergy();
+            link.ammo = garrison.consoleAmmo();
+            link.worker = garrison.consoleWorker();
+            link.range = garrison.consoleRange();
+        }
         link.kind = core.kind();
         link.state = core.state();
         link.structural = core.structural();
@@ -512,6 +571,21 @@ public class ConsoleBlockEntity extends BlockEntity {
 
     // ------------------------------------------------------------------ the window
 
+    /** 1.8.0: the service posts and charging pads loaded within the console's range, for its map. */
+    List<ConsoleView.Site> sites(ServerLevel server) {
+        List<ConsoleView.Site> out = new ArrayList<>();
+        int range = RebirthConfig.CONSOLE_RANGE.get();
+        for (LoadedSites.Kind kind : LoadedSites.Kind.values()) {
+            for (BlockPos pos : LoadedSites.within(server, kind, worldPosition, range)) {
+                out.add(new ConsoleView.Site(kind.ordinal(), pos.getX(), pos.getY(), pos.getZ()));
+                if (out.size() >= 64) {
+                    return out;
+                }
+            }
+        }
+        return out;
+    }
+
     ConsoleView view(ServerLevel server) {
         long now = server.getGameTime();
         List<ConsoleView.Row> rows = new ArrayList<>();
@@ -523,11 +597,12 @@ public class ConsoleBlockEntity extends BlockEntity {
             }
             rows.add(new ConsoleView.Row(entry.getKey(), link.name, link.kind.id(), link.group, link.state.ordinal(), link.structural,
                     link.maxStructural, link.critical, link.maxCritical, link.pos.getX(), link.pos.getY(), link.pos.getZ(),
-                    link.task.type().ordinal(), link.heard < 0 ? -1 : (int) ((now - link.heard) / 20)));
+                    link.task.type().ordinal(), link.heard < 0 ? -1 : (int) ((now - link.heard) / 20), new ConsoleView.Facts(link.energyShare, link.ammo, link.range, link.worker,
+                    ConsoleView.taskPoints(link.task), link.active.stream().map(Enum::ordinal).toList())));
         }
         List<ConsoleView.Group> groups = new ArrayList<>();
         for (int i = 0; i < GROUPS; i++) {
-            groups.add(new ConsoleView.Group(members[i], groupIntruders[i]));
+            groups.add(new ConsoleView.Group(members[i], groupIntruders[i], groupRules[i]));
         }
         List<ConsoleView.Line> lines = new ArrayList<>();
         for (Logged logged : log) {
@@ -545,7 +620,7 @@ public class ConsoleBlockEntity extends BlockEntity {
             }
         }
         return new ConsoleView(energy.getEnergyStored(), energy.getMaxEnergyStored(), powered, RebirthConfig.ALLOW_INTRUDER_MODE.get(),
-                intruderMode, weatherLink, sheltering, rows, groups, lines, map, RebirthConfig.CONSOLE_RANGE.get());
+                intruderMode, weatherLink, sheltering, rows, groups, lines, map, RebirthConfig.CONSOLE_RANGE.get(), rules, sites(server));
     }
 
     // ------------------------------------------------------------------ saving
@@ -592,6 +667,8 @@ public class ConsoleBlockEntity extends BlockEntity {
             }
         }
         tag.putByte("group_intruders", groups);
+        tag.putInt("rules", rules);
+        tag.putIntArray("group_rules", groupRules);
         tag.putBoolean("intruders", intruderMode);
         tag.putBoolean("weather", weatherLink);
         tag.putBoolean("sheltering", sheltering);
@@ -644,6 +721,11 @@ public class ConsoleBlockEntity extends BlockEntity {
         byte groups = tag.getByte("group_intruders");
         for (int i = 0; i < GROUPS; i++) {
             groupIntruders[i] = (groups & (1 << i)) != 0;
+        }
+        rules = tag.contains("rules") ? tag.getInt("rules") & OrderRules.DEFAULT_RULES : OrderRules.DEFAULT_RULES;
+        int[] savedRules = tag.getIntArray("group_rules");
+        for (int i = 0; i < GROUPS; i++) {
+            groupRules[i] = i < savedRules.length ? savedRules[i] & OrderRules.DEFAULT_RULES : OrderRules.DEFAULT_RULES;
         }
         intruderMode = tag.getBoolean("intruders");
         weatherLink = tag.getBoolean("weather");

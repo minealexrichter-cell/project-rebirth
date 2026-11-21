@@ -51,11 +51,10 @@ public class ServicePostBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof ServicePostBlockEntity post) {
-            Component message = post.plates() == null ? Component.translatable("message.projectrebirth.service_post.no_plates")
-                    : Component.translatable("message.projectrebirth.service_post.status", post.energy().getEnergyStored(),
-                    post.energy().getMaxEnergyStored(), post.served().size());
-            player.displayClientMessage(message, true);
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof ServicePostBlockEntity post
+                && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            // 1.8.0: the post's window (plates, energy, the machine served, the chest's materials)
+            serverPlayer.openMenu(ServicePostMenu.provider(post), buf -> buf.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

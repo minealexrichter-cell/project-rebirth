@@ -18,23 +18,23 @@ import net.minecraft.network.chat.Component;
  * (bits 1 and 2), the station, shelters, sources, ruins and players as marks (bit 4). Used by the monitoring station and
  * the printed map. The snapshot may be swapped for a newer one; {@link #set} tells whether the map must be repainted.
  */
-final class SnapshotMapSource implements UiMap.Source {
-    static final int RADIATION = 1;
-    static final int TOXIN = 2;
-    static final int MARKS = 4;
+public final class SnapshotMapSource implements UiMap.Source {
+    public static final int RADIATION = 1;
+    public static final int TOXIN = 2;
+    public static final int MARKS = 4;
 
     @Nullable
     private Snapshot snapshot;
 
     /** Returns true if the snapshot is a new one. */
-    boolean set(@Nullable Snapshot next) {
+    public boolean set(@Nullable Snapshot next) {
         boolean changed = next != snapshot;
         snapshot = next;
         return changed;
     }
 
     @Nullable
-    Snapshot snapshot() {
+    public Snapshot snapshot() {
         return snapshot;
     }
 
@@ -80,7 +80,7 @@ final class SnapshotMapSource implements UiMap.Source {
     }
 
     /** The marks of the snapshot, if their layer is on. */
-    List<UiMap.Mark> marks(int layers) {
+    public List<UiMap.Mark> marks(int layers) {
         List<UiMap.Mark> marks = new ArrayList<>();
         if (snapshot == null || (layers & MARKS) == 0) {
             return marks;

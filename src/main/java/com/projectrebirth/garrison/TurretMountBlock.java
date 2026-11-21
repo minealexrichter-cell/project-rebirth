@@ -67,8 +67,10 @@ public class TurretMountBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof TurretMountBlockEntity mount) {
-            tell(player, mount);
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof TurretMountBlockEntity mount
+                && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+            // 1.8.0: the mount's window (ammunition, energy, the turret on it)
+            serverPlayer.openMenu(TurretMountMenu.provider(mount), buf -> buf.writeBlockPos(pos));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

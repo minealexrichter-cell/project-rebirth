@@ -97,6 +97,10 @@ public final class DevCommands {
         root.then(Commands.literal("ui").then(Commands.literal("bench")
                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
                         .executes(DevCommands::uiBench))));
+        root.then(Commands.literal("ui").then(Commands.literal("gear").executes(DevCommands::uiGear)));
+        root.then(Commands.literal("ui").then(Commands.literal("garrison")
+                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                        .executes(DevCommands::uiGarrison))));
         root.then(Commands.literal("use")
                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
                         .executes(DevCommands::use)));
@@ -324,6 +328,119 @@ public final class DevCommands {
                 FloatArgumentType.getFloat(ctx, "yaw"));
         ctx.getSource().sendSuccess(() -> Component.literal(machine == null ? "not placed" : "placed " + machine.getUUID()), false);
         return machine == null ? 0 : 1;
+    }
+
+    /**
+     * 1.8.0, block E: a garrison to look at in the console's window: a console with full energy owned by the player at the corner,
+     * a service post with its plates and chest, a turret mount with a turret and rounds, a mech, a small robot, a combat and a work
+     * android, in two groups, with a guard point, a patrol route and a work area, and the alarm of a shut-down machine.
+     */
+    /** 1.8.0, block E: opens the gear window of the nearest android (as a click with an empty hand does). */
+    private static int uiGear(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = player(ctx);
+        var found = player.serverLevel().getEntitiesOfClass(com.projectrebirth.garrison.AndroidEntity.class, player.getBoundingBox().inflate(12),
+                android -> android.isAlive());
+        if (found.isEmpty()) {
+            ctx.getSource().sendFailure(Component.literal("no android near"));
+            return 0;
+        }
+        found.sort(java.util.Comparator.comparingDouble(player::distanceToSqr));
+        var android = found.get(0);
+        player.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inventory, who) -> new com.projectrebirth.garrison.AndroidGearMenu(id, inventory, android),
+                android.getDisplayName()), buf -> buf.writeVarInt(android.getId()));
+        return 1;
+    }
+
+    private static int uiGarrison(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerPlayer player = player(ctx);
+        ServerLevel level = player.serverLevel();
+        BlockPos at = BlockPosArgument.getLoadedBlockPos(ctx, "pos");
+        for (int dx = -2; dx <= 24; dx++) {
+            for (int dz = -2; dz <= 24; dz++) {
+                level.setBlock(at.offset(dx, -1, dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3);
+                for (int up = 0; up < 4; up++) {
+                    level.setBlock(at.offset(dx, up, dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+        level.setBlock(at, com.projectrebirth.garrison.GarrisonRegistry.CONSOLE.get().defaultBlockState(), 3);
+        ConsoleBlockEntity console = (ConsoleBlockEntity) level.getBlockEntity(at);
+        console.setOwner(player.getUUID());
+        console.energy().load(console.energy().getMaxEnergyStored());
+        console.serverTick();
+        // the service post: its console, four plates and a chest with iron and plates
+        BlockPos post = at.offset(6, 0, 0);
+        level.setBlock(post, com.projectrebirth.garrison.GarrisonRegistry.SERVICE_POST.get().defaultBlockState(), 3);
+        for (int dx = 1; dx <= 2; dx++) {
+            for (int dz = 0; dz <= 1; dz++) {
+                level.setBlock(post.offset(dx, 0, dz), com.projectrebirth.garrison.GarrisonRegistry.SERVICE_POST_PLATE.get().defaultBlockState(), 3);
+            }
+        }
+        level.setBlock(post.north(), net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
+        if (level.getBlockEntity(post.north()) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+            chest.setItem(0, new ItemStack(net.minecraft.world.item.Items.IRON_INGOT, 23));
+            chest.setItem(1, new ItemStack(com.projectrebirth.powerarmor.PowerArmorRegistry.ARMOR_PLATE.get(), 4));
+            chest.setItem(2, new ItemStack(com.projectrebirth.weapons.WeaponRegistry.ASSAULT_RIFLE_AMMO.get(), 96));
+        }
+        if (level.getBlockEntity(post) instanceof com.projectrebirth.garrison.ServicePostBlockEntity postEntity) {
+            postEntity.energy().load(postEntity.energy().getMaxEnergyStored() / 2);
+        }
+        // the turret on its mount
+        BlockPos mount = at.offset(3, 0, 12);
+        level.setBlock(mount, com.projectrebirth.garrison.GarrisonRegistry.TURRET_MOUNT.get().defaultBlockState(), 3);
+        if (level.getBlockEntity(mount) instanceof com.projectrebirth.garrison.TurretMountBlockEntity mountEntity) {
+            mountEntity.energy().load(mountEntity.energy().getMaxEnergyStored());
+            mountEntity.ammo().setStackInSlot(0, new ItemStack(com.projectrebirth.weapons.WeaponRegistry.ASSAULT_RIFLE_AMMO.get(), 64));
+            mountEntity.ammo().setStackInSlot(1, new ItemStack(com.projectrebirth.weapons.WeaponRegistry.ASSAULT_RIFLE_AMMO.get(), 40));
+        }
+        java.util.List<net.minecraft.world.entity.Entity> placed = new java.util.ArrayList<>();
+        var turretItem = com.projectrebirth.garrison.GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get();
+        placed.add(turretItem.place(level, player, new ItemStack(turretItem), mount.above(), 0.0f));
+        var mechItem = com.projectrebirth.garrison.GarrisonRegistry.GUARD_MECH_ITEM.get();
+        placed.add(mechItem.place(level, player, new ItemStack(mechItem), at.offset(12, 0, 8), 0.0f));
+        var robotItem = com.projectrebirth.garrison.GarrisonRegistry.SMALL_ROBOT_ITEM.get();
+        placed.add(robotItem.place(level, player, new ItemStack(robotItem), at.offset(16, 0, 10), 0.0f));
+        for (String module : new String[] {"combat", "work"}) {
+            ItemStack body = new ItemStack(BuiltInRegistries.ITEM.get(ProjectRebirth.id(com.projectrebirth.bodies.BodyClass.values()[module.equals("work") ? 0 : 2].id())));
+            body.set(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_PARTS.get(), new com.projectrebirth.garrison.GarrisonRegistry.AndroidParts(
+                    new ItemStack(com.projectrebirth.garrison.GarrisonRegistry.AI_CORE.get()), new ItemStack(module.equals("work")
+                    ? com.projectrebirth.garrison.GarrisonRegistry.WORK_MODULE.get() : com.projectrebirth.garrison.GarrisonRegistry.COMBAT_MODULE.get())));
+            placed.add(com.projectrebirth.garrison.Androids.place(level, player, body,
+                    com.projectrebirth.bodies.BodyClass.values()[module.equals("work") ? 0 : 2], at.offset(module.equals("work") ? 18 : 8, 0, module.equals("work") ? 18 : 4), 0.0f));
+        }
+        int linked = 0;
+        int index = 0;
+        for (net.minecraft.world.entity.Entity machine : placed) {
+            if (machine == null || !console.knows(machine.getUUID())) {
+                index++;
+                continue;
+            }
+            linked++;
+            java.util.UUID id = machine.getUUID();
+            switch (index) {
+                case 0 -> console.setGroup(id, 0);
+                case 1 -> {
+                    console.setGroup(id, 0);
+                    console.order(id, com.projectrebirth.garrison.MachineTask.at(com.projectrebirth.garrison.MachineTask.Type.GUARD, at.offset(14, 0, 4)));
+                }
+                case 2 -> {
+                    console.setGroup(id, 0);
+                    console.order(id, com.projectrebirth.garrison.MachineTask.patrol(java.util.List.of(at.offset(14, 0, 14), at.offset(22, 0, 14),
+                            at.offset(22, 0, 22), at.offset(14, 0, 22))));
+                }
+                case 3 -> console.setGroup(id, 2);
+                default -> {
+                    console.setGroup(id, 1);
+                    level.setBlock(at.offset(20, 0, 22), net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState(), 3);
+                    console.order(id, com.projectrebirth.garrison.MachineTask.work("lumber", at.offset(16, 0, 16), at.offset(23, 10, 23), at.offset(20, 0, 22)));
+                }
+            }
+            index++;
+        }
+        console.serverTick();
+        int count = linked;
+        ctx.getSource().sendSuccess(() -> Component.literal("ui garrison: console at " + at.toShortString() + ", " + count + " machines linked"), false);
+        return count;
     }
 
     private static int intruders(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

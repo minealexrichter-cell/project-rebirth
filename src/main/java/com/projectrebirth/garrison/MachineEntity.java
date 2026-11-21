@@ -131,6 +131,11 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
     }
 
     @Override
+    public java.util.List<net.minecraft.world.item.ItemStack> consoleUpgrades() {
+        return upgrades.entries().stream().map(InstalledUpgrades.Installed::stack).toList();
+    }
+
+    @Override
     public void setUpgrades(InstalledUpgrades upgrades) {
         this.upgrades = upgrades;
     }

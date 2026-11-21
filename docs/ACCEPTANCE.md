@@ -106,3 +106,7 @@
 | Фильтровальная установка, водоочиститель, панель убежища, метеостанция | Окна стиля A | `ui/d_air_filtration_unit.png`, `ui/d_water_purifier.png`, `ui/d_shelter_control_panel.png`, `ui/d_weather_station.png` | — |
 | Станция мониторинга | Карта на общем виджете, слои, печать | `ui/d_monitoring_station.png` | — |
 | Окно фракции (G) | Пять вкладок: участники, территория, союзы и войны, права ролей, настройки | `ui/d_faction_tab0.png` … `ui/d_faction_tab4.png` | — |
+| Пульт управления (карта, карточки, правила, тревоги) | Раскладка вокруг карты, выбор рамкой, приказ ПКМ | `ui/e_console_scene.png`, `ui/e_console_order.png`, `ui/e_console.png` | — |
+| Обучение пульта | 5 шагов поверх окна | `ui/e_console_lesson.png` | — |
+| Окно машины | Модель, шкалы, группа, снаряжение, журнал | `ui/e_machine_window.png` | — |
+| Основание турели, пост обслуживания, снаряжение андроида | Новые окна | `ui/e_turret_mount_ready.png`, `ui/e_turret_mount.png`, `ui/e_service_post_working.png`, `ui/e_android_gear.png` | — |

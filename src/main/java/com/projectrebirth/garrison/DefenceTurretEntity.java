@@ -164,6 +164,24 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
         return level().getBlockEntity(below) instanceof TurretMountBlockEntity mount ? mount : null;
     }
 
+    @Override
+    public float consoleEnergy() {
+        TurretMountBlockEntity mount = mount();
+        return mount == null || mount.energy().getMaxEnergyStored() <= 0 ? -1.0f
+                : mount.energy().getEnergyStored() / (float) mount.energy().getMaxEnergyStored();
+    }
+
+    @Override
+    public int consoleRange() {
+        return turret.range();
+    }
+
+    @Override
+    public int consoleAmmo() {
+        TurretMountBlockEntity mount = mount();
+        return mount == null ? 0 : mount.count(turret.ammo());
+    }
+
     /** Whether it can shoot now: a mount with energy and ammunition for one shot. */
     public boolean supplied() {
         TurretMountBlockEntity mount = mount();

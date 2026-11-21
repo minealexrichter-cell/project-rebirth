@@ -35,6 +35,81 @@ public final class ConsoleNetwork {
     public static final int WEATHER = 4;
     public static final int UNLINK = 5;
     public static final int REQUEST_VIEW = 6;
+    /** 1.8.0: the target rules (OrderRules bits in value) of a group, or with ALL of the machines without a group. */
+    public static final int SET_RULES = 7;
+    /** The longest name the console's window may give a machine. */
+    public static final int NAME_LENGTH = 32;
+
+    /**
+     * 1.8.0, client to server: one order to the machines chosen in the console's window (a click on a card, Shift, a frame on the map).
+     * {@code points} are the places clicked on the map (only x and z count; the server puts them on the ground): the guard point, the
+     * route, or two corners of a work area. Machines that cannot carry out the order are left out and counted in the answer.
+     */
+    public record OrderManyPayload(BlockPos console, java.util.List<UUID> machines, int task, int work, java.util.List<BlockPos> points)
+            implements CustomPacketPayload {
+        public static final Type<OrderManyPayload> TYPE = new Type<>(ProjectRebirth.id("console_order_many"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, OrderManyPayload> STREAM_CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, OrderManyPayload::console,
+                UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list(64)), OrderManyPayload::machines,
+                ByteBufCodecs.VAR_INT, OrderManyPayload::task,
+                ByteBufCodecs.VAR_INT, OrderManyPayload::work,
+                BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list(32)), OrderManyPayload::points,
+                OrderManyPayload::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /** 1.8.0, client to server: a new name for a machine, from its window in the console. */
+    public record RenamePayload(BlockPos console, UUID machine, String name) implements CustomPacketPayload {
+        public static final Type<RenamePayload> TYPE = new Type<>(ProjectRebirth.id("console_rename"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, RenamePayload> STREAM_CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, RenamePayload::console, UUIDUtil.STREAM_CODEC, RenamePayload::machine,
+                ByteBufCodecs.stringUtf8(NAME_LENGTH * 4), RenamePayload::name, RenamePayload::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /** 1.8.0, client to server: the machine's window asks what it carries (answered with {@link DetailsPayload}). */
+    public record DetailsRequestPayload(BlockPos console, UUID machine) implements CustomPacketPayload {
+        public static final Type<DetailsRequestPayload> TYPE = new Type<>(ProjectRebirth.id("console_details_request"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, DetailsRequestPayload> STREAM_CODEC = StreamCodec.composite(
+                BlockPos.STREAM_CODEC, DetailsRequestPayload::console, UUIDUtil.STREAM_CODEC, DetailsRequestPayload::machine,
+                DetailsRequestPayload::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /**
+     * 1.8.0, server to client: what a machine carries, for its window: whether it is loaded (else nothing is known but the card),
+     * its gear (an android's hands, armor and pack, not empty) and its upgrades.
+     */
+    public record DetailsPayload(UUID machine, boolean loaded, java.util.List<ItemStack> gear, java.util.List<ItemStack> upgrades)
+            implements CustomPacketPayload {
+        public static final Type<DetailsPayload> TYPE = new Type<>(ProjectRebirth.id("console_details"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, DetailsPayload> STREAM_CODEC = StreamCodec.composite(
+                UUIDUtil.STREAM_CODEC, DetailsPayload::machine, ByteBufCodecs.BOOL, DetailsPayload::loaded,
+                ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list(64)), DetailsPayload::gear,
+                ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list(32)), DetailsPayload::upgrades,
+                DetailsPayload::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /** Set by the client: takes what a machine carries. */
+    public static Consumer<DetailsPayload> detailsHandler = payload -> {
+    };
 
     /** Server to client: what the console's window or the tablet's list shows. */
     public record ViewPayload(BlockPos console, ConsoleView view) implements CustomPacketPayload {
@@ -109,6 +184,28 @@ public final class ConsoleNetwork {
         registrar.playToClient(ViewPayload.TYPE, ViewPayload.STREAM_CODEC, (payload, context) -> clientHandler.accept(payload));
         registrar.playToServer(ActionPayload.TYPE, ActionPayload.STREAM_CODEC, ConsoleNetwork::onAction);
         registrar.playToClient(AlarmPayload.TYPE, AlarmPayload.STREAM_CODEC, (payload, context) -> alarmHandler.accept(payload));
+        registrar.playToServer(OrderManyPayload.TYPE, OrderManyPayload.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer player) {
+                Component answer = orderMany(player, payload);
+                if (answer != null) {
+                    player.displayClientMessage(answer, true);
+                }
+            }
+        });
+        registrar.playToServer(RenamePayload.TYPE, RenamePayload.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer player) {
+                rename(player, payload);
+            }
+        });
+        registrar.playToServer(DetailsRequestPayload.TYPE, DetailsRequestPayload.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer player) {
+                DetailsPayload answer = details(player, payload);
+                if (answer != null) {
+                    PacketDistributor.sendToPlayer(player, answer);
+                }
+            }
+        });
+        registrar.playToClient(DetailsPayload.TYPE, DetailsPayload.STREAM_CODEC, (payload, context) -> detailsHandler.accept(payload));
     }
 
     public static void sendView(ServerPlayer player, ConsoleBlockEntity console) {
@@ -170,6 +267,7 @@ public final class ConsoleNetwork {
                 console.setIntruderMode(payload.value() != 0);
             }
             case WEATHER -> console.setWeatherLink(payload.value() != 0);
+            case SET_RULES -> console.setRules(payload.group(), payload.value());
             case UNLINK -> payload.machine().ifPresent(console::unlink);
             case REQUEST_VIEW -> {
             }
@@ -179,6 +277,204 @@ public final class ConsoleNetwork {
         }
         sendView(player, console);
         return null;
+    }
+
+    /** The console of a window open at it (1.8.0 payloads come only from the console's window), or null. */
+    @javax.annotation.Nullable
+    private static ConsoleBlockEntity openConsole(ServerPlayer player, BlockPos pos) {
+        return player.level().getBlockEntity(pos) instanceof ConsoleBlockEntity console && mayAct(player, console, false) ? console : null;
+    }
+
+    /** 1.8.0: renames a machine from its window in the console (server). Public for tests. */
+    public static boolean rename(ServerPlayer player, RenamePayload payload) {
+        ConsoleBlockEntity console = openConsole(player, payload.console());
+        String name = net.minecraft.util.StringUtil.filterText(payload.name()).trim();
+        if (console == null || !console.knows(payload.machine()) || name.length() > NAME_LENGTH) {
+            return false;
+        }
+        console.rename(payload.machine(), name);
+        sendView(player, console);
+        return true;
+    }
+
+    /** 1.8.0: what a machine carries, if it is loaded in the console's world (server). */
+    @javax.annotation.Nullable
+    static DetailsPayload details(ServerPlayer player, DetailsRequestPayload payload) {
+        ConsoleBlockEntity console = openConsole(player, payload.console());
+        if (console == null || !console.knows(payload.machine()) || !(console.getLevel() instanceof ServerLevel level)) {
+            return null;
+        }
+        net.minecraft.world.entity.Entity entity = level.getEntity(payload.machine());
+        if (!(entity instanceof GarrisonMachine machine)) {
+            return new DetailsPayload(payload.machine(), false, java.util.List.of(), java.util.List.of());
+        }
+        java.util.List<ItemStack> gear = new java.util.ArrayList<>();
+        if (entity instanceof net.minecraft.world.entity.LivingEntity living) {
+            for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+                ItemStack stack = living.getItemBySlot(slot);
+                if (!stack.isEmpty()) {
+                    gear.add(stack.copy());
+                }
+            }
+        }
+        java.util.List<ItemStack> upgrades = machine.consoleUpgrades().stream().filter(stack -> !stack.isEmpty()).map(ItemStack::copy).toList();
+        return new DetailsPayload(payload.machine(), true, gear.size() > 64 ? gear.subList(0, 64) : gear,
+                upgrades.size() > 32 ? upgrades.subList(0, 32) : upgrades);
+    }
+
+    /**
+     * 1.8.0: one order to several machines from the console's window (server), with the points clicked on its map. Checks as the old
+     * orders do (the window open, the right to command); machines the console does not know are skipped, and those that cannot carry
+     * out the order (OrderRules) are left out and counted. Returns what to tell the player. Public for tests.
+     */
+    public static Component orderMany(ServerPlayer player, OrderManyPayload payload) {
+        if (!(player.level().getBlockEntity(payload.console()) instanceof ConsoleBlockEntity console) || !mayAct(player, console, false)) {
+            return Component.translatable("message.projectrebirth.console.not_yours");
+        }
+        MachineTask.Type type = MachineTask.Type.byId(payload.task());
+        java.util.List<UUID> able = new java.util.ArrayList<>();
+        String problem = null;
+        for (UUID machine : payload.machines()) {
+            if (!console.knows(machine)) {
+                continue;
+            }
+            String why = console.problem(machine, type);
+            if (why == null) {
+                able.add(machine);
+            } else {
+                problem = why;
+            }
+        }
+        if (able.isEmpty()) {
+            return problem == null ? Component.translatable("message.projectrebirth.console.choose_first") : Component.translatable(problem);
+        }
+        MachineTask task;
+        java.util.List<BlockPos> points = new java.util.ArrayList<>();
+        for (BlockPos point : payload.points()) {
+            BlockPos ground = ground(player.serverLevel(), point);
+            if (ground == null) {
+                return Component.translatable("message.projectrebirth.console.map_unloaded");
+            }
+            points.add(ground);
+        }
+        switch (type) {
+            case GUARD -> {
+                if (points.isEmpty()) {
+                    return Component.translatable("message.projectrebirth.console.map_point_needed");
+                }
+                task = MachineTask.at(MachineTask.Type.GUARD, points.get(0).above());
+            }
+            case PATROL -> {
+                if (points.size() < 2) {
+                    return Component.translatable("message.projectrebirth.console.map_route_needed");
+                }
+                task = MachineTask.patrol(points);
+            }
+            case WORK -> {
+                if (points.size() < 2) {
+                    return Component.translatable("message.projectrebirth.console.map_area_needed");
+                }
+                int kind = Math.floorMod(payload.work(), MachineTask.WORKS.size());
+                BlockPos[] box = workBox(MachineTask.WORKS.get(kind), points.get(0), points.get(1));
+                Component tooBig = areaProblem(kind, box[0], box[1]);
+                if (tooBig != null) {
+                    return tooBig;
+                }
+                BlockPos chest = chestNear(player.serverLevel(), box[0], box[1]);
+                if (chest == null) {
+                    return Component.translatable("message.projectrebirth.console.no_chest_near");
+                }
+                task = MachineTask.work(MachineTask.WORKS.get(kind), box[0], box[1], chest);
+            }
+            case AREA_PATROL -> {
+                BlockPos centre = null;
+                for (UUID machine : able) {
+                    centre = console.orderArea(java.util.Optional.of(machine), -1);
+                }
+                sendView(player, console);
+                return centre == null ? Component.translatable("message.projectrebirth.console.area_patrol_none")
+                        : Component.translatable("message.projectrebirth.console.ordered_many", Component.translatable(type.translationKey()), able.size());
+            }
+            case ESCORT -> task = MachineTask.escort(player.getUUID());
+            default -> task = MachineTask.simple(type);
+        }
+        for (UUID machine : able) {
+            console.order(machine, task);
+        }
+        sendView(player, console);
+        Component name = Component.translatable(type.translationKey());
+        if (!console.powered()) {
+            return Component.translatable("message.projectrebirth.console.ordered_no_power", name);
+        }
+        int left = payload.machines().size() - able.size();
+        return left > 0 ? Component.translatable("message.projectrebirth.console.ordered_some", name, able.size(), left)
+                : Component.translatable("message.projectrebirth.console.ordered_many", name, able.size());
+    }
+
+    /** The top block of the ground at a map point's x and z, or null when that place is not loaded. */
+    @javax.annotation.Nullable
+    static BlockPos ground(ServerLevel level, BlockPos point) {
+        if (!level.hasChunkAt(point)) {
+            return null;
+        }
+        int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, point.getX(), point.getZ());
+        return new BlockPos(point.getX(), top - 1, point.getZ());
+    }
+
+    /**
+     * The box of a work area drawn on the map: a mine goes down from the ground as deep as allowed, a farm takes the ground and a
+     * little above, a lumber area the trees above the ground.
+     */
+    static BlockPos[] workBox(String work, BlockPos a, BlockPos b) {
+        int low = Math.min(a.getY(), b.getY());
+        int high = Math.max(a.getY(), b.getY());
+        int bottom;
+        int top;
+        if (work.startsWith("mine")) {
+            top = high;
+            bottom = top - RebirthConfig.WORK_AREA_MINE_DEPTH.get() + 1;
+        } else if (work.equals("lumber")) {
+            bottom = low;
+            top = high + 24;
+        } else {
+            bottom = low - 1;
+            top = high + 2;
+        }
+        return new BlockPos[] {new BlockPos(Math.min(a.getX(), b.getX()), bottom, Math.min(a.getZ(), b.getZ())),
+                new BlockPos(Math.max(a.getX(), b.getX()), top, Math.max(a.getZ(), b.getZ()))};
+    }
+
+    /** A chest (any item store) in the work area or up to 8 blocks round it, nearest to its middle; null when there is none. */
+    @javax.annotation.Nullable
+    static BlockPos chestNear(ServerLevel level, BlockPos from, BlockPos to) {
+        BlockPos middle = new BlockPos((from.getX() + to.getX()) / 2, (from.getY() + to.getY()) / 2, (from.getZ() + to.getZ()) / 2);
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        int minCx = (from.getX() - 8) >> 4, maxCx = (to.getX() + 8) >> 4, minCz = (from.getZ() - 8) >> 4, maxCz = (to.getZ() + 8) >> 4;
+        for (int cx = minCx; cx <= maxCx; cx++) {
+            for (int cz = minCz; cz <= maxCz; cz++) {
+                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunkSource().getChunkNow(cx, cz);
+                if (chunk == null) {
+                    continue;
+                }
+                for (BlockPos pos : chunk.getBlockEntitiesPos()) {
+                    if (pos.getX() < from.getX() - 8 || pos.getX() > to.getX() + 8 || pos.getZ() < from.getZ() - 8 || pos.getZ() > to.getZ() + 8
+                            || pos.getY() < from.getY() - 8 || pos.getY() > to.getY() + 8) {
+                        continue;
+                    }
+                    if (level.getCapability(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, pos, null) == null
+                            || level.getBlockEntity(pos) instanceof ConsoleBlockEntity) {
+                        continue;
+                    }
+                    double distance = pos.distSqr(middle);
+                    if (distance < bestDistance) {
+                        best = pos.immutable();
+                        bestDistance = distance;
+                    }
+                }
+            }
+        }
+        return best;
     }
 
     /** Whether an order needs points marked in the world (1.7.1): those go to the tablet and wait for the player's clicks. */

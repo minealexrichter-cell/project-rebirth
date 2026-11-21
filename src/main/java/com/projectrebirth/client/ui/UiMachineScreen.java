@@ -46,11 +46,15 @@ public abstract class UiMachineScreen<M extends AbstractContainerMenu> extends A
         if (codexEntry != null) {
             // the entry is asked when the button is pressed: some windows know it only after the server's data came
             addRenderableWidget(UiButton.icon(leftPos + imageWidth - 37, topPos + 4, 13, UiSprites.ICON_HELP, 7,
-                    Component.translatable("screen.projectrebirth.ui.help"),
-                    () -> net.minecraft.client.Minecraft.getInstance().setScreen(com.projectrebirth.client.codex.CodexScreen.openFrom(this, codexEntry()))));
+                    Component.translatable("screen.projectrebirth.ui.help"), this::help));
         }
         addRenderableWidget(UiButton.icon(leftPos + imageWidth - 21, topPos + 4, 13, UiSprites.ICON_CLOSE, 7,
                 Component.translatable("screen.projectrebirth.ui.close"), this::onClose));
+    }
+
+    /** What the "?" button does: opens the window's Codex entry (the console shows its lesson instead, 1.8.0 block E). */
+    protected void help() {
+        net.minecraft.client.Minecraft.getInstance().setScreen(com.projectrebirth.client.codex.CodexScreen.openFrom(this, codexEntry()));
     }
 
     /** The Codex entry of the "?" button. */

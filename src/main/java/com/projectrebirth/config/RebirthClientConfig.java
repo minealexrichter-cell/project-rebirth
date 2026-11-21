@@ -37,6 +37,7 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec.BooleanValue UI_BOOT_ANIMATION;
     public static final ModConfigSpec.BooleanValue UI_DAMAGE_EFFECTS;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> HUD_ELEMENTS;
+    public static final ModConfigSpec.BooleanValue UI_CONSOLE_TUTORIAL;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -100,6 +101,9 @@ public final class RebirthClientConfig {
         HUD_ELEMENTS = builder.comment("Places of the HUD elements set in the HUD editor (key H): \"element dx dy scale visible\" each.",
                         "The status panel and the body's visor also use panelX/panelY and barOffsetX/barOffsetY of [hud].")
                 .defineListAllowEmpty("hudElements", java.util.List.of(), () -> "", entry -> entry instanceof String);
+        // 1.8.0, block E
+        UI_CONSOLE_TUTORIAL = builder.comment("Show the short lesson over the console's window when it is opened (it turns itself off once seen; '?' shows it again).")
+                .define("consoleTutorial", true);
         builder.pop();
         CLIENT_SPEC = builder.build();
     }

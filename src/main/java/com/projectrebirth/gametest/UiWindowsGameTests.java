@@ -99,6 +99,31 @@ public class UiWindowsGameTests {
         helper.succeed();
     }
 
+    /**
+     * 1.8.0 block E: the turret mount and the service post open windows (before, a line in the action bar): the mount's has its nine
+     * slots of ammunition and its energy, and says there is no turret on it; the post's says its plates are missing.
+     */
+    @GameTest(template = "floor_3x3")
+    public static void garrisonBlocksOpenTheirWindows(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        helper.setBlock(new BlockPos(0, 2, 0), com.projectrebirth.garrison.GarrisonRegistry.TURRET_MOUNT.get());
+        helper.setBlock(new BlockPos(2, 2, 2), com.projectrebirth.garrison.GarrisonRegistry.SERVICE_POST.get());
+        var mount = (com.projectrebirth.garrison.TurretMountBlockEntity) helper.getBlockEntity(new BlockPos(0, 2, 0));
+        var menu = (com.projectrebirth.garrison.TurretMountMenu) com.projectrebirth.garrison.TurretMountMenu.provider(mount).createMenu(0, player.getInventory(), player);
+        helper.assertTrue(menu.energyCapacity() > 0 && menu.get(com.projectrebirth.garrison.TurretMountMenu.DATA_TURRET) == 0,
+                "The mount's window tells its capacity and that no turret stands on it");
+        helper.assertTrue(menu.slots.size() == com.projectrebirth.garrison.TurretMountBlockEntity.SLOTS + 36, "Nine slots of ammunition and the inventory");
+        mount.ammo().setStackInSlot(0, new net.minecraft.world.item.ItemStack(com.projectrebirth.weapons.WeaponRegistry.ASSAULT_RIFLE_AMMO.get(), 12));
+        helper.assertTrue(menu.get(com.projectrebirth.garrison.TurretMountMenu.DATA_ROUNDS) == 12 && menu.getSlot(0).getItem().getCount() == 12,
+                "The window shows the mount's own rounds");
+        var post = (com.projectrebirth.garrison.ServicePostBlockEntity) helper.getBlockEntity(new BlockPos(2, 2, 2));
+        var postMenu = (com.projectrebirth.garrison.ServicePostMenu) com.projectrebirth.garrison.ServicePostMenu.provider(post).createMenu(0, player.getInventory(), player);
+        helper.assertTrue(postMenu.get(com.projectrebirth.garrison.ServicePostMenu.DATA_PLATES) == 0
+                && postMenu.get(com.projectrebirth.garrison.ServicePostMenu.DATA_SERVED) == 0 && postMenu.energyCapacity() > 0,
+                "The post's window says its plates are missing and nobody is served");
+        helper.succeed();
+    }
+
     @GameTest(template = "floor_5x5")
     public static void capsuleRowsCarryChargeAndWear(GameTestHelper helper) {
         ServerPlayer player = player(helper);

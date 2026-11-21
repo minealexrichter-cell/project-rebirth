@@ -57,6 +57,8 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
     private static final int GRID = 0xFF1F2B23;
     private static final int MIN_CELL = 2;
     private static final int MAX_CELL = 16;
+    /** The largest zoom of this map (pixels per chunk); the console's map goes closer than the others. */
+    private int maxCell = MAX_CELL;
     private static int counter;
 
     private final Source source;
@@ -73,6 +75,15 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
     private double centreX;
     private double centreZ;
     private boolean dragged;
+    /** 1.8.0 block E: whether dragging with the left button moves the map (the console uses it for a selection frame instead). */
+    private boolean leftDragPans = true;
+    @Nullable
+    private Overlay overlay;
+
+    /** 1.8.0 block E: more to draw over the cells and under the marks (routes, areas, circles), in the map's clip. */
+    public interface Overlay {
+        void draw(GuiGraphics graphics, UiMap map);
+    }
 
     public UiMap(int x, int y, int width, int height, Source source, IntSupplier layers, Supplier<List<Mark>> marks) {
         super(x, y, width, height, Component.empty());
@@ -81,6 +92,85 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
         this.marks = marks;
         centreX = source.minChunkX() + source.side() / 2.0;
         centreZ = source.minChunkZ() + source.side() / 2.0;
+    }
+
+    public UiMap overlay(Overlay overlay) {
+        this.overlay = overlay;
+        return this;
+    }
+
+    public UiMap leftDragPans(boolean pans) {
+        leftDragPans = pans;
+        return this;
+    }
+
+    /** Where a block's x and z are on the screen. */
+    public double screenX(double blockX) {
+        return left() + blockX / 16.0 * cell;
+    }
+
+    public double screenY(double blockZ) {
+        return top() + blockZ / 16.0 * cell;
+    }
+
+    /** The block's x and z under a point of the screen. */
+    public double blockX(double mouseX) {
+        return (mouseX - left()) / cell * 16.0;
+    }
+
+    public double blockZ(double mouseY) {
+        return (mouseY - top()) / cell * 16.0;
+    }
+
+    /** Moves the view by that many pixels (the console pans with the middle button). */
+    public void pan(double dx, double dy) {
+        centreX -= dx / cell;
+        centreZ -= dy / cell;
+        clampCentre();
+    }
+
+    /** Pixels per chunk now. */
+    public int cell() {
+        return cell;
+    }
+
+    public void setCell(int cell) {
+        this.cell = Mth.clamp(cell, MIN_CELL, maxCell);
+    }
+
+    public UiMap maxCell(int maxCell) {
+        this.maxCell = Math.max(MIN_CELL, maxCell);
+        return this;
+    }
+
+    /** A line between two places on the map (blocks), one pixel wide, drawn in small steps. */
+    public void line(GuiGraphics graphics, double x1, double z1, double x2, double z2, int color) {
+        double sx = screenX(x1), sy = screenY(z1), ex = screenX(x2), ey = screenY(z2);
+        int steps = (int) Math.max(1, Math.max(Math.abs(ex - sx), Math.abs(ey - sy)));
+        for (int i = 0; i <= steps; i++) {
+            int px = (int) Math.round(sx + (ex - sx) * i / steps);
+            int py = (int) Math.round(sy + (ey - sy) * i / steps);
+            graphics.fill(px, py, px + 1, py + 1, color);
+        }
+    }
+
+    /** A circle round a place (blocks), as a ring of dots. */
+    public void circle(GuiGraphics graphics, double x, double z, double radius, int color) {
+        double cx = screenX(x), cy = screenY(z), r = radius / 16.0 * cell;
+        int steps = (int) Mth.clamp(r * 6, 12, 240);
+        for (int i = 0; i < steps; i += 2) {
+            double angle = Math.PI * 2 * i / steps;
+            int px = (int) Math.round(cx + Math.cos(angle) * r);
+            int py = (int) Math.round(cy + Math.sin(angle) * r);
+            graphics.fill(px, py, px + 1, py + 1, color);
+        }
+    }
+
+    /** A rectangle's outline between two places (blocks). */
+    public void rect(GuiGraphics graphics, double x1, double z1, double x2, double z2, int color) {
+        int ax = (int) Math.round(screenX(Math.min(x1, x2))), ay = (int) Math.round(screenY(Math.min(z1, z2)));
+        int bx = (int) Math.round(screenX(Math.max(x1, x2) + 1)), by = (int) Math.round(screenY(Math.max(z1, z2) + 1));
+        graphics.renderOutline(ax, ay, Math.max(1, bx - ax), Math.max(1, by - ay), color);
     }
 
     /** The data changed: the cells are repainted before the next frame. */
@@ -157,6 +247,9 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
                 }
             }
         }
+        if (overlay != null) {
+            overlay.draw(graphics, this);
+        }
         for (Mark mark : marks.get()) {
             int mx = (int) Math.round(left() + mark.x / 16.0 * cell);
             int my = (int) Math.round(top() + mark.z / 16.0 * cell);
@@ -203,9 +296,11 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
     @Override
     protected void onDrag(double mouseX, double mouseY, double dragX, double dragY) {
         dragged = true;
-        centreX -= dragX / cell;
-        centreZ -= dragY / cell;
-        clampCentre();
+        if (leftDragPans) {
+            centreX -= dragX / cell;
+            centreZ -= dragY / cell;
+            clampCentre();
+        }
     }
 
     /** Whether the last press of the left button dragged the map (then it was not a click on a cell). */
@@ -221,7 +316,7 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
         // zoom around the point under the mouse
         double chunkX = (mouseX - left()) / cell;
         double chunkZ = (mouseY - top()) / cell;
-        int next = Mth.clamp(scrollY > 0 ? cell + Math.max(1, cell / 4) : cell - Math.max(1, cell / 5), MIN_CELL, MAX_CELL);
+        int next = Mth.clamp(scrollY > 0 ? cell + Math.max(1, cell / 4) : cell - Math.max(1, cell / 5), MIN_CELL, maxCell);
         if (next != cell) {
             cell = next;
             centreX = chunkX - (mouseX - getX() - width / 2.0) / cell;

@@ -52,6 +52,7 @@ public final class ConsoleLink {
             }
             core.setTask(given);
             core.setIntruderMode(console.intruderModeFor(id));
+            core.setRules(console.rulesFor(id));
         }
         console.heard(self, core, link);
         console.alarm(id, ConsoleAlarm.LOST, core.wreck());

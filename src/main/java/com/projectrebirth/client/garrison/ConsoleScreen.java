@@ -1,347 +1,1254 @@
 package com.projectrebirth.client.garrison;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
-import com.projectrebirth.client.ContaminationMapView;
-import com.projectrebirth.client.GuiAtlas;
+import javax.annotation.Nullable;
+
+import org.lwjgl.glfw.GLFW;
+
+import com.projectrebirth.client.ui.UiBars;
+import com.projectrebirth.client.ui.UiButton;
+import com.projectrebirth.client.ui.UiColors;
+import com.projectrebirth.client.ui.UiDropdown;
+import com.projectrebirth.client.ui.UiMachineScreen;
+import com.projectrebirth.client.ui.UiMap;
+import com.projectrebirth.client.ui.UiPanels;
+import com.projectrebirth.client.ui.UiSounds;
+import com.projectrebirth.client.ui.UiSprites;
+import com.projectrebirth.client.ui.UiTabs;
+import com.projectrebirth.client.ui.UiText;
+import com.projectrebirth.client.ui.UiToggle;
+import com.projectrebirth.client.ui.UiTooltip;
+import com.projectrebirth.config.RebirthClientConfig;
 import com.projectrebirth.garrison.ConsoleAlarm;
 import com.projectrebirth.garrison.ConsoleBlockEntity;
 import com.projectrebirth.garrison.ConsoleMenu;
 import com.projectrebirth.garrison.ConsoleNetwork;
 import com.projectrebirth.garrison.ConsoleView;
-import com.projectrebirth.monitoring.Snapshot;
+import com.projectrebirth.garrison.GarrisonRegistry;
+import com.projectrebirth.garrison.MachineCore;
+import com.projectrebirth.garrison.MachineKind;
+import com.projectrebirth.garrison.MachineTask;
+import com.projectrebirth.garrison.OrderRules;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * The console's window (1.7.0, block D), four pages: the machines (list, the chosen one, its group, orders), the map (the machines
- * around the console, over the contamination of a monitoring station near), the rules (the intruder mode of the console and of each
- * group, the weather link) and the alarm log. Every button goes to the server, which answers with a fresh view. Client only.
+ * The console's window in the style "Industrial terminal" (1.8.0, block E): the garrison around a map, as in strategy games.
+ * <ul>
+ *   <li>groups as tabs on top (a colour and a number, keys 1-8, 0 for all);</li>
+ *   <li>left: the machines as cards (kind, name, group, both bars, energy, rounds, state or task), a filter; a click chooses, Shift
+ *   adds, a double click opens the machine's window;</li>
+ *   <li>centre: the map with the faction's land, a monitoring station's contamination, posts, turrets with their circles, the
+ *   machines with their routes and areas; a left frame chooses several, the right button gives an order there (on a post: "to the
+ *   post"), Shift+right marks route points, dragging the right button marks a work area; the wheel zooms, the middle button
+ *   moves;</li>
+ *   <li>right: whom to shoot (the target rules of the group, in words) and the alarms with what to do and "show on the map";</li>
+ *   <li>bottom: the orders the chosen machines can carry out (the others grey, with the reason).</li>
+ * </ul>
+ * A short lesson covers the window the first time; "?" shows it again. Every order still goes to the server, which checks it.
  */
-public class ConsoleScreen extends AbstractContainerScreen<ConsoleMenu> {
-    private static final int MACHINES = 0, MAP = 1, RULES = 2, LOG = 3;
-    private static final int LIST_X = 8, LIST_Y = 40, ROW = 11, ROWS = 9, LIST_W = 140, PANEL_Y = 156;
-    private static int page = MACHINES;
-    private final ConsoleOrders.Target target = new ConsoleOrders.Target();
-    private int scroll;
+public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
+    private static final int W = 455;
+    private static final int H = 256;
+    private static final int LEFT_X = 7;
+    private static final int LEFT_W = 116;
+    private static final int CARDS_Y = 55;
+    private static final int CARD_H = 25;
+    private static final int CARDS = 6;
+    private static final int MAP_X = 127;
+    private static final int MAP_Y = 40;
+    private static final int MAP_W = 172;
+    private static final int MAP_H = 152;
+    private static final int RIGHT_X = 303;
+    private static final int RIGHT_W = W - 7 - RIGHT_X;
+    private static final int ALARMS_Y = 118;
+    private static final int ALARM_H = 29;
+    private static final int ORDERS_Y = 220;
+    /** The orders of the panel, in the mock-up's order; WORK takes the kind of work chosen below. */
+    private static final List<MachineTask.Type> ORDERS = List.of(MachineTask.Type.GUARD, MachineTask.Type.PATROL, MachineTask.Type.AREA_PATROL,
+            MachineTask.Type.ESCORT, MachineTask.Type.HOLD, MachineTask.Type.WORK, MachineTask.Type.TO_POST, MachineTask.Type.SHELTER,
+            MachineTask.Type.STAND_DOWN);
+    /** The colours of the groups 1-8 (always shown with their number). */
+    static final int[] GROUP_COLORS = {0xFFB648, 0x4FC3FF, 0x7BD88F, 0xFF8A7A, 0xC792EA, 0x4FD1C5, 0xF78C6C, 0xD8D0FF};
+    private static final int FILTER_ALL = 0, FILTER_FIGHT = 1, FILTER_WORK = 2, FILTER_TROUBLE = 3;
+
+    /** Kept while the game runs: the group tab (-1: all), the filter, the kind of work, the map's zoom. */
+    private static int groupTab = -1;
+    private static int filter = FILTER_ALL;
+    private static int workKind;
+    private static int mapCell = -1;
+
+    private final Set<UUID> selected = new LinkedHashSet<>();
+    private final ConsoleMapSource source;
+    private UiMap map;
+    @Nullable
+    private UiTabs tabs;
+    private final List<UiButton> orderButtons = new ArrayList<>();
+    private int cardScroll;
+    private int alarmScroll;
+    /** The order waiting for its place on the map (armed by its button), or null. */
+    @Nullable
+    private MachineTask.Type armed;
+    /** Route points marked with Shift+right click (blocks; only x and z count). */
+    private final List<BlockPos> route = new ArrayList<>();
+    /** The two corners of a work area dragged with the right button, or null. */
+    @Nullable
+    private BlockPos areaFrom;
+    @Nullable
+    private BlockPos areaTo;
+    /** A press of the left or right button on the map: where it began (screen), for frames and areas. */
+    private double pressX = -1;
+    private double pressY = -1;
+    private int pressButton = -1;
+    private boolean pressShift;
+    private double mouseNowX;
+    private double mouseNowY;
+    private long lastCardClick;
+    @Nullable
+    private UUID lastCardClicked;
+    /** The lesson's step (0-4), or -1 when it is not shown. */
+    private int lesson = -1;
+    @Nullable
+    private Component status;
+    private boolean statusBad;
 
     public ConsoleScreen(ConsoleMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title);
-        imageWidth = 256;
-        imageHeight = 234;
+        super(menu, inventory, title, W, H, "console");
+        source = new ConsoleMapSource(menu.pos());
+        if (RebirthClientConfig.CLIENT_SPEC.isLoaded() && RebirthClientConfig.UI_CONSOLE_TUTORIAL.get()) {
+            lesson = 0;
+        }
     }
 
-    /** A fresh view came: buttons whose words depend on it are made again. */
+    static Component tr(String key, Object... args) {
+        return Component.translatable("screen.projectrebirth.console." + key, args);
+    }
+
+    // ------------------------------------------------------------------ building
+
+    /** Zooms and centres the map on the console and its machines (the first time the window is opened). */
+    private void fitMap() {
+        ConsoleView view = menu.view();
+        double minX = menu.pos().getX(), maxX = minX, minZ = menu.pos().getZ(), maxZ = minZ;
+        if (view != null) {
+            for (ConsoleView.Row row : view.rows()) {
+                minX = Math.min(minX, row.x());
+                maxX = Math.max(maxX, row.x());
+                minZ = Math.min(minZ, row.z());
+                maxZ = Math.max(maxZ, row.z());
+            }
+        }
+        double span = Math.max(Math.max(maxX - minX, maxZ - minZ) + 24, 32);
+        map.setCell((int) (Math.min(MAP_W, MAP_H) * 16 / span));
+        map.centreOn((minX + maxX) / 2 + 0.5, (minZ + maxZ) / 2 + 0.5);
+        if (view != null) {
+            mapCell = map.cell();
+        }
+    }
+
+    /** A fresh view came: the cards, map and tabs follow it. */
     public void viewChanged() {
-        rebuildWidgets();
+        if (mapCell < 0 && map != null && menu.view() != null) {
+            fitMap();
+        }
+        if (source.set(menu.view()) && map != null) {
+            map.invalidate();
+        }
+        selected.removeIf(id -> row(id) == null);
+        addTabs();
     }
 
     @Override
     protected void init() {
         super.init();
-        String[] names = {"machines", "map", "rules", "log"};
-        for (int i = 0; i < names.length; i++) {
-            int tab = i;
-            Button button = Button.builder(Component.translatable("screen.projectrebirth.console.page." + names[i]), b -> {
-                page = tab;
-                rebuildWidgets();
-            }).bounds(leftPos + 6 + i * 61, topPos + 16, 59, 16).build();
-            button.active = page != i;
-            addRenderableWidget(button);
+        orderButtons.clear();
+        if (map != null) {
+            mapCell = map.cell();
+            map.close();
+        }
+        source.set(menu.view());
+        map = addRenderableWidget(new UiMap(leftPos + MAP_X, topPos + MAP_Y, MAP_W, MAP_H, source,
+                () -> ConsoleMapSource.TERRITORY | ConsoleMapSource.CONTAMINATION, this::marks)).leftDragPans(false).overlay(this::overlay);
+        map.maxCell(48);
+        if (mapCell > 0) {
+            map.setCell(mapCell);
+            map.centreOn(menu.pos().getX() + 0.5, menu.pos().getZ() + 0.5);
+        } else {
+            fitMap();
+        }
+        addTabs();
+        addRenderableWidget(new UiDropdown<>(leftPos + LEFT_X, topPos + 40, LEFT_W, List.of(FILTER_ALL, FILTER_FIGHT, FILTER_WORK, FILTER_TROUBLE),
+                value -> tr("filter." + value, count(value)), () -> filter, value -> {
+                    filter = value;
+                    cardScroll = 0;
+                }));
+        // whom to shoot: the rules of the chosen group, or of the machines without one; the weather link of the console
+        int ry = topPos + 50;
+        addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry, RIGHT_W, () -> rule(OrderRules.MONSTERS), on -> setRule(OrderRules.MONSTERS, on),
+                on -> tr(on ? "rule.monsters_on" : "rule.monsters_off")));
+        addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 11, RIGHT_W, () -> rule(OrderRules.WAR), on -> setRule(OrderRules.WAR, on),
+                on -> tr(on ? "rule.war_on" : "rule.war_off")));
+        UiToggle intruders = addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 22, RIGHT_W, this::intruders, this::setIntruders,
+                on -> tr(on ? "rule.intruders_on" : "rule.intruders_off")));
+        ConsoleView view = menu.view();
+        if (view != null && !view.intruderAllowed() && !intruders()) {
+            intruders.disable(tr("intruders_forbidden"));
+        }
+        addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 33, RIGHT_W, () -> rule(OrderRules.RETALIATE), on -> setRule(OrderRules.RETALIATE, on),
+                on -> tr(on ? "rule.retaliate_on" : "rule.retaliate_off")));
+        addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 44, RIGHT_W, () -> menu.view() != null && menu.view().weatherLink(),
+                on -> send(ConsoleNetwork.WEATHER, null, -1, on ? 1 : 0), on -> tr(on ? "rule.weather_on" : "rule.weather_off")));
+        // the orders
+        int bw = (W - 14 - 8 * 2) / ORDERS.size();
+        for (int i = 0; i < ORDERS.size(); i++) {
+            MachineTask.Type type = ORDERS.get(i);
+            UiButton button = addRenderableWidget(new UiButton(leftPos + 7 + i * (bw + 2), topPos + ORDERS_Y, bw, 14,
+                    Component.translatable(type.translationKey()), null, 0, UiButton.Look.METAL, () -> press(type)));
+            orderButtons.add(button);
+        }
+        addRenderableWidget(new UiDropdown<>(leftPos + W - 7 - 110, topPos + ORDERS_Y + 17, 110, List.of(0, 1, 2, 3),
+                value -> tr("work_kind", Component.translatable("work_kind.projectrebirth." + MachineTask.WORKS.get(value))), () -> workKind,
+                value -> workKind = value));
+        // the map's zoom buttons, in its corner
+        addRenderableWidget(UiButton.icon(leftPos + MAP_X + MAP_W - 15, topPos + MAP_Y + 3, 12, UiSprites.ICON_ARROW_UP, 7, tr("zoom_in"),
+                () -> map.mouseScrolled(map.getX() + MAP_W / 2.0, map.getY() + MAP_H / 2.0, 0, 1)));
+        addRenderableWidget(UiButton.icon(leftPos + MAP_X + MAP_W - 15, topPos + MAP_Y + 16, 12, UiSprites.ICON_ARROW_DOWN, 7, tr("zoom_out"),
+                () -> map.mouseScrolled(map.getX() + MAP_W / 2.0, map.getY() + MAP_H / 2.0, 0, -1)));
+    }
+
+    /** The group tabs, made again when the counts change. */
+    private void addTabs() {
+        if (tabs != null) {
+            removeWidget(tabs);
         }
         ConsoleView view = menu.view();
-        switch (page) {
-            case MACHINES -> machineButtons(view);
-            case RULES -> ruleButtons(view);
-            default -> {
+        List<UiTabs.Tab> list = new ArrayList<>();
+        list.add(UiTabs.Tab.of(tr("tab_all", view == null ? 0 : view.rows().size())));
+        for (int g = 0; g < ConsoleBlockEntity.GROUPS; g++) {
+            int members = view == null ? 0 : view.groups().get(g).members();
+            list.add(new UiTabs.Tab(tr("tab_group", g + 1, members), GROUP_COLORS[g]));
+        }
+        tabs = addRenderableWidget(new UiTabs(leftPos + 7, topPos + 23, W - 14, list, () -> groupTab + 1, index -> chooseGroup(index - 1)));
+    }
+
+    @Override
+    public void removed() {
+        if (map != null) {
+            mapCell = map.cell();
+            map.close();
+        }
+        super.removed();
+    }
+
+    @Override
+    protected void help() {
+        lesson = 0;
+    }
+
+    // ------------------------------------------------------------------ the data
+
+    @Nullable
+    private ConsoleView.Row row(UUID id) {
+        ConsoleView view = menu.view();
+        if (view != null) {
+            for (ConsoleView.Row row : view.rows()) {
+                if (row.id().equals(id)) {
+                    return row;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static MachineKind kind(ConsoleView.Row row) {
+        return MachineKind.byId(row.kind());
+    }
+
+    private static boolean has(ConsoleView.Row row, ConsoleAlarm alarm) {
+        return row.facts().alarms().contains(alarm.ordinal());
+    }
+
+    /** The worst alarm going on for a machine (a lost or shut one counts by its state), or null. */
+    @Nullable
+    private static ConsoleAlarm worst(ConsoleView.Row row) {
+        ConsoleAlarm worst = null;
+        for (int id : row.facts().alarms()) {
+            ConsoleAlarm alarm = ConsoleAlarm.byId(id);
+            if (alarm != ConsoleAlarm.WORK_DONE && (worst == null || alarm.signal() > worst.signal())) {
+                worst = alarm;
+            }
+        }
+        return worst;
+    }
+
+    private static boolean trouble(ConsoleView.Row row) {
+        if (row.state() != MachineCore.State.ACTIVE.ordinal()) {
+            return true;
+        }
+        ConsoleAlarm worst = worst(row);
+        return worst != null && worst != ConsoleAlarm.COMBAT;
+    }
+
+    private static boolean passes(ConsoleView.Row row, int value) {
+        return switch (value) {
+            case FILTER_FIGHT -> has(row, ConsoleAlarm.COMBAT);
+            case FILTER_WORK -> row.task() == MachineTask.Type.WORK.ordinal();
+            case FILTER_TROUBLE -> trouble(row);
+            default -> true;
+        };
+    }
+
+    private int count(int value) {
+        ConsoleView view = menu.view();
+        if (view == null) {
+            return 0;
+        }
+        int count = 0;
+        for (ConsoleView.Row row : view.rows()) {
+            if ((groupTab < 0 || row.group() == groupTab) && passes(row, value)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /** The cards shown: the group's (or all), through the filter. */
+    private List<ConsoleView.Row> cards() {
+        ConsoleView view = menu.view();
+        List<ConsoleView.Row> out = new ArrayList<>();
+        if (view != null) {
+            for (ConsoleView.Row row : view.rows()) {
+                if ((groupTab < 0 || row.group() == groupTab) && passes(row, filter)) {
+                    out.add(row);
+                }
+            }
+        }
+        return out;
+    }
+
+    private List<ConsoleView.Row> chosenRows() {
+        List<ConsoleView.Row> out = new ArrayList<>();
+        for (UUID id : selected) {
+            ConsoleView.Row row = row(id);
+            if (row != null) {
+                out.add(row);
+            }
+        }
+        return out;
+    }
+
+    private void chooseGroup(int group) {
+        groupTab = group;
+        cardScroll = 0;
+        selected.clear();
+        ConsoleView view = menu.view();
+        if (view != null && group >= 0) {
+            for (ConsoleView.Row row : view.rows()) {
+                if (row.group() == group) {
+                    selected.add(row.id());
+                }
             }
         }
     }
 
-    private void machineButtons(ConsoleView view) {
-        int x = leftPos + 154;
-        Button group = Button.builder(groupLabel(view), b -> {
-            ConsoleView.Row row = chosen(view);
-            if (row != null) {
-                int next = row.group() + 1 >= ConsoleBlockEntity.GROUPS ? -1 : row.group() + 1;
-                ConsoleOrders.send(menu.pos(), ConsoleNetwork.SET_GROUP, row.id(), -1, next, 0, false);
-            }
-        }).bounds(x, topPos + 102, 94, 16).build();
-        group.active = chosen(view) != null;
-        addRenderableWidget(group);
-        Button unlink = Button.builder(Component.translatable("screen.projectrebirth.console.unlink"), b -> {
-            ConsoleView.Row row = chosen(view);
-            if (row != null) {
-                ConsoleOrders.send(menu.pos(), ConsoleNetwork.UNLINK, row.id(), -1, 0, 0, false);
-                target.machine = null;
-            }
-        }).bounds(x, topPos + 120, 94, 16).build();
-        unlink.active = chosen(view) != null;
-        addRenderableWidget(unlink);
-        ConsoleOrders.panel(leftPos + 8, topPos + PANEL_Y, menu.pos(), target, false, this::addRenderableWidget, this::rebuildWidgets, this::pointOrder);
+    // ------------------------------------------------------------------ rules
+
+    private boolean rule(int bit) {
+        ConsoleView view = menu.view();
+        if (view == null) {
+            return true;
+        }
+        int rules = groupTab >= 0 ? view.groups().get(groupTab).rules() : view.rules();
+        return (rules & bit) != 0;
     }
 
-    /**
-     * An order that needs points went to the player's tablet (1.7.1): with a tablet linked to this console the window closes, so
-     * that the points can be clicked in the world; without one the server says that a tablet is needed.
-     */
-    private void pointOrder() {
-        var player = net.minecraft.client.Minecraft.getInstance().player;
-        if (player == null) {
+    private void setRule(int bit, boolean on) {
+        ConsoleView view = menu.view();
+        if (view == null) {
             return;
         }
-        for (net.minecraft.world.item.ItemStack stack : player.getInventory().items) {
-            if (stack.getItem() instanceof com.projectrebirth.garrison.TabletItem && com.projectrebirth.garrison.TabletItem.data(stack).console()
-                    .filter(where -> where.pos().equals(menu.pos())).isPresent()) {
-                onClose();
-                return;
+        int rules = groupTab >= 0 ? view.groups().get(groupTab).rules() : view.rules();
+        send(ConsoleNetwork.SET_RULES, null, groupTab >= 0 ? groupTab : ConsoleBlockEntity.ALL, on ? rules | bit : rules & ~bit);
+    }
+
+    private boolean intruders() {
+        ConsoleView view = menu.view();
+        return view != null && (groupTab >= 0 ? view.groups().get(groupTab).intruders() : view.intruderMode());
+    }
+
+    private void setIntruders(boolean on) {
+        if (groupTab >= 0) {
+            send(ConsoleNetwork.GROUP_INTRUDERS, null, groupTab, on ? 1 : 0);
+        } else {
+            send(ConsoleNetwork.CONSOLE_INTRUDERS, null, -1, on ? 1 : 0);
+        }
+    }
+
+    private void send(int action, @Nullable UUID machine, int group, int value) {
+        ConsoleOrders.send(menu.pos(), action, machine, group, value, 0, false);
+    }
+
+    // ------------------------------------------------------------------ orders
+
+    /** Why none of the chosen machines can carry out this order, or null when at least one can. */
+    @Nullable
+    private Component unavailable(MachineTask.Type type) {
+        List<ConsoleView.Row> rows = chosenRows();
+        if (rows.isEmpty()) {
+            return tr("choose_first");
+        }
+        String problem = null;
+        for (ConsoleView.Row row : rows) {
+            String why = OrderRules.problem(kind(row), row.facts().worker(), type);
+            if (why == null) {
+                return null;
+            }
+            problem = why;
+        }
+        return Component.translatable(problem);
+    }
+
+    private void press(MachineTask.Type type) {
+        switch (type) {
+            case GUARD -> {
+                armed = MachineTask.Type.GUARD;
+                say(tr("arm.guard"), false);
+            }
+            case PATROL -> {
+                if (route.size() >= 2) {
+                    order(MachineTask.Type.PATROL, List.copyOf(route));
+                    route.clear();
+                    armed = null;
+                } else {
+                    armed = MachineTask.Type.PATROL;
+                    say(tr("arm.patrol"), false);
+                }
+            }
+            case WORK -> {
+                if (areaFrom != null && areaTo != null) {
+                    order(MachineTask.Type.WORK, List.of(areaFrom, areaTo));
+                    areaFrom = null;
+                    areaTo = null;
+                    armed = null;
+                } else {
+                    armed = MachineTask.Type.WORK;
+                    say(tr("arm.work"), false);
+                }
+            }
+            default -> {
+                armed = null;
+                order(type, List.of());
             }
         }
-        if (player.getOffhandItem().getItem() instanceof com.projectrebirth.garrison.TabletItem && com.projectrebirth.garrison.TabletItem
-                .data(player.getOffhandItem()).console().filter(where -> where.pos().equals(menu.pos())).isPresent()) {
-            onClose();
+    }
+
+    private void order(MachineTask.Type type, List<BlockPos> points) {
+        if (selected.isEmpty()) {
+            say(tr("choose_first"), true);
+            return;
+        }
+        PacketDistributor.sendToServer(new ConsoleNetwork.OrderManyPayload(menu.pos(), List.copyOf(selected), type.ordinal(), workKind, points));
+        UiSounds.CLICK.play();
+        say(tr("sent", Component.translatable(type.translationKey()), selected.size()), false);
+    }
+
+    private void say(Component text, boolean bad) {
+        status = text;
+        statusBad = bad;
+        if (bad) {
+            UiSounds.ERROR.play();
         }
     }
 
-    private Component groupLabel(ConsoleView view) {
-        ConsoleView.Row row = chosen(view);
-        int group = row == null ? -1 : row.group();
-        return group < 0 ? Component.translatable("screen.projectrebirth.console.no_group")
-                : Component.translatable("screen.projectrebirth.console.group", group + 1);
+    // ------------------------------------------------------------------ the map
+
+    private List<UiMap.Mark> marks() {
+        List<UiMap.Mark> marks = new ArrayList<>();
+        ConsoleView view = menu.view();
+        marks.add(new UiMap.Mark(menu.pos().getX() + 0.5, menu.pos().getZ() + 0.5, 0xFFFFFFFF, null, tr("map.console"), 4));
+        if (view == null) {
+            return marks;
+        }
+        for (ConsoleView.Site site : view.sites()) {
+            marks.add(new UiMap.Mark(site.x() + 0.5, site.z() + 0.5, 0xFF37C6E8, null, tr("map.site." + site.kind()), 4));
+        }
+        view.map().ifPresent(snapshot -> {
+            for (var marker : snapshot.markers()) {
+                if (marker.kind() == com.projectrebirth.monitoring.Snapshot.SHELTER) {
+                    marks.add(new UiMap.Mark(marker.x(), marker.z(), 0xFF4FD1C5, null, tr("map.shelter"), 3));
+                }
+            }
+        });
+        for (ConsoleView.Row row : view.rows()) {
+            boolean chosen = selected.contains(row.id());
+            int color = 0xFF000000 | stateColor(row);
+            Component label = Component.literal(name(row)).append(" · ").append(stateText(row));
+            if (chosen) {
+                marks.add(new UiMap.Mark(row.x() + 0.5, row.z() + 0.5, UiColors.AMBER, null, label, 7));
+            }
+            marks.add(new UiMap.Mark(row.x() + 0.5, row.z() + 0.5, color, null, label, chosen ? 4 : 4));
+        }
+        return marks;
     }
 
-    private void ruleButtons(ConsoleView view) {
-        boolean intruders = view != null && view.intruderMode();
-        Button console = Button.builder(Component.translatable("screen.projectrebirth.console.intruders", onOff(intruders)),
-                b -> ConsoleOrders.send(menu.pos(), ConsoleNetwork.CONSOLE_INTRUDERS, null, -1, intruders ? 0 : 1, 0, false))
-                .bounds(leftPos + 8, topPos + 40, 240, 16).build();
-        console.active = view != null && (view.intruderAllowed() || intruders);
-        addRenderableWidget(console);
-        boolean weather = view != null && view.weatherLink();
-        addRenderableWidget(Button.builder(Component.translatable("screen.projectrebirth.console.weather", onOff(weather)),
-                b -> ConsoleOrders.send(menu.pos(), ConsoleNetwork.WEATHER, null, -1, weather ? 0 : 1, 0, false))
-                .bounds(leftPos + 8, topPos + 58, 240, 16).build());
-        for (int g = 0; g < ConsoleBlockEntity.GROUPS; g++) {
-            int group = g;
-            ConsoleView.Group data = view == null ? new ConsoleView.Group(0, false) : view.groups().get(g);
-            Button button = Button.builder(Component.translatable("screen.projectrebirth.console.group_intruders", g + 1, data.members(), onOff(data.intruders())),
-                    b -> ConsoleOrders.send(menu.pos(), ConsoleNetwork.GROUP_INTRUDERS, null, group, data.intruders() ? 0 : 1, 0, false))
-                    .bounds(leftPos + 8 + (g % 2) * 122, topPos + 96 + (g / 2) * 18, 118, 16).build();
-            button.active = view != null && (view.intruderAllowed() || data.intruders());
-            addRenderableWidget(button);
+    /** Over the cells: turret circles, the orders of the chosen machines (routes, guard points, areas), what is being marked. */
+    private void overlay(GuiGraphics graphics, UiMap map) {
+        ConsoleView view = menu.view();
+        if (view == null) {
+            return;
+        }
+        for (ConsoleView.Row row : view.rows()) {
+            if (row.facts().range() > 0) {
+                map.circle(graphics, row.x() + 0.5, row.z() + 0.5, row.facts().range(), selected.contains(row.id()) ? 0xC0FFB648 : 0x70FF8A7A);
+            }
+        }
+        for (ConsoleView.Row row : view.rows()) {
+            boolean chosen = selected.contains(row.id());
+            int color = chosen ? 0xFFFFB648 : 0x80C9D0D6;
+            List<BlockPos> points = row.facts().points();
+            MachineTask.Type type = MachineTask.Type.byId(row.task());
+            if (points.isEmpty() || !chosen && selected.size() > 0) {
+                continue;
+            }
+            switch (type) {
+                case PATROL -> {
+                    for (int i = 0; i < points.size(); i++) {
+                        BlockPos a = points.get(i);
+                        BlockPos b = points.get((i + 1) % points.size());
+                        map.line(graphics, a.getX() + 0.5, a.getZ() + 0.5, b.getX() + 0.5, b.getZ() + 0.5, color);
+                    }
+                }
+                case GUARD -> {
+                    BlockPos p = points.get(0);
+                    map.line(graphics, row.x() + 0.5, row.z() + 0.5, p.getX() + 0.5, p.getZ() + 0.5, color & 0x60FFFFFF);
+                    cross(graphics, map, p, color);
+                }
+                case WORK -> {
+                    map.rect(graphics, points.get(0).getX(), points.get(0).getZ(), points.get(1).getX(), points.get(1).getZ(), color);
+                    cross(graphics, map, points.get(2), 0xFF4FC3FF);
+                }
+                case AREA_PATROL -> {
+                    int radius = com.projectrebirth.config.RebirthConfig.SERVER_SPEC.isLoaded()
+                            ? com.projectrebirth.config.RebirthConfig.AREA_PATROL_RADIUS.get() : 16;
+                    map.circle(graphics, points.get(0).getX() + 0.5, points.get(0).getZ() + 0.5, radius, color);
+                }
+                default -> {
+                }
+            }
+        }
+        // what the player is marking now
+        for (int i = 0; i < route.size(); i++) {
+            BlockPos a = route.get(i);
+            cross(graphics, map, a, UiColors.AMBER_LIGHT);
+            if (i + 1 < route.size()) {
+                BlockPos b = route.get(i + 1);
+                map.line(graphics, a.getX() + 0.5, a.getZ() + 0.5, b.getX() + 0.5, b.getZ() + 0.5, UiColors.AMBER_LIGHT);
+            }
+        }
+        BlockPos from = areaFrom;
+        BlockPos to = pressButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && dragged() ? mapBlock(mouseNowX, mouseNowY) : areaTo;
+        if (pressButton == GLFW.GLFW_MOUSE_BUTTON_RIGHT && dragged()) {
+            from = mapBlock(pressX, pressY);
+        }
+        if (from != null && to != null) {
+            map.rect(graphics, from.getX(), from.getZ(), to.getX(), to.getZ(), UiColors.AMBER_LIGHT);
         }
     }
 
-    private static Component onOff(boolean on) {
-        return Component.translatable(on ? "screen.projectrebirth.console.on" : "screen.projectrebirth.console.off");
+    private static void cross(GuiGraphics graphics, UiMap map, BlockPos at, int color) {
+        int x = (int) Math.round(map.screenX(at.getX() + 0.5));
+        int y = (int) Math.round(map.screenY(at.getZ() + 0.5));
+        graphics.fill(x - 2, y, x + 3, y + 1, color);
+        graphics.fill(x, y - 2, x + 1, y + 3, color);
     }
 
-    private ConsoleView.Row chosen(ConsoleView view) {
-        if (view == null || target.machine == null) {
+    private boolean onMap(double mouseX, double mouseY) {
+        return mouseX >= leftPos + MAP_X + 2 && mouseX < leftPos + MAP_X + MAP_W - 2 && mouseY >= topPos + MAP_Y + 2 && mouseY < topPos + MAP_Y + MAP_H - 2;
+    }
+
+    private BlockPos mapBlock(double mouseX, double mouseY) {
+        return BlockPos.containing(map.blockX(mouseX), menu.pos().getY(), map.blockZ(mouseY));
+    }
+
+    private boolean dragged() {
+        return pressButton >= 0 && Math.abs(mouseNowX - pressX) + Math.abs(mouseNowY - pressY) > 4;
+    }
+
+    /** The machine under the mouse on the map, or null. */
+    @Nullable
+    private ConsoleView.Row machineAt(double mouseX, double mouseY) {
+        ConsoleView view = menu.view();
+        if (view == null) {
             return null;
         }
         for (ConsoleView.Row row : view.rows()) {
-            if (row.id().equals(target.machine)) {
+            if (Math.abs(map.screenX(row.x() + 0.5) - mouseX) <= 3 && Math.abs(map.screenY(row.z() + 0.5) - mouseY) <= 3) {
                 return row;
             }
         }
         return null;
     }
 
+    /** A service post or charging pad under the mouse on the map, or null. */
+    @Nullable
+    private ConsoleView.Site siteAt(double mouseX, double mouseY) {
+        ConsoleView view = menu.view();
+        if (view == null) {
+            return null;
+        }
+        for (ConsoleView.Site site : view.sites()) {
+            if (Math.abs(map.screenX(site.x() + 0.5) - mouseX) <= 4 && Math.abs(map.screenY(site.z() + 0.5) - mouseY) <= 4) {
+                return site;
+            }
+        }
+        return null;
+    }
+
+    /** "Show on the map": centres the map on a place. */
+    void showOnMap(int x, int z) {
+        map.centreOn(x + 0.5, z + 0.5);
+        UiSounds.CLICK.play();
+    }
+
+    // ------------------------------------------------------------------ the mouse and keys
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        ConsoleView view = menu.view();
-        if (page == MACHINES && view != null) {
-            int mx = (int) mouseX - leftPos, my = (int) mouseY - topPos;
-            if (mx >= LIST_X && mx < LIST_X + LIST_W && my >= LIST_Y && my < LIST_Y + ROW * ROWS) {
-                int index = scroll + (my - LIST_Y) / ROW;
-                if (index < view.rows().size()) {
-                    target.machine = view.rows().get(index).id();
-                    target.group = -1;
-                    rebuildWidgets();
+        if (lesson >= 0) {
+            return lessonClick(mouseX, mouseY);
+        }
+        // dropdowns open over other widgets: let them have the click first
+        for (var child : children()) {
+            if (child instanceof UiDropdown<?> dropdown && dropdown.isOpen()) {
+                boolean taken = dropdown.mouseClicked(mouseX, mouseY, button);
+                dropdown.closeIfOutside(mouseX, mouseY);
+                if (taken) {
                     return true;
                 }
             }
         }
+        if (onMap(mouseX, mouseY) && !overWidgetOtherThanMap(mouseX, mouseY)) {
+            pressX = mouseX;
+            pressY = mouseY;
+            mouseNowX = mouseX;
+            mouseNowY = mouseY;
+            pressButton = button;
+            pressShift = hasShiftDown();
+            setDragging(true);
+            return true;
+        }
+        if (cardClick(mouseX, mouseY, button) || alarmClick(mouseX, mouseY)) {
+            return true;
+        }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private boolean overWidgetOtherThanMap(double mouseX, double mouseY) {
+        for (var child : children()) {
+            if (child != map && child instanceof net.minecraft.client.gui.components.AbstractWidget widget && widget.visible
+                    && widget.isMouseOver(mouseX, mouseY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (pressButton >= 0) {
+            mouseNowX = mouseX;
+            mouseNowY = mouseY;
+            if (button == GLFW.GLFW_MOUSE_BUTTON_MIDDLE) {
+                map.pan(dragX, dragY);
+            }
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (pressButton >= 0 && button == pressButton) {
+            mouseNowX = mouseX;
+            mouseNowY = mouseY;
+            boolean drag = dragged();
+            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                mapLeft(mouseX, mouseY, drag);
+            } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                mapRight(mouseX, mouseY, drag);
+            }
+            pressButton = -1;
+            setDragging(false);
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    /** Left on the map: a click chooses the machine there (Shift adds), a frame chooses all inside it; a double click opens it. */
+    private void mapLeft(double mouseX, double mouseY, boolean drag) {
+        ConsoleView view = menu.view();
+        if (view == null) {
+            return;
+        }
+        if (!pressShift) {
+            selected.clear();
+        }
+        if (drag) {
+            double x1 = Math.min(pressX, mouseX), x2 = Math.max(pressX, mouseX), y1 = Math.min(pressY, mouseY), y2 = Math.max(pressY, mouseY);
+            for (ConsoleView.Row row : view.rows()) {
+                double sx = map.screenX(row.x() + 0.5), sy = map.screenY(row.z() + 0.5);
+                if (sx >= x1 && sx <= x2 && sy >= y1 && sy <= y2) {
+                    selected.add(row.id());
+                }
+            }
+            UiSounds.CLICK.play();
+            return;
+        }
+        ConsoleView.Row row = machineAt(mouseX, mouseY);
+        if (row != null) {
+            selectCard(row, pressShift);
+        }
+    }
+
+    /**
+     * Right on the map: a click gives "guard here" (on a post: "to the post"), or the armed order there; with Shift it marks a
+     * route point; a drag marks a work area (and orders the work if it was armed).
+     */
+    private void mapRight(double mouseX, double mouseY, boolean drag) {
+        if (drag) {
+            areaFrom = mapBlock(pressX, pressY);
+            areaTo = mapBlock(mouseX, mouseY);
+            if (armed == MachineTask.Type.WORK) {
+                press(MachineTask.Type.WORK);
+            } else {
+                say(tr("area_marked"), false);
+            }
+            return;
+        }
+        BlockPos at = mapBlock(mouseX, mouseY);
+        if (pressShift || armed == MachineTask.Type.PATROL) {
+            route.add(at);
+            say(tr("route_points", route.size()), false);
+            UiSounds.CLICK.play();
+            return;
+        }
+        if (selected.isEmpty()) {
+            say(tr("choose_first"), true);
+            return;
+        }
+        if (siteAt(mouseX, mouseY) != null) {
+            order(MachineTask.Type.TO_POST, List.of());
+            return;
+        }
+        Component why = unavailable(MachineTask.Type.GUARD);
+        if (why != null) {
+            say(why, true);
+            return;
+        }
+        armed = null;
+        order(MachineTask.Type.GUARD, List.of(at));
+    }
+
+    private boolean cardClick(double mouseX, double mouseY, int button) {
+        int x = leftPos + LEFT_X, y = topPos + CARDS_Y;
+        if (mouseX < x || mouseX >= x + LEFT_W || mouseY < y || mouseY >= y + CARDS * CARD_H) {
+            return false;
+        }
+        List<ConsoleView.Row> cards = cards();
+        int index = cardScroll + (int) (mouseY - y) / CARD_H;
+        if (index >= cards.size()) {
+            if (!hasShiftDown()) {
+                selected.clear();
+            }
+            return true;
+        }
+        ConsoleView.Row row = cards.get(index);
+        long now = net.minecraft.Util.getMillis();
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && row.id().equals(lastCardClicked) && now - lastCardClick < 350) {
+            openMachine(row.id());
+            return true;
+        }
+        lastCardClicked = row.id();
+        lastCardClick = now;
+        selectCard(row, hasShiftDown());
+        return true;
+    }
+
+    private void selectCard(ConsoleView.Row row, boolean add) {
+        if (!add) {
+            selected.clear();
+            selected.add(row.id());
+        } else if (!selected.remove(row.id())) {
+            selected.add(row.id());
+        }
+        UiSounds.CLICK.play();
+    }
+
+    void openMachine(UUID id) {
+        if (minecraft != null && row(id) != null) {
+            minecraft.pushGuiLayer(new MachineWindow(this, menu.pos(), id));
+        }
+    }
+
+    /** The machine as this window knows it now (for its own window). */
+    @Nullable
+    ConsoleView.Row machine(UUID id) {
+        return row(id);
+    }
+
+    ConsoleView view() {
+        return menu.view();
+    }
+
+    private List<ConsoleView.Line> alarms() {
+        ConsoleView view = menu.view();
+        if (view == null) {
+            return List.of();
+        }
+        List<ConsoleView.Line> lines = new ArrayList<>(view.log());
+        java.util.Collections.reverse(lines);
+        lines.removeIf(line -> ConsoleAlarm.byId(line.alarm()) == ConsoleAlarm.WORK_DONE && line.ended());
+        return lines;
+    }
+
+    private boolean alarmClick(double mouseX, double mouseY) {
+        int x = leftPos + RIGHT_X, y = topPos + ALARMS_Y;
+        if (mouseX < x || mouseX >= x + RIGHT_W || mouseY < y || mouseY >= y + 3 * ALARM_H) {
+            return false;
+        }
+        List<ConsoleView.Line> lines = alarms();
+        int index = alarmScroll + (int) (mouseY - y) / ALARM_H;
+        if (index < lines.size()) {
+            ConsoleView.Line line = lines.get(index);
+            showOnMap(line.x(), line.z());
+        }
+        return true;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        ConsoleView view = menu.view();
-        if (page == MACHINES && view != null) {
-            scroll = Mth.clamp(scroll - (int) Math.signum(scrollY), 0, Math.max(0, view.rows().size() - ROWS));
-            return true;
+        if (lesson < 0) {
+            int lx = leftPos + LEFT_X, ly = topPos + CARDS_Y;
+            if (mouseX >= lx && mouseX < lx + LEFT_W && mouseY >= ly && mouseY < ly + CARDS * CARD_H) {
+                cardScroll = Mth.clamp(cardScroll - (int) Math.signum(scrollY), 0, Math.max(0, cards().size() - CARDS));
+                return true;
+            }
+            int ax = leftPos + RIGHT_X, ay = topPos + ALARMS_Y;
+            if (mouseX >= ax && mouseX < ax + RIGHT_W && mouseY >= ay && mouseY < ay + 3 * ALARM_H) {
+                alarmScroll = Mth.clamp(alarmScroll - (int) Math.signum(scrollY), 0, Math.max(0, alarms().size() - 3));
+                return true;
+            }
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (lesson >= 0) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                endLesson();
+                return true;
+            }
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_SPACE || keyCode == GLFW.GLFW_KEY_RIGHT) {
+                nextLesson();
+                return true;
+            }
+        }
+        if (keyCode >= GLFW.GLFW_KEY_1 && keyCode <= GLFW.GLFW_KEY_8 && getFocused() == null) {
+            chooseGroup(keyCode - GLFW.GLFW_KEY_1);
+            UiSounds.CLICK.play();
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_0 && getFocused() == null) {
+            chooseGroup(-1);
+            UiSounds.CLICK.play();
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_BACKSPACE && !route.isEmpty()) {
+            route.remove(route.size() - 1);
+            say(tr("route_points", route.size()), false);
+            return true;
+        }
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && (armed != null || !route.isEmpty() || areaFrom != null)) {
+            armed = null;
+            route.clear();
+            areaFrom = null;
+            areaTo = null;
+            say(tr("marking_cancelled"), false);
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    // ------------------------------------------------------------------ drawing
+
+    static int stateColor(ConsoleView.Row row) {
+        return switch (MachineCore.State.byId(row.state())) {
+            case ACTIVE -> worst(row) == ConsoleAlarm.COMBAT ? 0xFFB648 : trouble(row) ? 0xFFB648 : 0x7BD88F;
+            case DISABLED -> 0xFFB648;
+            case WRECK -> 0xFF8A7A;
+        };
+    }
+
+    /** The state of a machine in words: a wreck, shut down, its worst alarm, or its task. */
+    static Component stateText(ConsoleView.Row row) {
+        MachineCore.State state = MachineCore.State.byId(row.state());
+        if (state != MachineCore.State.ACTIVE) {
+            return Component.translatable("machine_state.projectrebirth." + state.name().toLowerCase(Locale.ROOT));
+        }
+        ConsoleAlarm worst = worst(row);
+        if (worst != null) {
+            return Component.translatable("console_alarm_short.projectrebirth." + worst.id());
+        }
+        if (kind(row) == MachineKind.TURRET) {
+            return tr("turret_task");
+        }
+        return Component.translatable(MachineTask.Type.byId(row.task()).translationKey());
+    }
+
+    static UiSprites.Tone tone(ConsoleView.Row row) {
+        MachineCore.State state = MachineCore.State.byId(row.state());
+        if (state == MachineCore.State.WRECK) {
+            return UiSprites.Tone.ERROR;
+        }
+        if (state == MachineCore.State.DISABLED || trouble(row) || has(row, ConsoleAlarm.COMBAT)) {
+            return UiSprites.Tone.WARNING;
+        }
+        return UiSprites.Tone.OK;
+    }
+
+    static String name(ConsoleView.Row row) {
+        return ConsoleBlockEntity.display(row.name()).getString();
+    }
+
+    static ItemStack icon(MachineKind kind) {
+        return switch (kind) {
+            case ANDROID -> new ItemStack(GarrisonRegistry.AI_CORE.get());
+            case TURRET -> new ItemStack(GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get());
+            case MECH -> new ItemStack(GarrisonRegistry.GUARD_MECH_ITEM.get());
+            case ROBOT -> new ItemStack(GarrisonRegistry.SMALL_ROBOT_ITEM.get());
+            case TEST -> new ItemStack(GarrisonRegistry.TEST_MACHINE_ITEM.get());
+        };
+    }
+
+    /** The second line of a card: energy and rounds, as known. */
+    static Component supplies(ConsoleView.Row row) {
+        StringBuilder text = new StringBuilder();
+        if (row.facts().energy() >= 0) {
+            text.append("⚡").append(Math.round(row.facts().energy() * 100)).append('%');
+        }
+        if (row.facts().ammo() >= 0) {
+            if (!text.isEmpty()) {
+                text.append(" · ");
+            }
+            text.append("▮").append(row.facts().ammo());
+        }
+        if (text.isEmpty()) {
+            return row.heardSeconds() < 0 ? tr("never_heard") : Component.empty();
+        }
+        return Component.literal(text.toString());
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        GuiAtlas.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
+    protected void containerTick() {
+        super.containerTick();
+        if (source.set(menu.view()) && map != null) {
+            map.invalidate();
+        }
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, 8, 5, 0x404040, false);
+    protected void drawBody(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
         ConsoleView view = menu.view();
+        // the title bar: link and energy
+        if (view != null) {
+            Component link = view.powered() ? tr("link", view.range(), view.capacity() <= 0 ? 0 : view.energy() * 100 / view.capacity())
+                    : tr("no_energy");
+            int width = Math.min(150, font.width(link));
+            graphics.fill(x + W - 50 - width, y + 5, x + W - 43, y + 16, UiColors.BODY);
+            text(graphics, link, x + W - 46 - width, y + 7, width, view.powered() ? UiColors.TEXT_SECONDARY : UiColors.ERROR);
+        }
+        drawCards(graphics, x, y, mouseX, mouseY);
+        // under the map: what the mouse does there, or what is being marked
+        Component under = armed != null || !route.isEmpty() ? tr("arm." + (armed == null ? "patrol" : armed.id())) : tr("map_help");
+        text(graphics, under, x + MAP_X, y + MAP_Y + MAP_H + 3, MAP_W, armed != null || !route.isEmpty() ? UiColors.AMBER_LIGHT : UiColors.TEXT_DIM);
+        tooltip(x + MAP_X, y + MAP_Y + MAP_H + 2, MAP_W, 11, () -> UiTooltip.of(tr("map_help_title")).text(tr("map_help_full"), UiColors.TEXT_SECONDARY));
         if (view == null) {
-            graphics.drawString(font, Component.translatable("screen.projectrebirth.console.waiting"), 8, 40, 0x404040, false);
-            return;
+            UiText.centred(graphics, tr("waiting"), x + MAP_X + MAP_W / 2, y + MAP_Y + MAP_H / 2, MAP_W - 10, UiColors.AMBER_DIM);
         }
-        Component status = view.powered() ? Component.translatable("screen.projectrebirth.console.powered", view.rows().size())
-                : Component.translatable("screen.projectrebirth.console.no_energy").withStyle(ChatFormatting.DARK_RED);
-        graphics.drawString(font, status, imageWidth - 8 - font.width(status), 5, 0x404040, false);
-        GuiAtlas.energyHorizontal(graphics, 152, 34, 96, 4, view.energy(), view.capacity());
-        switch (page) {
-            case MACHINES -> machines(graphics, view);
-            case MAP -> map(graphics, view, mouseX - leftPos, mouseY - topPos);
-            case RULES -> rules(graphics, view);
-            case LOG -> log(graphics, view);
-            default -> {
-            }
+        // right: rules, alarms
+        Component whose = groupTab >= 0 ? tr("rules_group", groupTab + 1) : tr("rules_all");
+        UiPanels.label(graphics, whose, x + RIGHT_X, y + 40, RIGHT_W);
+        if (view != null && view.sheltering()) {
+            text(graphics, tr("sheltering"), x + RIGHT_X, y + ALARMS_Y - 21, RIGHT_W, UiColors.ENERGY_TEXT);
         }
-    }
-
-    private void machines(GuiGraphics graphics, ConsoleView view) {
-        GuiAtlas.recess(graphics, LIST_X - 1, LIST_Y - 1, LIST_W + 2, ROW * ROWS + 2);
-        List<ConsoleView.Row> rows = view.rows();
-        if (rows.isEmpty()) {
-            graphics.drawWordWrap(font, Component.translatable("screen.projectrebirth.console.no_machines"), LIST_X + 2, LIST_Y + 2, LIST_W - 4, 0xFFDDDDDD);
-        }
-        for (int i = 0; i < ROWS && scroll + i < rows.size(); i++) {
-            ConsoleView.Row row = rows.get(scroll + i);
-            int y = LIST_Y + i * ROW;
-            if (row.id().equals(target.machine) && target.group == -1 || target.group >= 0 && row.group() == target.group
-                    || target.group == ConsoleBlockEntity.ALL) {
-                graphics.fill(LIST_X, y, LIST_X + LIST_W, y + ROW, 0x6037C6E8);
-            }
-            graphics.fill(LIST_X + 2, y + 3, LIST_X + 7, y + 8, ConsoleOrders.stateColor(row.state()));
-            String group = row.group() < 0 ? " " : String.valueOf(row.group() + 1);
-            graphics.drawString(font, group, LIST_X + 10, y + 2, 0xFFE0B33A, false);
-            graphics.drawString(font, font.substrByWidth(com.projectrebirth.garrison.ConsoleBlockEntity.display(row.name()), 70).getString(), LIST_X + 18, y + 2, 0xFFEEEEEE, false);
-            Component task = ConsoleOrders.taskName(row.task());
-            graphics.drawString(font, font.substrByWidth(task, 50).getString(), LIST_X + LIST_W - 52, y + 2, 0xFFAAAAAA, false);
-        }
-        Component whom = ConsoleOrders.targetLabel(target, view);
-        graphics.drawString(font, font.substrByWidth(whom, 240).getString(), 8, PANEL_Y - 11, 0x202020, false);
-        ConsoleOrders.labels(graphics, font, 8, PANEL_Y, 0x404040);
-        ConsoleView.Row row = chosen(view);
-        int x = 154;
-        if (row == null) {
-            graphics.drawWordWrap(font, Component.translatable("screen.projectrebirth.console.choose"), x, 42, 94, 0x404040);
-            return;
-        }
-        graphics.drawString(font, font.substrByWidth(com.projectrebirth.garrison.ConsoleBlockEntity.display(row.name()), 94).getString(), x, 42, 0x202020, false);
-        graphics.drawString(font, ConsoleOrders.stateName(row.state()), x, 52, ConsoleOrders.stateColor(row.state()), false);
-        graphics.drawString(font, Mth.ceil(row.structural()) + "/" + Mth.ceil(row.maxStructural()) + "  " + Mth.ceil(row.critical()) + "/"
-                + Mth.ceil(row.maxCritical()), x, 62, 0x404040, false);
-        graphics.drawString(font, row.x() + " " + row.y() + " " + row.z(), x, 72, 0x404040, false);
-        graphics.drawString(font, ConsoleOrders.heard(row.heardSeconds()), x, 82, 0x404040, false);
-        graphics.drawString(font, ConsoleOrders.taskName(row.task()), x, 92, 0x404040, false);
-    }
-
-    private void map(GuiGraphics graphics, ConsoleView view, int mouseX, int mouseY) {
-        int size = 132, x0 = 8, y0 = 40;
-        int cx = menu.pos().getX(), cz = menu.pos().getZ();
-        double blocksPerPixel;
-        int originX, originZ;
-        if (view.map().isPresent()) {
-            Snapshot snapshot = view.map().get();
-            int side = 2 * snapshot.radius() + 1;
-            int cell = Math.max(1, size / side);
-            ContaminationMapView.draw(graphics, snapshot, x0, y0, cell, mouseX, mouseY);
-            blocksPerPixel = 16.0 / cell;
-            originX = (snapshot.centerX() - snapshot.radius()) * 16;
-            originZ = (snapshot.centerZ() - snapshot.radius()) * 16;
-            size = cell * side;
+        drawAlarms(graphics, x, y, mouseX, mouseY);
+        // bottom: whom the orders are for, the state of the order buttons
+        List<ConsoleView.Row> chosen = chosenRows();
+        Component who;
+        if (chosen.isEmpty()) {
+            who = tr("chosen_none");
         } else {
-            graphics.fill(x0, y0, x0 + size, y0 + size, 0xFF20262C);
-            // zoomed to the farthest machine (at least 32 blocks each way, at most the console's range), a line every 16 blocks
-            int span = 32;
-            for (ConsoleView.Row row : view.rows()) {
-                span = Math.max(span, Math.max(Math.abs(row.x() - cx), Math.abs(row.z() - cz)) + 8);
+            StringBuilder names = new StringBuilder();
+            for (ConsoleView.Row row : chosen) {
+                if (names.length() > 60) {
+                    names.append(", …");
+                    break;
+                }
+                if (!names.isEmpty()) {
+                    names.append(", ");
+                }
+                names.append(name(row));
             }
-            span = Math.min(span, view.range());
-            blocksPerPixel = 2.0 * span / size;
-            originX = cx - span;
-            originZ = cz - span;
-            for (int line = -span + Math.floorMod(-(cx - span), 16); line <= span; line += 16) {
-                int px = x0 + (int) ((line + span) / blocksPerPixel);
-                graphics.fill(px, y0, px + 1, y0 + size, 0xFF2C343C);
+            who = tr("chosen", chosen.size(), names.toString());
+        }
+        UiPanels.divider(graphics, x + 7, y + ORDERS_Y - 13, W - 14);
+        text(graphics, who, x + 8, y + ORDERS_Y - 10, W - 16, UiColors.TEXT_SECONDARY);
+        Component firstProblem = null;
+        for (int i = 0; i < ORDERS.size() && i < orderButtons.size(); i++) {
+            MachineTask.Type type = ORDERS.get(i);
+            Component why = unavailable(type);
+            UiButton button = orderButtons.get(i);
+            button.disable(why);
+            button.selected(() -> armed == type);
+            if (why != null && button.isMouseOver(mouseX, mouseY)) {
+                firstProblem = why;
             }
-            for (int line = -span + Math.floorMod(-(cz - span), 16); line <= span; line += 16) {
-                int pz = y0 + (int) ((line + span) / blocksPerPixel);
-                graphics.fill(x0, pz, x0 + size, pz + 1, 0xFF2C343C);
-            }
-            graphics.drawString(font, Component.translatable("screen.projectrebirth.console.map_span", 2 * span), x0 + 2, y0 + size - 9, 0xFF8A949E, false);
         }
-        dot(graphics, x0, y0, size, (cx - originX) / blocksPerPixel, (cz - originZ) / blocksPerPixel, 0xFFFFFFFF, 3);
-        for (ConsoleView.Row row : view.rows()) {
-            int color = ConsoleOrders.stateColor(row.state());
-            if (row.id().equals(target.machine)) {
-                dot(graphics, x0, y0, size, (row.x() - originX) / blocksPerPixel, (row.z() - originZ) / blocksPerPixel, 0xFF37C6E8, 4);
-            }
-            dot(graphics, x0, y0, size, (row.x() - originX) / blocksPerPixel, (row.z() - originZ) / blocksPerPixel, color, 2);
-        }
-        int lx = 148;
-        graphics.drawString(font, Component.translatable("screen.projectrebirth.console.map_console"), lx + 8, 42, 0x404040, false);
-        graphics.fill(lx, 43, lx + 4, 47, 0xFFFFFFFF);
-        for (int state = 0; state < 3; state++) {
-            graphics.fill(lx, 55 + state * 10, lx + 4, 59 + state * 10, ConsoleOrders.stateColor(state));
-            graphics.drawString(font, ConsoleOrders.stateName(state), lx + 8, 54 + state * 10, 0x404040, false);
-        }
-        Component layer = view.map().isPresent() ? Component.translatable("screen.projectrebirth.console.map_layer")
-                : Component.translatable("screen.projectrebirth.console.map_no_layer");
-        graphics.drawWordWrap(font, layer, lx, 92, 100, 0x404040);
-    }
-
-    private static void dot(GuiGraphics graphics, int x0, int y0, int size, double px, double pz, int color, int radius) {
-        int x = x0 + (int) px, y = y0 + (int) pz;
-        if (x < x0 || y < y0 || x >= x0 + size || y >= y0 + size) {
-            return;
-        }
-        graphics.fill(x - radius / 2, y - radius / 2, x - radius / 2 + radius, y - radius / 2 + radius, color);
-    }
-
-    private void rules(GuiGraphics graphics, ConsoleView view) {
-        if (!view.intruderAllowed()) {
-            graphics.drawString(font, Component.translatable("screen.projectrebirth.console.intruders_forbidden"), 8, 78, 0xFF8A1A1A, false);
-        } else if (view.sheltering()) {
-            graphics.drawString(font, Component.translatable("screen.projectrebirth.console.sheltering"), 8, 78, 0xFF1A4A8A, false);
-        } else {
-            graphics.drawString(font, Component.translatable("screen.projectrebirth.console.group_rules"), 8, 82, 0x404040, false);
+        Component line = firstProblem != null ? tr("unavailable", firstProblem) : status;
+        if (line != null) {
+            text(graphics, line, x + 8, y + ORDERS_Y + 19, W - 16 - 116, firstProblem != null || statusBad ? UiColors.ERROR : UiColors.SCREEN_TEXT);
         }
     }
 
-    private void log(GuiGraphics graphics, ConsoleView view) {
-        GuiAtlas.recess(graphics, 7, 39, 242, 180);
-        if (view.log().isEmpty()) {
-            graphics.drawString(font, Component.translatable("screen.projectrebirth.console.log_empty"), 10, 42, 0xFFDDDDDD, false);
+    private void drawCards(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        int cx = x + LEFT_X;
+        int cy = y + CARDS_Y;
+        UiPanels.screen(graphics, cx, cy - 1, LEFT_W, CARDS * CARD_H + 2);
+        List<ConsoleView.Row> cards = cards();
+        cardScroll = Mth.clamp(cardScroll, 0, Math.max(0, cards.size() - CARDS));
+        if (cards.isEmpty()) {
+            UiText.wrapped(graphics, menu.view() == null ? tr("waiting") : tr(menu.view().rows().isEmpty() ? "no_machines" : "no_cards"),
+                    cx + 5, cy + 5, LEFT_W - 10, 60, UiColors.AMBER_DIM);
         }
-        int y = 42;
-        for (ConsoleView.Line line : view.log()) {
-            if (y > 210) {
-                break;
+        for (int i = 0; i < CARDS && cardScroll + i < cards.size(); i++) {
+            ConsoleView.Row row = cards.get(cardScroll + i);
+            int ry = cy + i * CARD_H;
+            boolean chosen = selected.contains(row.id());
+            boolean hovered = mouseX >= cx && mouseX < cx + LEFT_W && mouseY >= ry && mouseY < ry + CARD_H;
+            UiPanels.card(graphics, cx + 1, ry + 1, LEFT_W - 5, CARD_H - 1, chosen);
+            if (hovered && !chosen) {
+                graphics.fill(cx + 2, ry + 2, cx + LEFT_W - 5, ry + CARD_H - 1, 0x10FFFFFF);
             }
+            graphics.pose().pushPose();
+            graphics.pose().translate(cx + 3, ry + 4, 0);
+            graphics.pose().scale(0.75f, 0.75f, 1.0f);
+            graphics.renderItem(icon(kind(row)), 0, 0);
+            graphics.pose().popPose();
+            int gx = cx + LEFT_W - 16;
+            if (row.group() >= 0) {
+                graphics.fill(gx, ry + 4, gx + 4, ry + 8, 0xFF000000 | GROUP_COLORS[row.group()]);
+                graphics.drawString(font, String.valueOf(row.group() + 1), gx + 6, ry + 3, UiColors.TEXT_SECONDARY, false);
+            }
+            text(graphics, Component.literal(name(row)), cx + 18, ry + 3, gx - cx - 20, chosen ? UiColors.AMBER_LIGHT : UiColors.TEXT);
+            UiSprites.Tone tone = tone(row);
+            Component supplies = supplies(row);
+            int supplyWidth = Math.min(48, font.width(supplies));
+            text(graphics, supplies, cx + 18, ry + 12, supplyWidth, UiColors.TEXT_SECONDARY);
+            int sx = cx + 18 + supplyWidth + 4;
+            text(graphics, stateText(row), sx, ry + 12, cx + LEFT_W - 7 - sx, tone.text);
+            float structural = row.maxStructural() <= 0 ? 0 : row.structural() / row.maxStructural();
+            float critical = row.maxCritical() <= 0 ? 0 : row.critical() / row.maxCritical();
+            UiBars.horizontal(graphics, cx + 18, ry + 21, LEFT_W - 26, 1, structural, 0xFF000000 | UiColors.integrity(structural));
+            UiBars.horizontal(graphics, cx + 18, ry + 23, LEFT_W - 26, 1, critical, UiColors.ERROR);
+            if (hovered) {
+                tooltip(cx, ry, LEFT_W, CARD_H, () -> UiTooltip.of(Component.literal(name(row)))
+                        .row(tr("kind." + kind(row).id()), stateText(row), tone.text)
+                        .row(tr("card.structural"), Component.literal(Mth.ceil(row.structural()) + "/" + Mth.ceil(row.maxStructural())), UiColors.SCREEN_TEXT)
+                        .row(tr("card.critical"), Component.literal(Mth.ceil(row.critical()) + "/" + Mth.ceil(row.maxCritical())), UiColors.SCREEN_TEXT)
+                        .row(tr("card.where"), Component.literal(row.x() + " " + row.y() + " " + row.z()), UiColors.SCREEN_TEXT)
+                        .row(tr("card.heard"), ConsoleOrders.heard(row.heardSeconds()), UiColors.SCREEN_TEXT)
+                        .text(tr("card.hint"), UiColors.TEXT_DIM));
+            }
+        }
+        if (cards.size() > CARDS) {
+            int trackH = CARDS * CARD_H;
+            int thumbH = Math.max(8, trackH * CARDS / cards.size());
+            int thumbY = (trackH - thumbH) * cardScroll / Math.max(1, cards.size() - CARDS);
+            graphics.fill(cx + LEFT_W - 3, cy, cx + LEFT_W - 1, cy + trackH, 0xFF1F2623);
+            graphics.fill(cx + LEFT_W - 3, cy + thumbY, cx + LEFT_W - 1, cy + thumbY + thumbH, UiColors.AMBER);
+        }
+    }
+
+    private void drawAlarms(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        List<ConsoleView.Line> lines = alarms();
+        long going = lines.stream().filter(line -> !line.ended()).count();
+        UiPanels.label(graphics, tr("alarms", going), x + RIGHT_X, y + ALARMS_Y - 10, RIGHT_W);
+        int ax = x + RIGHT_X;
+        int ay = y + ALARMS_Y;
+        UiPanels.screen(graphics, ax, ay - 1, RIGHT_W, 3 * ALARM_H + 2);
+        alarmScroll = Mth.clamp(alarmScroll, 0, Math.max(0, lines.size() - 3));
+        if (lines.isEmpty()) {
+            UiText.wrapped(graphics, tr("log_empty"), ax + 4, ay + 4, RIGHT_W - 8, 40, UiColors.TEXT_DIM);
+        }
+        for (int i = 0; i < 3 && alarmScroll + i < lines.size(); i++) {
+            ConsoleView.Line line = lines.get(alarmScroll + i);
             ConsoleAlarm alarm = ConsoleAlarm.byId(line.alarm());
-            Component text = Component.translatable("screen.projectrebirth.console.log_line", ConsoleOrders.ago(line.secondsAgo()),
-                    Component.translatable("console_alarm.projectrebirth." + alarm.id() + (line.ended() ? "_ended" : "")), com.projectrebirth.garrison.ConsoleBlockEntity.display(line.name()),
-                    line.x() + " " + line.y() + " " + line.z());
-            graphics.drawString(font, font.substrByWidth(text, 236).getString(), 10, y, line.ended() ? 0xFF7FD07F : 0xFFFF7A6A, false);
-            y += 10;
+            int ly = ay + i * ALARM_H;
+            UiSprites.Tone tone = line.ended() ? UiSprites.Tone.OK : alarm.signal() >= 9 ? UiSprites.Tone.ERROR
+                    : alarm.signal() >= 3 ? UiSprites.Tone.WARNING : UiSprites.Tone.INFO;
+            boolean hovered = mouseX >= ax && mouseX < ax + RIGHT_W && mouseY >= ly && mouseY < ly + ALARM_H;
+            if (hovered) {
+                graphics.fill(ax + 1, ly, ax + RIGHT_W - 1, ly + ALARM_H - 1, 0x10FFFFFF);
+            }
+            UiSprites.draw(graphics, tone.icon, ax + 3, ly + 2, 7, 7);
+            Component time = ConsoleOrders.ago(line.secondsAgo());
+            int timeWidth = font.width(time);
+            Component what = Component.translatable("console_alarm.projectrebirth." + alarm.id() + (line.ended() ? "_ended" : ""))
+                    .append(": ").append(ConsoleBlockEntity.display(line.name()));
+            text(graphics, what, ax + 12, ly + 2, RIGHT_W - 18 - timeWidth, tone.text);
+            graphics.drawString(font, time, ax + RIGHT_W - 3 - timeWidth, ly + 2, UiColors.TEXT_DIM, false);
+            Component todo = line.ended() ? tr("alarm_over") : Component.translatable("console_alarm_todo.projectrebirth." + alarm.id());
+            text(graphics, todo, ax + 12, ly + 11, RIGHT_W - 15, UiColors.TEXT_SECONDARY);
+            text(graphics, tr("show_on_map"), ax + 12, ly + 19, RIGHT_W - 15, hovered ? UiColors.AMBER_LIGHT : UiColors.AMBER_DIM);
+            if (hovered) {
+                tooltip(ax, ly, RIGHT_W, ALARM_H, () -> UiTooltip.of(what).text(todo, UiColors.TEXT_SECONDARY)
+                        .row(tr("card.where"), Component.literal(line.x() + " " + line.y() + " " + line.z()), UiColors.SCREEN_TEXT)
+                        .text(tr("alarm_hint"), UiColors.TEXT_DIM));
+            }
         }
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (pressButton >= 0) {
+            mouseNowX = mouseX;
+            mouseNowY = mouseY;
+        }
+        super.render(graphics, mouseX, mouseY, partialTick);
+        // a selection frame being dragged on the map
+        if (pressButton == GLFW.GLFW_MOUSE_BUTTON_LEFT && dragged()) {
+            int x1 = (int) Math.min(pressX, mouseX), x2 = (int) Math.max(pressX, mouseX);
+            int y1 = (int) Math.min(pressY, mouseY), y2 = (int) Math.max(pressY, mouseY);
+            graphics.fill(x1, y1, x2, y2, 0x20FFB648);
+            graphics.renderOutline(x1, y1, Math.max(1, x2 - x1), Math.max(1, y2 - y1), UiColors.AMBER);
+        } else if (lesson < 0 && pressButton < 0 && onMap(mouseX, mouseY)) {
+            Component hovered = map.hovered(mouseX, mouseY);
+            if (hovered != null && !overWidgetOtherThanMap(mouseX, mouseY)) {
+                UiTooltip.of(hovered).render(graphics, mouseX, mouseY);
+            }
+        }
+        if (lesson >= 0) {
+            drawLesson(graphics, mouseX, mouseY);
+        }
+    }
+
+    // ------------------------------------------------------------------ the lesson
+
+    private static final int LESSON_STEPS = 5;
+
+    /** The area each step points at (relative to the window). */
+    private int[] lessonArea(int step) {
+        return switch (step) {
+            case 0 -> new int[] {LEFT_X, CARDS_Y - 16, LEFT_W, CARDS * CARD_H + 17};
+            case 1 -> new int[] {MAP_X, MAP_Y, MAP_W, MAP_H + 12};
+            case 2 -> new int[] {7, 22, W - 14, 16};
+            case 3 -> new int[] {RIGHT_X - 1, 38, RIGHT_W + 2, 67};
+            // (the rules: their label and five switches)
+            default -> new int[] {RIGHT_X - 1, ALARMS_Y - 12, RIGHT_W + 2, 3 * ALARM_H + 13};
+        };
+    }
+
+    private int[] lessonBox(int step) {
+        int[] area = lessonArea(step);
+        int bw = 184;
+        int bh = 82;
+        int bx = area[0] + area[2] + 6 + bw <= W ? area[0] + area[2] + 6 : area[0] - bw - 6;
+        if (bx < 0) {
+            bx = (W - bw) / 2;
+        }
+        int by = Mth.clamp(area[1] + 8, 22, H - bh - 4);
+        if (step == 2) {
+            by = 44;
+            bx = (W - bw) / 2;
+        }
+        return new int[] {leftPos + bx, topPos + by, bw, bh};
+    }
+
+    private void drawLesson(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.pose().pushPose();
+        graphics.pose().translate(0.0f, 0.0f, 400.0f);
+        int[] area = lessonArea(lesson);
+        int ax = leftPos + area[0], ay = topPos + area[1];
+        // darken everything but the area
+        int color = 0xA0000000;
+        graphics.fill(leftPos, topPos, leftPos + W, ay, color);
+        graphics.fill(leftPos, ay + area[3], leftPos + W, topPos + H, color);
+        graphics.fill(leftPos, ay, ax, ay + area[3], color);
+        graphics.fill(ax + area[2], ay, leftPos + W, ay + area[3], color);
+        graphics.renderOutline(ax - 1, ay - 1, area[2] + 2, area[3] + 2, UiColors.AMBER);
+        int[] box = lessonBox(lesson);
+        UiPanels.window(graphics, box[0], box[1], box[2], box[3]);
+        UiText.line(graphics, UiText.upper(tr("lesson." + lesson + ".title")), box[0] + 7, box[1] + 6, box[2] - 40, UiColors.AMBER);
+        graphics.drawString(font, (lesson + 1) + "/" + LESSON_STEPS, box[0] + box[2] - 25, box[1] + 6, UiColors.TEXT_DIM, false);
+        UiText.wrapped(graphics, tr("lesson." + lesson + ".text"), box[0] + 7, box[1] + 17, box[2] - 14, 46, UiColors.TEXT);
+        boolean overSkip = in(mouseX, mouseY, box[0] + 7, box[1] + box[3] - 16, 60, 12);
+        boolean overNext = in(mouseX, mouseY, box[0] + box[2] - 67, box[1] + box[3] - 16, 60, 12);
+        UiSprites.draw(graphics, overSkip ? UiSprites.BUTTON_HOVER : UiSprites.BUTTON, box[0] + 7, box[1] + box[3] - 16, 60, 12);
+        UiText.centred(graphics, tr("lesson.skip"), box[0] + 37, box[1] + box[3] - 14, 56, UiColors.TEXT_SECONDARY);
+        UiSprites.draw(graphics, overNext ? UiSprites.BUTTON_HOVER : UiSprites.BUTTON, box[0] + box[2] - 67, box[1] + box[3] - 16, 60, 12);
+        UiText.centred(graphics, tr(lesson + 1 < LESSON_STEPS ? "lesson.next" : "lesson.done"), box[0] + box[2] - 37, box[1] + box[3] - 14, 56,
+                UiColors.AMBER_LIGHT);
+        graphics.pose().popPose();
+    }
+
+    private static boolean in(double mouseX, double mouseY, int x, int y, int w, int h) {
+        return mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
+    }
+
+    private boolean lessonClick(double mouseX, double mouseY) {
+        int[] box = lessonBox(lesson);
+        if (in(mouseX, mouseY, box[0] + 7, box[1] + box[3] - 16, 60, 12)) {
+            endLesson();
+        } else if (in(mouseX, mouseY, box[0] + box[2] - 67, box[1] + box[3] - 16, 60, 12)) {
+            nextLesson();
+        }
+        return true;
+    }
+
+    private void nextLesson() {
+        UiSounds.CLICK.play();
+        if (++lesson >= LESSON_STEPS) {
+            endLesson();
+        }
+    }
+
+    private void endLesson() {
+        lesson = -1;
+        if (RebirthClientConfig.CLIENT_SPEC.isLoaded() && RebirthClientConfig.UI_CONSOLE_TUTORIAL.get()) {
+            RebirthClientConfig.UI_CONSOLE_TUTORIAL.set(false);
+        }
+    }
+
+    /** For the layout check of development: shows a step of the lesson (or -1 none). */
+    public void showLesson(int step) {
+        lesson = step;
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
     }
 }

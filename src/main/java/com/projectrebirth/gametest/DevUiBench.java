@@ -13,7 +13,7 @@ public final class DevUiBench {
             "electronics_fabricator", "assembly_station", "armor_workstation", "implant_fabricator", "armor_upgrade_fabricator",
             "weapon_workshop", "maintenance_station", "body_modification_station", "combustion_generator", "solar_panel", "radioisotope_generator", "battery", "backup_battery", "air_filtration_unit", "shelter_control_panel", "water_purifier", "weather_station", "heater", "decontamination_chamber", "radiation_purge_station",
             "monitoring_station", "multiblock_controller", "body_workshop_controller",
-            "heavy_dock_controller", "console", "transfer_capsule");
+            "heavy_dock_controller", "console", "transfer_capsule", "turret_mount", "service_post");
 
     private DevUiBench() {
     }

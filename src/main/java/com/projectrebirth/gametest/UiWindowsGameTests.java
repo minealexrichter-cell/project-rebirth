@@ -82,4 +82,20 @@ public class UiWindowsGameTests {
         helper.assertTrue(entry.wear() >= 0.0f, "the row tells the wear of a loaded body");
         helper.succeed();
     }
+
+    /** 1.8.0 block C: the helmet's compass gets the pilot's own standing bodies of this dimension, and nobody else's. */
+    @GameTest(template = "floor_5x5")
+    public static void helmetMarksShowOwnStandingBodies(GameTestHelper helper) {
+        ServerPlayer player = player(helper);
+        ArtificialBodyEntity own = helper.spawn(BodyEntities.type(BodyClass.BASIC_ROBOT), new BlockPos(3, 2, 3));
+        own.setOwner(player.getUUID());
+        BodyRegistry.get(player.server).updateStanding(own);
+        ArtificialBodyEntity other = helper.spawn(BodyEntities.type(BodyClass.BASIC_ROBOT), new BlockPos(1, 2, 3));
+        other.setOwner(java.util.UUID.randomUUID());
+        BodyRegistry.get(player.server).updateStanding(other);
+        var marks = com.projectrebirth.powerarmor.HelmetMarks.marksFor(player);
+        helper.assertTrue(marks.stream().anyMatch(m -> m.x() == own.getBlockX() && m.z() == own.getBlockZ()), "the own body is marked");
+        helper.assertTrue(marks.stream().noneMatch(m -> m.x() == other.getBlockX() && m.z() == other.getBlockZ()), "another's body is not marked");
+        helper.succeed();
+    }
 }

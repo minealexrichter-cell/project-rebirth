@@ -32,6 +32,11 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec.BooleanValue UI_HOVER_SOUND;
     public static final ModConfigSpec.BooleanValue UI_ANIMATIONS;
     public static final ModConfigSpec.BooleanValue UI_REDUCED_MOTION;
+    public static final ModConfigSpec.BooleanValue UI_VISOR_FRAME;
+    public static final ModConfigSpec.BooleanValue UI_HELMET_FRAME;
+    public static final ModConfigSpec.BooleanValue UI_BOOT_ANIMATION;
+    public static final ModConfigSpec.BooleanValue UI_DAMAGE_EFFECTS;
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> HUD_ELEMENTS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -86,6 +91,15 @@ public final class RebirthClientConfig {
         UI_ANIMATIONS = builder.comment("Smooth bars and the small animations of windows (the picture of a station's work).")
                 .define("animations", true);
         UI_REDUCED_MOTION = builder.comment("Less motion: no blinking of alarms and no shaking.").define("reducedMotion", false);
+        // 1.8.0, block C: the body's visor and the armor's helmet
+        UI_VISOR_FRAME = builder.comment("The thin frame of the body's visor around the screen (rough for robots, almost none for the premium body).")
+                .define("visorFrame", true);
+        UI_HELMET_FRAME = builder.comment("The thin frame of the power armor's helmet at the edges of the screen.").define("helmetFrame", true);
+        UI_BOOT_ANIMATION = builder.comment("The 'systems start' lines when you enter a body or an armor.").define("bootAnimation", true);
+        UI_DAMAGE_EFFECTS = builder.comment("Static and cracks of the visor at low integrity, and a short glitch on a hit.").define("damageEffects", true);
+        HUD_ELEMENTS = builder.comment("Places of the HUD elements set in the HUD editor (key H): \"element dx dy scale visible\" each.",
+                        "The status panel and the body's visor also use panelX/panelY and barOffsetX/barOffsetY of [hud].")
+                .defineListAllowEmpty("hudElements", java.util.List.of(), () -> "", entry -> entry instanceof String);
         builder.pop();
         CLIENT_SPEC = builder.build();
     }

@@ -59,9 +59,11 @@ public final class BodyHud {
         }
     }
 
+    /**
+     * 1.8.0: the readings are drawn by the body's visor (client/hud/BodyVisor); the old bars over the hearts and the lines of
+     * the status panel are no longer registered. This class still hides the vanilla hearts and hunger bar.
+     */
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
-        event.registerAbove(VanillaGuiLayers.PLAYER_HEALTH, ProjectRebirth.id("body_integrity"), BodyHud::renderIntegrity);
-        event.registerAbove(VanillaGuiLayers.HOTBAR, ProjectRebirth.id("body_panel"), BodyHud::renderPanel);
     }
 
     /** The alarms of the body now, in the order they are shown. */

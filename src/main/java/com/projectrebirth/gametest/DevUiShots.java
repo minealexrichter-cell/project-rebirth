@@ -35,6 +35,24 @@ public final class DevUiShots {
             try {
                 String text = Files.readString(command).trim();
                 Files.delete(command);
+                if (text.equals("hud_editor")) {
+                    minecraft.setScreen(new com.projectrebirth.client.hud.HudEditorScreen());
+                    return;
+                }
+                if (text.equals("close")) {
+                    if (minecraft.player != null) {
+                        minecraft.player.closeContainer();
+                    }
+                    minecraft.setScreen(null);
+                    return;
+                }
+                if (text.equals("respawn")) {
+                    if (minecraft.player != null && minecraft.player.isDeadOrDying()) {
+                        minecraft.player.respawn();
+                        minecraft.setScreen(null);
+                    }
+                    return;
+                }
                 if (!net.neoforged.neoforge.client.ClientCommandHandler.runCommand(text) && minecraft.getConnection() != null) {
                     minecraft.getConnection().sendCommand(text);
                 }

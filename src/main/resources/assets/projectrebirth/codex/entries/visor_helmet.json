@@ -1,0 +1,18 @@
+{
+  "icon": "minecraft:spyglass",
+  "x": 3,
+  "y": 3,
+  "parents": [
+    "keys"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.visor_helmet.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.visor_helmet.p2"
+    }
+  ]
+}

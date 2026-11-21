@@ -156,7 +156,24 @@ public final class GuiAtlas {
     /** A body or armor in a window: it turns after the mouse and otherwise stands still (see WindowPose). */
     public static void model(GuiGraphics graphics, int x1, int y1, int x2, int y2, int scale, float yOffset,
                              float mouseX, float mouseY, LivingEntity entity) {
+        restPose(entity);
         InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, yOffset, mouseX, mouseY, entity);
+    }
+
+    /**
+     * 1.8.0: the bones of a GeckoLib model are shared by every entity drawn with it, so a model drawn in a window right after
+     * a wreck of the same kind in the world still lies like the wreck. Put them back into the model's own pose first.
+     */
+    private static void restPose(LivingEntity entity) {
+        if (net.minecraft.client.Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity)
+                instanceof software.bernie.geckolib.renderer.GeoEntityRenderer<?> renderer) {
+            for (software.bernie.geckolib.cache.object.GeoBone bone : renderer.getGeoModel().getAnimationProcessor().getRegisteredBones()) {
+                software.bernie.geckolib.animation.state.BoneSnapshot rest = bone.getInitialSnapshot();
+                bone.updateRotation(rest.getRotX(), rest.getRotY(), rest.getRotZ());
+                bone.updatePosition(rest.getOffsetX(), rest.getOffsetY(), rest.getOffsetZ());
+                bone.updateScale(rest.getScaleX(), rest.getScaleY(), rest.getScaleZ());
+            }
+        }
     }
 
     private static int filled(int size, int energy, int capacity) {

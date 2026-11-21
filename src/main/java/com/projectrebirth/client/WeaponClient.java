@@ -123,6 +123,15 @@ public final class WeaponClient {
     private WeaponClient() {
     }
 
+    /** For the helmet's HUD (1.8.0). */
+    public static net.minecraft.client.KeyMapping reloadKey() {
+        return RELOAD_KEY;
+    }
+
+    public static boolean holdsWeapon(Player player) {
+        return readyToShoot(player);
+    }
+
     static void register(IEventBus modEventBus) {
         modEventBus.addListener(WeaponClient::registerKeys);
         modEventBus.addListener(WeaponClient::registerGuiLayers);
@@ -148,7 +157,7 @@ public final class WeaponClient {
 
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.CROSSHAIR, ProjectRebirth.id("weapon_reticle"), WeaponClient::renderReticle);
-        event.registerAbove(VanillaGuiLayers.HOTBAR, ProjectRebirth.id("weapon_status"), WeaponClient::renderStatus);
+        // 1.8.0: rounds, reserve and reload are the weapon block of the helmet's HUD (client/hud/ArmorHelmet)
     }
 
     private static boolean readyToShoot(Player player) {

@@ -22,8 +22,8 @@ import net.minecraft.util.Mth;
 public class HudSettingsScreen extends Screen {
     private static final int COLUMN_WIDTH = 200;
     private static final int ROW = 22;
-    private static final int ROWS_ONE_COLUMN = 13;
-    private static final int ROWS_TWO_COLUMNS = 9;
+    private static final int ROWS_ONE_COLUMN = 19;
+    private static final int ROWS_TWO_COLUMNS = 10;
     /** The vanilla hearts start this far above the bottom of the screen and 91 left of its centre. */
     private static final int HEARTS_BOTTOM = 30;
     private static final int HEARTS_LEFT = 91;
@@ -45,7 +45,7 @@ public class HudSettingsScreen extends Screen {
         int y = Math.max(4, (height - rows() * ROW) / 2);
         int x2 = two ? width / 2 + 4 : x;
         int y2 = two ? y : y + 8 * ROW;
-        int last = two ? 8 : 12;
+        int last = two ? 9 : 18;
         addRenderableWidget(Button.builder(enabledMessage(), button -> {
             RebirthClientConfig.HUD_ENABLED.set(!HudLayout.enabled());
             button.setMessage(enabledMessage());
@@ -73,6 +73,13 @@ public class HudSettingsScreen extends Screen {
         // 1.7.1: one row each, so that the Russian words fit
         toggle(x2, y2 + 2 * ROW, "console_alarm", RebirthClientConfig.HUD_CONSOLE_ALARM);
         toggle(x2, y2 + 3 * ROW, "tablet_lines", RebirthClientConfig.HUD_TABLET_LINES);
+        // 1.8.0: the interface's own switches ([ui] of the client config)
+        toggle(x2, y2 + 4 * ROW, "ui_sounds", RebirthClientConfig.UI_SOUNDS);
+        toggle(x2, y2 + 5 * ROW, "visor_frame", RebirthClientConfig.UI_VISOR_FRAME);
+        toggle(x2, y2 + 6 * ROW, "helmet_frame", RebirthClientConfig.UI_HELMET_FRAME);
+        toggle(x2, y2 + 7 * ROW, "boot_animation", RebirthClientConfig.UI_BOOT_ANIMATION);
+        toggle(x2, y2 + 8 * ROW, "damage_effects", RebirthClientConfig.UI_DAMAGE_EFFECTS);
+        toggle(x2, y2 + 9 * ROW, "reduced_motion", RebirthClientConfig.UI_REDUCED_MOTION);
         int half = (COLUMN_WIDTH - 4) / 2;
         addRenderableWidget(Button.builder(Component.translatable("screen.projectrebirth.hud_settings.reset"), button -> reset())
                 .bounds(x, y + last * ROW, half, 20).build());
@@ -126,6 +133,12 @@ public class HudSettingsScreen extends Screen {
         RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.set(RebirthClientConfig.HUD_MACHINE_BAR_DISTANCE.getDefault());
         RebirthClientConfig.HUD_CONSOLE_ALARM.set(RebirthClientConfig.HUD_CONSOLE_ALARM.getDefault());
         RebirthClientConfig.HUD_TABLET_LINES.set(RebirthClientConfig.HUD_TABLET_LINES.getDefault());
+        RebirthClientConfig.UI_SOUNDS.set(true);
+        RebirthClientConfig.UI_VISOR_FRAME.set(true);
+        RebirthClientConfig.UI_HELMET_FRAME.set(true);
+        RebirthClientConfig.UI_BOOT_ANIMATION.set(true);
+        RebirthClientConfig.UI_DAMAGE_EFFECTS.set(true);
+        RebirthClientConfig.UI_REDUCED_MOTION.set(false);
         rebuildWidgets();
     }
 

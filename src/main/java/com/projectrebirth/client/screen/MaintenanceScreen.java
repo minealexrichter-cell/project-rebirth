@@ -164,15 +164,11 @@ public class MaintenanceScreen extends UiMachineScreen<MaintenanceMenu> {
                 : Component.literal("> ").append(tr("process.repair")).append(": ").append(UiText.upper(stack.getHoverName()));
         text(graphics, header, sx + 6, sy + 5, SCREEN_W - 12, kind == Maintenance.Kind.NONE ? UiColors.AMBER_DIM : UiColors.AMBER);
         if (kind != Maintenance.Kind.NONE) {
-            graphics.pose().pushPose();
-            graphics.pose().translate(sx + 8, sy + 20, 0.0f);
-            graphics.pose().scale(2.0f, 2.0f, 1.0f);
-            graphics.renderItem(stack, 0, 0);
-            graphics.pose().popPose();
+            drawModel(graphics, stack, kind, sx + 3, sy + 15, 44, SCREEN_H - 29, mouseX, mouseY);
             drawScales(graphics, stack, kind, sx + 50, sy + 20, SCREEN_W - 56);
             float step = progress.follow(menu.progress());
-            UiBars.progress(graphics, sx + 6, sy + SCREEN_H - 11, SCREEN_W - 12, 6, step, UiColors.AMBER);
-            text(graphics, tr("step", Mth.floor(step * 100)), sx + 50, sy + SCREEN_H - 22, SCREEN_W - 56, UiColors.AMBER_DIM);
+            UiBars.progress(graphics, sx + 6, sy + SCREEN_H - 11, SCREEN_W - 66, 6, step, UiColors.AMBER);
+            text(graphics, tr("step", Mth.floor(step * 100)), sx + SCREEN_W - 56, sy + SCREEN_H - 12, 50, UiColors.AMBER_DIM);
         }
 
         // serviced slot, energy, state
@@ -185,6 +181,76 @@ public class MaintenanceScreen extends UiMachineScreen<MaintenanceMenu> {
         // inventory and the repair plan
         inventory(graphics, x + MaintenanceMenu.INVENTORY_X, y + MaintenanceMenu.INVENTORY_Y);
         drawPlan(graphics, stack, kind, x + PLAN_X, y + PLAN_Y, W - 7 - PLAN_X, H - 7 - PLAN_Y);
+    }
+
+    /**
+     * The serviced thing as its 3D model (armor, body or machine), turning after the mouse; the item's icon only if there is
+     * no model. The models are made once per kind and never added to the world.
+     */
+    private void drawModel(GuiGraphics graphics, ItemStack stack, Maintenance.Kind kind, int x, int y, int width, int height, int mouseX, int mouseY) {
+        net.minecraft.world.entity.LivingEntity model = model(stack, kind);
+        if (model == null) {
+            graphics.pose().pushPose();
+            graphics.pose().translate(x + width / 2.0f - 16, y + height / 2.0f - 16, 0.0f);
+            graphics.pose().scale(2.0f, 2.0f, 1.0f);
+            graphics.renderItem(stack, 0, 0);
+            graphics.pose().popPose();
+            return;
+        }
+        // the size of the entity's kind: a model made only for drawing may not have its own size yet
+        var size = model.getType().getDimensions();
+        float tall = Math.max(Math.max(size.height(), model.getBbHeight()), size.width() * 0.9f);
+        int scale = Math.max(6, Math.round(height * 0.85f / Math.max(0.5f, tall)));
+        // a model made only for drawing has never lived: give it its health, or it is drawn fallen like a dead entity
+        if (model.getHealth() <= 0.0f || model.deathTime > 0) {
+            model.setHealth(Math.max(1.0f, model.getMaxHealth()));
+            model.deathTime = 0;
+        }
+        // turned a little to the viewer, not after the mouse: the mouse is usually far from this small box
+        com.projectrebirth.client.GuiAtlas.model(graphics, x, y, x + width, y + height, scale, 0.0625f, x + width / 2.0f + 30, y + height / 2.0f, model);
+    }
+
+    private final java.util.Map<Object, net.minecraft.world.entity.LivingEntity> models = new java.util.HashMap<>();
+
+    @javax.annotation.Nullable
+    private net.minecraft.world.entity.LivingEntity model(ItemStack stack, Maintenance.Kind kind) {
+        if (minecraft == null || minecraft.level == null) {
+            return null;
+        }
+        switch (kind) {
+            case ARMOR -> {
+                if (!(stack.getItem() instanceof com.projectrebirth.powerarmor.PowerArmorItem item)) {
+                    return null;
+                }
+                return models.computeIfAbsent(item.variant(), variant -> {
+                    var armor = com.projectrebirth.powerarmor.PowerArmorRegistry.POWER_ARMOR.get().create(minecraft.level);
+                    if (armor != null) {
+                        armor.setVariant(item.variant());
+                    }
+                    return armor;
+                });
+            }
+            case ROBOT_BODY, SYNTHETIC_BODY -> {
+                if (!(stack.getItem() instanceof com.projectrebirth.bodies.ArtificialBodyItem item)) {
+                    return null;
+                }
+                net.minecraft.world.entity.LivingEntity body = models.computeIfAbsent(item.bodyClass(),
+                        bodyClass -> com.projectrebirth.bodies.BodyEntities.type(item.bodyClass()).create(minecraft.level));
+                if (body instanceof com.projectrebirth.bodies.ArtificialBodyEntity artificial) {
+                    artificial.setUpgrades(com.projectrebirth.upgrades.Upgrades.ofStack(stack));
+                }
+                return body;
+            }
+            case MACHINE -> {
+                if (!(stack.getItem() instanceof com.projectrebirth.garrison.PackedMachineItem item)) {
+                    return null;
+                }
+                return models.computeIfAbsent(item, key -> item.entityType().create(minecraft.level));
+            }
+            default -> {
+                return null;
+            }
+        }
     }
 
     private void drawScales(GuiGraphics graphics, ItemStack stack, Maintenance.Kind kind, int x, int y, int width) {

@@ -65,6 +65,19 @@ public final class PowerArmorClient {
     private PowerArmorClient() {
     }
 
+    /** The keys, for the helmet's HUD (1.8.0). */
+    public static net.minecraft.client.KeyMapping hatchKey() {
+        return HATCH_KEY;
+    }
+
+    public static net.minecraft.client.KeyMapping miningKey() {
+        return MINING_KEY;
+    }
+
+    public static net.minecraft.client.KeyMapping floodlightKey() {
+        return FLOODLIGHT_KEY;
+    }
+
     static void register(IEventBus modEventBus) {
         modEventBus.addListener(PowerArmorClient::registerRenderers);
         modEventBus.addListener(PowerArmorClient::registerKeys);
@@ -174,7 +187,7 @@ public final class PowerArmorClient {
     }
 
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
-        event.registerAbove(VanillaGuiLayers.HOTBAR, ProjectRebirth.id("power_armor_status"), PowerArmorClient::renderArmorStatus);
+        // 1.8.0: the armor's status is the helmet's HUD (client/hud/ArmorHelmet); the old lines of the status panel are gone
     }
 
     private static void hidePilot(RenderPlayerEvent.Pre event) {

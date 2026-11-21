@@ -98,6 +98,8 @@ public class ProjectRebirthClient {
         ScoutingClient.register(modEventBus);
         com.projectrebirth.client.multiblock.MultiblockClient.register();
         com.projectrebirth.client.garrison.TabletMarks.register();
+        com.projectrebirth.client.hud.BodyVisor.register(modEventBus);
+        com.projectrebirth.client.hud.ArmorHelmet.register(modEventBus);
         BodyHud.register(modEventBus);
         com.projectrebirth.client.garrison.GarrisonHud.register(modEventBus);
         JetpackClient.register();
@@ -188,7 +190,8 @@ public class ProjectRebirthClient {
         }
         while (HUD_SETTINGS_KEY.consumeClick()) {
             if (Minecraft.getInstance().screen == null) {
-                Minecraft.getInstance().setScreen(new HudSettingsScreen(null));
+                // 1.8.0: H opens the HUD editor; its "Settings" button opens the old settings
+                Minecraft.getInstance().setScreen(new com.projectrebirth.client.hud.HudEditorScreen());
             }
         }
         while (FACTION_KEY.consumeClick()) {

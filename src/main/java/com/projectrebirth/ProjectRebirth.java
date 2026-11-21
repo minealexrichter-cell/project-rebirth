@@ -60,6 +60,7 @@ public class ProjectRebirth {
         ReturnToHumanPayload.register(modEventBus);
         TransferAnimationPayload.register(modEventBus);
         CapsuleNetwork.register(modEventBus);
+        com.projectrebirth.powerarmor.HelmetMarks.register(modEventBus);
         PowerArmorRegistry.register(modEventBus);
         HatchReleasePayload.register(modEventBus);
         ArmorSwingPayload.register(modEventBus);

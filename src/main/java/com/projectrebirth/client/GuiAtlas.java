@@ -157,7 +157,24 @@ public final class GuiAtlas {
     public static void model(GuiGraphics graphics, int x1, int y1, int x2, int y2, int scale, float yOffset,
                              float mouseX, float mouseY, LivingEntity entity) {
         restPose(entity);
-        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, yOffset, mouseX, mouseY, entity);
+        // 1.8.0 block F (owner's fix): the game blends the angles it sets for the window with the entity's previous ones, which
+        // for a machine walking in the world are its world angles; the mech's torso turns by the difference (a robot drawn
+        // sideways, a walking mech shaking). Give the previous angles the window's own, as the vanilla code computes them.
+        float turn = (float) Math.atan(((x1 + x2) / 2.0f - mouseX) / 40.0f);
+        float tilt = (float) Math.atan(((y1 + y2) / 2.0f - mouseY) / 40.0f);
+        float bodyO = entity.yBodyRotO, headO = entity.yHeadRotO, yRotO = entity.yRotO, xRotO = entity.xRotO;
+        entity.yBodyRotO = 180.0f + turn * 20.0f;
+        entity.yRotO = 180.0f + turn * 40.0f;
+        entity.yHeadRotO = entity.yRotO;
+        entity.xRotO = -tilt * 20.0f;
+        try {
+            InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, x1, y1, x2, y2, scale, yOffset, mouseX, mouseY, entity);
+        } finally {
+            entity.yBodyRotO = bodyO;
+            entity.yHeadRotO = headO;
+            entity.yRotO = yRotO;
+            entity.xRotO = xRotO;
+        }
     }
 
     /**

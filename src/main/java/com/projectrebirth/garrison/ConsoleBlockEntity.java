@@ -597,7 +597,7 @@ public class ConsoleBlockEntity extends BlockEntity {
             }
             rows.add(new ConsoleView.Row(entry.getKey(), link.name, link.kind.id(), link.group, link.state.ordinal(), link.structural,
                     link.maxStructural, link.critical, link.maxCritical, link.pos.getX(), link.pos.getY(), link.pos.getZ(),
-                    link.task.type().ordinal(), link.heard < 0 ? -1 : (int) ((now - link.heard) / 20), new ConsoleView.Facts(link.energyShare, link.ammo, link.range, link.worker,
+                    link.task.type().ordinal(), link.heard < 0 ? -1 : (int) Math.max(0, (now - link.heard) / 20), new ConsoleView.Facts(link.energyShare, link.ammo, link.range, link.worker,
                     ConsoleView.taskPoints(link.task), link.active.stream().map(Enum::ordinal).toList())));
         }
         List<ConsoleView.Group> groups = new ArrayList<>();
@@ -607,7 +607,7 @@ public class ConsoleBlockEntity extends BlockEntity {
         List<ConsoleView.Line> lines = new ArrayList<>();
         for (Logged logged : log) {
             lines.add(new ConsoleView.Line(logged.alarm().ordinal(), logged.ended(), logged.name(), logged.pos().getX(), logged.pos().getY(),
-                    logged.pos().getZ(), (int) ((now - logged.gameTime()) / 20)));
+                    logged.pos().getZ(), (int) Math.max(0, (now - logged.gameTime()) / 20)));
         }
         Optional<Snapshot> map = Optional.empty();
         int radius = RebirthConfig.CONSOLE_MAP_STATION_RADIUS.get();

@@ -71,7 +71,8 @@ public final class MultiblockClient {
         return Minecraft.getInstance().level == null ? 0L : Minecraft.getInstance().level.getGameTime();
     }
 
-    private static void toggle(BlockPos pos) {
+    /** Shows or hides the hologram of a controller (shift-click on it, or its window's button since 1.8.0). */
+    public static void toggle(BlockPos pos) {
         Minecraft minecraft = Minecraft.getInstance();
         if (HOLOGRAMS.remove(pos) != null) {
             if (minecraft.player != null) {

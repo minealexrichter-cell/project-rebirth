@@ -43,7 +43,8 @@ public class AssemblyRecipeCategory implements IRecipeCategory<AssemblyRecipe> {
     private final IDrawable arrow;
 
     public AssemblyRecipeCategory(IGuiHelper guiHelper) {
-        this.icon = guiHelper.createDrawableItemStack(new ItemStack(Items.IRON_BLOCK));
+        // 1.8.0: the controller of a multiblock rather than a plain iron block
+        this.icon = guiHelper.createDrawableItemStack(new ItemStack(com.projectrebirth.multiblock.MultiblockRegistry.WORKSHOP_CONTROLLER.get()));
         this.arrow = guiHelper.getRecipeArrow();
     }
 

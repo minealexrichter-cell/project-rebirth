@@ -19,12 +19,16 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 /** A controller's window: the item to start from, nine material slots, the result, the recipe arrows, energy and the state. */
 public class MultiblockMenu extends AbstractContainerMenu {
-    public static final int BASE_X = 8;
-    public static final int MATERIALS_X = 34;
-    public static final int SLOT_Y = 18;
-    public static final int OUTPUT_X = 134;
-    public static final int OUTPUT_Y = 36;
-    public static final int INVENTORY_Y = 140;
+    /** 1.8.0: the window of style A (440 x 250); materials 3 x 3 on the right, the base and the result under them. */
+    public static final int MATERIALS_X = 352;
+    public static final int MATERIALS_Y = 37;
+    public static final int MATERIAL_STEP = 20;
+    public static final int BASE_X = 352;
+    public static final int BASE_Y = 110;
+    public static final int OUTPUT_X = 398;
+    public static final int OUTPUT_Y = 113;
+    public static final int INVENTORY_X = 8;
+    public static final int INVENTORY_Y = 167;
 
     private final BlockPos pos;
     private final ContainerData data;
@@ -42,9 +46,9 @@ public class MultiblockMenu extends AbstractContainerMenu {
         this.pos = pos;
         this.data = data;
         this.controller = controller;
-        addSlot(new SlotItemHandler(items, MultiblockControllerBlockEntity.BASE_SLOT, BASE_X, SLOT_Y));
+        addSlot(new SlotItemHandler(items, MultiblockControllerBlockEntity.BASE_SLOT, BASE_X, BASE_Y));
         for (int i = 0; i < MultiblockControllerBlockEntity.MATERIALS; i++) {
-            addSlot(new SlotItemHandler(items, MultiblockControllerBlockEntity.FIRST_MATERIAL + i, MATERIALS_X + (i % 3) * 18, SLOT_Y + (i / 3) * 18));
+            addSlot(new SlotItemHandler(items, MultiblockControllerBlockEntity.FIRST_MATERIAL + i, MATERIALS_X + (i % 3) * MATERIAL_STEP, MATERIALS_Y + (i / 3) * MATERIAL_STEP));
         }
         addSlot(new SlotItemHandler(items, MultiblockControllerBlockEntity.OUTPUT_SLOT, OUTPUT_X, OUTPUT_Y) {
             @Override
@@ -54,11 +58,11 @@ public class MultiblockMenu extends AbstractContainerMenu {
         });
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, INVENTORY_Y + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, 8 + col * 18, INVENTORY_Y + 58));
+            addSlot(new Slot(inventory, col, INVENTORY_X + col * 18, INVENTORY_Y + 58));
         }
         addDataSlots(data);
     }

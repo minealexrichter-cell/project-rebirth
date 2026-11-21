@@ -26,7 +26,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class MachineMountingMenu extends AbstractContainerMenu {
     public static final int MAX_SLOTS = 12;
-    public static final int INVENTORY_Y = 84;
+    public static final int INVENTORY_Y = 152;
     private static final double MAX_DISTANCE_SQR = 64.0;
 
     @Nullable
@@ -50,7 +50,7 @@ public class MachineMountingMenu extends AbstractContainerMenu {
         this.parts = parts != null ? parts : new SimpleContainer(Math.max(1, count));
         Player player = inventory.player;
         for (int i = 0; i < count; i++) {
-            addSlot(new UpgradeSlot(player, i, slotX(i, count), 36));
+            addSlot(new UpgradeSlot(player, i, slotX(i, count), slotY(i, count)));
         }
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
@@ -62,9 +62,23 @@ public class MachineMountingMenu extends AbstractContainerMenu {
         }
     }
 
-    /** The slots stand in one row in the middle of the window. */
+    /**
+     * 1.8.0: the slots stand on both sides of the machine's model, by turns left and right, three to a column; with more than
+     * six the outer columns fill too.
+     */
     public static int slotX(int index, int count) {
-        return 88 - count * 9 + index * 18;
+        int side = index % 2;
+        int outer = index / 2 / 3;
+        return side == 0 ? (outer == 0 ? 62 : 36) : (outer == 0 ? 220 : 246);
+    }
+
+    public static int slotY(int index, int count) {
+        return 44 + (index / 2 % 3) * 28;
+    }
+
+    @Nullable
+    public MachineEntity machine() {
+        return machine;
     }
 
     public int count() {

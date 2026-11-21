@@ -15,11 +15,12 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
-/** Combustion generator window: the fuel slot, burn time, stored energy and the player's inventory. */
+/** Combustion generator window: the fuel slot, burn time, stored energy and the player's inventory (slot places: 1.8.0 window). */
 public class GeneratorMenu extends AbstractContainerMenu {
-    public static final int FUEL_X = 26;
-    public static final int FUEL_Y = 34;
-    public static final int INVENTORY_Y = 92;
+    public static final int FUEL_X = 15;
+    public static final int FUEL_Y = 52;
+    public static final int INVENTORY_X = 8;
+    public static final int INVENTORY_Y = 132;
 
     private final BlockPos pos;
     private final ContainerData data;
@@ -42,11 +43,11 @@ public class GeneratorMenu extends AbstractContainerMenu {
         });
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, INVENTORY_Y + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, 8 + col * 18, INVENTORY_Y + 58));
+            addSlot(new Slot(inventory, col, INVENTORY_X + col * 18, INVENTORY_Y + 58));
         }
         addDataSlots(data);
     }

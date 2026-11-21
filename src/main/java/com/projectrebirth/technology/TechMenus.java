@@ -29,6 +29,10 @@ public final class TechMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<GeneratorMenu>> GENERATOR =
             MENUS.register("combustion_generator", () -> IMenuTypeExtension.create(GeneratorMenu::new));
 
+    /** 1.8.0: the window of the solar panel, the radioisotope generator and the batteries (numbers only, no slots). */
+    public static final DeferredHolder<MenuType<?>, MenuType<com.projectrebirth.technology.energy.EnergyPanelMenu>> ENERGY_PANEL =
+            MENUS.register("energy_panel", () -> IMenuTypeExtension.create(com.projectrebirth.technology.energy.EnergyPanelMenu::new));
+
     private TechMenus() {
     }
 

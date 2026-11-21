@@ -452,58 +452,9 @@ public class StationScreen extends AbstractContainerScreen<StationMenu> {
         }
     }
 
-    /**
-     * The picture of the process: the product on a rail between two manipulators, sparks while it works. One drawing for
-     * every station for now; block B gives each station its own picture.
-     */
+    /** The picture of the process: each station has its own (StationArt). */
     private void renderArt(GuiGraphics graphics, int x, int y, @Nullable FabricationRecipe recipe, boolean running, long time) {
-        int amber = UiColors.AMBER;
-        int dim = UiColors.withAlpha(UiColors.AMBER, 110);
-        int cx = x + ART_W / 2;
-        // rail
-        graphics.fill(x + 2, y + 44, x + ART_W, y + 45, amber);
-        graphics.fill(x + 2, y + 50, x + ART_W, y + 51, amber);
-        graphics.fill(x + 2, y + 44, x + 3, y + 51, amber);
-        graphics.fill(x + ART_W - 1, y + 44, x + ART_W, y + 51, amber);
-        float phase = running ? (time % 1200L) / 1200.0f : 0.0f;
-        for (int i = 0; i < (ART_W - 6) / 8; i++) {
-            int tx = x + 4 + Math.floorMod(i * 8 + Math.round(phase * 8), ART_W - 8);
-            graphics.fill(tx, y + 46, tx + 3, y + 49, dim);
-        }
-        if (recipe == null) {
-            return;
-        }
-        float bob = running ? Mth.sin(time / 300.0f) * 1.5f : 0.0f;
-        // manipulators: dashed arms from the top and the sides, they reach in and out while it works
-        int reach = running ? Math.round(3 + 3 * Mth.sin(time / 220.0f)) : 0;
-        for (int dy = 0; dy < 6 + reach; dy += 3) {
-            graphics.fill(cx - 1, y + dy, cx + 1, y + dy + 2, amber);
-        }
-        for (int dx = 0; dx < 10 + reach; dx += 3) {
-            graphics.fill(x + 2 + dx, y + 24, x + 4 + dx, y + 25, amber);
-            graphics.fill(x + ART_W - dx - 2, y + 24, x + ART_W - dx, y + 25, amber);
-        }
-        graphics.pose().pushPose();
-        graphics.pose().translate(cx - 16, y + 9 + bob, 0.0f);
-        graphics.pose().scale(2.0f, 2.0f, 1.0f);
-        graphics.renderItem(recipe.result(), 0, 0);
-        graphics.pose().popPose();
-        if (running) {
-            graphics.pose().pushPose();
-            graphics.pose().translate(0.0f, 0.0f, 250.0f);
-            long spark = time / 120;
-            for (int i = 0; i < 3; i++) {
-                long seed = spark * 31 + i * 17;
-                if (seed % 3 == 0) {
-                    continue;
-                }
-                int sx = cx - 18 + (int) (seed * 7 % 36);
-                int sy = y + 8 + (int) (seed * 13 % 30);
-                graphics.fill(sx, sy, sx + 1, sy + 1, UiColors.SPARK);
-                graphics.fill(sx + 1, sy - 1, sx + 2, sy, UiColors.SPARK);
-            }
-            graphics.pose().popPose();
-        }
+        StationArt.draw(graphics, menu.station(), x, y, recipe == null ? null : recipe.result(), running, time);
     }
 
     private void renderRightColumn(GuiGraphics graphics, State state) {

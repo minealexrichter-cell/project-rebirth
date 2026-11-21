@@ -67,8 +67,12 @@ public final class CapsuleNetwork {
     }
 
     /** One row of the window. {@code distance} is in blocks from the capsule, -1 in another dimension. */
+    /**
+     * One row of the window. charge (0..1) and wear (percent) are known only for a body standing in a loaded part of the
+     * world (1.8.0, display only, nothing is saved); -1 means unknown.
+     */
     public record Entry(UUID id, BodyClass bodyClass, String dimension, BlockPos pos, float health, float maxHealth,
-                        int distance, Availability availability) {
+                        int distance, Availability availability, float charge, float wear) {
         public static final StreamCodec<ByteBuf, Entry> STREAM_CODEC = StreamCodec.of(
                 (buf, entry) -> {
                     UUIDUtil.STREAM_CODEC.encode(buf, entry.id());
@@ -79,10 +83,12 @@ public final class CapsuleNetwork {
                     buf.writeFloat(entry.maxHealth());
                     ByteBufCodecs.VAR_INT.encode(buf, entry.distance());
                     Availability.STREAM_CODEC.encode(buf, entry.availability());
+                    buf.writeFloat(entry.charge());
+                    buf.writeFloat(entry.wear());
                 },
                 buf -> new Entry(UUIDUtil.STREAM_CODEC.decode(buf), BodyClass.STREAM_CODEC.decode(buf),
                         ByteBufCodecs.STRING_UTF8.decode(buf), BlockPos.STREAM_CODEC.decode(buf), buf.readFloat(), buf.readFloat(),
-                        ByteBufCodecs.VAR_INT.decode(buf), Availability.STREAM_CODEC.decode(buf)));
+                        ByteBufCodecs.VAR_INT.decode(buf), Availability.STREAM_CODEC.decode(buf), buf.readFloat(), buf.readFloat()));
     }
 
     /** Server to client: open (or refresh) the window of this capsule. */
@@ -150,8 +156,17 @@ public final class CapsuleNetwork {
                 case STANDING -> !sameDimension ? Availability.OTHER_DIMENSION
                         : TransferService.withinRadius(record.position(), center) ? Availability.AVAILABLE : Availability.TOO_FAR;
             };
+            float charge = -1.0f;
+            float wear = -1.0f;
+            ServerLevel bodyLevel = player.server.getLevel(record.dimension());
+            if (record.state() == BodyRegistry.State.STANDING && bodyLevel != null
+                    && bodyLevel.getEntity(record.id()) instanceof com.projectrebirth.bodies.ArtificialBodyEntity body) {
+                float capacity = com.projectrebirth.bodies.power.BodyPower.capacity(body);
+                charge = capacity <= 0.0f ? -1.0f : Mth.clamp(body.charge() / capacity, 0.0f, 1.0f);
+                wear = body.wear();
+            }
             entries.add(new Entry(record.id(), record.bodyClass(), record.dimension().location().toString(),
-                    BlockPos.containing(record.position()), record.health(), record.maxHealth(), distance, availability));
+                    BlockPos.containing(record.position()), record.health(), record.maxHealth(), distance, availability, charge, wear));
         }
         entries.sort(Comparator.comparingInt((Entry entry) -> entry.availability().ordinal())
                 .thenComparingInt(entry -> entry.distance() < 0 ? Integer.MAX_VALUE : entry.distance()));

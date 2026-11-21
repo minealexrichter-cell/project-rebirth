@@ -18,10 +18,14 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 
 /** Maintenance window: three material slots, the service slot and the player's inventory. */
 public class MaintenanceMenu extends AbstractContainerMenu {
-    public static final int MATERIAL_X = 8;
-    public static final int SLOT_Y = 24;
-    public static final int SERVICE_X = 98;
-    public static final int INVENTORY_Y = 94;
+    /** 1.8.0: the window of style A; materials in a column on the left, the serviced item on the right. */
+    public static final int MATERIAL_X = 12;
+    public static final int MATERIAL_Y = 37;
+    public static final int MATERIAL_STEP = 20;
+    public static final int SERVICE_X = 261;
+    public static final int SERVICE_Y = 41;
+    public static final int INVENTORY_X = 8;
+    public static final int INVENTORY_Y = 144;
 
     private final BlockPos pos;
     private final ContainerData data;
@@ -36,22 +40,22 @@ public class MaintenanceMenu extends AbstractContainerMenu {
         super(TechMenus.MAINTENANCE.get(), containerId);
         this.pos = pos;
         this.data = data;
-        addSlot(new SlotItemHandler(items, MaintenanceBlockEntity.SERVICE_SLOT, SERVICE_X, SLOT_Y) {
+        addSlot(new SlotItemHandler(items, MaintenanceBlockEntity.SERVICE_SLOT, SERVICE_X, SERVICE_Y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return Maintenance.kind(stack) != Maintenance.Kind.NONE;
             }
         });
         for (int i = 0; i < MaintenanceBlockEntity.MATERIAL_SLOTS; i++) {
-            addSlot(new SlotItemHandler(items, MaintenanceBlockEntity.FIRST_MATERIAL_SLOT + i, MATERIAL_X + i * 18, SLOT_Y));
+            addSlot(new SlotItemHandler(items, MaintenanceBlockEntity.FIRST_MATERIAL_SLOT + i, MATERIAL_X, MATERIAL_Y + i * MATERIAL_STEP));
         }
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, INVENTORY_Y + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, 8 + col * 18, INVENTORY_Y + 58));
+            addSlot(new Slot(inventory, col, INVENTORY_X + col * 18, INVENTORY_Y + 58));
         }
         addDataSlots(data);
     }

@@ -47,11 +47,9 @@ public class BackupBatteryBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof BackupBatteryBlockEntity battery) {
-            player.displayClientMessage(Component.translatable("message.projectrebirth.backup_battery.status",
-                    EnergyUtil.format(battery.energy().getEnergyStored()), EnergyUtil.format(battery.energy().getMaxEnergyStored()),
-                    Component.translatable(battery.isOnReserve() ? "message.projectrebirth.backup_battery.feeding"
-                            : "message.projectrebirth.backup_battery.waiting"), battery.supported()), true);
+        // 1.8.0: a window instead of the line in the action bar
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof BackupBatteryBlockEntity battery) {
+            EnergyPanelMenu.open(serverPlayer, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

@@ -114,6 +114,7 @@ public class ProjectRebirthClient {
         event.register(com.projectrebirth.garrison.GarrisonRegistry.CONSOLE_MENU.get(), com.projectrebirth.client.garrison.ConsoleScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_GEAR.get(), com.projectrebirth.client.screen.AndroidGearScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
+        event.register(TechMenus.ENERGY_PANEL.get(), com.projectrebirth.client.screen.EnergyPanelScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_MENU.get(), com.projectrebirth.client.screen.AirFiltrationScreen::new);
         event.register(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_MENU.get(), com.projectrebirth.client.screen.WaterPurifierScreen::new);
         event.register(com.projectrebirth.weather.WeatherRegistry.WEATHER_STATION_MENU.get(), com.projectrebirth.client.screen.WeatherStationScreen::new);

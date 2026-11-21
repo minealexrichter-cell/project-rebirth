@@ -25,11 +25,14 @@ import net.neoforged.neoforge.items.SlotItemHandler;
  * on it takes out the installed gadget with that number.
  */
 public class BodyModificationMenu extends AbstractContainerMenu {
-    public static final int BODY_X = 25;
-    public static final int BODY_Y = 17;
-    public static final int GADGET_X = 62;
-    public static final int GADGET_Y = 17;
-    public static final int INVENTORY_Y = 116;
+    /** 1.8.0: the window of style A; the body on the left, the gadgets to install in a row on the right. */
+    public static final int BODY_X = 14;
+    public static final int BODY_Y = 41;
+    public static final int GADGET_X = 253;
+    public static final int GADGET_Y = 41;
+    public static final int GADGET_STEP = 24;
+    public static final int INVENTORY_X = 8;
+    public static final int INVENTORY_Y = 166;
     public static final int REMOVE_BUTTON = 100;
 
     private final BlockPos pos;
@@ -63,7 +66,7 @@ public class BodyModificationMenu extends AbstractContainerMenu {
         });
         for (int i = 0; i < BodyModificationBlockEntity.GADGET_SLOTS; i++) {
             int index = i;
-            addSlot(new SlotItemHandler(items, BodyModificationBlockEntity.FIRST_GADGET_SLOT + i, GADGET_X + i * 18, GADGET_Y) {
+            addSlot(new SlotItemHandler(items, BodyModificationBlockEntity.FIRST_GADGET_SLOT + i, GADGET_X + i * GADGET_STEP, GADGET_Y) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return isGadget(owner, stack);
@@ -77,11 +80,11 @@ public class BodyModificationMenu extends AbstractContainerMenu {
         }
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, INVENTORY_Y + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
             }
         }
         for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col, 8 + col * 18, INVENTORY_Y + 58));
+            addSlot(new Slot(inventory, col, INVENTORY_X + col * 18, INVENTORY_Y + 58));
         }
         addDataSlots(data);
     }

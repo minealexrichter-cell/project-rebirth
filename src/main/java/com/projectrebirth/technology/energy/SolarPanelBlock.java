@@ -80,13 +80,9 @@ public class SolarPanelBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof SolarPanelBlockEntity panel) {
-            Component production = panel.seesSun()
-                    ? Component.translatable("message.projectrebirth.solar.producing", RebirthConfig.SOLAR_ENERGY_PER_TICK.get())
-                    : Component.translatable("message.projectrebirth.solar.idle");
-            player.displayClientMessage(Component.translatable("message.projectrebirth.solar.status",
-                    EnergyUtil.format(panel.energy().getEnergyStored()), EnergyUtil.format(panel.energy().getMaxEnergyStored()),
-                    production), true);
+        // 1.8.0: a window instead of the line in the action bar
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof SolarPanelBlockEntity panel) {
+            EnergyPanelMenu.open(serverPlayer, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

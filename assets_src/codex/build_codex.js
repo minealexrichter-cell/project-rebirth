@@ -125,7 +125,9 @@ category('energy', P + 'battery', 'Energy', 'Энергия', [
     entry('energy_basics', P + 'cable', 0, 0, [], 'Energy', 'Энергия', [
         text('Machines of the mod run on energy in FE (NeoForge Energy); it works with the machines and cables of other mods.\n\nStations use 20 FE per tick while they work; the air filtration unit, the decontamination chamber and the purge station use their own amounts. Every machine keeps a store of its own.',
             'Машины мода работают на энергии в FE (NeoForge Energy); она совместима с машинами и кабелями других модов.\n\nСтанции тратят 20 FE за тик, пока работают; у установки фильтрации, камеры и станции очистки — свой расход. У каждой машины свой запас.'),
-        note('A generator gives energy to the blocks right next to it and into cables; the cable carries it to everything joined to it.', 'Генератор отдаёт энергию соседним блокам и в кабели; кабель несёт её ко всему, что к нему подключено.')
+        note('A generator gives energy to the blocks right next to it and into cables; the cable carries it to everything joined to it.', 'Генератор отдаёт энергию соседним блокам и в кабели; кабель несёт её ко всему, что к нему подключено.'),
+        text('A right click opens the window of a generator, a solar panel or a battery: the store, the income and the use per tick, the state in a word and what to do about it. The window of a station shows the same energy column. The "?" button of every window opens its entry here.',
+            'ПКМ открывает окно генератора, солнечной панели или аккумулятора: запас, приход и расход за тик, состояние словом и что с ним делать. Такая же колонка энергии есть в окне каждой станции. Кнопка «?» любого окна открывает его запись здесь.')
     ]),
     entry('combustion_generator', P + 'combustion_generator', -2, 1, ['energy_basics'], 'Combustion Generator', 'Топливный генератор', [
         block(P + 'combustion_generator', 'Burns anything a furnace burns, for as long as a furnace would, and makes 40 FE per tick meanwhile.', 'Жжёт всё, что жжёт печь, столько же времени, и делает при этом 40 FE за тик.'),

@@ -29,7 +29,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class ArmorMountingMenu extends AbstractContainerMenu {
     public static final int SLOT_COUNT = ArmorSlot.values().length;
-    public static final int INVENTORY_Y = 114;
+    public static final int INVENTORY_Y = 152;
     private static final double MAX_DISTANCE_SQR = 64.0;
 
     @Nullable
@@ -64,21 +64,24 @@ public class ArmorMountingMenu extends AbstractContainerMenu {
         }
     }
 
-    /** The armor faces the viewer in the window, so its right side is on the left. */
+    /**
+     * The armor faces the viewer in the window, so its right side is on the left (1.8.0: the window of style A, 300 wide;
+     * the slots stand at their parts around the model).
+     */
     public static int slotX(ArmorSlot part) {
         return switch (part) {
-            case HEAD -> 80;
-            case RIGHT_ARM, CHEST_FRONT, RIGHT_LEG -> 22;
-            case LEFT_ARM, CHEST_BACK, LEFT_LEG -> 138;
+            case HEAD -> 141;
+            case RIGHT_ARM, CHEST_FRONT, RIGHT_LEG -> 62;
+            case LEFT_ARM, CHEST_BACK, LEFT_LEG -> 220;
         };
     }
 
     public static int slotY(ArmorSlot part) {
         return switch (part) {
-            case HEAD -> 16;
-            case RIGHT_ARM, LEFT_ARM -> 36;
-            case CHEST_FRONT, CHEST_BACK -> 58;
-            case RIGHT_LEG, LEFT_LEG -> 80;
+            case HEAD -> 31;
+            case RIGHT_ARM, LEFT_ARM -> 56;
+            case CHEST_FRONT, CHEST_BACK -> 82;
+            case RIGHT_LEG, LEFT_LEG -> 108;
         };
     }
 

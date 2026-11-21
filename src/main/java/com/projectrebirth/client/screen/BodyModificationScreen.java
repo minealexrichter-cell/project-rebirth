@@ -9,7 +9,17 @@ import com.projectrebirth.bodies.ArtificialBodyEntity;
 import com.projectrebirth.bodies.ArtificialBodyItem;
 import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.bodies.BodyEntities;
-import com.projectrebirth.client.GuiAtlas;
+import com.projectrebirth.client.ui.UiBars;
+import com.projectrebirth.client.ui.UiButton;
+import com.projectrebirth.client.ui.UiColors;
+import com.projectrebirth.client.ui.UiEnergy;
+import com.projectrebirth.client.ui.UiMachineScreen;
+import com.projectrebirth.client.ui.UiPanels;
+import com.projectrebirth.client.ui.UiSlots;
+import com.projectrebirth.client.ui.UiSounds;
+import com.projectrebirth.client.ui.UiSprites;
+import com.projectrebirth.client.ui.UiText;
+import com.projectrebirth.client.ui.UiTooltip;
 import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.technology.BodyModificationBlockEntity;
 import com.projectrebirth.technology.BodyModificationMenu;
@@ -18,42 +28,49 @@ import com.projectrebirth.upgrades.UpgradeHost;
 import com.projectrebirth.upgrades.Upgrades;
 
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Body modification window: the packed body and its model on the left; on the right the gadgets with a button to
- * install each, and the installed ones with a button to take each out. The server checks everything again.
+ * Body modification window in the style "Industrial terminal" (1.8.0 block B): the packed body on the left; in the middle
+ * the body's model with its gadget slots around it (an installed gadget with a "−" button to take it out); on the right the
+ * gadgets to install, each with a "+" button that is grey with the reason when it cannot go in; energy, state, and a line
+ * of the installing. The server checks every request again.
  */
-public class BodyModificationScreen extends AbstractContainerScreen<BodyModificationMenu> {
-    private static final int CELL = 18;
-    private static final int BUTTON_HEIGHT = 10;
-    private static final int INSTALL_BUTTON_Y = BodyModificationMenu.GADGET_Y + 17;
-    private static final int INSTALLED_Y = INSTALL_BUTTON_Y + BUTTON_HEIGHT + 3;
-    private static final int REMOVE_BUTTON_Y = INSTALLED_Y + 16 + 1;
-    private static final int STATUS_X = BodyModificationMenu.GADGET_X - 1;
-    private static final int STATUS_Y = REMOVE_BUTTON_Y + BUTTON_HEIGHT + 2;
-    private static final int STATUS_WIDTH = 92;
-    private static final int ENERGY_X = 156;
-    private static final int ENERGY_W = 10;
-    private static final int ENERGY_H = 92;
+public class BodyModificationScreen extends UiMachineScreen<BodyModificationMenu> {
+    private static final int W = 380;
+    private static final int H = 249;
+    private static final int SCREEN_X = 44;
+    private static final int SCREEN_Y = 36;
+    private static final int SCREEN_W = 200;
+    private static final int SCREEN_H = 96;
+    private static final int RIGHT_X = 250;
 
-    private final List<Button> installButtons = new ArrayList<>();
-    private final List<Button> removeButtons = new ArrayList<>();
+    private final List<UiButton> installButtons = new ArrayList<>();
+    private final List<UiButton> removeButtons = new ArrayList<>();
     /** Only for drawing: never added to the world. */
     private final Map<BodyClass, ArtificialBodyEntity> models = new EnumMap<>(BodyClass.class);
+    private final UiEnergy energy = new UiEnergy();
+    private final UiBars.Smooth progress = new UiBars.Smooth();
+    private boolean wasWorking;
 
     public BodyModificationScreen(BodyModificationMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, GuiShapes.fit(title, 160));
-        imageWidth = 176;
-        imageHeight = BodyModificationMenu.INVENTORY_Y + 82;
-        inventoryLabelY = BodyModificationMenu.INVENTORY_Y - 11;
+        super(menu, inventory, title, W, H, "body_modification");
+    }
+
+    private static Component tr(String key, Object... args) {
+        return Component.translatable("screen.projectrebirth.body_modification." + key, args);
+    }
+
+    /** Where the installed gadget i stands around the model: three on the left, two on the right (item position). */
+    private int installedX(int i) {
+        return leftPos + SCREEN_X + (i < 3 ? 10 : SCREEN_W - 28);
+    }
+
+    private int installedY(int i) {
+        return topPos + SCREEN_Y + 10 + (i < 3 ? i : i - 3) * 28;
     }
 
     @Override
@@ -62,42 +79,52 @@ public class BodyModificationScreen extends AbstractContainerScreen<BodyModifica
         installButtons.clear();
         removeButtons.clear();
         for (int i = 0; i < BodyModificationBlockEntity.GADGET_SLOTS; i++) {
-            int x = leftPos + BodyModificationMenu.GADGET_X - 1 + i * CELL;
             int install = i;
-            installButtons.add(addRenderableWidget(Button.builder(Component.literal("+"), button -> click(install))
-                    .bounds(x, topPos + INSTALL_BUTTON_Y, CELL, BUTTON_HEIGHT).build()));
+            installButtons.add(addRenderableWidget(new UiButton(leftPos + BodyModificationMenu.GADGET_X + i * BodyModificationMenu.GADGET_STEP - 1,
+                    topPos + BodyModificationMenu.GADGET_Y + 18, 18, 10, Component.literal("+"), null, 0, UiButton.Look.METAL, () -> click(install))));
             int remove = BodyModificationMenu.REMOVE_BUTTON + i;
-            removeButtons.add(addRenderableWidget(Button.builder(Component.literal("−"), button -> click(remove))
-                    .bounds(x, topPos + REMOVE_BUTTON_Y, CELL, BUTTON_HEIGHT).build()));
+            removeButtons.add(addRenderableWidget(new UiButton(installedX(i) - 1, installedY(i) + 18, 18, 9, Component.literal("−"), null, 0,
+                    UiButton.Look.METAL, () -> click(remove))));
         }
         updateButtons();
     }
 
     private void click(int id) {
-        minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+        if (minecraft != null && minecraft.gameMode != null) {
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+        }
     }
 
     @Override
     protected void containerTick() {
         super.containerTick();
         updateButtons();
+        boolean working = menu.working();
+        energy.tick(menu.energy(), working && !menu.emiPaused() ? BodyModificationBlockEntity.energyPerTick() : 0);
+        if (working != wasWorking) {
+            (working ? UiSounds.WORK_START : UiSounds.WORK_END).play();
+        }
+        wasWorking = working;
     }
 
     private void updateButtons() {
         ItemStack body = menu.body();
         InstalledUpgrades installed = Upgrades.ofStack(body);
         for (int i = 0; i < BodyModificationBlockEntity.GADGET_SLOTS; i++) {
-            Button install = installButtons.get(i);
+            UiButton install = installButtons.get(i);
             ItemStack gadget = menu.gadget(i);
             install.visible = !gadget.isEmpty();
             Upgrades.Problem problem = problemWith(body, gadget);
-            install.active = !menu.working() && problem == null;
-            install.setTooltip(Tooltip.create(Component.translatable(problem != null ? problem.translationKey() : "screen.projectrebirth.body_modification.install")));
-
-            Button remove = removeButtons.get(i);
+            install.disable(menu.working() ? tr("busy") : problem != null ? Component.translatable(problem.translationKey()) : null);
+            if (install.active) {
+                install.setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("install")));
+            }
+            UiButton remove = removeButtons.get(i);
             remove.visible = i < installed.entries().size();
-            remove.active = !menu.working();
-            remove.setTooltip(Tooltip.create(Component.translatable("screen.projectrebirth.body_modification.remove")));
+            remove.disable(menu.working() ? tr("busy") : null);
+            if (remove.active) {
+                remove.setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("remove")));
+            }
         }
     }
 
@@ -106,90 +133,114 @@ public class BodyModificationScreen extends AbstractContainerScreen<BodyModifica
         if (host == null) {
             return Upgrades.Problem.WRONG_HOST;
         }
-        return gadget.isEmpty() ? null : Upgrades.problem(minecraft.level.registryAccess(), host, gadget, null);
+        return gadget.isEmpty() || minecraft == null || minecraft.level == null ? null
+                : Upgrades.problem(minecraft.level.registryAccess(), host, gadget, null);
+    }
+
+    private int slots() {
+        return menu.body().getItem() instanceof ArtificialBodyItem item ? RebirthConfig.bodyStats(item.bodyClass()).upgradeSlots().get() : 0;
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
-        if (GuiShapes.inside(mouseX, mouseY, leftPos + ENERGY_X, topPos + BodyModificationMenu.GADGET_Y, ENERGY_W, ENERGY_H)) {
-            graphics.renderComponentTooltip(font, StationScreen.energyTooltip(menu.energy(), menu.energyCapacity(),
-                    BodyModificationBlockEntity.energyPerTick()), mouseX, mouseY);
-        }
-        List<InstalledUpgrades.Installed> entries = Upgrades.ofStack(menu.body()).entries();
-        for (int i = 0; i < Math.min(entries.size(), BodyModificationBlockEntity.GADGET_SLOTS); i++) {
-            if (GuiShapes.inside(mouseX, mouseY, leftPos + BodyModificationMenu.GADGET_X + i * CELL, topPos + INSTALLED_Y, 16, 16)) {
-                graphics.renderTooltip(font, entries.get(i).stack(), mouseX, mouseY);
+    protected void drawBody(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        ItemStack body = menu.body();
+        boolean hasBody = body.getItem() instanceof ArtificialBodyItem;
+        // the body
+        UiPanels.label(graphics, tr("label.body"), x + 8, y + 26, 34);
+        UiSlots.frame(graphics, UiSlots.Kind.OUTPUT, x + BodyModificationMenu.BODY_X, y + BodyModificationMenu.BODY_Y);
+
+        // the silhouette
+        ArtificialBodyEntity model = null;
+        if (body.getItem() instanceof ArtificialBodyItem item && minecraft != null) {
+            model = models.computeIfAbsent(item.bodyClass(), bodyClass -> BodyEntities.type(bodyClass).create(minecraft.level));
+            if (model != null) {
+                model.setUpgrades(Upgrades.ofStack(body));
             }
         }
-    }
-
-    @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        int x = leftPos;
-        int y = topPos;
-        GuiShapes.panel(graphics, x, y, imageWidth, imageHeight);
-        GuiShapes.playerInventory(graphics, x + 8, y + BodyModificationMenu.INVENTORY_Y);
-        GuiAtlas.outputSlot(graphics, x + BodyModificationMenu.BODY_X - 5, y + BodyModificationMenu.BODY_Y - 5);
-        for (int i = 0; i < BodyModificationBlockEntity.GADGET_SLOTS; i++) {
-            GuiShapes.slot(graphics, x + BodyModificationMenu.GADGET_X + i * CELL, y + BodyModificationMenu.GADGET_Y);
-        }
-        GuiAtlas.energyVertical(graphics, x + ENERGY_X, y + BodyModificationMenu.GADGET_Y, ENERGY_W, ENERGY_H, menu.energy(), menu.energyCapacity());
-        renderInstalled(graphics, x, y);
-        renderModel(graphics, x, y, mouseX, mouseY);
-    }
-
-    private void renderInstalled(GuiGraphics graphics, int x, int y) {
-        ItemStack body = menu.body();
-        if (!(body.getItem() instanceof ArtificialBodyItem item)) {
-            return;
+        Silhouette.draw(graphics, x + SCREEN_X, y + SCREEN_Y, SCREEN_W, SCREEN_H, model, 28, mouseX, mouseY);
+        if (!hasBody) {
+            UiText.wrapped(graphics, tr("empty"), x + SCREEN_X + 40, y + SCREEN_Y + 40, SCREEN_W - 80, 30, UiColors.AMBER_DIM);
         }
         List<InstalledUpgrades.Installed> entries = Upgrades.ofStack(body).entries();
-        int slots = RebirthConfig.bodyStats(item.bodyClass()).upgradeSlots().get();
-        int cells = Math.min(BodyModificationBlockEntity.GADGET_SLOTS, Math.max(slots, entries.size()));
+        int cells = Math.min(BodyModificationBlockEntity.GADGET_SLOTS, Math.max(slots(), entries.size()));
+        int cx = x + SCREEN_X + SCREEN_W / 2;
         for (int i = 0; i < cells; i++) {
-            GuiShapes.slot(graphics, x + BodyModificationMenu.GADGET_X + i * CELL, y + INSTALLED_Y);
+            int sx = installedX(i);
+            int sy = installedY(i);
+            boolean left = i < 3;
+            Silhouette.leader(graphics, left ? sx + 17 : sx - 2, sy + 8, left ? cx - 22 : cx + 22, sy + 8);
+            UiSlots.frame(graphics, UiSlots.Kind.UPGRADE, sx, sy);
             if (i < entries.size()) {
-                graphics.renderItem(entries.get(i).stack(), x + BodyModificationMenu.GADGET_X + i * CELL, y + INSTALLED_Y);
+                ItemStack gadget = entries.get(i).stack();
+                graphics.renderItem(gadget, sx, sy);
+                tooltip(sx, sy, 16, 16, () -> UiTooltip.of(gadget.getHoverName()).text(tr("installed"), UiColors.TEXT_SECONDARY));
+            } else {
+                UiSlots.ghostLabel(graphics, Component.literal("+"), sx, sy);
             }
         }
+
+        // the gadgets to install
+        int rx = x + RIGHT_X;
+        UiPanels.label(graphics, tr("label.gadgets"), rx, y + 26, W - 7 - RIGHT_X);
+        for (int i = 0; i < BodyModificationBlockEntity.GADGET_SLOTS; i++) {
+            UiSlots.frame(graphics, UiSlots.Kind.INPUT, x + BodyModificationMenu.GADGET_X + i * BodyModificationMenu.GADGET_STEP, y + BodyModificationMenu.GADGET_Y);
+        }
+
+        // energy and state
+        UiPanels.label(graphics, Component.translatable("screen.projectrebirth.station.label.energy"), rx, y + 72, W - 7 - RIGHT_X);
+        energy.draw(this, graphics, rx, y + 82, W - 7 - RIGHT_X, 32, menu.energy(), menu.energyCapacity());
+        UiSprites.Tone tone;
+        Component badge;
+        Component plate;
+        if (!hasBody) {
+            tone = UiSprites.Tone.INFO;
+            badge = tr("state.idle");
+            plate = tr("empty");
+        } else if (menu.working() && menu.emiPaused()) {
+            tone = UiSprites.Tone.WARNING;
+            badge = Component.translatable("screen.projectrebirth.station.status.emi");
+            plate = Component.translatable("screen.projectrebirth.station.plate.emi");
+        } else if (menu.working() && menu.energy() < BodyModificationBlockEntity.energyPerTick()) {
+            tone = UiSprites.Tone.WARNING;
+            badge = Component.translatable("screen.projectrebirth.station.status.no_energy");
+            plate = Component.translatable("screen.projectrebirth.station.plate.no_energy");
+        } else if (menu.working()) {
+            tone = UiSprites.Tone.OK;
+            badge = tr("state.installing");
+            plate = tr("installing", Mth.floor(menu.progress() * 100));
+        } else {
+            tone = UiSprites.Tone.INFO;
+            badge = tr("state.ready");
+            plate = tr("slots", entries.size(), slots());
+        }
+        badge(graphics, tone, badge, rx, y + 120, W - 7 - RIGHT_X);
+        plate(graphics, tone == UiSprites.Tone.OK ? UiSprites.Tone.INFO : tone, plate, x + 7, y + 137, W - 14);
+        if (menu.working()) {
+            UiBars.progress(graphics, x + SCREEN_X + 6, y + SCREEN_Y + SCREEN_H - 7, SCREEN_W - 12, 4, progress.follow(menu.progress()), UiColors.AMBER);
+        }
+
+        // inventory and help
+        inventory(graphics, x + BodyModificationMenu.INVENTORY_X, y + BodyModificationMenu.INVENTORY_Y);
+        int ix = x + 176;
+        int iy = y + BodyModificationMenu.INVENTORY_Y - 11;
+        int iw = W - 7 - 176;
+        UiPanels.screen(graphics, ix, iy, iw, H - 7 - (BodyModificationMenu.INVENTORY_Y - 11));
+        text(graphics, UiText.upper(hasBody ? body.getHoverName() : title), ix + 5, iy + 5, iw - 10, UiColors.AMBER);
+        if (hasBody) {
+            text(graphics, tr("slots", entries.size(), slots()), ix + 5, iy + 17, iw - 10, UiColors.SCREEN_TEXT);
+        }
+        UiText.wrapped(graphics, tr("help"), ix + 5, iy + (hasBody ? 29 : 17), iw - 10, hasBody ? 54 : 66, UiColors.TEXT_SECONDARY);
     }
 
-    private void renderModel(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
-        if (menu.body().getItem() instanceof ArtificialBodyItem item) {
-            ArtificialBodyEntity model = models.computeIfAbsent(item.bodyClass(), bodyClass -> BodyEntities.type(bodyClass).create(minecraft.level));
-            if (model != null) {
-                model.setUpgrades(Upgrades.ofStack(menu.body()));
-                GuiAtlas.model(graphics, x + 8, y + 40, x + 58, y + 104, 26, 0.0625f, mouseX, mouseY, model);
-            }
+    @Override
+    protected void drawOver(GuiGraphics graphics, int x, int y, int mouseX, int mouseY) {
+        if (menu.body().isEmpty()) {
+            UiSlots.ghostLabel(graphics, tr("ghost"), x + BodyModificationMenu.BODY_X, y + BodyModificationMenu.BODY_Y);
         }
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        super.renderLabels(graphics, mouseX, mouseY);
-        int lineY = STATUS_Y;
-        for (FormattedCharSequence line : font.split(status(), STATUS_WIDTH)) {
-            graphics.drawString(font, line, STATUS_X, lineY, 0x404040, false);
-            lineY += font.lineHeight;
-        }
-    }
-
-    private Component status() {
-        if (!(menu.body().getItem() instanceof ArtificialBodyItem item)) {
-            return Component.translatable("screen.projectrebirth.body_modification.empty");
-        }
-        if (menu.working()) {
-            if (menu.emiPaused()) {
-                return Component.translatable("screen.projectrebirth.station.emi");
-            }
-            if (menu.energy() < BodyModificationBlockEntity.energyPerTick()) {
-                return Component.translatable("screen.projectrebirth.station.no_energy");
-            }
-            return Component.translatable("screen.projectrebirth.body_modification.installing", Mth.floor(menu.progress() * 100));
-        }
-        int installed = Upgrades.ofStack(menu.body()).entries().size();
-        return Component.translatable("screen.projectrebirth.body_modification.slots", installed, RebirthConfig.bodyStats(item.bodyClass()).upgradeSlots().get());
+    public boolean isPauseScreen() {
+        return false;
     }
 }

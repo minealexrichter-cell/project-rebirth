@@ -62,10 +62,9 @@ public class RadioisotopeGeneratorBlock extends BaseEntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof RadioisotopeGeneratorBlockEntity generator) {
-            player.displayClientMessage(Component.translatable("message.projectrebirth.isotope.status",
-                    EnergyUtil.format(generator.energy().getEnergyStored()), EnergyUtil.format(generator.energy().getMaxEnergyStored()),
-                    RebirthConfig.ISOTOPE_ENERGY_PER_TICK.get()), true);
+        // 1.8.0: a window instead of the line in the action bar
+        if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof RadioisotopeGeneratorBlockEntity generator) {
+            EnergyPanelMenu.open(serverPlayer, pos);
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

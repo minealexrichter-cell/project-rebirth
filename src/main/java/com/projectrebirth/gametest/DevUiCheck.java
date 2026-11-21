@@ -81,6 +81,11 @@ public final class DevUiCheck {
     private static int mouse(String spec) {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.tell(() -> {
+            if (spec.trim().equals("radial")) {
+                // 1.8.0 block F: the tablet's round menu, as holding its key does
+                minecraft.setScreen(new com.projectrebirth.client.garrison.RadialOrderScreen());
+                return;
+            }
             Screen screen = minecraft.screen;
             if (screen == null) {
                 return;

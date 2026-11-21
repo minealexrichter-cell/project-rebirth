@@ -45,8 +45,12 @@ public final class ConsoleNetwork {
      * {@code points} are the places clicked on the map (only x and z count; the server puts them on the ground): the guard point, the
      * route, or two corners of a work area. Machines that cannot carry out the order are left out and counted in the answer.
      */
-    public record OrderManyPayload(BlockPos console, java.util.List<UUID> machines, int task, int work, java.util.List<BlockPos> points)
-            implements CustomPacketPayload {
+    public record OrderManyPayload(BlockPos console, java.util.List<UUID> machines, int task, int work, java.util.List<BlockPos> points,
+                                   boolean fromTablet) implements CustomPacketPayload {
+        public OrderManyPayload(BlockPos console, java.util.List<UUID> machines, int task, int work, java.util.List<BlockPos> points) {
+            this(console, machines, task, work, points, false);
+        }
+
         public static final Type<OrderManyPayload> TYPE = new Type<>(ProjectRebirth.id("console_order_many"));
         public static final StreamCodec<RegistryFriendlyByteBuf, OrderManyPayload> STREAM_CODEC = StreamCodec.composite(
                 BlockPos.STREAM_CODEC, OrderManyPayload::console,
@@ -54,6 +58,7 @@ public final class ConsoleNetwork {
                 ByteBufCodecs.VAR_INT, OrderManyPayload::task,
                 ByteBufCodecs.VAR_INT, OrderManyPayload::work,
                 BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list(32)), OrderManyPayload::points,
+                ByteBufCodecs.BOOL, OrderManyPayload::fromTablet,
                 OrderManyPayload::new);
 
         @Override
@@ -105,6 +110,32 @@ public final class ConsoleNetwork {
         public Type<? extends CustomPacketPayload> type() {
             return TYPE;
         }
+    }
+
+    /**
+     * 1.8.0 block F, server to client: how an order went, machine by machine: those that took it (a mark over each for two seconds)
+     * and those left out with the reason (a cross over each, the reason in the tablet's lines).
+     */
+    public record OrderAckPayload(int task, java.util.List<UUID> taken, java.util.List<UUID> refused, String reason) implements CustomPacketPayload {
+        public static final Type<OrderAckPayload> TYPE = new Type<>(ProjectRebirth.id("console_order_ack"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, OrderAckPayload> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, OrderAckPayload::task, UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list(64)), OrderAckPayload::taken,
+                UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list(64)), OrderAckPayload::refused, ByteBufCodecs.stringUtf8(128), OrderAckPayload::reason,
+                OrderAckPayload::new);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    /** Set by the client: takes how an order went. */
+    public static Consumer<OrderAckPayload> ackHandler = payload -> {
+    };
+
+    private static void ack(ServerPlayer player, MachineTask.Type type, java.util.List<UUID> taken, java.util.List<UUID> refused, String reason) {
+        PacketDistributor.sendToPlayer(player, new OrderAckPayload(type.ordinal(), java.util.List.copyOf(taken.size() > 64 ? taken.subList(0, 64) : taken),
+                java.util.List.copyOf(refused.size() > 64 ? refused.subList(0, 64) : refused), reason == null ? "" : reason));
     }
 
     /** Set by the client: takes what a machine carries. */
@@ -206,6 +237,7 @@ public final class ConsoleNetwork {
             }
         });
         registrar.playToClient(DetailsPayload.TYPE, DetailsPayload.STREAM_CODEC, (payload, context) -> detailsHandler.accept(payload));
+        registrar.playToClient(OrderAckPayload.TYPE, OrderAckPayload.STREAM_CODEC, (payload, context) -> ackHandler.accept(payload));
     }
 
     public static void sendView(ServerPlayer player, ConsoleBlockEntity console) {
@@ -328,7 +360,13 @@ public final class ConsoleNetwork {
      * out the order (OrderRules) are left out and counted. Returns what to tell the player. Public for tests.
      */
     public static Component orderMany(ServerPlayer player, OrderManyPayload payload) {
-        if (!(player.level().getBlockEntity(payload.console()) instanceof ConsoleBlockEntity console) || !mayAct(player, console, false)) {
+        ConsoleBlockEntity console = player.level().getBlockEntity(payload.console()) instanceof ConsoleBlockEntity here ? here
+                : payload.fromTablet() ? ConsoleLink.consoleAt(player.serverLevel(), net.minecraft.core.GlobalPos.of(player.level().dimension(), payload.console()))
+                : null;
+        if (console == null) {
+            return Component.translatable(payload.fromTablet() ? "message.projectrebirth.tablet.console_out_of_reach" : "message.projectrebirth.console.not_yours");
+        }
+        if (!mayAct(player, console, payload.fromTablet())) {
             return Component.translatable("message.projectrebirth.console.not_yours");
         }
         MachineTask.Type type = MachineTask.Type.byId(payload.task());
@@ -345,8 +383,24 @@ public final class ConsoleNetwork {
                 problem = why;
             }
         }
+        java.util.List<UUID> refused = payload.machines().stream().filter(id -> console.knows(id) && !able.contains(id)).toList();
         if (able.isEmpty()) {
+            ack(player, type, java.util.List.of(), refused, problem);
             return problem == null ? Component.translatable("message.projectrebirth.console.choose_first") : Component.translatable(problem);
+        }
+        if (payload.fromTablet() && payload.points().isEmpty() && needsPoints(type)) {
+            // the points are marked in the world with the tablet, as with the old orders; the order waits on it for the chosen machines
+            ItemStack tablet = TabletItem.linkedTablet(player, console);
+            if (tablet.isEmpty()) {
+                return Component.translatable("message.projectrebirth.console.need_tablet");
+            }
+            TabletData.Pending pending = new TabletData.Pending(java.util.Optional.empty(), -1, type.ordinal(),
+                    Math.floorMod(payload.work(), MachineTask.WORKS.size()), "", java.util.List.of(), java.util.List.copyOf(able));
+            tablet.set(GarrisonRegistry.TABLET_DATA.get(), TabletItem.data(tablet).withPending(pending));
+            if (!refused.isEmpty()) {
+                ack(player, type, java.util.List.of(), refused, problem);
+            }
+            return TabletItem.prompt(pending);
         }
         MachineTask task;
         java.util.List<BlockPos> points = new java.util.ArrayList<>();
@@ -392,6 +446,7 @@ public final class ConsoleNetwork {
                     centre = console.orderArea(java.util.Optional.of(machine), -1);
                 }
                 sendView(player, console);
+                ack(player, type, able, refused, problem);
                 return centre == null ? Component.translatable("message.projectrebirth.console.area_patrol_none")
                         : Component.translatable("message.projectrebirth.console.ordered_many", Component.translatable(type.translationKey()), able.size());
             }
@@ -402,6 +457,7 @@ public final class ConsoleNetwork {
             console.order(machine, task);
         }
         sendView(player, console);
+        ack(player, type, able, refused, problem);
         Component name = Component.translatable(type.translationKey());
         if (!console.powered()) {
             return Component.translatable("message.projectrebirth.console.ordered_no_power", name);
@@ -568,6 +624,19 @@ public final class ConsoleNetwork {
             }
         }
         tablet.set(GarrisonRegistry.TABLET_DATA.get(), marks);
+        if (!pending.machines().isEmpty()) {
+            // 1.8.0 block F: the machines chosen in the world
+            java.util.List<UUID> taken = new java.util.ArrayList<>();
+            for (UUID machine : pending.machines()) {
+                if (console.knows(machine) && console.problem(machine, type) == null) {
+                    console.order(machine, task);
+                    taken.add(machine);
+                }
+            }
+            sendView(player, console);
+            ack(player, type, taken, java.util.List.of(), null);
+            return Component.translatable("message.projectrebirth.console.ordered_many", Component.translatable(type.translationKey()), taken.size());
+        }
         return deliver(player, console, pending.machine(), pending.group(), type, task);
     }
 

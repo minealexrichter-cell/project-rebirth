@@ -152,4 +152,39 @@ public class ConsoleWindowGameTests {
         machine.discard();
         helper.succeed();
     }
+
+    /**
+     * 1.8.0 block F: the tablet's round menu gives one order to the machines chosen in the world. An order with a point waits on the
+     * linked tablet for the click in the world, then goes to the chosen machines; without a linked tablet the order is refused.
+     */
+    @GameTest(template = TEMPLATE, batch = BATCH)
+    public static void theTabletOrdersTheChosenMachines(GameTestHelper helper) {
+        ServerPlayer owner = player(helper, "cw_tablet_");
+        ConsoleBlockEntity console = console(helper, owner);
+        TestMachineEntity a = place(helper, owner, new BlockPos(5, 2, 5));
+        TestMachineEntity b = place(helper, owner, new BlockPos(6, 2, 3));
+        List<UUID> both = List.of(a.getUUID(), b.getUUID());
+        ConsoleNetwork.OrderManyPayload guard = new ConsoleNetwork.OrderManyPayload(console.getBlockPos(), both, MachineTask.Type.GUARD.ordinal(), 0,
+                List.of(), true);
+        Component answer = ConsoleNetwork.orderMany(owner, guard);
+        helper.assertTrue(key(answer).equals("message.projectrebirth.console.not_yours"), "Without a linked tablet the order is refused: " + key(answer));
+        ItemStack tablet = new ItemStack(GarrisonRegistry.TABLET.get());
+        tablet.set(GarrisonRegistry.TABLET_DATA.get(), com.projectrebirth.garrison.TabletItem.data(tablet).withConsole(console.globalPos()));
+        owner.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, tablet);
+        answer = ConsoleNetwork.orderMany(owner, guard);
+        var pending = com.projectrebirth.garrison.TabletItem.data(tablet).pending();
+        helper.assertTrue(pending.isPresent() && pending.get().machines().equals(both), "The order waits on the tablet for both machines: " + key(answer));
+        BlockPos clicked = helper.absolutePos(new BlockPos(7, 1, 7));
+        answer = com.projectrebirth.garrison.TabletItem.point(owner, tablet, clicked);
+        helper.assertTrue(console.taskFor(a.getUUID()).type() == MachineTask.Type.GUARD && console.taskFor(b.getUUID()).type() == MachineTask.Type.GUARD
+                && console.taskFor(a.getUUID()).point().orElseThrow().equals(clicked.above()), "Both chosen machines guard the clicked block: " + key(answer));
+        helper.assertTrue(com.projectrebirth.garrison.TabletItem.data(tablet).pending().isEmpty(), "Nothing waits any more");
+        answer = ConsoleNetwork.orderMany(owner, new ConsoleNetwork.OrderManyPayload(console.getBlockPos(), List.of(a.getUUID()),
+                MachineTask.Type.HOLD.ordinal(), 0, List.of(), true));
+        helper.assertTrue(console.taskFor(a.getUUID()).type() == MachineTask.Type.HOLD && console.taskFor(b.getUUID()).type() == MachineTask.Type.GUARD,
+                "An order without points goes at once, to the chosen machine only: " + key(answer));
+        a.discard();
+        b.discard();
+        helper.succeed();
+    }
 }

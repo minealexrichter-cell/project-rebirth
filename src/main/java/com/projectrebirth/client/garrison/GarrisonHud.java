@@ -76,15 +76,97 @@ public final class GarrisonHud {
             ItemStack tablet = player.getMainHandItem().getItem() instanceof TabletItem ? player.getMainHandItem()
                     : player.getOffhandItem().getItem() instanceof TabletItem ? player.getOffhandItem() : ItemStack.EMPTY;
             if (!tablet.isEmpty()) {
-                List<Component> lines = lines(TabletItem.data(tablet));
-                int y = graphics.guiHeight() / 2 - lines.size() * 5;
-                int width = lines.stream().mapToInt(font::width).max().orElse(0) + 8;
-                graphics.fill(2, y - 3, 2 + width, y + lines.size() * 10 + 1, 0x80101010);
-                for (Component line : lines) {
-                    graphics.drawString(font, line, 6, y, 0xFFDDF6FF, false);
-                    y += 10;
-                }
+                tabletPanel(graphics, font, TabletItem.data(tablet));
+                directions(graphics, font, player, delta.getGameTimeDeltaPartialTick(false));
             }
+        }
+    }
+
+    /**
+     * 1.8.0 block F: the tablet's panel at the bottom left, in the style "Industrial terminal": the console, the machines chosen,
+     * the order waiting for its points and what to do next, the reason of an order that could not be given, and the keys.
+     */
+    private static void tabletPanel(GuiGraphics graphics, Font font, TabletData data) {
+        List<Component> lines = new ArrayList<>();
+        List<Integer> colors = new ArrayList<>();
+        Component title = data.console().map(where -> (Component) Component.translatable("hud.projectrebirth.tablet.title_console",
+                where.pos().getX(), where.pos().getY(), where.pos().getZ())).orElse(Component.translatable("hud.projectrebirth.tablet.no_console"));
+        int chosen = TabletClient.selection().size();
+        if (data.console().isPresent()) {
+            lines.add(chosen == 0 ? Component.translatable("hud.projectrebirth.tablet.chosen_none")
+                    : TabletClient.group() >= 0 ? Component.translatable("hud.projectrebirth.tablet.chosen_group", TabletClient.group() + 1, chosen)
+                    : Component.translatable("hud.projectrebirth.tablet.chosen", chosen));
+            colors.add(chosen == 0 ? com.projectrebirth.client.ui.UiColors.TEXT_DIM : com.projectrebirth.client.ui.UiColors.AMBER_LIGHT);
+        }
+        if (data.pending().isPresent()) {
+            for (Component line : lines(data)) {
+                lines.add(line);
+                colors.add(com.projectrebirth.client.ui.UiColors.WARNING);
+            }
+        }
+        Component refusal = TabletClient.refusal();
+        if (refusal != null) {
+            lines.add(Component.literal("✕ ").append(refusal));
+            colors.add(com.projectrebirth.client.ui.UiColors.ERROR);
+        }
+        if (data.console().isPresent()) {
+            lines.add(Component.translatable("hud.projectrebirth.tablet.keys", TabletClient.MENU_KEY.getTranslatedKeyMessage()));
+            colors.add(com.projectrebirth.client.ui.UiColors.TEXT_SECONDARY);
+        }
+        int width = Math.max(font.width(title) + 10, lines.stream().mapToInt(font::width).max().orElse(0) + 10);
+        width = Math.min(width, graphics.guiWidth() / 2);
+        int height = 13 + lines.size() * 10 + 3;
+        int x = 4;
+        // at the middle of the left edge, above the chat (1.7 had its lines there too)
+        int y = Math.max(20, graphics.guiHeight() / 2 - height / 2 - 20);
+        com.projectrebirth.client.hud.HudDraw.panel(graphics, x, y, width, height);
+        com.projectrebirth.client.ui.UiText.line(graphics, com.projectrebirth.client.ui.UiText.upper(title), x + 5, y + 3, width - 10,
+                com.projectrebirth.client.ui.UiColors.AMBER);
+        for (int i = 0; i < lines.size(); i++) {
+            com.projectrebirth.client.ui.UiText.line(graphics, lines.get(i), x + 5, y + 14 + i * 10, width - 10, colors.get(i));
+        }
+    }
+
+    /**
+     * 1.8.0 block F: where the chosen machines are: a mark at the top of the screen in their direction (at the edge, with an arrow,
+     * when they are behind or aside), with the name and distance.
+     */
+    private static void directions(GuiGraphics graphics, Font font, Player player, float partial) {
+        com.projectrebirth.garrison.ConsoleView view = TabletClient.view();
+        if (view == null || TabletClient.selection().isEmpty()) {
+            return;
+        }
+        Minecraft minecraft = Minecraft.getInstance();
+        double aspect = minecraft.getWindow().getWidth() / (double) Math.max(1, minecraft.getWindow().getHeight());
+        double halfFov = Math.toDegrees(Math.atan(Math.tan(Math.toRadians(minecraft.options.fov().get() / 2.0)) * aspect));
+        net.minecraft.world.phys.Vec3 eye = player.getEyePosition(partial);
+        int shown = 0;
+        int centre = graphics.guiWidth() / 2;
+        for (java.util.UUID id : TabletClient.selection()) {
+            com.projectrebirth.garrison.ConsoleView.Row row = TabletClient.row(id);
+            if (row == null || shown >= 8) {
+                continue;
+            }
+            double dx = row.x() + 0.5 - eye.x;
+            double dz = row.z() + 0.5 - eye.z;
+            double distance = Math.sqrt(dx * dx + dz * dz);
+            if (distance < 6) {
+                continue;
+            }
+            float bearing = (float) (Math.toDegrees(Math.atan2(-dx, dz)));
+            float diff = net.minecraft.util.Mth.wrapDegrees(bearing - player.getViewYRot(partial));
+            boolean edge = Math.abs(diff) > halfFov * 0.9;
+            int x = edge ? (diff < 0 ? 10 : graphics.guiWidth() - 10) : centre + (int) Math.round(diff / halfFov * centre);
+            int y = 28 + shown * 0;
+            Component label = Component.literal(edge ? (diff < 0 ? "◀ " : "") : "▼ ")
+                    .append(Component.translatable("hud.projectrebirth.tablet.direction", ConsoleScreen.name(row), Math.round(distance)))
+                    .append(edge && diff > 0 ? " ▶" : "");
+            int w = font.width(label);
+            int lx = net.minecraft.util.Mth.clamp(x - w / 2, 2, graphics.guiWidth() - w - 2);
+            int ly = y + shown * 11;
+            graphics.fill(lx - 2, ly - 1, lx + w + 2, ly + 9, 0x90101010);
+            graphics.drawString(font, label, lx, ly, 0xFF000000 | ConsoleScreen.stateColor(row), false);
+            shown++;
         }
     }
 

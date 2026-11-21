@@ -90,6 +90,11 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
     private static int workKind;
     private static int mapCell = -1;
 
+    /** The kind of work last chosen (the tablet's round menu uses it too). */
+    static int workKind() {
+        return workKind;
+    }
+
     private final Set<UUID> selected = new LinkedHashSet<>();
     private final ConsoleMapSource source;
     private UiMap map;

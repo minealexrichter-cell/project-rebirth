@@ -103,6 +103,7 @@ public class ProjectRebirthClient {
         com.projectrebirth.client.hud.ArmorHelmet.register(modEventBus);
         BodyHud.register(modEventBus);
         com.projectrebirth.client.garrison.GarrisonHud.register(modEventBus);
+        com.projectrebirth.client.garrison.TabletClient.register(modEventBus);
         JetpackClient.register();
         TransferAnimation.register();
         BodySounds.register();

@@ -31,14 +31,20 @@ public record TabletData(Optional<GlobalPos> console, Optional<Pending> pending,
      * {@code group} is -1 for one machine, {@link ConsoleBlockEntity#ALL} for every machine, else a group; {@code label} names the
      * target for the player.
      */
-    public record Pending(Optional<UUID> machine, int group, int type, int work, String label, List<BlockPos> points) {
+    public record Pending(Optional<UUID> machine, int group, int type, int work, String label, List<BlockPos> points, List<UUID> machines) {
+        /** 1.8.0 block F: {@code machines} — the machines chosen with the tablet in the world (then machine is empty and group -1). */
+        public Pending(Optional<UUID> machine, int group, int type, int work, String label, List<BlockPos> points) {
+            this(machine, group, type, work, label, points, List.of());
+        }
+
         public static final Codec<Pending> CODEC = RecordCodecBuilder.create(i -> i.group(
                 UUIDUtil.CODEC.optionalFieldOf("machine").forGetter(Pending::machine),
                 Codec.INT.optionalFieldOf("group", -1).forGetter(Pending::group),
                 Codec.INT.fieldOf("type").forGetter(Pending::type),
                 Codec.INT.optionalFieldOf("work", 0).forGetter(Pending::work),
                 Codec.STRING.optionalFieldOf("label", "").forGetter(Pending::label),
-                BlockPos.CODEC.listOf().optionalFieldOf("points", List.of()).forGetter(Pending::points)).apply(i, Pending::new));
+                BlockPos.CODEC.listOf().optionalFieldOf("points", List.of()).forGetter(Pending::points),
+                UUIDUtil.CODEC.listOf().optionalFieldOf("machines", List.of()).forGetter(Pending::machines)).apply(i, Pending::new));
 
         public MachineTask.Type taskType() {
             return MachineTask.Type.byId(type);
@@ -47,11 +53,11 @@ public record TabletData(Optional<GlobalPos> console, Optional<Pending> pending,
         public Pending withPoint(BlockPos pos) {
             List<BlockPos> next = new ArrayList<>(points);
             next.add(pos.immutable());
-            return new Pending(machine, group, type, work, label, List.copyOf(next));
+            return new Pending(machine, group, type, work, label, List.copyOf(next), machines);
         }
 
         public Pending withoutLastPoint() {
-            return points.isEmpty() ? this : new Pending(machine, group, type, work, label, List.copyOf(points.subList(0, points.size() - 1)));
+            return points.isEmpty() ? this : new Pending(machine, group, type, work, label, List.copyOf(points.subList(0, points.size() - 1)), machines);
         }
     }
 

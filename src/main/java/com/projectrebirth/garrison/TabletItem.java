@@ -155,6 +155,9 @@ public class TabletItem extends Item {
 
     /** Whom a waiting order is for, as the player reads it. */
     public static Component target(TabletData.Pending pending) {
+        if (!pending.machines().isEmpty()) {
+            return Component.translatable("screen.projectrebirth.console.chosen_count", pending.machines().size());
+        }
         if (pending.machine().isPresent()) {
             return ConsoleBlockEntity.display(pending.label());
         }
@@ -196,6 +199,9 @@ public class TabletItem extends Item {
         ConsoleBlockEntity console = data.console().map(where -> ConsoleLink.consoleAt((ServerLevel) player.level(), where)).orElse(null);
         if (console == null) {
             say(player, "no_console");
+        } else if (console.knows(target.getUUID())) {
+            // 1.8.0 block F: a machine of this console is chosen on the client (the tablet's selection), nothing to do here
+            return InteractionResult.CONSUME;
         } else if (ConsoleLink.link(console, (Entity) machine, machine.machineCore(), player)) {
             say(player, "machine_linked", target.getName());
         } else {

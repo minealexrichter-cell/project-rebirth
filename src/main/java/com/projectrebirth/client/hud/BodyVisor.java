@@ -224,8 +224,10 @@ public final class BodyVisor {
         graphics.fill(edge, edge + 14, edge + 1, h - edge - 14, line);
         graphics.fill(w - edge - 1, edge + 14, w - edge, h - edge - 14, line);
         int scan = rough ? 0x16000000 : 0x0E000000;
-        for (int y = 0; y < h; y += 3) {
-            graphics.fill(0, y, w, y + 1, scan);
+        try (com.projectrebirth.client.ui.UiQuads quads = com.projectrebirth.client.ui.UiQuads.begin(graphics)) {
+            for (int y = 0; y < h; y += 3) {
+                quads.fill(0, y, w, y + 1, scan);
+            }
         }
         if (rough && !UiSounds.reducedMotion()) {
             // a slow brighter band running down, like an old tube
@@ -261,6 +263,12 @@ public final class BodyVisor {
     }
 
     private static void polyline(GuiGraphics graphics, int[][] points, int color) {
+        try (com.projectrebirth.client.ui.UiQuads quads = com.projectrebirth.client.ui.UiQuads.begin(graphics)) {
+            polyline(quads, points, color);
+        }
+    }
+
+    private static void polyline(com.projectrebirth.client.ui.UiQuads graphics, int[][] points, int color) {
         for (int i = 1; i < points.length; i++) {
             int x0 = points[i - 1][0], y0 = points[i - 1][1], x1 = points[i][0], y1 = points[i][1];
             int steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
@@ -276,6 +284,12 @@ public final class BodyVisor {
     private static void staticNoise(GuiGraphics graphics, int w, int h, float intensity, int rgb) {
         int count = Math.round(40 * intensity);
         int depth = Math.round(10 + 40 * intensity);
+        try (com.projectrebirth.client.ui.UiQuads quads = com.projectrebirth.client.ui.UiQuads.begin(graphics)) {
+            specks(quads, w, h, count, depth, rgb);
+        }
+    }
+
+    private static void specks(com.projectrebirth.client.ui.UiQuads graphics, int w, int h, int count, int depth, int rgb) {
         for (int i = 0; i < count; i++) {
             boolean vertical = RANDOM.nextBoolean();
             int x = vertical ? (RANDOM.nextBoolean() ? RANDOM.nextInt(depth) : w - 1 - RANDOM.nextInt(depth)) : RANDOM.nextInt(w);

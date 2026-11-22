@@ -137,14 +137,27 @@ public final class ArmorHelmet {
 
     /** Mobile: narrow slanted bars at the sides, like a visor slit. */
     private static void mobileFrame(GuiGraphics graphics, int w, int h) {
-        for (int y = 0; y < h; y++) {
-            int depth = 6 + Math.abs(y - h / 2) * 18 / Math.max(1, h / 2);
-            graphics.fill(0, y, depth, y + 1, SHELL);
-            graphics.fill(w - depth, y, w, y + 1, SHELL);
+        // the slanted sides: rows of the same depth as one strip, and all of it in one draw call (row by row it halved the FPS)
+        try (com.projectrebirth.client.ui.UiQuads quads = com.projectrebirth.client.ui.UiQuads.begin(graphics)) {
+            int start = 0;
+            int depth = mobileDepth(0, h);
+            for (int y = 1; y <= h; y++) {
+                int next = y < h ? mobileDepth(y, h) : -1;
+                if (next != depth) {
+                    quads.fill(0, start, depth, y, SHELL);
+                    quads.fill(w - depth, start, w, y, SHELL);
+                    start = y;
+                    depth = next;
+                }
+            }
+            quads.fill(0, 0, w, 6, SHELL);
+            quads.fill(0, h - 6, w, h, SHELL);
+            quads.fill(26, 6, w - 26, 7, SHELL_LINE);
         }
-        graphics.fill(0, 0, w, 6, SHELL);
-        graphics.fill(0, h - 6, w, h, SHELL);
-        graphics.fill(26, 6, w - 26, 7, SHELL_LINE);
+    }
+
+    private static int mobileDepth(int y, int h) {
+        return 6 + Math.abs(y - h / 2) * 18 / Math.max(1, h / 2);
     }
 
     /** Worker: the glass of the cab: thin frame lines and measuring marks, no dark parts. */

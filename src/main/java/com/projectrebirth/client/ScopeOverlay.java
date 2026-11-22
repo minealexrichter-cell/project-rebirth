@@ -22,21 +22,13 @@ public final class ScopeOverlay {
     private static final int RETICLE = 0xFF050505;
     private static final int POINT = 0xFFFF4A2E;
 
-    private static org.joml.Matrix4f matrix;
-    private static com.mojang.blaze3d.vertex.VertexConsumer buffer;
+    private static com.projectrebirth.client.ui.UiQuads quads;
 
     private ScopeOverlay() {
     }
 
-    /** A filled rectangle, as GuiGraphics.fill makes it, without its draw call. */
     private static void quad(int x0, int y0, int x1, int y1, int color) {
-        if (x1 <= x0 || y1 <= y0) {
-            return;
-        }
-        buffer.addVertex(matrix, x0, y0, 0.0f).setColor(color);
-        buffer.addVertex(matrix, x0, y1, 0.0f).setColor(color);
-        buffer.addVertex(matrix, x1, y1, 0.0f).setColor(color);
-        buffer.addVertex(matrix, x1, y0, 0.0f).setColor(color);
+        quads.fill(x0, y0, x1, y1, color);
     }
 
     /** Whether the eye is at the scope now: the weapon and the arms are not drawn, the lens is. */
@@ -55,8 +47,7 @@ public final class ScopeOverlay {
         graphics.pose().pushPose();
         graphics.pose().scale(1.0f / scale, 1.0f / scale, 1.0f);
         // every rectangle into one buffer, drawn at once: one by one they cost a draw call each (1.8.0: 15 FPS)
-        matrix = graphics.pose().last().pose();
-        buffer = graphics.bufferSource().getBuffer(net.minecraft.client.renderer.RenderType.gui());
+        quads = com.projectrebirth.client.ui.UiQuads.begin(graphics);
         int cx = w / 2, cy = h / 2;
         int r = Math.round(Math.min(w, h) * LENS);
         // black above and below the lens
@@ -85,8 +76,8 @@ public final class ScopeOverlay {
             }
         }
         reticle(cx, cy, r);
-        graphics.flush();
-        buffer = null;
+        quads.close();
+        quads = null;
         graphics.pose().popPose();
     }
 

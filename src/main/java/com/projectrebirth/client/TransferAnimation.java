@@ -406,9 +406,63 @@ public final class TransferAnimation {
 
         @Override
         public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            int shade = Math.round(Mth.lerp(partialTick, alphaO, alpha) * 255.0f);
+            float dark = Mth.lerp(partialTick, alphaO, alpha);
+            // 1.8.0 block G: the edges darken while the camera rises (a vignette), then the screen goes black
+            float edge = phase == Phase.RISE ? Mth.clamp((tick + partialTick) / phaseTicks, 0.0f, 1.0f) * 0.7f : phase == Phase.DESCEND ? dark : 1.0f;
+            vignette(graphics, edge);
+            int shade = Math.round(dark * 255.0f);
             if (shade > 0) {
                 graphics.fill(0, 0, width, height, shade << 24);
+            }
+            if (dark > 0.25f) {
+                syncLines(graphics, Mth.clamp((dark - 0.25f) / 0.5f, 0.0f, 1.0f));
+            }
+        }
+
+        private void vignette(GuiGraphics graphics, float strength) {
+            if (strength <= 0.0f) {
+                return;
+            }
+            int steps = 12;
+            for (int i = 0; i < steps; i++) {
+                int a = Math.round(strength * 110 * (steps - i) / steps);
+                int inset = i * Math.max(2, Math.min(width, height) / 40);
+                int band = Math.max(2, Math.min(width, height) / 40);
+                int color = a << 24;
+                graphics.fill(inset, inset, width - inset, inset + band, color);
+                graphics.fill(inset, height - inset - band, width - inset, height - inset, color);
+                graphics.fill(inset, inset + band, inset + band, height - inset - band, color);
+                graphics.fill(width - inset - band, inset + band, width - inset, height - inset - band, color);
+            }
+        }
+
+        /**
+         * The lines of the transfer in the style of the body's visor: what is being done to the mind now, a bar of the whole
+         * transfer, and the scan lines of the screen; they fade with the black screen.
+         */
+        private void syncLines(GuiGraphics graphics, float visible) {
+            int alphaBits = Math.round(visible * 255.0f) << 24;
+            int amber = alphaBits | 0xFFB648;
+            int dim = alphaBits | 0xC7A46A;
+            float progress = switch (phase) {
+                case RISE -> 0.1f;
+                case BLACKEN -> 0.2f + 0.1f * tick / Math.max(1, phaseTicks);
+                case WAIT_SERVER -> Math.min(0.55f, 0.3f + tick / 400.0f);
+                case WAIT_CHUNKS -> Math.min(0.85f, 0.6f + tick / 400.0f);
+                case DESCEND -> 0.9f + 0.1f * Math.min(1.0f, tick / (float) Math.max(1, phaseTicks));
+                default -> 0.0f;
+            };
+            String step = phase == Phase.WAIT_SERVER ? "search" : phase == Phase.WAIT_CHUNKS ? "load" : phase == Phase.DESCEND ? "motor" : "detach";
+            boolean cursor = (System.currentTimeMillis() / 400) % 2 == 0;
+            int x = width / 2 - 110;
+            int y = height / 2 - 20;
+            graphics.drawString(font, net.minecraft.network.chat.Component.translatable("hud.projectrebirth.transfer.title"), x, y, amber, false);
+            graphics.drawString(font, net.minecraft.network.chat.Component.literal("> ").append(net.minecraft.network.chat.Component.translatable("hud.projectrebirth.transfer." + step))
+                    .append(cursor ? "_" : ""), x, y + 14, dim, false);
+            String bar = com.projectrebirth.client.hud.HudDraw.textBar(progress, 24) + " " + Math.round(progress * 100) + "%";
+            graphics.drawString(font, bar, x, y + 28, amber, false);
+            for (int line = 0; line < height; line += 3) {
+                graphics.fill(0, line, width, line + 1, Math.round(visible * 40) << 24);
             }
         }
     }

@@ -98,6 +98,7 @@ public class ProjectRebirthClient {
         ScoutingClient.register(modEventBus);
         com.projectrebirth.client.multiblock.MultiblockClient.register();
         com.projectrebirth.client.garrison.TabletMarks.register();
+        ItemTooltipStyle.register();
         com.projectrebirth.client.garrison.MachineWindow.register();
         com.projectrebirth.client.hud.BodyVisor.register(modEventBus);
         com.projectrebirth.client.hud.ArmorHelmet.register(modEventBus);

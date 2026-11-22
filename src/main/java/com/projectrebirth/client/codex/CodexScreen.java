@@ -20,22 +20,35 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * The Rebirth Codex. Two views, like an old research book: the map of a category (entries as medallions, lines from what
- * comes first to what follows, dragged with the mouse; tabs of the categories on the left) and the spread of an entry (two
- * pages, turned with the arrows; right-click or Escape goes back to the map). The book fits itself to the window.
+ * The Rebirth Codex. Two views: the map of a category (entries as cells, lines from what comes first to what follows, dragged
+ * with the mouse) and the spread of an entry (two pages, turned with the buttons; right-click or Escape goes back to the map).
+ * 1.8.0 block G (owner's wish): a rugged pocket computer in the mod's style, in the spirit of the field PDAs of the
+ * S.T.A.L.K.E.R. games: a graphite metal body with rubber corners and an antenna, the categories on hardware keys at the left,
+ * an amber screen with a status line, a speaker grille and lamps at the right, the back and page buttons under the screen. The
+ * screen switches on when the Codex opens (not with "less motion"). It fits itself to the window. The texts are unchanged.
  */
 public class CodexScreen extends Screen {
     static final ResourceLocation ATLAS = ProjectRebirth.id("textures/gui/codex.png");
-    static final int INK = 0xFF3B2A1A;
-    static final int RED_INK = 0xFF7A2414;
-    private static final int MAX_WIDTH = 412;
-    private static final int MAX_HEIGHT = 250;
-    private static final int BORDER = 14;
-    private static final int TAB_W = 30;
-    private static final int TAB_H = 26;
+    /** The text of the pages and the titles on the screen (1.8.0: light on the dark screen instead of ink on parchment). */
+    static final int INK = com.projectrebirth.client.ui.UiColors.SCREEN_TEXT;
+    static final int RED_INK = com.projectrebirth.client.ui.UiColors.AMBER;
+    private static final int MAX_WIDTH = 455;
+    private static final int MAX_HEIGHT = 256;
+    /** The column of the category keys, the panel at the right, the row of buttons under the screen. */
+    private static final int KEYS_W = 36;
+    private static final int SIDE_W = 34;
+    private static final int TOP = 14;
+    private static final int BOTTOM = 30;
+    private static final int STATUS = 12;
+    private static final int KEY_W = 26;
+    private static final int KEY_H = 22;
     private static final int NODE = 26;
     private static final int GRID = 30;
-    private static final int SPINE = 16;
+    private static final int SPINE = 10;
+    private static final int BUTTON_W = 40;
+    private static final int BUTTON_H = 16;
+    /** When the screen was switched on (the short power-up of the screen). */
+    private long openedAt = net.minecraft.Util.getMillis();
 
     /** Kept while the game runs, so the book opens where it was closed. */
     private static String category;
@@ -74,10 +87,10 @@ public class CodexScreen extends Screen {
 
     @Override
     protected void init() {
-        bookWidth = Math.min(MAX_WIDTH, width - TAB_W * 2 - 8);
-        bookHeight = Math.min(MAX_HEIGHT, height - 16);
-        left = (width - bookWidth) / 2 + TAB_W / 2;
-        top = (height - bookHeight) / 2;
+        bookWidth = Math.min(MAX_WIDTH, width - 8);
+        bookHeight = Math.min(MAX_HEIGHT, height - 12);
+        left = (width - bookWidth) / 2;
+        top = (height - bookHeight) / 2 + 3;
         if (openEntry != null) {
             CodexBook.Entry entry = CodexBook.entries().get(openEntry);
             if (entry == null) {
@@ -121,20 +134,38 @@ public class CodexScreen extends Screen {
 
     // ---------------------------------------------------------------- geometry
 
+    /** The screen of the device (its glass, inside the bezel). */
+    private int screenX() {
+        return left + KEYS_W + 4;
+    }
+
+    private int screenY() {
+        return top + TOP;
+    }
+
+    private int screenW() {
+        return bookWidth - KEYS_W - SIDE_W - 8;
+    }
+
+    private int screenH() {
+        return bookHeight - TOP - BOTTOM;
+    }
+
+    /** The part of the screen under the status line, where the map and the pages are. */
     private int innerLeft() {
-        return left + BORDER;
+        return screenX() + 3;
     }
 
     private int innerTop() {
-        return top + BORDER;
+        return screenY() + STATUS + 2;
     }
 
     private int innerWidth() {
-        return bookWidth - 2 * BORDER;
+        return screenW() - 6;
     }
 
     private int innerHeight() {
-        return bookHeight - 2 * BORDER;
+        return screenH() - STATUS - 5;
     }
 
     int pageWidth() {
@@ -142,7 +173,7 @@ public class CodexScreen extends Screen {
     }
 
     int pageHeight() {
-        return innerHeight() - 30;
+        return innerHeight() - 20;
     }
 
     private int pageLeft(int side) {
@@ -188,79 +219,211 @@ public class CodexScreen extends Screen {
         renderTransparentBackground(graphics);
         hoveredStack = null;
         hoveredText = null;
-        drawTabs(graphics, mouseX, mouseY);
-        tileParchment(graphics, innerLeft(), innerTop(), innerWidth(), innerHeight());
+        drawDevice(graphics, mouseX, mouseY);
+        // the screen: dark glass, the status line, then the map or the pages; it switches on from a line in the middle
+        com.projectrebirth.client.ui.UiPanels.screen(graphics, screenX(), screenY(), screenW(), screenH());
+        float power = power();
+        int half = Math.max(1, Math.round(screenH() / 2.0f * power));
+        int middle = screenY() + screenH() / 2;
+        graphics.enableScissor(screenX() + 2, Math.max(screenY() + 2, middle - half), screenX() + screenW() - 2, Math.min(screenY() + screenH() - 2, middle + half));
+        drawStatus(graphics);
         if (openEntry == null) {
             drawMap(graphics, mouseX, mouseY);
         } else {
             drawSpread(graphics, mouseX, mouseY, partialTick);
         }
-        frame(graphics, left, top, bookWidth, bookHeight);
-        if (openEntry != null) {
-            // the back button sits on the frame
-            boolean overBack = inside(mouseX, mouseY, backX(), backY(), 14, 14);
-            graphics.blit(ATLAS, backX(), backY(), overBack ? 86 : 72, 108, 14, 14);
-            if (overBack) {
-                hoveredText = Component.translatable("codex.projectrebirth.back");
-            }
+        graphics.disableScissor();
+        if (power < 1.0f) {
+            graphics.fill(screenX() + 2, middle - 1, screenX() + screenW() - 2, middle + 1, 0xC0FFE0A8);
         }
+        drawButtons(graphics, mouseX, mouseY);
         if (hoveredStack != null && !hoveredStack.isEmpty()) {
             graphics.renderTooltip(font, hoveredStack, mouseX, mouseY);
         } else if (hoveredText != null) {
-            graphics.renderTooltip(font, hoveredText, mouseX, mouseY);
+            com.projectrebirth.client.ui.UiTooltip.of(hoveredText).render(graphics, mouseX, mouseY);
         }
+    }
+
+    /** How far the screen is switched on (0 to 1) in the first quarter of a second; at once with "less motion" or no animations. */
+    private float power() {
+        boolean animate = com.projectrebirth.config.RebirthClientConfig.CLIENT_SPEC.isLoaded()
+                && com.projectrebirth.config.RebirthClientConfig.UI_ANIMATIONS.get() && !com.projectrebirth.config.RebirthClientConfig.UI_REDUCED_MOTION.get();
+        return animate ? Mth.clamp((net.minecraft.Util.getMillis() - openedAt) / 260.0f, 0.0f, 1.0f) : 1.0f;
     }
 
     void hover(ItemStack stack) {
         hoveredStack = stack;
     }
 
-    private void tileParchment(GuiGraphics graphics, int x, int y, int w, int h) {
-        for (int dy = 0; dy < h; dy += 64) {
-            for (int dx = 0; dx < w; dx += 64) {
-                graphics.blit(ATLAS, x + dx, y + dy, 160, 0, Math.min(64, w - dx), Math.min(64, h - dy));
+    /**
+     * The body of the device: graphite metal with rivets (the window of the mod's style), rubber corners, the antenna, the bezel
+     * of the screen, the engraved name, the speaker grille and the lamps at the right, hazard stripes along the bottom, the keys.
+     */
+    private void drawDevice(GuiGraphics graphics, int mouseX, int mouseY) {
+        int x = left;
+        int y = top;
+        int w = bookWidth;
+        int h = bookHeight;
+        // the antenna, behind the body at the top right
+        int ax = x + w - SIDE_W + 6;
+        graphics.fill(ax, y - 9, ax + 6, y + 4, 0xFF0B0C0D);
+        graphics.fill(ax + 1, y - 8, ax + 5, y + 4, 0xFF3A3E42);
+        graphics.fill(ax + 2, y - 8, ax + 3, y + 4, 0xFF55595E);
+        graphics.fill(ax + 1, y - 11, ax + 5, y - 8, 0xFF0B0C0D);
+        com.projectrebirth.client.ui.UiPanels.window(graphics, x, y, w, h);
+        // rubber bumpers along both sides and on the corners, ridged for the grip
+        for (int side = 0; side < 2; side++) {
+            int bx = side == 0 ? x - 3 : x + w - 3;
+            graphics.fill(bx, y + 14, bx + 6, y + h - 14, 0xFF0B0C0D);
+            graphics.fill(bx + 1, y + 15, bx + 5, y + h - 15, 0xFF1C1F21);
+            for (int ry = y + 18; ry < y + h - 18; ry += 4) {
+                graphics.fill(bx + 1, ry, bx + 5, ry + 1, 0xFF121415);
             }
+        }
+        for (int[] corner : new int[][] {{x - 3, y - 3}, {x + w - 13, y - 3}, {x - 3, y + h - 13}, {x + w - 13, y + h - 13}}) {
+            graphics.fill(corner[0], corner[1], corner[0] + 16, corner[1] + 16, 0xFF0B0C0D);
+            graphics.fill(corner[0] + 1, corner[1] + 1, corner[0] + 15, corner[1] + 15, 0xFF1C1F21);
+            for (int line = 4; line < 14; line += 3) {
+                graphics.fill(corner[0] + 3, corner[1] + line, corner[0] + 13, corner[1] + line + 1, 0xFF121415);
+            }
+        }
+        // the engraved name over the screen, the bezel around it
+        Component brand = Component.translatable("codex.projectrebirth.pda_brand");
+        com.projectrebirth.client.ui.UiText.line(graphics, com.projectrebirth.client.ui.UiText.upper(brand), screenX() + 2, y + 3, screenW() / 2,
+                0xFF8A9096);
+        graphics.fill(screenX() - 3, screenY() - 3, screenX() + screenW() + 3, screenY() + screenH() + 3, 0xFF0B0C0D);
+        graphics.fill(screenX() - 2, screenY() - 2, screenX() + screenW() + 2, screenY() + screenH() + 2, 0xFF1B1E21);
+        // four screws at the corners of the bezel
+        for (int[] screw : new int[][] {{screenX() - 7, screenY() - 7}, {screenX() + screenW() + 4, screenY() - 7},
+                {screenX() - 7, screenY() + screenH() + 4}, {screenX() + screenW() + 4, screenY() + screenH() + 4}}) {
+            graphics.fill(screw[0], screw[1], screw[0] + 3, screw[1] + 3, 0xFF6B7177);
+            graphics.fill(screw[0], screw[1] + 1, screw[0] + 3, screw[1] + 2, 0xFF2B2E31);
+        }
+        // the speaker grille and the lamps at the right
+        int sx = x + w - SIDE_W + 4;
+        int sw = SIDE_W - 12;
+        for (int row = 0; row < 9; row++) {
+            int gy = y + 22 + row * 5;
+            graphics.fill(sx, gy, sx + sw, gy + 2, 0xFF0F1112);
+            graphics.fill(sx, gy + 2, sx + sw, gy + 3, 0xFF3A3E42);
+        }
+        boolean unread = categories.stream().anyMatch(CodexReadState::anyUnread);
+        boolean blink = (net.minecraft.Util.getMillis() / 500) % 2 == 0 || com.projectrebirth.client.ui.UiSounds.reducedMotion();
+        lamp(graphics, sx + 2, y + 74, 0xFF7BD88F, true, Component.translatable("codex.projectrebirth.lamp_power"), mouseX, mouseY);
+        lamp(graphics, sx + 12, y + 74, com.projectrebirth.client.ui.UiColors.AMBER, unread && blink,
+                Component.translatable(unread ? "codex.projectrebirth.lamp_unread" : "codex.projectrebirth.lamp_read"), mouseX, mouseY);
+        // a knob
+        int kx = sx + sw / 2;
+        int ky = y + 104;
+        graphics.fill(kx - 7, ky - 7, kx + 7, ky + 7, 0xFF0B0C0D);
+        graphics.fill(kx - 6, ky - 6, kx + 6, ky + 6, 0xFF3A3E42);
+        graphics.fill(kx - 5, ky - 5, kx + 5, ky + 5, 0xFF2B2E31);
+        graphics.fill(kx - 1, ky - 5, kx + 1, ky, 0xFFC7A46A);
+        // hazard stripes at the bottom right corner of the body
+        com.projectrebirth.client.ui.UiSprites.draw(graphics, com.projectrebirth.client.ui.UiSprites.HAZARD, x + w - SIDE_W - 60, y + h - 9, 56, 5);
+        drawTabs(graphics, mouseX, mouseY);
+    }
+
+    private void lamp(GuiGraphics graphics, int x, int y, int color, boolean on, Component meaning, int mouseX, int mouseY) {
+        graphics.fill(x - 1, y - 1, x + 6, y + 6, 0xFF0B0C0D);
+        graphics.fill(x, y, x + 5, y + 5, on ? 0xFF000000 | color : 0xFF2A2E2B);
+        if (on) {
+            graphics.fill(x + 1, y + 1, x + 3, y + 2, 0xC0FFFFFF);
+        }
+        if (inside(mouseX, mouseY, x - 1, y - 1, 7, 7)) {
+            hoveredText = meaning;
         }
     }
 
-    /** The leather frame as a nine-slice of the 48x48 piece with corners of 16. */
-    private void frame(GuiGraphics graphics, int x, int y, int w, int h) {
-        int c = 16;
-        graphics.blit(ATLAS, x, y, 0, 0, c, c);
-        graphics.blit(ATLAS, x + w - c, y, 32, 0, c, c);
-        graphics.blit(ATLAS, x, y + h - c, 0, 32, c, c);
-        graphics.blit(ATLAS, x + w - c, y + h - c, 32, 32, c, c);
-        for (int dx = c; dx < w - c; dx += c) {
-            int part = Math.min(c, w - c - dx);
-            graphics.blit(ATLAS, x + dx, y, 16, 0, part, c);
-            graphics.blit(ATLAS, x + dx, y + h - c, 16, 32, part, c);
+    /** The status line at the top of the screen: the system, the category or the entry, the time of day. */
+    private void drawStatus(GuiGraphics graphics) {
+        int x = screenX() + 4;
+        int y = screenY() + 3;
+        int w = screenW() - 8;
+        String time = "";
+        if (minecraft != null && minecraft.level != null) {
+            long day = (minecraft.level.getDayTime() + 6000) % 24000;
+            time = String.format(java.util.Locale.ROOT, "%02d:%02d", day / 1000, day % 1000 * 60 / 1000);
         }
-        for (int dy = c; dy < h - c; dy += c) {
-            int part = Math.min(c, h - c - dy);
-            graphics.blit(ATLAS, x, y + dy, 0, 16, c, part);
-            graphics.blit(ATLAS, x + w - c, y + dy, 32, 16, c, part);
+        int timeW = font.width(time) + 14;
+        Component where = openEntry == null ? Component.translatable(currentCategory().titleKey())
+                : Component.translatable(currentCategory().titleKey()).copy().append(" › ").append(Component.translatable(CodexBook.entries().get(openEntry).titleKey()));
+        Component line = Component.literal("REBIRTH OS · ").append(where);
+        com.projectrebirth.client.ui.UiText.line(graphics, line, x, y, w - timeW - 4, com.projectrebirth.client.ui.UiColors.AMBER_DIM);
+        graphics.drawString(font, time, x + w - timeW, y, com.projectrebirth.client.ui.UiColors.AMBER_DIM, false);
+        // the battery
+        int bx = x + w - 10;
+        graphics.fill(bx, y + 1, bx + 9, y + 7, com.projectrebirth.client.ui.UiColors.AMBER_DIM);
+        graphics.fill(bx + 1, y + 2, bx + 8, y + 6, 0xFF0E1311);
+        graphics.fill(bx + 2, y + 3, bx + 7, y + 5, com.projectrebirth.client.ui.UiColors.AMBER_DIM);
+        graphics.fill(screenX() + 3, screenY() + STATUS, screenX() + screenW() - 3, screenY() + STATUS + 1, 0x60FFB648);
+    }
+
+    /** The hardware buttons under the screen: back (on an entry), the previous and the next spread, the page counter. */
+    private void drawButtons(GuiGraphics graphics, int mouseX, int mouseY) {
+        int y = buttonY();
+        if (openEntry != null) {
+            button(graphics, backX(), y, BUTTON_W + 14, Component.translatable("codex.projectrebirth.back_button"), true, mouseX, mouseY,
+                    Component.translatable("codex.projectrebirth.back"));
+            button(graphics, prevX(), y, BUTTON_W, Component.literal("◀"), spread > 0, mouseX, mouseY, Component.translatable("codex.projectrebirth.prev"));
+            button(graphics, nextX(), y, BUTTON_W, Component.literal("▶"), spread < lastSpread(), mouseX, mouseY,
+                    Component.translatable("codex.projectrebirth.next"));
+            Component pages = Component.literal((spread + 1) + " / " + (lastSpread() + 1));
+            graphics.drawString(font, pages, prevX() + BUTTON_W + (nextX() - prevX() - BUTTON_W - font.width(pages)) / 2, y + 4,
+                    com.projectrebirth.client.ui.UiColors.TEXT_SECONDARY, false);
+        } else {
+            Component hint = Component.translatable("codex.projectrebirth.map_hint");
+            com.projectrebirth.client.ui.UiText.line(graphics, hint, screenX(), y + 4, screenW() - 64, com.projectrebirth.client.ui.UiColors.TEXT_DIM);
         }
+    }
+
+    private void button(GuiGraphics graphics, int x, int y, int w, Component text, boolean active, int mouseX, int mouseY, Component meaning) {
+        boolean over = active && inside(mouseX, mouseY, x, y, w, BUTTON_H);
+        com.projectrebirth.client.ui.UiSprites.draw(graphics, !active ? com.projectrebirth.client.ui.UiSprites.BUTTON_DISABLED
+                : over ? com.projectrebirth.client.ui.UiSprites.BUTTON_HOVER : com.projectrebirth.client.ui.UiSprites.BUTTON, x, y, w, BUTTON_H);
+        com.projectrebirth.client.ui.UiText.centred(graphics, text, x + w / 2, y + 4, w - 4,
+                !active ? com.projectrebirth.client.ui.UiColors.TEXT_DIM : over ? com.projectrebirth.client.ui.UiColors.AMBER_LIGHT : com.projectrebirth.client.ui.UiColors.TEXT);
+        if (over) {
+            hoveredText = meaning;
+        }
+    }
+
+    private int buttonY() {
+        return screenY() + screenH() + 7;
     }
 
     private int tabY(int index) {
-        // tabs keep a gap of 4 while they fit; with many categories or a short book they move closer together
-        int step = categories.size() < 2 ? TAB_H + 4
-                : Mth.clamp((bookHeight - 32 - TAB_H) / (categories.size() - 1), TAB_H - 4, TAB_H + 4);
-        return top + 16 + index * step;
+        // the keys keep a gap of 3 while they fit; with many categories or a short device they move closer together
+        int step = categories.size() < 2 ? KEY_H + 3
+                : Mth.clamp((bookHeight - TOP - 12 - KEY_H) / (categories.size() - 1), KEY_H - 2, KEY_H + 3);
+        return top + TOP + index * step;
     }
 
+    private int tabX() {
+        return left + (KEYS_W - KEY_W) / 2 + 2;
+    }
+
+    /** The categories as hardware keys at the left: the chosen one pressed with its lamp lit; a blinking lamp on unread ones. */
     private void drawTabs(GuiGraphics graphics, int mouseX, int mouseY) {
         for (int i = 0; i < categories.size(); i++) {
             CodexBook.Category tab = categories.get(i);
             boolean active = tab.id().equals(category);
-            int x = left - TAB_W + (active ? 4 : 8);
+            int x = tabX();
             int y = tabY(i);
-            graphics.blit(ATLAS, x, y, active ? 30 : 0, 80, TAB_W, TAB_H);
-            graphics.renderItem(stackOf(tab.icon()), x + 7, y + 5);
-            if (CodexReadState.anyUnread(tab)) {
-                unreadMark(graphics, x + 3, y + 3);
-            }
-            if (mouseX >= x && mouseX < x + TAB_W - 6 && mouseY >= y && mouseY < y + TAB_H) {
+            boolean over = inside(mouseX, mouseY, x, y, KEY_W, KEY_H);
+            graphics.fill(x - 1, y - 1, x + KEY_W + 1, y + KEY_H + 1, 0xFF0B0C0D);
+            com.projectrebirth.client.ui.UiSprites.draw(graphics, active ? com.projectrebirth.client.ui.UiSprites.BUTTON_PRESSED
+                    : over ? com.projectrebirth.client.ui.UiSprites.BUTTON_HOVER : com.projectrebirth.client.ui.UiSprites.BUTTON, x, y, KEY_W, KEY_H);
+            graphics.renderItem(stackOf(tab.icon()), x + 5, y + 3 + (active ? 1 : 0));
+            // the key's lamp: amber when chosen, blinking when something in it is unread
+            boolean unread = CodexReadState.anyUnread(tab);
+            boolean blink = (net.minecraft.Util.getMillis() / 500) % 2 == 0 || com.projectrebirth.client.ui.UiSounds.reducedMotion();
+            int lamp = active ? com.projectrebirth.client.ui.UiColors.AMBER : unread && blink ? 0xFFFF8A7A : 0xFF2A2E2B;
+            graphics.pose().pushPose();
+            graphics.pose().translate(0, 0, 200);
+            graphics.fill(x - 4, y + KEY_H / 2 - 2, x - 1, y + KEY_H / 2 + 2, lamp);
+            graphics.pose().popPose();
+            if (over) {
                 hoveredText = Component.translatable(tab.titleKey());
             }
         }
@@ -273,10 +436,10 @@ public class CodexScreen extends Screen {
         int startX = innerLeft() + Math.floorMod(pan()[0] + innerWidth() / 2, GRID) - GRID;
         int startY = innerTop() + Math.floorMod(pan()[1] + innerHeight() / 2, GRID) - GRID;
         for (int x = startX; x < innerLeft() + innerWidth(); x += GRID) {
-            graphics.fill(x, innerTop(), x + 1, innerTop() + innerHeight(), 0x14000000);
+            graphics.fill(x, innerTop(), x + 1, innerTop() + innerHeight(), 0x10FFB648);
         }
         for (int y = startY; y < innerTop() + innerHeight(); y += GRID) {
-            graphics.fill(innerLeft(), y, innerLeft() + innerWidth(), y + 1, 0x14000000);
+            graphics.fill(innerLeft(), y, innerLeft() + innerWidth(), y + 1, 0x10FFB648);
         }
         Map<String, CodexBook.Entry> entries = CodexBook.entries();
         for (CodexBook.Entry entry : current.entries()) {
@@ -292,8 +455,11 @@ public class CodexScreen extends Screen {
             int y = nodeY(entry);
             boolean hovered = !dragging && mouseX >= x && mouseX < x + NODE && mouseY >= y && mouseY < y + NODE
                     && mouseX >= innerLeft() && mouseY >= innerTop() && mouseX < innerLeft() + innerWidth() && mouseY < innerTop() + innerHeight();
-            int u = hovered ? 26 : entry.parents().isEmpty() ? 52 : 0;
-            graphics.blit(ATLAS, x, y, u, 48, NODE, NODE);
+            com.projectrebirth.client.ui.UiSprites.draw(graphics, hovered ? com.projectrebirth.client.ui.UiSprites.CARD_SELECTED
+                    : com.projectrebirth.client.ui.UiSprites.CARD, x, y, NODE, NODE);
+            if (entry.parents().isEmpty() && !hovered) {
+                graphics.renderOutline(x, y, NODE, NODE, com.projectrebirth.client.ui.UiColors.AMBER_DIM);
+            }
             graphics.renderItem(stackOf(entry.icon()), x + 5, y + 5);
             if (!CodexReadState.isRead(entry.id())) {
                 unreadMark(graphics, x + NODE - 8, y + 1);
@@ -304,26 +470,22 @@ public class CodexScreen extends Screen {
         }
         graphics.disableScissor();
         // the category's name on a strip at the top of the map
-        Component title = Component.translatable(current.titleKey());
+        Component title = com.projectrebirth.client.ui.UiText.upper(Component.translatable(current.titleKey()));
         int titleWidth = font.width(title) + 16;
         int titleX = innerLeft() + (innerWidth() - titleWidth) / 2;
-        graphics.fill(titleX, innerTop() + 4, titleX + titleWidth, innerTop() + 17, 0xC0E8D6AE);
-        graphics.blit(ATLAS, innerLeft() + innerWidth() / 2 - 48, innerTop() + 18, 0, 150, 96, 7);
-        graphics.drawString(font, title, titleX + 8, innerTop() + 7, RED_INK, false);
-        Component hint = Component.translatable("codex.projectrebirth.map_hint");
-        graphics.drawString(font, hint, innerLeft() + innerWidth() - font.width(hint) - 6, innerTop() + innerHeight() - 11, 0x907A6248, false);
+        graphics.fill(titleX, innerTop() + 3, titleX + titleWidth, innerTop() + 16, 0xE0141A17);
+        graphics.renderOutline(titleX, innerTop() + 3, titleWidth, 13, 0x80FFB648);
+        graphics.drawString(font, title, titleX + 8, innerTop() + 6, RED_INK, false);
     }
 
-    /** A small glowing seal on what has not been read yet, drawn above the item icons. */
+    /** A small blinking amber lamp on what has not been read yet, drawn above the item icons. */
     private static void unreadMark(GuiGraphics graphics, int x, int y) {
-        float pulse = 0.5f + 0.5f * Mth.sin((System.currentTimeMillis() % 1600L) / 1600.0f * Mth.TWO_PI);
-        int glow = (int) (0x50 + 0x70 * pulse) << 24 | 0xFFC040;
+        boolean on = (net.minecraft.Util.getMillis() / 500) % 2 == 0 || com.projectrebirth.client.ui.UiSounds.reducedMotion();
         graphics.pose().pushPose();
         graphics.pose().translate(0, 0, 300);
-        graphics.fill(x - 1, y - 1, x + 7, y + 7, glow);
-        graphics.fill(x, y, x + 6, y + 6, 0xFF5A1A0A);
-        graphics.fill(x + 1, y + 1, x + 5, y + 5, 0xFFD8402A);
-        graphics.fill(x + 2, y + 1, x + 4, y + 2, 0xFFF08060);
+        graphics.fill(x, y, x + 6, y + 6, 0xFF0B0C0D);
+        graphics.fill(x + 1, y + 1, x + 5, y + 5, on ? com.projectrebirth.client.ui.UiColors.AMBER : 0xFF7A5A2A);
+        graphics.fill(x + 1, y + 1, x + 3, y + 2, on ? 0xC0FFFFFF : 0x40FFFFFF);
         graphics.pose().popPose();
     }
 
@@ -335,53 +497,40 @@ public class CodexScreen extends Screen {
     }
 
     private static void line(GuiGraphics graphics, int x1, int y1, int x2, int y2) {
-        graphics.fill(x1, y1, x2, y2, 0xFF6B4A2A);
+        graphics.fill(x1, y1, x2, y2, 0xFF5A4520);
         if (x2 - x1 > y2 - y1) {
-            graphics.fill(x1, y1 + 1, x2, y1 + 2, 0xFFB08860);
+            graphics.fill(x1, y1 + 1, x2, y1 + 2, 0xFFC7A46A);
         } else {
-            graphics.fill(x1 + 1, y1, x1 + 2, y2, 0xFFB08860);
+            graphics.fill(x1 + 1, y1, x1 + 2, y2, 0xFFC7A46A);
         }
     }
 
     private void drawSpread(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        int spineX = innerLeft() + innerWidth() / 2 - SPINE / 2;
-        for (int dy = 0; dy < innerHeight(); dy += 128) {
-            graphics.blit(ATLAS, spineX, innerTop() + dy, 128, 0, SPINE, Math.min(128, innerHeight() - dy));
+        int spineX = innerLeft() + innerWidth() / 2;
+        for (int dy = 4; dy < innerHeight() - 4; dy += 4) {
+            graphics.fill(spineX, innerTop() + dy, spineX + 1, innerTop() + dy + 2, 0x50FFB648);
         }
         for (int side = 0; side < 2; side++) {
             int index = spread * 2 + side;
             if (index < layout.size()) {
-                CodexPages.draw(this, graphics, font, layout.get(index), pageLeft(side), innerTop() + 10, pageWidth(), pageHeight(), mouseX, mouseY, partialTick);
+                CodexPages.draw(this, graphics, font, layout.get(index), pageLeft(side), innerTop() + 6, pageWidth(), pageHeight(), mouseX, mouseY, partialTick);
                 Component number = Component.literal(String.valueOf(index + 1));
                 int numberX = side == 0 ? pageLeft(0) : pageLeft(1) + pageWidth() - font.width(number);
-                graphics.drawString(font, number, numberX, innerTop() + innerHeight() - 12, 0x907A6248, false);
+                graphics.drawString(font, number, numberX, innerTop() + innerHeight() - 10, com.projectrebirth.client.ui.UiColors.TEXT_DIM, false);
             }
-        }
-        int arrowY = innerTop() + innerHeight() - 13;
-        if (spread > 0) {
-            boolean over = inside(mouseX, mouseY, prevX(), arrowY, 18, 10);
-            graphics.blit(ATLAS, prevX(), arrowY, over ? 54 : 18, 112, 18, 10);
-        }
-        if (spread < lastSpread()) {
-            boolean over = inside(mouseX, mouseY, nextX(), arrowY, 18, 10);
-            graphics.blit(ATLAS, nextX(), arrowY, over ? 36 : 0, 112, 18, 10);
         }
     }
 
     private int prevX() {
-        return innerLeft() + innerWidth() / 2 - SPINE / 2 - 30;
+        return screenX() + screenW() / 2 - BUTTON_W - 20;
     }
 
     private int nextX() {
-        return innerLeft() + innerWidth() / 2 + SPINE / 2 + 12;
+        return screenX() + screenW() / 2 + 20;
     }
 
     private int backX() {
-        return left + 2;
-    }
-
-    private int backY() {
-        return top + 2;
+        return screenX();
     }
 
     private static boolean inside(double mouseX, double mouseY, int x, int y, int w, int h) {
@@ -411,24 +560,27 @@ public class CodexScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         for (int i = 0; i < categories.size(); i++) {
-            if (inside(mouseX, mouseY, left - TAB_W + 4, tabY(i), TAB_W - 4, TAB_H)) {
+            if (inside(mouseX, mouseY, tabX(), tabY(i), KEY_W, KEY_H)) {
                 category = categories.get(i).id();
                 open(null);
+                com.projectrebirth.client.ui.UiSounds.CLICK.play();
                 return true;
             }
         }
         if (openEntry != null) {
-            if (button == 1 || inside(mouseX, mouseY, backX(), backY(), 14, 14)) {
+            if (button == 1 || inside(mouseX, mouseY, backX(), buttonY(), BUTTON_W + 14, BUTTON_H)) {
                 open(null);
+                com.projectrebirth.client.ui.UiSounds.CLICK.play();
                 return true;
             }
-            int arrowY = innerTop() + innerHeight() - 13;
-            if (spread > 0 && inside(mouseX, mouseY, prevX(), arrowY, 18, 10)) {
+            if (spread > 0 && inside(mouseX, mouseY, prevX(), buttonY(), BUTTON_W, BUTTON_H)) {
                 spread--;
+                com.projectrebirth.client.ui.UiSounds.CLICK.play();
                 return true;
             }
-            if (spread < lastSpread() && inside(mouseX, mouseY, nextX(), arrowY, 18, 10)) {
+            if (spread < lastSpread() && inside(mouseX, mouseY, nextX(), buttonY(), BUTTON_W, BUTTON_H)) {
                 spread++;
+                com.projectrebirth.client.ui.UiSounds.CLICK.play();
                 return true;
             }
             return super.mouseClicked(mouseX, mouseY, button);
@@ -436,6 +588,7 @@ public class CodexScreen extends Screen {
         if (button == 0 && inside(mouseX, mouseY, innerLeft(), innerTop(), innerWidth(), innerHeight())) {
             for (CodexBook.Entry entry : currentCategory().entries()) {
                 if (inside(mouseX, mouseY, nodeX(entry), nodeY(entry), NODE, NODE)) {
+                    com.projectrebirth.client.ui.UiSounds.CLICK.play();
                     open(entry);
                     return true;
                 }

@@ -129,7 +129,7 @@ final class CodexPages {
         if (page.title()) {
             Component title = Component.translatable(page.titleKey());
             graphics.drawString(font, title, x + (width - font.width(title)) / 2, y, CodexScreen.RED_INK, false);
-            graphics.blit(CodexScreen.ATLAS, x + width / 2 - 48, y + 11, 0, 150, 96, 7);
+            graphics.fill(x + width / 2 - 40, y + 12, x + width / 2 + 40, y + 13, 0x80FFB648);
             y += TITLE;
         }
         if (page.picture() && page.page() != null) {
@@ -139,8 +139,8 @@ final class CodexPages {
         }
         if (page.note() && !page.lines().isEmpty()) {
             int boxHeight = page.lines().size() * LINE + 6;
-            graphics.fill(x, y, x + width, y + boxHeight, 0x22603010);
-            graphics.fill(x, y, x + 2, y + boxHeight, 0xFF9A3A1A);
+            graphics.fill(x, y, x + width, y + boxHeight, 0x1CFFB648);
+            graphics.fill(x, y, x + 2, y + boxHeight, com.projectrebirth.client.ui.UiColors.AMBER);
             x += 6;
             y += 4;
         }
@@ -151,8 +151,8 @@ final class CodexPages {
         if (!page.trailingNote().isEmpty()) {
             y += page.lines().isEmpty() ? 0 : LINE;
             int boxHeight = page.trailingNote().size() * LINE + 6;
-            graphics.fill(x, y, x + width, y + boxHeight, 0x22603010);
-            graphics.fill(x, y, x + 2, y + boxHeight, 0xFF9A3A1A);
+            graphics.fill(x, y, x + width, y + boxHeight, 0x1CFFB648);
+            graphics.fill(x, y, x + 2, y + boxHeight, com.projectrebirth.client.ui.UiColors.AMBER);
             for (FormattedCharSequence line : page.trailingNote()) {
                 graphics.drawString(font, line, x + 6, y + 4, CodexScreen.INK, false);
                 y += LINE;
@@ -300,8 +300,17 @@ final class CodexPages {
         return items[(int) (time % items.length)];
     }
 
+    /** The arrow from the materials to the result, amber on the screen (1.8.0 block G). */
+    private static void arrow(GuiGraphics graphics, int x, int y) {
+        int color = com.projectrebirth.client.ui.UiColors.AMBER_DIM;
+        graphics.fill(x + 1, y + 6, x + 15, y + 9, color);
+        for (int i = 0; i < 6; i++) {
+            graphics.fill(x + 15 + i, y + 2 + i, x + 16 + i, y + 13 - i, color);
+        }
+    }
+
     private static void slot(CodexScreen screen, GuiGraphics graphics, Font font, ItemStack stack, int x, int y, int mouseX, int mouseY) {
-        graphics.blit(CodexScreen.ATLAS, x, y, 0, 128, 18, 18);
+        com.projectrebirth.client.ui.UiSprites.draw(graphics, com.projectrebirth.client.ui.UiSprites.SLOT, x, y, 18, 18);
         if (!stack.isEmpty()) {
             graphics.renderItem(stack, x + 1, y + 1);
             graphics.renderItemDecorations(font, stack, x + 1, y + 1);
@@ -331,10 +340,10 @@ final class CodexPages {
                 ItemStack stack = cycle(ingredients.get(i).ingredient()).copyWithCount(ingredients.get(i).count());
                 slot(screen, graphics, font, stack, gridX + (i % 3) * 18, y + 20 + (i / 3) * 18, mouseX, mouseY);
             }
-            graphics.blit(CodexScreen.ATLAS, gridX + 60, y + 29, 24, 128, 22, 15);
+            arrow(graphics, gridX + 60, y + 29);
             slot(screen, graphics, font, result, gridX + 88, y + 28, mouseX, mouseY);
             Component time = Component.translatable("codex.projectrebirth.recipe_time", fabrication.time() / 20);
-            graphics.drawString(font, time, gridX + 60, y + 50, 0xFF7A6248, false);
+            graphics.drawString(font, time, gridX + 60, y + 50, com.projectrebirth.client.ui.UiColors.TEXT_DIM, false);
             return;
         }
         if (recipe instanceof com.projectrebirth.multiblock.AssemblyRecipe assembly) {
@@ -352,10 +361,10 @@ final class CodexPages {
             for (int i = 0; i < Math.min(9, parts.size()); i++) {
                 slot(screen, graphics, font, parts.get(i), gridX + (i % 3) * 18, y + 20 + (i / 3) * 18, mouseX, mouseY);
             }
-            graphics.blit(CodexScreen.ATLAS, gridX + 60, y + 29, 24, 128, 22, 15);
+            arrow(graphics, gridX + 60, y + 29);
             slot(screen, graphics, font, result, gridX + 88, y + 28, mouseX, mouseY);
             Component time = Component.translatable("codex.projectrebirth.recipe_time", assembly.totalTime() / 20);
-            graphics.drawString(font, time, gridX + 60, y + 50, 0xFF7A6248, false);
+            graphics.drawString(font, time, gridX + 60, y + 50, com.projectrebirth.client.ui.UiColors.TEXT_DIM, false);
             return;
         }
         List<Ingredient> ingredients = recipe.getIngredients();
@@ -369,7 +378,7 @@ final class CodexPages {
         for (int i = 0; i < ingredients.size(); i++) {
             slot(screen, graphics, font, cycle(ingredients.get(i)), gridX + (i % columns) * 18, y + 20 + (i / columns) * 18, mouseX, mouseY);
         }
-        graphics.blit(CodexScreen.ATLAS, gridX + 60, y + 38, 24, 128, 22, 15);
+        arrow(graphics, gridX + 60, y + 38);
         slot(screen, graphics, font, result, gridX + 88, y + 37, mouseX, mouseY);
     }
 }

@@ -62,6 +62,9 @@ public final class DevUiCheck {
                 .then(Commands.literal("widgets").executes(ctx -> widgets(0))
                         .then(Commands.argument("page", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 1))
                                 .executes(ctx -> widgets(com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "page")))))
+                .then(Commands.literal("icons").executes(ctx -> icons(0))
+                        .then(Commands.argument("page", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 2))
+                                .executes(ctx -> icons(com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "page")))))
                 .then(Commands.literal("mouse").then(Commands.argument("spec", StringArgumentType.greedyString())
                         .executes(ctx -> mouse(StringArgumentType.getString(ctx, "spec")))))
                 .then(Commands.literal("check")
@@ -81,6 +84,16 @@ public final class DevUiCheck {
     private static int mouse(String spec) {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.tell(() -> {
+            if (spec.trim().equals("transfer")) {
+                // the transfer animation without a transfer: it rises, goes black, waits for the server in vain and comes down
+                com.projectrebirth.client.TransferAnimation.requestTransfer(() -> {
+                });
+                return;
+            }
+            if (spec.trim().equals("codex")) {
+                minecraft.setScreen(new CodexScreen());
+                return;
+            }
             if (spec.trim().equals("radial")) {
                 // 1.8.0 block F: the tablet's round menu, as holding its key does
                 minecraft.setScreen(new com.projectrebirth.client.garrison.RadialOrderScreen());
@@ -120,6 +133,13 @@ public final class DevUiCheck {
                 }
             }
         });
+        return 1;
+    }
+
+    private static int icons(int page) {
+        Minecraft minecraft = Minecraft.getInstance();
+        DevIconSheetScreen.page(page);
+        minecraft.tell(() -> minecraft.setScreen(new DevIconSheetScreen()));
         return 1;
     }
 

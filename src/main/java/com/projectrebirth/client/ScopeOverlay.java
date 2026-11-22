@@ -22,7 +22,21 @@ public final class ScopeOverlay {
     private static final int RETICLE = 0xFF050505;
     private static final int POINT = 0xFFFF4A2E;
 
+    private static org.joml.Matrix4f matrix;
+    private static com.mojang.blaze3d.vertex.VertexConsumer buffer;
+
     private ScopeOverlay() {
+    }
+
+    /** A filled rectangle, as GuiGraphics.fill makes it, without its draw call. */
+    private static void quad(int x0, int y0, int x1, int y1, int color) {
+        if (x1 <= x0 || y1 <= y0) {
+            return;
+        }
+        buffer.addVertex(matrix, x0, y0, 0.0f).setColor(color);
+        buffer.addVertex(matrix, x0, y1, 0.0f).setColor(color);
+        buffer.addVertex(matrix, x1, y1, 0.0f).setColor(color);
+        buffer.addVertex(matrix, x1, y0, 0.0f).setColor(color);
     }
 
     /** Whether the eye is at the scope now: the weapon and the arms are not drawn, the lens is. */
@@ -40,17 +54,20 @@ public final class ScopeOverlay {
         float scale = (float) window.getGuiScale();
         graphics.pose().pushPose();
         graphics.pose().scale(1.0f / scale, 1.0f / scale, 1.0f);
+        // every rectangle into one buffer, drawn at once: one by one they cost a draw call each (1.8.0: 15 FPS)
+        matrix = graphics.pose().last().pose();
+        buffer = graphics.bufferSource().getBuffer(net.minecraft.client.renderer.RenderType.gui());
         int cx = w / 2, cy = h / 2;
         int r = Math.round(Math.min(w, h) * LENS);
         // black above and below the lens
-        graphics.fill(0, 0, w, cy - r, 0xFF000000);
-        graphics.fill(0, cy + r, w, h, 0xFF000000);
+        quad(0, 0, w, cy - r, 0xFF000000);
+        quad(0, cy + r, w, h, 0xFF000000);
         for (int dy = -r; dy < r; dy++) {
             int y = cy + dy;
             float mid = dy + 0.5f;
             int chord = Math.round(Mth.sqrt(Math.max(0.0f, r * r - mid * mid)));
-            graphics.fill(0, y, cx - chord, y + 1, 0xFF000000);
-            graphics.fill(cx + chord, y, w, y + 1, 0xFF000000);
+            quad(0, y, cx - chord, y + 1, 0xFF000000);
+            quad(cx + chord, y, w, y + 1, 0xFF000000);
             // the edge of the lens darkens towards the tube
             int outer = chord;
             for (int i = 0; i < EDGE_RADII.length; i++) {
@@ -58,8 +75,8 @@ public final class ScopeOverlay {
                 int inner = Math.abs(mid) < rr ? Math.round(Mth.sqrt(rr * rr - mid * mid)) : 0;
                 if (inner < outer) {
                     int color = EDGE_ALPHAS[i] << 24;
-                    graphics.fill(cx - outer, y, cx - inner, y + 1, color);
-                    graphics.fill(cx + inner, y, cx + outer, y + 1, color);
+                    quad(cx - outer, y, cx - inner, y + 1, color);
+                    quad(cx + inner, y, cx + outer, y + 1, color);
                 }
                 outer = inner;
                 if (inner == 0) {
@@ -67,36 +84,38 @@ public final class ScopeOverlay {
                 }
             }
         }
-        reticle(graphics, cx, cy, r);
+        reticle(cx, cy, r);
+        graphics.flush();
+        buffer = null;
         graphics.pose().popPose();
     }
 
-    private static void reticle(GuiGraphics graphics, int cx, int cy, int r) {
+    private static void reticle(int cx, int cy, int r) {
         int thin = Math.max(1, Math.round(r / 260.0f));
         int thick = Math.max(3, Math.round(r / 55.0f));
         int post = Math.round(r * 0.32f);
         // thick posts from the edge, stopping short of the middle (no post from above, as on a hunting sight)
-        graphics.fill(cx - r, cy - thick / 2, cx - post, cy - thick / 2 + thick, RETICLE);
-        graphics.fill(cx + post, cy - thick / 2, cx + r, cy - thick / 2 + thick, RETICLE);
-        graphics.fill(cx - thick / 2, cy + post, cx - thick / 2 + thick, cy + r, RETICLE);
+        quad(cx - r, cy - thick / 2, cx - post, cy - thick / 2 + thick, RETICLE);
+        quad(cx + post, cy - thick / 2, cx + r, cy - thick / 2 + thick, RETICLE);
+        quad(cx - thick / 2, cy + post, cx - thick / 2 + thick, cy + r, RETICLE);
         // thin lines through the middle
-        graphics.fill(cx - post, cy - thin / 2, cx + post, cy - thin / 2 + thin, RETICLE);
-        graphics.fill(cx - thin / 2, cy - r, cx - thin / 2 + thin, cy + post, RETICLE);
+        quad(cx - post, cy - thin / 2, cx + post, cy - thin / 2 + thin, RETICLE);
+        quad(cx - thin / 2, cy - r, cx - thin / 2 + thin, cy + post, RETICLE);
         // hold-over marks below the middle, for far targets
         for (int i = 1; i <= 3; i++) {
             int y = cy + Math.round(post * i / 4.0f);
             int half = Math.round(r * (0.05f - i * 0.008f));
-            graphics.fill(cx - half, y - thin / 2, cx + half, y - thin / 2 + thin, RETICLE);
+            quad(cx - half, y - thin / 2, cx + half, y - thin / 2 + thin, RETICLE);
         }
         // side marks on the thin horizontal line
         for (int i = 1; i <= 3; i++) {
             int x = Math.round(post * i / 4.0f);
             int half = Math.max(2, Math.round(r * 0.015f));
-            graphics.fill(cx - x - thin / 2, cy - half, cx - x - thin / 2 + thin, cy + half, RETICLE);
-            graphics.fill(cx + x - thin / 2, cy - half, cx + x - thin / 2 + thin, cy + half, RETICLE);
+            quad(cx - x - thin / 2, cy - half, cx - x - thin / 2 + thin, cy + half, RETICLE);
+            quad(cx + x - thin / 2, cy - half, cx + x - thin / 2 + thin, cy + half, RETICLE);
         }
         // the lit point of aim
         int dot = Math.max(2, thin + 1);
-        graphics.fill(cx - dot / 2, cy - dot / 2, cx - dot / 2 + dot, cy - dot / 2 + dot, POINT);
+        quad(cx - dot / 2, cy - dot / 2, cx - dot / 2 + dot, cy - dot / 2 + dot, POINT);
     }
 }

@@ -63,6 +63,11 @@ public final class DevCommands {
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .then(Commands.argument("yaw", FloatArgumentType.floatArg(-180.0f, 180.0f))
                                         .executes(DevCommands::machine)))));
+        // 1.8.0, block H: the paths of the machines near the player as particles
+        root.then(Commands.literal("path")
+                .executes(ctx -> path(ctx, 60))
+                .then(Commands.argument("seconds", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 3600))
+                        .executes(ctx -> path(ctx, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "seconds")))));
         root.then(Commands.literal("intruders")
                 .then(Commands.argument("console", BlockPosArgument.blockPos())
                         .then(Commands.argument("on", BoolArgumentType.bool())
@@ -450,6 +455,12 @@ public final class DevCommands {
         }
         console.setIntruderMode(BoolArgumentType.getBool(ctx, "on"));
         ctx.getSource().sendSuccess(() -> Component.literal("intruder mode " + console.intruderMode()), false);
+        return 1;
+    }
+
+    private static int path(CommandContext<CommandSourceStack> ctx, int seconds) throws CommandSyntaxException {
+        DevPathView.watch(ctx.getSource().getPlayerOrException(), seconds);
+        ctx.getSource().sendSuccess(() -> Component.literal(seconds > 0 ? "paths of machines shown for " + seconds + " s" : "paths hidden"), false);
         return 1;
     }
 }

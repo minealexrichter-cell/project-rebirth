@@ -77,6 +77,13 @@ public abstract class MachineEntity extends PathfinderMob implements GarrisonMac
         super(type, level);
         this.core = new MachineCore(kind, this::syncCore);
         syncCore();
+        MachineNavigation.setCosts(this);
+    }
+
+    /** 1.8.0: it takes no deeper drop on its way than the config allows, in a fight too (vanilla: deeper the more health it has). */
+    @Override
+    public int getMaxFallDistance() {
+        return MachineNavigation.improved() ? MachineNavigation.safeDrop() : super.getMaxFallDistance();
     }
 
     /** The item this machine packs into. */

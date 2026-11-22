@@ -402,6 +402,13 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue MOVE_STRAIGHT_DISTANCE;
     public static final ModConfigSpec.IntValue MOVE_GIVE_UP_CHECKS;
     public static final ModConfigSpec.IntValue AREA_PATROL_RADIUS;
+    public static final ModConfigSpec.BooleanValue IMPROVED_NAVIGATION;
+    public static final ModConfigSpec.IntValue PATH_RANGE;
+    public static final ModConfigSpec.IntValue PATH_MAX_NODES;
+    public static final ModConfigSpec.IntValue PATH_SEARCHES_PER_TICK;
+    public static final ModConfigSpec.IntValue SAFE_DROP;
+    public static final ModConfigSpec.BooleanValue MACHINES_OPEN_DOORS;
+    public static final ModConfigSpec.IntValue REROUTE_SECONDS;
     public static final ModConfigSpec.IntValue AREA_PATROL_PAUSE;
 
     public static AndroidStats androidStats(com.projectrebirth.bodies.BodyClass bodyClass) {
@@ -1183,10 +1190,24 @@ public final class RebirthConfig {
         MOVE_STUCK_DISTANCE = builder.comment("A machine that moved less than this many blocks between two checks is stuck").defineInRange("stuckDistance", 0.5, 0.05, 5.0);
         MOVE_STRAIGHT_DISTANCE = builder.comment("Within this many blocks of its goal a machine walks straight when the way is free (no path needed)")
                 .defineInRange("straightDistance", 8.0, 0.0, 32.0);
-        MOVE_GIVE_UP_CHECKS = builder.comment("Checks in a row without getting on after which the machine reports that it is stuck").defineInRange("stuckReportChecks", 4, 1, 100);
+        MOVE_GIVE_UP_CHECKS = builder.comment("Checks in a row without getting on after which the machine reports that it is stuck (1.8.0: the ways out are tried", "in this order: step back and round, jump, another way, the jetpack)").defineInRange("stuckReportChecks", 4, 1, 100);
         AREA_PATROL_RADIUS = builder.comment("The order \"area patrol\" (1.7.2): blocks round the group's middle in which its machines spread out and walk")
                 .defineInRange("areaPatrolRadius", 50, 4, 256);
         AREA_PATROL_PAUSE = builder.comment("Longest pause in seconds a machine of an area patrol makes at a point before it walks on").defineInRange("areaPatrolPauseSeconds", 6, 0, 600);
+        IMPROVED_NAVIGATION = builder.comment("1.8.0: the improved way finding of machines: wide machines (the guard mech) path where they really stand, a stuck",
+                "machine steps back and round, jumps, looks for another way (keeping off where it got stuck), then flies over on a jetpack;",
+                "no straight walk into water, lava or fire; path searches limited per tick. Off: the way finding of 1.7.2")
+                .define("improvedNavigation", true);
+        PATH_RANGE = builder.comment("1.8.0: the longest path a machine looks for, in blocks").defineInRange("pathRange", 128, 16, 256);
+        PATH_MAX_NODES = builder.comment("1.8.0: the most places one path search looks at (more finds longer ways round, costs more server time)")
+                .defineInRange("pathMaxNodes", 2048, 200, 16384);
+        PATH_SEARCHES_PER_TICK = builder.comment("1.8.0: the most path searches of all machines in one world in one tick; the others wait for the next tick")
+                .defineInRange("pathSearchesPerTick", 4, 1, 100);
+        SAFE_DROP = builder.comment("1.8.0: the deepest drop in blocks a machine takes on its way (also in a fight)").defineInRange("safeDropBlocks", 3, 1, 16);
+        MACHINES_OPEN_DOORS = builder.comment("1.8.0: whether androids open wooden doors and gates on their way (never the airlock doors of shelters)")
+                .define("androidsOpenDoors", true);
+        REROUTE_SECONDS = builder.comment("1.8.0: seconds a stuck machine keeps off the place where it got stuck when it looks for another way")
+                .defineInRange("rerouteSeconds", 30, 5, 600);
         builder.pop();
         builder.comment("The rules by which machines choose targets.").push("targeting");
         ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);

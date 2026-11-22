@@ -110,6 +110,18 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         core();
         gear.addListener(container -> syncEquipment());
         mover.setLift(this::jetpackHop);
+        MachineNavigation.setCosts(this);
+    }
+
+    /** 1.8.0: it takes no deeper drop on its way than the config allows, in a fight too (vanilla: deeper the more health it has). */
+    @Override
+    public int getMaxFallDistance() {
+        return MachineNavigation.improved() ? MachineNavigation.safeDrop() : super.getMaxFallDistance();
+    }
+
+    @Override
+    public MachineMover mover() {
+        return mover;
     }
 
     /** 1.7.2: paths longer than a monster's (round long walls). */
@@ -582,6 +594,10 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
 
     private void second() {
         MachineCore machine = core();
+        // 1.8.0: its paths go through wooden doors when it opens them
+        if (getNavigation() instanceof net.minecraft.world.entity.ai.navigation.GroundPathNavigation ground) {
+            ground.setCanOpenDoors(RebirthConfig.MACHINES_OPEN_DOORS.get() && MachineNavigation.improved());
+        }
         machine.second(this, upgrades());
         if (machine.active() && BodyPower.enabled()) {
             double use = RebirthConfig.ANDROID_ENERGY_ACTIVE.get() + (getDeltaMovement().horizontalDistanceSqr() > 1.0e-4
@@ -621,6 +637,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
+        goalSelector.addGoal(1, new MachineDoorGoal(this));
         goalSelector.addGoal(1, new ChargeGoal());
         goalSelector.addGoal(2, new FightGoal());
         goalSelector.addGoal(2, work().new WorkGoal());

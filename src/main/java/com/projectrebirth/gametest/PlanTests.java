@@ -28,6 +28,11 @@ public final class PlanTests {
     public static final String GARRISON = ProjectRebirth.MOD_ID + "_garrison";
     /** Version 1.8.0 «Interface»: the resources and server parts of the new windows and HUD (docs/PLAN_1.8.md). */
     public static final String INTERFACE = ProjectRebirth.MOD_ID + "_interface";
+    /**
+     * 1.8.0, block H: load measurements with spark (not tests of a version; run alone, and only by hand:
+     * {@code -PgameTests=projectrebirth_bench}).
+     */
+    public static final String BENCH = ProjectRebirth.MOD_ID + "_bench";
 
     private PlanTests() {
     }

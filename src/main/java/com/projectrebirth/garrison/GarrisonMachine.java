@@ -12,6 +12,12 @@ import net.minecraft.world.item.ItemStack;
 public interface GarrisonMachine {
     MachineCore machineCore();
 
+    /** 1.8.0: how it walks to places (null for machines that do not walk, as turrets). */
+    @javax.annotation.Nullable
+    default MachineMover mover() {
+        return null;
+    }
+
     default Entity asEntity() {
         return (Entity) this;
     }

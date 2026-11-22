@@ -354,4 +354,34 @@ public class NavigationGameTests {
             robot.discard();
         });
     }
+    /** 1.8.0 (owner): a line of cable across the plot (its top 11 pixels up, over a step of 0.6): machines get over it. */
+    private static void cableLine(GameTestHelper helper, int x) {
+        for (int z = 0; z <= 23; z++) {
+            helper.setBlock(new BlockPos(x, STAND, z), com.projectrebirth.technology.TechBlocks.CABLE.get());
+        }
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 400)
+    public static void aRobotGetsOverACable(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        cableLine(helper, 10);
+        SmallRobotEntity robot = robot(helper, owner, 5, 12);
+        Vec3 place = sendTo(helper, robot, 16, 12);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(flat(robot, place) < NEAR, "Over the cable at its point: " + robot.position());
+            robot.discard();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 400)
+    public static void anAndroidGetsOverACable(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        cableLine(helper, 10);
+        AndroidEntity android = android(helper, owner, 5, 12);
+        Vec3 place = sendTo(helper, android, 16, 12);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(flat(android, place) < 1.5, "Over the cable at its point: " + android.position());
+            android.discard();
+        });
+    }
 }

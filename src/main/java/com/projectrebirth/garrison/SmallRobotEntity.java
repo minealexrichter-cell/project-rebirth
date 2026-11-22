@@ -28,15 +28,31 @@ public class SmallRobotEntity extends GuardMechEntity {
     @Nullable
     private static Stats robotStats;
 
+    /**
+     * 1.8.0 (owner: it got stuck at a cable): it steps over 0.75 of a block — a cable (its top 11 pixels up), a carpet, a slab —
+     * but not over a whole block.
+     */
+    static final double STEP = 0.75;
+
     public SmallRobotEntity(EntityType<? extends SmallRobotEntity> type, Level level) {
         super(type, level, MachineKind.ROBOT);
         setNode(RIGHT, Node.GUN);
         setNode(LEFT, Node.NONE);
     }
 
+    /** Robots saved before 1.8.0 keep the step of 0.6 they were saved with: raised on loading. */
+    @Override
+    public void readAdditionalSaveData(net.minecraft.nbt.CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        var step = getAttribute(Attributes.STEP_HEIGHT);
+        if (step != null && step.getBaseValue() < STEP) {
+            step.setBaseValue(STEP);
+        }
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 20.0).add(Attributes.MOVEMENT_SPEED, 0.27).add(Attributes.FOLLOW_RANGE, 40.0)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 0.6).add(Attributes.STEP_HEIGHT, 0.6);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.6).add(Attributes.STEP_HEIGHT, STEP);
     }
 
     @Override

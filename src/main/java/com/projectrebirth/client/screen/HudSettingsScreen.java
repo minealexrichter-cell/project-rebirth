@@ -22,8 +22,8 @@ import net.minecraft.util.Mth;
 public class HudSettingsScreen extends Screen {
     private static final int COLUMN_WIDTH = 200;
     private static final int ROW = 22;
-    private static final int ROWS_ONE_COLUMN = 19;
-    private static final int ROWS_TWO_COLUMNS = 10;
+    private static final int ROWS_ONE_COLUMN = 20;
+    private static final int ROWS_TWO_COLUMNS = 11;
     /** The vanilla hearts start this far above the bottom of the screen and 91 left of its centre. */
     private static final int HEARTS_BOTTOM = 30;
     private static final int HEARTS_LEFT = 91;
@@ -45,7 +45,7 @@ public class HudSettingsScreen extends Screen {
         int y = Math.max(4, (height - rows() * ROW) / 2);
         int x2 = two ? width / 2 + 4 : x;
         int y2 = two ? y : y + 8 * ROW;
-        int last = two ? 9 : 18;
+        int last = two ? 9 : 19;
         addRenderableWidget(Button.builder(enabledMessage(), button -> {
             RebirthClientConfig.HUD_ENABLED.set(!HudLayout.enabled());
             button.setMessage(enabledMessage());
@@ -80,6 +80,7 @@ public class HudSettingsScreen extends Screen {
         toggle(x2, y2 + 7 * ROW, "boot_animation", RebirthClientConfig.UI_BOOT_ANIMATION);
         toggle(x2, y2 + 8 * ROW, "damage_effects", RebirthClientConfig.UI_DAMAGE_EFFECTS);
         toggle(x2, y2 + 9 * ROW, "reduced_motion", RebirthClientConfig.UI_REDUCED_MOTION);
+        toggle(x2, y2 + 10 * ROW, "high_contrast", RebirthClientConfig.UI_HIGH_CONTRAST);
         int half = (COLUMN_WIDTH - 4) / 2;
         addRenderableWidget(Button.builder(Component.translatable("screen.projectrebirth.hud_settings.reset"), button -> reset())
                 .bounds(x, y + last * ROW, half, 20).build());

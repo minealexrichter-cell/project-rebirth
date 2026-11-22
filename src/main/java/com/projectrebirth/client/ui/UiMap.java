@@ -147,10 +147,13 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
     public void line(GuiGraphics graphics, double x1, double z1, double x2, double z2, int color) {
         double sx = screenX(x1), sy = screenY(z1), ex = screenX(x2), ey = screenY(z2);
         int steps = (int) Math.max(1, Math.max(Math.abs(ex - sx), Math.abs(ey - sy)));
-        for (int i = 0; i <= steps; i++) {
-            int px = (int) Math.round(sx + (ex - sx) * i / steps);
-            int py = (int) Math.round(sy + (ey - sy) * i / steps);
-            graphics.fill(px, py, px + 1, py + 1, color);
+        // 1.8.0, block K: the dots in one draw call
+        try (UiQuads quads = UiQuads.begin(graphics)) {
+            for (int i = 0; i <= steps; i++) {
+                int px = (int) Math.round(sx + (ex - sx) * i / steps);
+                int py = (int) Math.round(sy + (ey - sy) * i / steps);
+                quads.fill(px, py, px + 1, py + 1, color);
+            }
         }
     }
 
@@ -158,11 +161,13 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
     public void circle(GuiGraphics graphics, double x, double z, double radius, int color) {
         double cx = screenX(x), cy = screenY(z), r = radius / 16.0 * cell;
         int steps = (int) Mth.clamp(r * 6, 12, 240);
-        for (int i = 0; i < steps; i += 2) {
-            double angle = Math.PI * 2 * i / steps;
-            int px = (int) Math.round(cx + Math.cos(angle) * r);
-            int py = (int) Math.round(cy + Math.sin(angle) * r);
-            graphics.fill(px, py, px + 1, py + 1, color);
+        try (UiQuads quads = UiQuads.begin(graphics)) {
+            for (int i = 0; i < steps; i += 2) {
+                double angle = Math.PI * 2 * i / steps;
+                int px = (int) Math.round(cx + Math.cos(angle) * r);
+                int py = (int) Math.round(cy + Math.sin(angle) * r);
+                quads.fill(px, py, px + 1, py + 1, color);
+            }
         }
     }
 
@@ -236,14 +241,16 @@ public class UiMap extends AbstractWidget implements AutoCloseable {
         int size = textureSide * cell;
         graphics.blit(id, mapX, mapY, size, size, 0.0f, 0.0f, textureSide, textureSide, textureSide, textureSide);
         if (cell >= 5) {
-            for (int line = 0; line <= textureSide; line++) {
-                int lx = mapX + line * cell;
-                if (lx >= innerX && lx < getX() + width - 2) {
-                    graphics.fill(lx, Math.max(innerY, mapY), lx + 1, Math.min(getY() + height - 2, mapY + size), GRID);
-                }
-                int ly = mapY + line * cell;
-                if (ly >= innerY && ly < getY() + height - 2) {
-                    graphics.fill(Math.max(innerX, mapX), ly, Math.min(getX() + width - 2, mapX + size), ly + 1, GRID);
+            try (UiQuads quads = UiQuads.begin(graphics)) {
+                for (int line = 0; line <= textureSide; line++) {
+                    int lx = mapX + line * cell;
+                    if (lx >= innerX && lx < getX() + width - 2) {
+                        quads.fill(lx, Math.max(innerY, mapY), lx + 1, Math.min(getY() + height - 2, mapY + size), GRID);
+                    }
+                    int ly = mapY + line * cell;
+                    if (ly >= innerY && ly < getY() + height - 2) {
+                        quads.fill(Math.max(innerX, mapX), ly, Math.min(getX() + width - 2, mapX + size), ly + 1, GRID);
+                    }
                 }
             }
         }

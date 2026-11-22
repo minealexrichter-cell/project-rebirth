@@ -46,6 +46,22 @@ public final class DevUiShots {
                     minecraft.setScreen(null);
                     return;
                 }
+                // 1.8.0, block K: the frame time of the HUD and the console's map (no frame limit, no vsync; the frames of the
+                // last second; the HUD hidden or shown as with F1)
+                if (text.equals("perf")) {
+                    minecraft.options.framerateLimit().set(260);
+                    minecraft.options.enableVsync().set(false);
+                    minecraft.getWindow().updateVsync(false);
+                    return;
+                }
+                if (text.startsWith("fps")) {
+                    ProjectRebirth.LOGGER.info("UI fps {}: {} ({})", text.substring(3).trim(), minecraft.getFps(), minecraft.fpsString);
+                    return;
+                }
+                if (text.startsWith("hidegui ")) {
+                    minecraft.options.hideGui = Boolean.parseBoolean(text.substring(8).trim());
+                    return;
+                }
                 if (text.startsWith("click ") && minecraft.screen != null) {
                     // a left click on the open window at GUI coordinates (x y), as the mouse would give it
                     String[] at = text.split(" ");

@@ -111,9 +111,11 @@ public final class GuiAtlas {
         int filled = Math.round(half * Mth.clamp(Math.abs(value), 0.0f, 1.0f));
         int start = value >= 0.0f ? x + 1 + half : x + 1 + half - filled;
         graphics.setColor((color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f, 1.0f);
-        for (int done = 0; done < filled; done += 8) {
-            blit(graphics, start + done, y + 1, 50, 34, Math.min(8, filled - done), Math.min(7, height - 2));
-        }
+        batch(graphics, () -> {
+            for (int done = 0; done < filled; done += 8) {
+                blit(graphics, start + done, y + 1, 50, 34, Math.min(8, filled - done), Math.min(7, height - 2));
+            }
+        });
         graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
         graphics.fill(x + 1 + half, y + 1, x + 2 + half, y + height - 1, 0xFFFFFFFF);
     }
@@ -122,24 +124,28 @@ public final class GuiAtlas {
     public static void energyVertical(GuiGraphics graphics, int x, int y, int width, int height, int energy, int capacity) {
         recess(graphics, x, y, width, height);
         int filled = filled(height - 2, energy, capacity);
-        for (int done = 0; done < filled; done += 4) {
-            int part = Math.min(4, filled - done);
-            for (int across = 0; across < width - 2; across += 8) {
-                blit(graphics, x + 1 + across, y + height - 1 - done - part, 30, 34, Math.min(8, width - 2 - across), part);
+        batch(graphics, () -> {
+            for (int done = 0; done < filled; done += 4) {
+                int part = Math.min(4, filled - done);
+                for (int across = 0; across < width - 2; across += 8) {
+                    blit(graphics, x + 1 + across, y + height - 1 - done - part, 30, 34, Math.min(8, width - 2 - across), part);
+                }
             }
-        }
+        });
     }
 
     /** An energy gauge filling up from the left. */
     public static void energyHorizontal(GuiGraphics graphics, int x, int y, int width, int height, int energy, int capacity) {
         recess(graphics, x, y, width, height);
         int filled = filled(width - 2, energy, capacity);
-        for (int done = 0; done < filled; done += 4) {
-            int part = Math.min(4, filled - done);
-            for (int down = 0; down < height - 2; down += 8) {
-                blit(graphics, x + 1 + done, y + 1 + down, 40, 34, part, Math.min(8, height - 2 - down));
+        batch(graphics, () -> {
+            for (int done = 0; done < filled; done += 4) {
+                int part = Math.min(4, filled - done);
+                for (int down = 0; down < height - 2; down += 8) {
+                    blit(graphics, x + 1 + done, y + 1 + down, 40, 34, part, Math.min(8, height - 2 - down));
+                }
             }
-        }
+        });
     }
 
     /** A status bar with notches, in the given colour (0xAARRGGBB; the alpha is ignored). */
@@ -147,9 +153,11 @@ public final class GuiAtlas {
         nineSlice(graphics, x, y, width, height, 96, 0, 9, 2);
         int filled = Math.round((width - 2) * Mth.clamp(fraction, 0.0f, 1.0f));
         graphics.setColor((color >> 16 & 255) / 255.0f, (color >> 8 & 255) / 255.0f, (color & 255) / 255.0f, 1.0f);
-        for (int done = 0; done < filled; done += 8) {
-            blit(graphics, x + 1 + done, y + 1, 50, 34, Math.min(8, filled - done), Math.min(7, height - 2));
-        }
+        batch(graphics, () -> {
+            for (int done = 0; done < filled; done += 8) {
+                blit(graphics, x + 1 + done, y + 1, 50, 34, Math.min(8, filled - done), Math.min(7, height - 2));
+            }
+        });
         graphics.setColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
@@ -197,13 +205,42 @@ public final class GuiAtlas {
         return capacity <= 0 ? 0 : (int) Math.round((double) size * Math.min(energy, capacity) / capacity);
     }
 
+    /** 1.8.0, block K: the pieces being gathered into one draw call (see {@link #batch}), or null: each piece is drawn at once. */
+    private static com.projectrebirth.client.ui.UiTexQuads batch;
+
     private static void blit(GuiGraphics graphics, int x, int y, int u, int v, int width, int height) {
+        if (batch != null) {
+            batch.quad(x, y, x + width, y + height, (float) u / SIZE, (float) v / SIZE, (float) (u + width) / SIZE, (float) (v + height) / SIZE);
+            return;
+        }
         RenderSystem.enableBlend();
         graphics.blit(TEXTURE, x, y, u, v, width, height, SIZE, SIZE);
         RenderSystem.disableBlend();
     }
 
+    /** Runs the drawing with every piece gathered into one draw call (the colour set before stays for all of them). */
+    private static void batch(GuiGraphics graphics, Runnable drawing) {
+        if (batch != null) {
+            drawing.run();
+            return;
+        }
+        RenderSystem.enableBlend();
+        batch = com.projectrebirth.client.ui.UiTexQuads.begin(graphics, TEXTURE);
+        try {
+            drawing.run();
+        } finally {
+            com.projectrebirth.client.ui.UiTexQuads quads = batch;
+            batch = null;
+            quads.end();
+            RenderSystem.disableBlend();
+        }
+    }
+
     private static void nineSlice(GuiGraphics graphics, int x, int y, int width, int height, int u, int v, int size, int corner) {
+        batch(graphics, () -> nineSlicePieces(graphics, x, y, width, height, u, v, size, corner));
+    }
+
+    private static void nineSlicePieces(GuiGraphics graphics, int x, int y, int width, int height, int u, int v, int size, int corner) {
         int middle = size - 2 * corner;
         int innerWidth = width - 2 * corner;
         int innerHeight = height - 2 * corner;

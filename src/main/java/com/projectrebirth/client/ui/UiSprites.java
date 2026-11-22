@@ -84,9 +84,69 @@ public final class UiSprites {
     }
 
     public static void draw(GuiGraphics graphics, ResourceLocation sprite, int x, int y, int width, int height) {
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+        // 1.8.0, block K: the same pieces as GuiGraphics.blitSprite lays out (nine slice, tile, stretch), in one draw call
+        var sprites = net.minecraft.client.Minecraft.getInstance().getGuiSprites();
+        net.minecraft.client.renderer.texture.TextureAtlasSprite atlas = sprites.getSprite(sprite);
+        net.minecraft.client.resources.metadata.gui.GuiSpriteScaling scaling = sprites.getSpriteScaling(atlas);
         RenderSystem.enableBlend();
-        graphics.blitSprite(sprite, x, y, width, height);
+        UiTexQuads quads = UiTexQuads.begin(graphics, atlas.atlasLocation());
+        if (scaling instanceof net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.NineSlice nine) {
+            nineSlice(quads, atlas, nine, x, y, width, height);
+        } else if (scaling instanceof net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Tile tile) {
+            tiled(quads, atlas, tile.width(), tile.height(), 0, 0, x, y, width, height, tile.width(), tile.height());
+        } else {
+            quads.quad(x, y, x + width, y + height, atlas.getU0(), atlas.getV0(), atlas.getU1(), atlas.getV1());
+        }
+        quads.end();
         RenderSystem.disableBlend();
+    }
+
+    /** As the game's blitNineSlicedSprite: the corners as they are, the edges and the middle repeated. */
+    private static void nineSlice(UiTexQuads quads, net.minecraft.client.renderer.texture.TextureAtlasSprite atlas,
+                                  net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.NineSlice nine, int x, int y, int width, int height) {
+        int sw = nine.width(), sh = nine.height();
+        var border = nine.border();
+        int left = Math.min(border.left(), width / 2), right = Math.min(border.right(), width / 2);
+        int top = Math.min(border.top(), height / 2), bottom = Math.min(border.bottom(), height / 2);
+        if (width == sw && height == sh) {
+            tiled(quads, atlas, sw, sh, 0, 0, x, y, width, height, sw, sh);
+            return;
+        }
+        // corners
+        tiled(quads, atlas, sw, sh, 0, 0, x, y, left, top, left, top);
+        tiled(quads, atlas, sw, sh, sw - right, 0, x + width - right, y, right, top, right, top);
+        tiled(quads, atlas, sw, sh, 0, sh - bottom, x, y + height - bottom, left, bottom, left, bottom);
+        tiled(quads, atlas, sw, sh, sw - right, sh - bottom, x + width - right, y + height - bottom, right, bottom, right, bottom);
+        // edges and the middle
+        int innerW = width - left - right, innerH = height - top - bottom, tileW = sw - left - right, tileH = sh - top - bottom;
+        tiled(quads, atlas, sw, sh, left, 0, x + left, y, innerW, top, tileW, top);
+        tiled(quads, atlas, sw, sh, left, sh - bottom, x + left, y + height - bottom, innerW, bottom, tileW, bottom);
+        tiled(quads, atlas, sw, sh, 0, top, x, y + top, left, innerH, left, tileH);
+        tiled(quads, atlas, sw, sh, sw - right, top, x + width - right, y + top, right, innerH, right, tileH);
+        tiled(quads, atlas, sw, sh, left, top, x + left, y + top, innerW, innerH, tileW, tileH);
+    }
+
+    /**
+     * An area filled with a piece of the sprite (its pixels from (u, v), tileW x tileH) repeated, the last ones cut; sw x sh is
+     * the sprite's size in pixels.
+     */
+    private static void tiled(UiTexQuads quads, net.minecraft.client.renderer.texture.TextureAtlasSprite atlas, int sw, int sh,
+                              int u, int v, int x, int y, int width, int height, int tileW, int tileH) {
+        if (width <= 0 || height <= 0 || tileW <= 0 || tileH <= 0) {
+            return;
+        }
+        float u0 = atlas.getU0(), du = atlas.getU1() - u0, v0 = atlas.getV0(), dv = atlas.getV1() - v0;
+        for (int down = 0; down < height; down += tileH) {
+            int h = Math.min(tileH, height - down);
+            for (int across = 0; across < width; across += tileW) {
+                int w = Math.min(tileW, width - across);
+                quads.quad(x + across, y + down, x + across + w, y + down + h, u0 + du * u / sw, v0 + dv * v / sh,
+                        u0 + du * (u + w) / sw, v0 + dv * (v + h) / sh);
+            }
+        }
     }
 
     private static ResourceLocation sprite(String name) {

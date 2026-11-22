@@ -25,10 +25,13 @@ public final class UiBars {
         UiPanels.screen(graphics, x, y, width, height);
         int inner = width - 4;
         int filled = Math.round(inner * Mth.clamp(fraction, 0.0f, 1.0f));
-        graphics.fill(x + 2, y + 2, x + 2 + filled, y + height - 2, color);
-        int notch = shade(color);
-        for (int line = x + 5; line < x + 2 + filled; line += 4) {
-            graphics.fill(line, y + 2, line + 1, y + height - 2, notch);
+        // 1.8.0, block K: the fill and its notches in one draw call (a console of cards drew hundreds of them a frame)
+        try (UiQuads quads = UiQuads.begin(graphics)) {
+            quads.fill(x + 2, y + 2, x + 2 + filled, y + height - 2, color);
+            int notch = shade(color);
+            for (int line = x + 5; line < x + 2 + filled; line += 4) {
+                quads.fill(line, y + 2, line + 1, y + height - 2, notch);
+            }
         }
     }
 

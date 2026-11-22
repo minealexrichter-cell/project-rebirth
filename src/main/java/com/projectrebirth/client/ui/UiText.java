@@ -41,7 +41,7 @@ public final class UiText {
         Font font = Minecraft.getInstance().font;
         int width = font.width(text);
         if (width <= maxWidth) {
-            graphics.drawString(font, text, x, y, color, false);
+            graphics.drawString(font, text, x, y, UiColors.text(color), false);
             return false;
         }
         float scale = (float) maxWidth / width;
@@ -69,7 +69,7 @@ public final class UiText {
         graphics.pose().pushPose();
         graphics.pose().translate(x, y, 0.0f);
         graphics.pose().scale(scale, scale, 1.0f);
-        graphics.drawString(Minecraft.getInstance().font, text, 0, 0, color, false);
+        graphics.drawString(Minecraft.getInstance().font, text, 0, 0, UiColors.text(color), false);
         graphics.pose().popPose();
     }
 
@@ -82,7 +82,7 @@ public final class UiText {
         List<FormattedCharSequence> lines = font.split(text, maxWidth);
         int fit = Math.max(1, maxHeight / 9);
         for (int i = 0; i < Math.min(fit, lines.size()); i++) {
-            graphics.drawString(font, lines.get(i), x, y + i * 9, color, false);
+            graphics.drawString(font, lines.get(i), x, y + i * 9, UiColors.text(color), false);
         }
         if (lines.size() > fit && audit != null) {
             audit.add(text.getString());

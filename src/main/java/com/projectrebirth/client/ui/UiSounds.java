@@ -41,6 +41,15 @@ public enum UiSounds {
         return RebirthClientConfig.UI_ANIMATIONS.get();
     }
 
+    /** 1.8.0, block K: whether the interface is drawn in high contrast (client config [ui] highContrast). */
+    public static boolean highContrast() {
+        try {
+            return RebirthClientConfig.UI_HIGH_CONTRAST.get();
+        } catch (IllegalStateException notLoaded) {
+            return false;
+        }
+    }
+
     /** Whether blinking and shaking are off (client config [ui] reducedMotion). */
     public static boolean reducedMotion() {
         return RebirthClientConfig.UI_REDUCED_MOTION.get();

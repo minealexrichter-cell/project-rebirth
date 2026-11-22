@@ -23,6 +23,18 @@ public final class UiPanels {
     /** The metal body of a window with its rivets. */
     public static void window(GuiGraphics graphics, int x, int y, int width, int height) {
         UiSprites.draw(graphics, UiSprites.WINDOW, x, y, width, height);
+        contrastLine(graphics, x + 1, y + 1, width - 2, height - 2);
+    }
+
+    /** 1.8.0, block K: in high contrast a light line just inside a box (a thicker, clearer frame). */
+    public static void contrastLine(GuiGraphics graphics, int x, int y, int width, int height) {
+        if (!UiSounds.highContrast() || width < 3 || height < 3) {
+            return;
+        }
+        graphics.fill(x, y, x + width, y + 1, UiColors.CONTRAST_LINE);
+        graphics.fill(x, y + height - 1, x + width, y + height, UiColors.CONTRAST_LINE);
+        graphics.fill(x, y, x + 1, y + height, UiColors.CONTRAST_LINE);
+        graphics.fill(x + width - 1, y, x + width, y + height, UiColors.CONTRAST_LINE);
     }
 
     /**
@@ -50,6 +62,7 @@ public final class UiPanels {
     /** A raised panel inside a window (a group of controls). */
     public static void inner(GuiGraphics graphics, int x, int y, int width, int height) {
         UiSprites.draw(graphics, UiSprites.PANEL, x, y, width, height);
+        contrastLine(graphics, x, y, width, height);
     }
 
     /** A horizontal line between parts of a window. */
@@ -60,6 +73,9 @@ public final class UiPanels {
     /** A card of a list (a body, a machine, an alarm); the chosen one is framed amber. */
     public static void card(GuiGraphics graphics, int x, int y, int width, int height, boolean selected) {
         UiSprites.draw(graphics, selected ? UiSprites.CARD_SELECTED : UiSprites.CARD, x, y, width, height);
+        if (!selected) {
+            contrastLine(graphics, x, y, width, height);
+        }
     }
 
     /**
@@ -81,6 +97,7 @@ public final class UiPanels {
     /** A sunken screen: lists, the process, descriptions, maps. */
     public static void screen(GuiGraphics graphics, int x, int y, int width, int height) {
         UiSprites.draw(graphics, UiSprites.SCREEN, x, y, width, height);
+        contrastLine(graphics, x, y, width, height);
     }
 
     /** A section label in capitals and the secondary colour ("INPUT", "ENERGY"). */

@@ -38,6 +38,7 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec.BooleanValue UI_DAMAGE_EFFECTS;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> HUD_ELEMENTS;
     public static final ModConfigSpec.BooleanValue UI_CONSOLE_TUTORIAL;
+    public static final ModConfigSpec.BooleanValue UI_HIGH_CONTRAST;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -104,6 +105,9 @@ public final class RebirthClientConfig {
         // 1.8.0, block E
         UI_CONSOLE_TUTORIAL = builder.comment("Show the short lesson over the console's window when it is opened (it turns itself off once seen; '?' shows it again).")
                 .define("consoleTutorial", true);
+        // 1.8.0, block K
+        UI_HIGH_CONTRAST = builder.comment("High contrast: dim text drawn brighter, a light line round windows, panels, screens and cards.")
+                .define("highContrast", false);
         builder.pop();
         CLIENT_SPEC = builder.build();
     }

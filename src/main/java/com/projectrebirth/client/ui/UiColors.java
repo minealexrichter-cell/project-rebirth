@@ -46,6 +46,33 @@ public final class UiColors {
     }
 
     /** The same colour with another alpha (0 to 255). */
+    /**
+     * 1.8.0, block K: the colour text is drawn in — in high contrast the dim and secondary greys and the dim amber one step
+     * lighter, the other colours a fifth of the way to white.
+     */
+    public static int text(int color) {
+        if (!UiSounds.highContrast()) {
+            return color;
+        }
+        if (color == TEXT_DIM) {
+            return TEXT_SECONDARY;
+        }
+        if (color == TEXT_SECONDARY) {
+            return TEXT;
+        }
+        if (color == AMBER_DIM) {
+            return AMBER_LIGHT;
+        }
+        int a = color >>> 24, r = color >> 16 & 0xFF, g = color >> 8 & 0xFF, b = color & 0xFF;
+        r += (255 - r) / 5;
+        g += (255 - g) / 5;
+        b += (255 - b) / 5;
+        return a << 24 | r << 16 | g << 8 | b;
+    }
+
+    /** 1.8.0, block K: the light line round a box in high contrast. */
+    public static final int CONTRAST_LINE = 0xFF9AA3AA;
+
     public static int withAlpha(int color, int alpha) {
         return (alpha & 255) << 24 | color & 0xFFFFFF;
     }

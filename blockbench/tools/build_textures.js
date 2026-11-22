@@ -2390,6 +2390,23 @@
         p.rect(0, 0, 16, 1, '#3d444b').rect(0, 15, 16, 1, '#3d444b');
         return p;
     });
+    // The roof panels of the storage: carbon fibre — a 2 x 2 twill weave of two dark tows going diagonally, a faint sheen on the
+    // tows that cross over; the edge of the panel a shade darker.
+    block('storage_roof', () => {
+        const p = new Painter(255);
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                // the twill: each tow crosses over two and under two, one step on per row
+                const over = Math.floor((x + y) / 2) % 2 === 0;
+                const along = Math.floor(x / 2) % 2 === Math.floor(y / 2) % 2;
+                const c = over ? (along ? '#3a3f45' : '#30353a') : (along ? '#24282c' : '#1c1f23');
+                p.rect(x, y, 1, 1, c);
+                if (over && (x + y) % 4 === 0) p.rect(x, y, 1, 1, '#4a5058');
+            }
+        }
+        p.rect(0, 0, 16, 1, '#15181b').rect(0, 15, 16, 1, '#15181b').rect(0, 0, 1, 16, '#15181b').rect(15, 0, 1, 16, '#15181b');
+        return p;
+    });
     // The shelves of a rack: a steel grating with a rim.
     block('storage_rack_top', () => {
         const p = new Painter(253);

@@ -82,6 +82,7 @@
     "projectrebirth:service_post",
     "projectrebirth:service_post_plate",
     "projectrebirth:storage_controller",
-    "projectrebirth:storage_rack"
+    "projectrebirth:storage_rack",
+    "projectrebirth:storage_roof"
   ]
 }

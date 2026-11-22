@@ -47,6 +47,10 @@ public final class LogisticsRegistry {
     /** The racks of the storage: shelves of crates in a steel frame; hidden under the hall of a whole storage (a frame of it). */
     public static final DeferredBlock<com.projectrebirth.multiblock.FrameBlock> STORAGE_RACK = BLOCKS.register("storage_rack",
             () -> new com.projectrebirth.multiblock.FrameBlock(machine().noOcclusion()));
+    /** The roof panels: carbon, flat until the storage is whole, then the hip roof. */
+    public static final DeferredBlock<StorageRoofBlock> STORAGE_ROOF = BLOCKS.register("storage_roof",
+            () -> new StorageRoofBlock(machine().noOcclusion()));
+    public static final DeferredItem<BlockItem> STORAGE_ROOF_ITEM = ITEMS.registerSimpleBlockItem(STORAGE_ROOF);
     public static final DeferredItem<BlockItem> STORAGE_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(STORAGE_CONTROLLER);
     public static final DeferredItem<BlockItem> STORAGE_RACK_ITEM = ITEMS.registerSimpleBlockItem(STORAGE_RACK);
 

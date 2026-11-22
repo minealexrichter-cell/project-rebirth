@@ -1,0 +1,82 @@
+{
+  "variants": {
+    "formed=false,part=top,facing=north": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=top,facing=east": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=top,facing=south": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=top,facing=west": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=edge,facing=north": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=edge,facing=east": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=edge,facing=south": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=edge,facing=west": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=corner,facing=north": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=corner,facing=east": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=corner,facing=south": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=false,part=corner,facing=west": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=true,part=top,facing=north": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=true,part=top,facing=east": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=true,part=top,facing=south": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=true,part=top,facing=west": {
+      "model": "projectrebirth:block/storage_roof"
+    },
+    "formed=true,part=edge,facing=north": {
+      "model": "projectrebirth:block/storage_roof_edge"
+    },
+    "formed=true,part=edge,facing=east": {
+      "model": "projectrebirth:block/storage_roof_edge",
+      "y": 90
+    },
+    "formed=true,part=edge,facing=south": {
+      "model": "projectrebirth:block/storage_roof_edge",
+      "y": 180
+    },
+    "formed=true,part=edge,facing=west": {
+      "model": "projectrebirth:block/storage_roof_edge",
+      "y": 270
+    },
+    "formed=true,part=corner,facing=north": {
+      "model": "projectrebirth:block/storage_roof_corner"
+    },
+    "formed=true,part=corner,facing=east": {
+      "model": "projectrebirth:block/storage_roof_corner",
+      "y": 90
+    },
+    "formed=true,part=corner,facing=south": {
+      "model": "projectrebirth:block/storage_roof_corner",
+      "y": 180
+    },
+    "formed=true,part=corner,facing=west": {
+      "model": "projectrebirth:block/storage_roof_corner",
+      "y": 270
+    }
+  }
+}

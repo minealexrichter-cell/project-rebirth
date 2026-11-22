@@ -1055,6 +1055,30 @@
                 faces: Object.fromEntries(DIRS.map(d => [d, {texture: '#shelf', uv: d === 'up' || d === 'down' ? [2, 2, 14, 14] : [2, 0, 14, 1]}]))}))
         ]
     };
+    // 1.8.0: the roof panels of the storage (carbon). Loose or under a storage not built whole: a flat panel (a full block). Built:
+    // the controller turns them into a hip roof — the panels on the sides a slope down outward, the corners a hip (sloping both
+    // ways, the corner cut), the four in the middle flat. The slopes are steps of a pixel (from far they read as smooth). The
+    // models look north: an edge's low side is north, a corner's low sides north and west.
+    const roofTex = {particle: 'projectrebirth:block/storage_roof', roof: 'projectrebirth:block/storage_roof'};
+    const roofFace = (from, to) => Object.fromEntries(DIRS.map(d => [d, {texture: '#roof',
+        uv: d === 'up' || d === 'down' ? [from[0], from[2], to[0], to[2]] : d === 'north' || d === 'south' ? [from[0], 16 - to[1], to[0], 16 - from[1]]
+            : [from[2], 16 - to[1], to[2], 16 - from[1]]}]));
+    const roofBox = (from, to) => ({from, to, faces: roofFace(from, to)});
+    MODELS.storage_roof = {parent: 'minecraft:block/block', textures: roofTex, elements: [roofBox([0, 0, 0], [16, 16, 16])]};
+    MODELS.storage_roof_edge = {parent: 'minecraft:block/block', textures: roofTex,
+        elements: [...Array(16).keys()].map(i => roofBox([0, i, i], [16, i + 1, 16]))};
+    MODELS.storage_roof_corner = {parent: 'minecraft:block/block', textures: roofTex,
+        elements: [...Array(16).keys()].map(i => roofBox([i, i, i], [16, i + 1, 16]))};
+    const roofStates = {'formed=false,part=top,facing=north': variant('storage_roof')};
+    for (const formed of [false, true]) {
+        for (const part of ['top', 'edge', 'corner']) {
+            [['north', 0], ['east', 90], ['south', 180], ['west', 270]].forEach(([facing, y]) => {
+                roofStates['formed=' + formed + ',part=' + part + ',facing=' + facing] = !formed || part === 'top' ? variant('storage_roof')
+                    : variant('storage_roof_' + part, rotation(y));
+            });
+        }
+    }
+    STATES.storage_roof = {variants: roofStates};
     STATES.storage_rack = {variants: {'formed=false': variant('storage_rack'), 'formed=true': variant('storage_rack')}};
     STATES.service_post = {variants: {'': variant('service_post')}};
 

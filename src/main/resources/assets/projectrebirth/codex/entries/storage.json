@@ -27,8 +27,13 @@
       "text": "codex.projectrebirth.storage.p4"
     },
     {
-      "type": "text",
+      "type": "recipe",
+      "value": "projectrebirth:storage_roof",
       "text": "codex.projectrebirth.storage.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.storage.p6"
     }
   ]
 }

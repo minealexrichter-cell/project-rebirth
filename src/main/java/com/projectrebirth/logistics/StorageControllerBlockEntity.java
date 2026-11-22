@@ -233,6 +233,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
         boolean now = whole && schema != null && schema.shell().isPresent();
         List<BlockPos> cells = new ArrayList<>();
         if (now) {
+            cells.addAll(formRoof(schema));
             String hide = schema.shell().get().hide();
             for (int y = 0; y < schema.height(); y++) {
                 for (int r = 0; r < schema.depth(); r++) {
@@ -261,9 +262,54 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
         }
     }
 
+    /**
+     * The roof panels of the top layer become the hip roof: the corners hips, the sides slopes outward, the middle flat. Which way
+     * is outward comes from the plan turned with the controller. Returned with the cells it formed (unformed again with the
+     * rest).
+     */
+    private List<BlockPos> formRoof(MultiblockSchema schema) {
+        List<BlockPos> roof = new ArrayList<>();
+        int y = schema.height() - 1, w = schema.width(), d = schema.depth();
+        for (int r = 0; r < d; r++) {
+            for (int c = 0; c < w; c++) {
+                BlockPos pos = schema.worldPos(worldPosition, facing(), c, y, r).immutable();
+                BlockState state = level.getBlockState(pos);
+                if (!(state.getBlock() instanceof StorageRoofBlock)) {
+                    continue;
+                }
+                // outward along the plan: toward a lower row at the back, a lower column on the left, and so on
+                int dc = c == 0 ? -1 : c == w - 1 ? 1 : 0, dr = r == 0 ? -1 : r == d - 1 ? 1 : 0;
+                StorageRoofBlock.Part part = dc != 0 && dr != 0 ? StorageRoofBlock.Part.CORNER : dc != 0 || dr != 0 ? StorageRoofBlock.Part.EDGE
+                        : StorageRoofBlock.Part.TOP;
+                Direction facing = Direction.NORTH;
+                if (part == StorageRoofBlock.Part.EDGE) {
+                    facing = worldDirection(schema, c, y, r, dc, dr);
+                } else if (part == StorageRoofBlock.Part.CORNER) {
+                    // a corner model is low toward its facing and toward the side left of it (counter-clockwise)
+                    Direction a = worldDirection(schema, c, y, r, dc, 0), b = worldDirection(schema, c, y, r, 0, dr);
+                    facing = a.getCounterClockWise() == b ? a : b;
+                }
+                BlockState formed = state.setValue(com.projectrebirth.multiblock.FrameBlock.FORMED, true).setValue(StorageRoofBlock.PART, part)
+                        .setValue(StorageRoofBlock.FACING, facing);
+                if (formed != state) {
+                    level.setBlock(pos, formed, net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                }
+                roof.add(pos);
+            }
+        }
+        return roof;
+    }
+
+    /** The world direction of a step along the plan from a cell. */
+    private Direction worldDirection(MultiblockSchema schema, int c, int y, int r, int dc, int dr) {
+        BlockPos from = schema.worldPos(worldPosition, facing(), c, y, r), to = schema.worldPos(worldPosition, facing(), c + dc, y, r + dr);
+        return Direction.getNearest(to.getX() - from.getX(), 0, to.getZ() - from.getZ());
+    }
+
     private void setFormed(BlockPos pos, boolean value) {
         BlockState state = level.getBlockState(pos);
-        if (state.getBlock() instanceof com.projectrebirth.multiblock.FrameBlock && state.getValue(com.projectrebirth.multiblock.FrameBlock.FORMED) != value) {
+        if ((state.getBlock() instanceof com.projectrebirth.multiblock.FrameBlock || state.getBlock() instanceof StorageRoofBlock)
+                && state.getValue(com.projectrebirth.multiblock.FrameBlock.FORMED) != value) {
             level.setBlock(pos, state.setValue(com.projectrebirth.multiblock.FrameBlock.FORMED, value), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
         }
     }

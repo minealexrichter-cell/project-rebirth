@@ -13,10 +13,10 @@
       "FFGF"
     ],
     [
-      "PPPP",
-      "PPPP",
-      "PPPP",
-      "PPPP"
+      "TTTT",
+      "TTTT",
+      "TTTT",
+      "TTTT"
     ]
   ],
   "key": {
@@ -30,11 +30,6 @@
         "projectrebirth:assembly_frame"
       ]
     },
-    "P": {
-      "blocks": [
-        "projectrebirth:assembly_plate"
-      ]
-    },
     "C": {
       "controller": true,
       "blocks": [
@@ -46,11 +41,16 @@
     },
     "Z": {
       "zone": true
+    },
+    "T": {
+      "blocks": [
+        "projectrebirth:storage_roof"
+      ]
     }
   },
   "shell": {
     "hide": "F",
-    "walls": "RZF",
+    "walls": "RF",
     "wall": "projectrebirth:block/storage_wall",
     "glass": "projectrebirth:block/workshop_glass",
     "post": "projectrebirth:block/workshop_post",

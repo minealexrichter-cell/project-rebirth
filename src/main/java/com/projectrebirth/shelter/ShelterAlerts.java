@@ -60,8 +60,8 @@ public final class ShelterAlerts {
         return players;
     }
 
-    /** Sends one warning about the shelter at a place; returns how many heard it. */
-    public static int tell(MinecraftServer server, @Nullable UUID owner, BlockPos where, String key, boolean bad, Object... args) {
+    /** Sends one warning about the shelter at a place to those in its dimension (1.8.0); returns how many heard it. */
+    public static int tell(net.minecraft.server.level.ServerLevel level, @Nullable UUID owner, BlockPos where, String key, boolean bad, Object... args) {
         Object[] all = new Object[args.length + 3];
         all[0] = where.getX();
         all[1] = where.getY();
@@ -69,7 +69,7 @@ public final class ShelterAlerts {
         System.arraycopy(args, 0, all, 3, args.length);
         Component message = Component.translatable("message.projectrebirth.shelter_alert." + key, all)
                 .withStyle(bad ? ChatFormatting.RED : ChatFormatting.GREEN);
-        Set<ServerPlayer> players = recipients(server, owner);
+        Set<ServerPlayer> players = recipients(level, owner);
         for (ServerPlayer player : players) {
             player.sendSystemMessage(message);
         }

@@ -62,7 +62,7 @@ public final class RebirthClientConfig {
         builder.pop();
         builder.push("weapons");
         WEAPON_SCOPE_FOV = builder.comment("The field of view is multiplied by this while aiming through a scope; less is closer.")
-                .defineInRange("scopeFovMultiplier", 0.45, 0.1, 1.0);
+                .defineInRange("scopeFovMultiplier", 0.3, 0.1, 1.0);
         builder.pop();
         builder.push("transfer_animation");
         TRANSFER_ANIMATION_ENABLED = builder.comment("Play the camera animation when consciousness moves to another body.")

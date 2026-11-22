@@ -37,6 +37,9 @@ public final class WeaponRenderer extends GeoObjectRenderer<WeaponView> {
         NONE
     }
 
+    /** A weapon in a hand (an armor's fist, a body's hand, first person) is drawn this much smaller than its model (1.8.0). */
+    public static final float HELD_SCALE = 0.85f;
+
     private Space space = Space.NONE;
     private final Matrix4f viewBase = new Matrix4f();
 
@@ -67,6 +70,10 @@ public final class WeaponRenderer extends GeoObjectRenderer<WeaponView> {
     public void draw(PoseStack poseStack, WeaponView view, MultiBufferSource buffers, int light, float partialTick, Space space) {
         this.space = space;
         poseStack.pushPose();
+        if (space != Space.NONE) {
+            // around the grip, so that it stays in the hand
+            poseStack.scale(HELD_SCALE, HELD_SCALE, HELD_SCALE);
+        }
         // The renderer moves a model to the middle of a block; here the grip stays at the point given.
         poseStack.translate(-0.5f, -0.51f, -0.5f);
         render(poseStack, view, buffers, null, null, light, partialTick);

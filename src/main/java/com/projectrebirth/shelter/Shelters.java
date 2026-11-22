@@ -408,14 +408,14 @@ public final class Shelters {
             }
             if (!told.leakTold && now - told.leakSince >= delay) {
                 BlockPos leak = room.leakPos();
-                ShelterAlerts.tell(level.getServer(), owner, where, "leak", true,
+                ShelterAlerts.tell(level, owner, where, "leak", true,
                         net.minecraft.network.chat.Component.translatable("shelter.projectrebirth.leak." + room.leak().id()), leak.getX(), leak.getY(), leak.getZ());
                 told.leakTold = true;
             }
             return;
         }
         if (told.leakTold) {
-            ShelterAlerts.tell(level.getServer(), owner, where, "sealed", false);
+            ShelterAlerts.tell(level, owner, where, "sealed", false);
         }
         told.leakSince = -1;
         told.leakTold = false;
@@ -429,11 +429,11 @@ public final class Shelters {
             low |= unit.cartridgeLow();
         }
         if (noCartridge && !told.noCartridgeTold) {
-            ShelterAlerts.tell(level.getServer(), owner, where, "no_cartridge", true);
+            ShelterAlerts.tell(level, owner, where, "no_cartridge", true);
         }
         told.noCartridgeTold = noCartridge;
         if (low && !noCartridge && !told.cartridgeLowTold) {
-            ShelterAlerts.tell(level.getServer(), owner, where, "cartridge_low", true);
+            ShelterAlerts.tell(level, owner, where, "cartridge_low", true);
         }
         told.cartridgeLowTold = low;
         if (noEnergy) {
@@ -441,12 +441,12 @@ public final class Shelters {
                 told.noEnergySince = now;
             }
             if (!told.noEnergyTold && now - told.noEnergySince >= delay) {
-                ShelterAlerts.tell(level.getServer(), owner, where, "no_energy", true);
+                ShelterAlerts.tell(level, owner, where, "no_energy", true);
                 told.noEnergyTold = true;
             }
         } else {
             if (told.noEnergyTold) {
-                ShelterAlerts.tell(level.getServer(), owner, where, "energy_back", false);
+                ShelterAlerts.tell(level, owner, where, "energy_back", false);
             }
             told.noEnergySince = -1;
             told.noEnergyTold = false;

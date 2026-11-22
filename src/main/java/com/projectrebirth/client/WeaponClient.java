@@ -157,6 +157,7 @@ public final class WeaponClient {
 
     private static void registerGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAbove(VanillaGuiLayers.CROSSHAIR, ProjectRebirth.id("weapon_reticle"), WeaponClient::renderReticle);
+        event.registerAbove(VanillaGuiLayers.CROSSHAIR, ProjectRebirth.id("weapon_scope"), ScopeOverlay::render);
         // 1.8.0: rounds, reserve and reload are the weapon block of the helmet's HUD (client/hud/ArmorHelmet)
     }
 
@@ -241,6 +242,9 @@ public final class WeaponClient {
         }
         ItemStack stack = player.getMainHandItem();
         float partialTick = event.getPartialTick();
+        if (ScopeOverlay.lookingThrough(partialTick)) {
+            return;
+        }
         WeaponView view = WeaponView.of(player, stack.getItem());
         view.update(player, partialTick);
         float aim = view.aimAmount();
@@ -262,14 +266,15 @@ public final class WeaponClient {
         WeaponRenderer.INSTANCE.draw(pose, view, event.getMultiBufferSource(), event.getPackedLight(), partialTick, WeaponRenderer.Space.VIEW);
         pose.popPose();
 
-        Vector3f mainFist = gun.transformPosition(new Vector3f(GRIP));
+        // the points of the weapon are in its own blocks; the model is drawn smaller in hand (WeaponRenderer.HELD_SCALE)
+        Vector3f mainFist = gun.transformPosition(new Vector3f(GRIP).mul(WeaponRenderer.HELD_SCALE));
         Vector3f support = SUPPORT.getOrDefault(view.id(), SUPPORT.get("assault_rifle"));
-        Vector3f otherFist = gun.transformPosition(new Vector3f(support));
+        Vector3f otherFist = gun.transformPosition(new Vector3f(support).mul(WeaponRenderer.HELD_SCALE));
         if (view.isReloading()) {
             long end = armor.weaponReloadEnd();
             RebirthConfig.WeaponStats stats = Weapons.statsOf(stack.getItem());
             float done = stats == null ? 0.0f : Mth.clamp(1.0f - (end - player.level().getGameTime() - partialTick) / stats.reloadTicks().get(), 0.0f, 1.0f);
-            Vector3f well = gun.transformPosition(new Vector3f(MAGAZINE_WELL));
+            Vector3f well = gun.transformPosition(new Vector3f(MAGAZINE_WELL).mul(WeaponRenderer.HELD_SCALE));
             otherFist.lerp(well, Mth.sin(done * Mth.PI));
         }
         HumanoidArm mainSide = player.getMainArm();
@@ -351,6 +356,11 @@ public final class WeaponClient {
             return false;
         }
         return Weapons.definition(player.registryAccess(), player.getMainHandItem().getItem()).map(WeaponDefinition::scope).orElse(false);
+    }
+
+    /** How far the view is brought to the scope, 0..1 (for the scope overlay). */
+    static float zoomAmount(float partialTick) {
+        return Mth.lerp(partialTick, zoomOld, zoom);
     }
 
     private static float zoomFactor(double partialTick) {
@@ -457,7 +467,8 @@ public final class WeaponClient {
     private static void renderReticle(GuiGraphics graphics, DeltaTracker deltaTracker) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (!readyToShoot(player) || !HudLayout.enabled() || minecraft.options.hideGui || minecraft.screen != null) {
+        if (!readyToShoot(player) || !HudLayout.enabled() || minecraft.options.hideGui || minecraft.screen != null
+                || ScopeOverlay.lookingThrough(deltaTracker.getGameTimeDeltaPartialTick(false))) {
             return;
         }
         RebirthConfig.WeaponStats stats = Weapons.statsOf(player.getMainHandItem().getItem());

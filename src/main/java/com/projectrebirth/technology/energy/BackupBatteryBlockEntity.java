@@ -128,13 +128,13 @@ public class BackupBatteryBlockEntity extends BlockEntity {
             TechSounds.setWorking(this, onReserve);
             // it stops feeding either because the main power is back or because it is empty (that has its own warning)
             if (level.getServer() != null && (reserve || energy.getEnergyStored() > 0)) {
-                com.projectrebirth.shelter.ShelterAlerts.tell(level.getServer(), owner, worldPosition, reserve ? "reserve_on" : "reserve_off", reserve);
+                com.projectrebirth.shelter.ShelterAlerts.tell((net.minecraft.server.level.ServerLevel) level, owner, worldPosition, reserve ? "reserve_on" : "reserve_off", reserve);
             }
         }
         // still needed but nothing left: the life support is on its own
         boolean empty = energy.getEnergyStored() == 0 && targets.stream().anyMatch(t -> !LifeSupport.charged(t, start));
         if (empty && !emptyTold && level.getServer() != null && (onReserve || lastGave > Long.MIN_VALUE / 2)) {
-            com.projectrebirth.shelter.ShelterAlerts.tell(level.getServer(), owner, worldPosition, "reserve_empty", true);
+            com.projectrebirth.shelter.ShelterAlerts.tell((net.minecraft.server.level.ServerLevel) level, owner, worldPosition, "reserve_empty", true);
         }
         emptyTold = empty;
         int signal = signal();

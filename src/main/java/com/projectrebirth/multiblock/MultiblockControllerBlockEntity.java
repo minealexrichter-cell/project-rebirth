@@ -45,7 +45,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * materials of a stage are taken when it begins, its time runs while there is energy for each tick. Broken, it drops what it
  * holds and the materials of the stages already begun. Numbers in the config ([garrison.multiblocks]).
  */
-public class MultiblockControllerBlockEntity extends BlockEntity implements MenuProvider, PortHost {
+public class MultiblockControllerBlockEntity extends BlockEntity implements MenuProvider, PortHost, SchemaHolder {
     public static final int BASE_SLOT = 0;
     public static final int FIRST_MATERIAL = 1;
     public static final int MATERIALS = AssemblyRecipe.MAX_MATERIALS;

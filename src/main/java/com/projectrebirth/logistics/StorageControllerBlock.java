@@ -43,6 +43,19 @@ public class StorageControllerBlock extends WorkingMachineBlock {
         }
     }
 
+    /** The repair wrench or the Codex: the hologram of the construction, as at the other controllers. */
+    @Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                                                  net.minecraft.world.InteractionHand hand, BlockHitResult hit) {
+        if (!com.projectrebirth.multiblock.MultiblockControllerBlock.showsHologram(stack)) {
+            return net.minecraft.world.ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (level.isClientSide) {
+            com.projectrebirth.multiblock.MultiblockControllerBlock.hologramToggle.accept(pos);
+        }
+        return net.minecraft.world.ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (player instanceof ServerPlayer serverPlayer && level.getBlockEntity(pos) instanceof StorageControllerBlockEntity storage) {

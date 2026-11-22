@@ -105,7 +105,7 @@ public final class MultiblockClient {
         while (it.hasNext()) {
             Map.Entry<BlockPos, Hologram> entry = it.next();
             Hologram hologram = entry.getValue();
-            if (now > hologram.until || !(minecraft.level.getBlockEntity(entry.getKey()) instanceof MultiblockControllerBlockEntity controller)) {
+            if (now > hologram.until || !(minecraft.level.getBlockEntity(entry.getKey()) instanceof com.projectrebirth.multiblock.SchemaHolder controller)) {
                 it.remove();
                 continue;
             }

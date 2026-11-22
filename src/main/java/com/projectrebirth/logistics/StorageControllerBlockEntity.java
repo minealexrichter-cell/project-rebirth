@@ -39,7 +39,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
  * belongs to who set it up and their faction ({@link Storages}). It is meant as the base of the logistics of 1.11: who takes
  * what goes through {@link #portItems()}.
  */
-public class StorageControllerBlockEntity extends BlockEntity implements MenuProvider, PortHost {
+public class StorageControllerBlockEntity extends BlockEntity implements MenuProvider, PortHost, com.projectrebirth.multiblock.SchemaHolder {
     private ItemStackHandler store;
     @Nullable
     private UUID owner;
@@ -83,6 +83,14 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
         return owner;
     }
 
+    /** The plan of the storage (the hologram draws it). */
+    @Override
+    @Nullable
+    public MultiblockSchema schema() {
+        return level == null ? null : MultiblockRegistry.schema(level.registryAccess(), LogisticsRegistry.SCHEMA);
+    }
+
+    @Override
     public Direction facing() {
         return getBlockState().getValue(HorizontalDirectionalBlock.FACING);
     }
@@ -159,7 +167,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
         if (level == null) {
             return null;
         }
-        MultiblockSchema schema = MultiblockRegistry.schema(level.registryAccess(), LogisticsRegistry.SCHEMA);
+        MultiblockSchema schema = schema();
         boolean was = whole;
         if (schema == null || !schema.available()) {
             check = null;

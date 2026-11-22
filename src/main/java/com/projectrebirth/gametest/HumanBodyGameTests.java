@@ -57,13 +57,19 @@ public class HumanBodyGameTests {
     @GameTest(template = TEMPLATE)
     public static void radiationAndPollutionRaiseTheirOwnNumbers(GameTestHelper helper) {
         ServerPlayer player = player(helper);
+        // 1.9.0: the air of the Wasteland adds toxins in the open by itself; compare with a second of nothing else
+        HumanBody.onSecond(player, Exposure.NONE);
+        Biology baseline = HumanBody.biology(player);
+        HumanBody.setBiology(player, Biology.CLEAN);
         HumanBody.onSecond(player, exposure(0.0f, 100.0f, 0.0f));
         Biology afterRadiation = HumanBody.biology(player);
-        helper.assertTrue(afterRadiation.dose() > 0.0f && afterRadiation.toxin() == 0.0f, "Radiation only adds dose: " + afterRadiation);
+        helper.assertTrue(afterRadiation.dose() > baseline.dose() && Math.abs(afterRadiation.toxin() - baseline.toxin()) < EPSILON,
+                "Radiation only adds dose: " + afterRadiation + " / " + baseline);
         HumanBody.setBiology(player, Biology.CLEAN);
         HumanBody.onSecond(player, exposure(100.0f, 0.0f, 0.0f));
         Biology afterPollution = HumanBody.biology(player);
-        helper.assertTrue(afterPollution.toxin() > 0.0f && afterPollution.dose() == 0.0f, "Pollution only adds toxins: " + afterPollution);
+        helper.assertTrue(afterPollution.toxin() > baseline.toxin() && Math.abs(afterPollution.dose() - baseline.dose()) < EPSILON,
+                "Pollution only adds toxins: " + afterPollution + " / " + baseline);
         helper.succeed();
     }
 

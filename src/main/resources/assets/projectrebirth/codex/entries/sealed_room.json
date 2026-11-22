@@ -23,6 +23,10 @@
     {
       "type": "note",
       "text": "codex.projectrebirth.sealed_room.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.sealed_room.p6"
     }
   ]
 }

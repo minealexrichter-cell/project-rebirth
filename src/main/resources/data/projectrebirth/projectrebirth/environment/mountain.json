@@ -1,0 +1,12 @@
+{
+  "biomes": "#c:is_mountain",
+  "priority": 8,
+  "background": {
+    "pollution": 1,
+    "radiation": 1
+  },
+  "event_multipliers": {
+    "dust_storm": 0.5
+  },
+  "wasteland": 0.6
+}

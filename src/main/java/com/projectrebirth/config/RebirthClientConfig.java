@@ -39,6 +39,7 @@ public final class RebirthClientConfig {
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> HUD_ELEMENTS;
     public static final ModConfigSpec.BooleanValue UI_CONSOLE_TUTORIAL;
     public static final ModConfigSpec.BooleanValue UI_HIGH_CONTRAST;
+    public static final ModConfigSpec.BooleanValue WASTELAND_NIGHT_FOG;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -108,6 +109,10 @@ public final class RebirthClientConfig {
         // 1.8.0, block K
         UI_HIGH_CONTRAST = builder.comment("High contrast: dim text drawn brighter, a light line round windows, panels, screens and cards.")
                 .define("highContrast", false);
+        builder.pop();
+        builder.comment("The Wasteland (1.9.0)").push("wasteland");
+        WASTELAND_NIGHT_FOG = builder.comment("The toxic fog by the ground at night in the open (only a picture: the toxins of the night come either way).")
+                .define("nightFog", true);
         builder.pop();
         CLIENT_SPEC = builder.build();
     }

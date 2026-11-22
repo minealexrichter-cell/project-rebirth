@@ -64,7 +64,7 @@ public class RadiationPurgeStationBlockEntity extends BlockEntity {
         if (TransferService.isInArtificialBody(player)) {
             return Reason.ARTIFICIAL_BODY;
         }
-        if (HumanBody.biology(player).dose() <= 0.0f) {
+        if (HumanBody.biology(player).dose() <= 0.0f && HumanBody.biology(player).residual() <= 0.0f) {
             return Reason.NO_DOSE;
         }
         Room room = Shelters.sealedRoomAt(level, worldPosition.above());
@@ -98,7 +98,10 @@ public class RadiationPurgeStationBlockEntity extends BlockEntity {
                     used = true;
                 }
                 Biology old = HumanBody.biology(player);
-                HumanBody.setBiology(player, new Biology(old.dose() - RebirthConfig.PURGE_DOSE_PER_SECOND.get().floatValue() / 20.0f, old.toxin()));
+                float rate = RebirthConfig.PURGE_DOSE_PER_SECOND.get().floatValue() / 20.0f;
+                // 1.9.0: the accumulated dose goes too, more slowly
+                HumanBody.setBiology(player, old.withDose(old.dose() - rate)
+                        .withResidual(old.residual() - rate * com.projectrebirth.config.WastelandConfig.DOSE_PURGE_RESIDUAL_SHARE.get().floatValue()));
                 if (server.getGameTime() % 10 == 0) {
                     server.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 0.2, player.getZ(), 2, 0.3, 0.6, 0.3, 0.01);
                 }

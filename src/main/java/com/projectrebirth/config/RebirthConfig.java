@@ -1889,6 +1889,7 @@ public final class RebirthConfig {
                 .comment("A war ends by itself after this many real-time hours if no peace is made")
                 .defineInRange("warMaxHours", 72, 1, 8760);
         builder.pop();
+        WastelandConfig.define(builder);
         SERVER_SPEC = builder.build();
     }
 

@@ -90,6 +90,7 @@ public class ProjectRebirth {
         ModSounds.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 
+        com.projectrebirth.core.RebirthGameRules.init();
         modContainer.registerConfig(ModConfig.Type.SERVER, RebirthConfig.SERVER_SPEC);
         modEventBus.addListener(this::commonSetup);
     }

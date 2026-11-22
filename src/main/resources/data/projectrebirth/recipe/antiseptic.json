@@ -1,0 +1,13 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 91,
+  "time": 100,
+  "ingredients": [
+    {"item": "minecraft:glass_bottle", "count": 1},
+    {"item": "minecraft:sugar", "count": 2},
+    {"item": "minecraft:brown_mushroom", "count": 1},
+    {"item": "minecraft:paper", "count": 1}
+  ],
+  "result": {"id": "projectrebirth:antiseptic", "count": 1}
+}

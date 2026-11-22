@@ -125,6 +125,10 @@ public class DecontaminationChamberBlockEntity extends BlockEntity implements Li
                 setChanged();
             }
         }
+        if (server.getGameTime() % 20 == 0 && washFood(server, need)) {
+            lastWashed = server.getGameTime();
+            setChanged();
+        }
         boolean washing = server.getGameTime() - lastWashed < 10;
         TechSounds.setWorking(this, washing);
         // the water falls in the upper half too
@@ -133,6 +137,39 @@ public class DecontaminationChamberBlockEntity extends BlockEntity implements Li
         if (upper.getBlock() instanceof DecontaminationChamberBlock && upper.getValue(TechSounds.WORKING) != washing) {
             server.setBlock(above, upper.setValue(TechSounds.WORKING, washing), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
         }
+    }
+
+    /**
+     * 1.9.0: a person standing inside has one stack of contaminated food in their inventory washed each second, for the same
+     * energy and [wasteland.food] chamberSolutionPerStack of the solution. Public for tests.
+     */
+    public boolean washFood(ServerLevel server, int need) {
+        if (energy.getEnergyStored() < need) {
+            return false;
+        }
+        for (Player player : server.getEntitiesOfClass(Player.class, washArea(), player -> !player.isSpectator())) {
+            net.minecraft.world.entity.player.Inventory inventory = player.getInventory();
+            for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+                ItemStack stack = inventory.getItem(slot);
+                if (!com.projectrebirth.environment.ContaminatedFood.isContaminated(stack)) {
+                    continue;
+                }
+                float cost = com.projectrebirth.config.WastelandConfig.FOOD_CHAMBER_SOLUTION.get().floatValue();
+                if (solutionLeft < cost && !items.getStackInSlot(0).isEmpty()) {
+                    items.extractItem(0, 1, false);
+                    solutionLeft += RebirthConfig.DECON_PER_SOLUTION.get().floatValue();
+                }
+                if (solutionLeft < cost) {
+                    return false;
+                }
+                solutionLeft -= cost;
+                energy.consume(need);
+                inventory.setItem(slot, com.projectrebirth.environment.ContaminatedFood.washed(stack));
+                server.sendParticles(ParticleTypes.SPLASH, player.getX(), player.getY() + 1.0, player.getZ(), 6, 0.3, 0.3, 0.3, 0.1);
+                return true;
+            }
+        }
+        return false;
     }
 
     /** The line shown on right-click. */

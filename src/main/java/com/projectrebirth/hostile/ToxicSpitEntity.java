@@ -73,7 +73,7 @@ public class ToxicSpitEntity extends ThrowableProjectile {
         if (target instanceof Player player && RebirthConfig.SERVER_SPEC.isLoaded()) {
             float load = RebirthConfig.GHOUL_SPIT_TOXIN.get().floatValue() * (1.0f - HumanBody.protection(player, Hazard.POLLUTION));
             Biology now = HumanBody.biology(player);
-            HumanBody.setBiology(player, new Biology(now.dose(), now.toxin() + Math.max(0.0f, load)));
+            HumanBody.setBiology(player, now.withToxin(now.toxin() + Math.max(0.0f, load)));
         }
     }
 

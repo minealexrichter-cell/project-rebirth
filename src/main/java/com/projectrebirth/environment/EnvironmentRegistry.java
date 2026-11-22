@@ -59,21 +59,36 @@ public final class EnvironmentRegistry {
 
     public static final DeferredHolder<MobEffect, MobEffect> RADIATION_SICKNESS = EFFECTS.register("radiation_sickness", () -> new SymptomEffect(0x8fd14f));
     public static final DeferredHolder<MobEffect, MobEffect> TOXIC_POISONING = EFFECTS.register("toxic_poisoning", () -> new SymptomEffect(0xb0a030));
+    /** 1.9.0: a wound infected by a mutant ({@link WoundInfection}). */
+    public static final DeferredHolder<MobEffect, MobEffect> WOUND_INFECTION = EFFECTS.register("wound_infection", () -> new SymptomEffect(0x7a8a2a));
 
     public static final DeferredItem<MedicineItem> ANTIRADIN = ITEMS.register("antiradin", () -> new MedicineItem(new Item.Properties().stacksTo(16),
             player -> {
                 Biology old = HumanBody.biology(player);
-                HumanBody.setBiology(player, new Biology(old.dose() - RebirthConfig.HUMAN_ANTIRADIN_DOSE.get().floatValue(), old.toxin()));
+                HumanBody.setBiology(player, old.withDose(old.dose() - RebirthConfig.HUMAN_ANTIRADIN_DOSE.get().floatValue())
+                        .withResidual(old.residual() - com.projectrebirth.config.WastelandConfig.DOSE_ANTIRADIN_RESIDUAL.get().floatValue()));
             }));
     public static final DeferredItem<MedicineItem> SORBENT = ITEMS.register("sorbent", () -> new MedicineItem(new Item.Properties().stacksTo(16),
             player -> {
                 Biology old = HumanBody.biology(player);
-                HumanBody.setBiology(player, new Biology(old.dose(), old.toxin() - RebirthConfig.HUMAN_SORBENT_TOXIN.get().floatValue()));
+                HumanBody.setBiology(player, old.withToxin(old.toxin() - RebirthConfig.HUMAN_SORBENT_TOXIN.get().floatValue()));
+                WoundInfection.cure(player);
+            }));
+
+    /** 1.9.0: stops a wound infection and takes away a little of the toxic load. */
+    public static final DeferredItem<MedicineItem> ANTISEPTIC = ITEMS.register("antiseptic", () -> new MedicineItem(new Item.Properties().stacksTo(16),
+            player -> {
+                Biology old = HumanBody.biology(player);
+                HumanBody.setBiology(player, old.withToxin(old.toxin() - com.projectrebirth.config.WastelandConfig.ANTISEPTIC_TOXIN.get().floatValue()));
+                WoundInfection.cure(player);
             }));
 
     private static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, ProjectRebirth.MOD_ID);
     /** Seconds' worth of filter left, in a filter or in the head piece it was put into. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> FILTER_LIFE = COMPONENTS.registerComponentType("filter_life",
+            builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
+    /** 1.9.0: food that carries toxins: the toxic load it gives when eaten ({@link ContaminatedFood}). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Float>> CONTAMINATED = COMPONENTS.registerComponentType("contaminated",
             builder -> builder.persistent(Codec.FLOAT).networkSynchronized(ByteBufCodecs.FLOAT));
 
     private static final DeferredRegister<ArmorMaterial> MATERIALS = DeferredRegister.create(Registries.ARMOR_MATERIAL, ProjectRebirth.MOD_ID);

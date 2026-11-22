@@ -110,7 +110,7 @@ public final class WaterPollution {
             return;
         }
         Biology now = HumanBody.biology(player);
-        HumanBody.setBiology(player, new Biology(now.dose(), now.toxin() + load));
+        HumanBody.setBiology(player, now.withToxin(now.toxin() + load));
     }
 
     // ---------------------------------------------------------------- filling bottles and buckets

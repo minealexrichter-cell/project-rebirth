@@ -1,0 +1,26 @@
+{
+  "icon": "minecraft:carrot",
+  "x": -5,
+  "y": 2,
+  "parents": [
+    "human_body"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.contaminated_food.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.contaminated_food.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.contaminated_food.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.contaminated_food.p4"
+    }
+  ]
+}

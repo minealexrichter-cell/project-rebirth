@@ -83,6 +83,9 @@
       "icon": "projectrebirth:respirator",
       "entries": [
         "hostile_world",
+        "human_body",
+        "wasteland_stages",
+        "contaminated_food",
         "catastrophes",
         "acid_rain",
         "contaminated_zones",

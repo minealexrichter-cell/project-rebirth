@@ -14,6 +14,10 @@
     {
       "type": "note",
       "text": "codex.projectrebirth.hostile_world.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.hostile_world.p4"
     }
   ]
 }

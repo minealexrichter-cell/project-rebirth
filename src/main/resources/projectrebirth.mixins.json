@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ItemStackMixin",
-    "LivingEntityMixin"
+    "LivingEntityMixin",
+    "AbstractCookingRecipeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -8,5 +8,6 @@
   "event_multipliers": {
     "radiation_burst": 1.5,
     "dust_storm": 1.6
-  }
+  },
+  "wasteland": 1.3
 }

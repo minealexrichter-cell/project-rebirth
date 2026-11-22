@@ -89,7 +89,50 @@ public final class EnvironmentCommands {
                         .then(Commands.literal("thermal")
                                 .then(Commands.argument("player", EntityArgument.player())
                                         .then(Commands.argument("stress", FloatArgumentType.floatArg(-100.0f, 100.0f))
-                                                .executes(EnvironmentCommands::setThermal))))));
+                                                .executes(EnvironmentCommands::setThermal))))
+                        // 1.9.0: the stage of the Wasteland
+                        .then(Commands.literal("stage")
+                                .executes(EnvironmentCommands::stage)
+                                .then(Commands.literal("set")
+                                        .then(Commands.argument("stage", IntegerArgumentType.integer(1, Wasteland.MAX_STAGE))
+                                                .executes(ctx -> setStage(ctx, IntegerArgumentType.getInteger(ctx, "stage")))))))
+                // 1.9.0: the game rules of the mod in this world
+                .then(Commands.literal("world").executes(EnvironmentCommands::world)));
+    }
+
+    private static int stage(CommandContext<CommandSourceStack> ctx) {
+        net.minecraft.server.MinecraftServer server = ctx.getSource().getServer();
+        int stage = Wasteland.stage(server);
+        long next = Wasteland.daysToNextStage(server);
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.wasteland.stage", Wasteland.roman(stage), Wasteland.stageName(stage),
+                Wasteland.day(server)), false);
+        ctx.getSource().sendSuccess(() -> next < 0 ? Component.translatable("message.projectrebirth.wasteland.stage_last")
+                : Component.translatable("message.projectrebirth.wasteland.stage_next", Wasteland.roman(stage + 1), next), false);
+        if (!com.projectrebirth.core.RebirthGameRules.on(server, com.projectrebirth.core.RebirthGameRules.WASTELAND_ESCALATION)) {
+            ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.wasteland.no_escalation"), false);
+        }
+        return stage;
+    }
+
+    private static int setStage(CommandContext<CommandSourceStack> ctx, int stage) {
+        net.minecraft.server.MinecraftServer server = ctx.getSource().getServer();
+        Wasteland.setStage(server, stage);
+        int now = Wasteland.stage(server);
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.wasteland.stage_set", Wasteland.roman(stage), Wasteland.roman(now)), true);
+        return now;
+    }
+
+    private static int world(CommandContext<CommandSourceStack> ctx) {
+        net.minecraft.server.MinecraftServer server = ctx.getSource().getServer();
+        net.minecraft.world.level.GameRules rules = server.getGameRules();
+        ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.world.header",
+                Component.translatable("message.projectrebirth.world.preset." + com.projectrebirth.config.WastelandConfig.PRESET.get().name().toLowerCase(Locale.ROOT))), false);
+        for (net.minecraft.world.level.GameRules.Key<?> key : com.projectrebirth.core.RebirthGameRules.ALL) {
+            String value = rules.getRule(key).serialize();
+            ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.world.rule", key.getId(),
+                    Component.translatable(key.getDescriptionId()), value), false);
+        }
+        return com.projectrebirth.core.RebirthGameRules.ALL.size();
     }
 
     /** How far (in chunks) around the caller the list looks. */
@@ -215,7 +258,7 @@ public final class EnvironmentCommands {
     /** Sets the numbers of a person, for checking the symptoms. */
     private static int setBody(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
         ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
-        HumanBody.setBiology(player, new Biology(FloatArgumentType.getFloat(ctx, "dose"), FloatArgumentType.getFloat(ctx, "toxin")));
+        HumanBody.setBiology(player, new Biology(FloatArgumentType.getFloat(ctx, "dose"), FloatArgumentType.getFloat(ctx, "toxin"), HumanBody.biology(player).residual()));
         ctx.getSource().sendSuccess(() -> Component.translatable("message.projectrebirth.environment.body_set", player.getDisplayName()), true);
         return 1;
     }

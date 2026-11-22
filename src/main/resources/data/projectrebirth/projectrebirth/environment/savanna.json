@@ -8,5 +8,6 @@
   "event_multipliers": {
     "dust_storm": 0.7
   },
-  "temperature_offset": -8
+  "temperature_offset": -8,
+  "wasteland": 1.1
 }

@@ -58,7 +58,7 @@ public final class Protection {
         return null;
     }
 
-    private static float share(EquipmentSlot slot) {
+    public static float share(EquipmentSlot slot) {
         return switch (slot) {
             case HEAD -> RebirthConfig.PROTECTION_HEAD_SHARE.get().floatValue();
             case CHEST -> RebirthConfig.PROTECTION_CHEST_SHARE.get().floatValue();

@@ -21,15 +21,23 @@ import net.minecraft.world.level.biome.Biome;
  * @param eventMultipliers how strongly a catastrophe acts here, by its id; a catastrophe not named here has 1
  * @param temperatureOffset degrees added to the temperature of the place here (1.5.0): savannas are as warm as deserts in
  *                          vanilla, and get a little cooler so that only true deserts are hot
+ * @param wasteland        1.9.0: how strong the air of the Wasteland is here (see {@link WastelandAir}); 1 in an ordinary biome,
+ *                         less in the mountains and the snow, more in swamps, deserts and by rivers
  */
 public record EnvironmentProfile(HolderSet<Biome> biomes, int priority, Map<Hazard, Float> background, Map<String, Float> eventMultipliers,
-                                 float temperatureOffset) {
+                                 float temperatureOffset, float wasteland) {
+    public EnvironmentProfile(HolderSet<Biome> biomes, int priority, Map<Hazard, Float> background, Map<String, Float> eventMultipliers,
+                              float temperatureOffset) {
+        this(biomes, priority, background, eventMultipliers, temperatureOffset, 1.0f);
+    }
+
     public static final Codec<EnvironmentProfile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(EnvironmentProfile::biomes),
             Codec.INT.optionalFieldOf("priority", 0).forGetter(EnvironmentProfile::priority),
             Codec.unboundedMap(Hazard.CODEC, Codec.FLOAT).optionalFieldOf("background", Map.of()).forGetter(EnvironmentProfile::background),
             Codec.unboundedMap(Codec.STRING, Codec.FLOAT).optionalFieldOf("event_multipliers", Map.of()).forGetter(EnvironmentProfile::eventMultipliers),
-            Codec.FLOAT.optionalFieldOf("temperature_offset", 0.0f).forGetter(EnvironmentProfile::temperatureOffset)
+            Codec.FLOAT.optionalFieldOf("temperature_offset", 0.0f).forGetter(EnvironmentProfile::temperatureOffset),
+            Codec.FLOAT.optionalFieldOf("wasteland", 1.0f).forGetter(EnvironmentProfile::wasteland)
     ).apply(instance, EnvironmentProfile::new));
 
     public boolean covers(Holder<Biome> biome) {

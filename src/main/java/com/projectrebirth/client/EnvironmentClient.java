@@ -81,11 +81,16 @@ public final class EnvironmentClient {
         Font font = minecraft.font;
         HudLayout.pushPanel(graphics);
         // 1.8.0: the panel of style A behind the lines: a dark screen with an amber edge and its title
-        int rows = 4 + (Float.isNaN(last.temperature()) ? 0 : 1) + (last.shelter() != EnvironmentStatusPayload.SHELTER_NONE ? 1 : 0)
+        // 1.9.0: the forecast of the toxins, and the health lost to the dose when there is any
+        int rows = 5 + (last.healthPenalty() >= 1.0f ? 1 : 0) + (Float.isNaN(last.temperature()) ? 0 : 1) + (last.shelter() != EnvironmentStatusPayload.SHELTER_NONE ? 1 : 0)
                 + (last.contamination() >= 0.5f ? 1 : 0) + (last.zone() != 0 ? 1 : 0);
         com.projectrebirth.client.hud.HudDraw.panel(graphics, -3, 0, HudLayout.PANEL_WIDTH, FIRST_ROW + rows * ROW + 1);
         com.projectrebirth.client.ui.UiText.line(graphics, com.projectrebirth.client.ui.UiText.upper(Component.translatable("hud.projectrebirth.human.title")),
                 1, 2, HudLayout.PANEL_WIDTH - 8, com.projectrebirth.client.ui.UiColors.AMBER);
+        // 1.9.0: the stage of the Wasteland, on the right of the title
+        Component wasteland = com.projectrebirth.client.ui.UiText.upper(Component.translatable("hud.projectrebirth.human.wasteland",
+                com.projectrebirth.environment.Wasteland.roman(last.stage())));
+        graphics.drawString(font, wasteland, HudLayout.PANEL_WIDTH - 8 - font.width(wasteland), 2, last.stage() >= 3 ? 0xFFFF8A65 : 0xFFBCAAA4);
         int y = FIRST_ROW + 1;
         // Dose: nobody feels radiation; only a dosimeter tells.
         if (carriesDosimeter(player)) {
@@ -101,6 +106,16 @@ public final class EnvironmentClient {
         bar(graphics, font, y, Component.translatable("hud.projectrebirth.human.toxin"), last.toxin() / RebirthConfig.HUMAN_TOXIN_DAMAGE.get().floatValue(),
                 stageColor(toxinStage, 3), number(last.toxin()) + stageText(toxinStage));
         y += ROW;
+        renderForecast(graphics, font, y);
+        y += ROW;
+        if (last.healthPenalty() >= 1.0f) {
+            graphics.drawString(font, Component.translatable("hud.projectrebirth.human.health"), 0, y, 0xFFFFFFFF);
+            String hearts = number(last.healthPenalty() / 2.0f);
+            Component text = carriesDosimeter(player) ? Component.translatable("hud.projectrebirth.human.health_dose", hearts, number(last.residual()))
+                    : Component.translatable("hud.projectrebirth.human.health_lost", hearts);
+            graphics.drawString(font, text, LABEL_WIDTH, y, 0xFFFF8A65);
+            y += ROW;
+        }
         if (!Float.isNaN(last.temperature())) {
             // temperature (1.5.0): the stress fills from the middle, to the right in heat and to the left in cold; then the
             // temperature of the place, and with stress its mark (sun or snowflake) and stage
@@ -134,6 +149,48 @@ public final class EnvironmentClient {
         y += ROW;
         renderShelter(graphics, font, y);
         graphics.pose().popPose();
+    }
+
+    /**
+     * 1.9.0: when the toxins come to their next stage, in words: "nausea in 12 min", "cleansing", or what is needed when the
+     * last stage has come.
+     */
+    private static void renderForecast(GuiGraphics graphics, Font font, int y) {
+        graphics.drawString(font, Component.translatable("hud.projectrebirth.human.forecast"), 0, y, 0xFFFFFFFF);
+        float toxin = last.toxin();
+        float rate = last.toxinRate();
+        int stage = HumanBody.toxinStage(toxin);
+        Component text;
+        int color;
+        if (stage >= 3) {
+            text = Component.translatable("hud.projectrebirth.human.forecast.damage");
+            color = 0xFFE53935;
+        } else if (rate > 0.0005f) {
+            float[] next = {RebirthConfig.HUMAN_TOXIN_NAUSEA.get().floatValue(), RebirthConfig.HUMAN_TOXIN_WEAKNESS.get().floatValue(),
+                    RebirthConfig.HUMAN_TOXIN_DAMAGE.get().floatValue()};
+            int seconds = Math.round(Math.max(0.0f, next[stage] - toxin) / rate);
+            text = Component.translatable("hud.projectrebirth.human.forecast.stage" + (stage + 1), duration(seconds));
+            color = seconds < 300 ? 0xFFFFA726 : 0xFFFFD54F;
+        } else if (rate < -0.0005f && toxin > 0.0f) {
+            text = Component.translatable("hud.projectrebirth.human.forecast.cleansing");
+            color = 0xFF81C784;
+        } else {
+            text = Component.translatable("hud.projectrebirth.human.forecast.steady");
+            color = GREY;
+        }
+        graphics.drawString(font, text, LABEL_WIDTH, y, color);
+    }
+
+    /** A length of time in words: "under a minute", "12 min", "1 h 20 min". */
+    static Component duration(int seconds) {
+        if (seconds < 60) {
+            return Component.translatable("hud.projectrebirth.time.under_minute");
+        }
+        int minutes = seconds / 60;
+        if (minutes < 60) {
+            return Component.translatable("hud.projectrebirth.time.minutes", minutes);
+        }
+        return Component.translatable("hud.projectrebirth.time.hours", minutes / 60, minutes % 60);
     }
 
     /** The shelter the player is in (only inside one) and the contamination on them (only if there is any to speak of). */
@@ -206,6 +263,17 @@ public final class EnvironmentClient {
             hazards.add(Hazard.RADIATION);
             parts.add(Component.translatable("hud.projectrebirth.hazard.radiation_value", number(last.radiation())));
             colors.add(0xFFFF5555);
+        }
+        // 1.9.0: the air of the Wasteland reaches the person (it is everywhere outside a sealed room), and an infected wound
+        if (parts.isEmpty() && (last.flags() & EnvironmentStatusPayload.FLAG_WASTELAND_AIR) != 0) {
+            hazards.add(Hazard.POLLUTION);
+            parts.add(Component.translatable("hud.projectrebirth.hazard.wasteland_air"));
+            colors.add(0xFFC0B060);
+        }
+        if ((last.flags() & EnvironmentStatusPayload.FLAG_WOUND) != 0) {
+            hazards.add(Hazard.POLLUTION);
+            parts.add(Component.translatable("hud.projectrebirth.hazard.wound"));
+            colors.add(0xFFFF8A65);
         }
         int x = LABEL_WIDTH;
         if (parts.isEmpty()) {

@@ -112,7 +112,7 @@ public class WaterPurifierBlockEntity extends BlockEntity implements MenuProvide
         super(WaterRegistry.WATER_PURIFIER_ENTITY.get(), pos, state);
     }
 
-    /** How many bottles of work an input is: a bottle 1, a bucket a few, anything else 0. */
+    /** How many bottles of work an input is: a bottle 1, a bucket a few, a piece of contaminated food 1, anything else 0. */
     public static int work(ItemStack stack) {
         if (stack.is(WaterRegistry.POLLUTED_WATER_BOTTLE.get())) {
             return 1;
@@ -120,7 +120,8 @@ public class WaterPurifierBlockEntity extends BlockEntity implements MenuProvide
         if (stack.is(WaterRegistry.POLLUTED_WATER_BUCKET.get())) {
             return RebirthConfig.SERVER_SPEC.isLoaded() ? RebirthConfig.PURIFIER_BUCKET_BOTTLES.get() : 3;
         }
-        return 0;
+        // 1.9.0: contaminated food is washed, one piece for a bottle's work
+        return com.projectrebirth.environment.ContaminatedFood.isContaminated(stack) ? 1 : 0;
     }
 
     static int totalTicks(ItemStack input) {
@@ -129,6 +130,9 @@ public class WaterPurifierBlockEntity extends BlockEntity implements MenuProvide
 
     /** What clean water an input gives. */
     public static ItemStack cleaned(ItemStack input) {
+        if (com.projectrebirth.environment.ContaminatedFood.isContaminated(input)) {
+            return com.projectrebirth.environment.ContaminatedFood.washed(input.copyWithCount(1));
+        }
         if (input.is(WaterRegistry.POLLUTED_WATER_BUCKET.get())) {
             return new ItemStack(Items.WATER_BUCKET);
         }

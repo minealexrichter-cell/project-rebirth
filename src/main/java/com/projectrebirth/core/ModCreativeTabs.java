@@ -238,6 +238,7 @@ public final class ModCreativeTabs {
         out.accept(Scouting.FIELD_ANALYZER.get());
         out.accept(EnvironmentRegistry.ANTIRADIN.get());
         out.accept(EnvironmentRegistry.SORBENT.get());
+        out.accept(EnvironmentRegistry.ANTISEPTIC.get());
         out.accept(EnvironmentRegistry.RESPIRATOR.get());
         out.accept(EnvironmentRegistry.FILTER.get());
         out.accept(EnvironmentRegistry.HAZMAT_HELMET.get());

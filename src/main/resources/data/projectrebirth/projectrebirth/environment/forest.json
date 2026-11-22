@@ -7,5 +7,6 @@
   },
   "event_multipliers": {
     "dust_storm": 0.4
-  }
+  },
+  "wasteland": 0.9
 }

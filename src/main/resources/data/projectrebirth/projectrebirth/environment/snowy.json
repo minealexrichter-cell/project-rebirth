@@ -1,0 +1,12 @@
+{
+  "biomes": "#c:is_snowy",
+  "priority": 9,
+  "background": {
+    "pollution": 1,
+    "radiation": 1
+  },
+  "event_multipliers": {
+    "dust_storm": 0.3
+  },
+  "wasteland": 0.6
+}

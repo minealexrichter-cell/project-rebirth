@@ -22,6 +22,10 @@
     {
       "type": "text",
       "text": "codex.projectrebirth.dosimeter.p4"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.dosimeter.p5"
     }
   ]
 }

@@ -363,7 +363,48 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
             'Воздух мира загрязнён, радиация есть везде. Человек без защиты понемногу набирает токсическую нагрузку и дозу облучения: в спокойную погоду за часы, в катастрофу за минуты. Тело само понемногу выводит и то и другое.\n\nКрыша немного помогает (загрязнения на четверть меньше). Полная защита без снаряжения — только герметичное убежище.'),
         text('Toxins (of 100): from 30 nausea, from 60 weakness, from 90 damage.\n\nDose (of 500): from 50 weakness, from 100 slower healing, from 200 less health, from 300 damage.\n\nAfter death both start from zero.',
             'Токсины (из 100): с 30 тошнота, с 60 слабость, с 90 урон.\n\nДоза (из 500): с 50 слабость, со 100 хуже лечится, с 200 меньше здоровья, с 300 урон.\n\nПосле смерти обе начинаются с нуля.'),
-        note('The HUD shows the toxins, the filter and the hazards around you; the dose — only with a dosimeter.', 'HUD показывает токсины, фильтр и опасности вокруг; дозу — только с дозиметром.')
+        note('The HUD shows the toxins, the filter and the hazards around you; the dose — only with a dosimeter.', 'HUD показывает токсины, фильтр и опасности вокруг; дозу — только с дозиметром.'),
+        text('Since 1.9 the background is no longer harmless: the air of the Wasteland reaches a person everywhere outside a sealed room, and while it does the body clears nothing by itself. See Human Body and Stages of the Wasteland.',
+            'С 1.9 фон больше не безвреден: воздух Пустоши достаёт человека везде вне герметичного помещения, и пока он дышит этим воздухом, тело ничего не выводит само. См. «Человеческое тело» и «Стадии Пустоши».')
+    ]),
+    // 1.9.0, block B: the human body in the Wasteland, in the voice of docs/LORE.md
+    entry('human_body', 'minecraft:player_head', -5, 0, ['hostile_world'], 'Human Body', 'Человеческое тело', [
+        text('ARCHIVIST · HUMAN BODY\n\nVolunteer, your body is not built for the outside environment. The air of the Wasteland holds the remains of combat chemistry in every biome. Toxins accumulate in the blood, part of the dose in the bones. While you breathe this air the body does not clear them by itself.',
+            'АРХИВАРИУС · ЧЕЛОВЕЧЕСКОЕ ТЕЛО\n\nДоброволец, ваше тело не рассчитано на внешнюю среду. Воздух Пустоши содержит остатки боевой химии во всех биомах. Токсины накапливаются в крови, часть дозы — в костях. Пока вы дышите этим воздухом, организм не выводит их сам.'),
+        text('Protection extends a stay outside but does not make it endless. Full recovery is possible only in a sealed room, in a transfer capsule, or after the transfer of consciousness into an artificial body. A body left in its capsule receives nothing from the environment; a body left in the open does.',
+            'Защита продлевает пребывание снаружи, но не делает его бесконечным. Полное восстановление возможно только в герметичном помещении, в капсуле переноса или после переноса сознания в искусственное тело. Тело, оставленное в капсуле, внешней среды не получает; оставленное под открытым небом — получает.'),
+        note('L.: Count filters, not hours. When the filter is spent, it is time to go home.',
+            'Л.: Считай не часы, а фильтры. Кончился фильтр — значит, пора домой.'),
+        text('REFERENCE\n\nNo protection, an ordinary biome, stage I: nausea in about 12 minutes, weakness in 25, damage in 37, death in about 40. A respirator with a filter: about three times as long; a hazmat suit: six times; a heavy suit: hours. Outside, a filter lasts 80 minutes. Under a roof the air is a quarter weaker, underground four times weaker, in the open at night 30% stronger. Underground below height 0 the rock gives off radiation.',
+            'СПРАВКА\n\nБез защиты, обычный биом, стадия I: тошнота примерно через 12 минут, слабость через 25, урон через 37, смерть примерно через 40. Респиратор с фильтром — примерно втрое дольше, химкостюм — вшестеро, тяжёлый костюм — часы. Снаружи фильтр служит 80 минут. Под крышей воздух на четверть слабее, под землёй — вчетверо, ночью под открытым небом — на 30% сильнее. Под землёй ниже высоты 0 фонит порода.'),
+        text('Mountains and snow are the cleanest; swamps, rivers and deserts the dirtiest. The HUD of a person tells in words when the next stage of the toxins comes.\n\nAccumulated dose: half of every dose stays in the bones; each 20 of it takes a heart of maximum health, 8 hearts at most, until the radiation purge station or antiradin takes it away.',
+            'Чище всего в горах и снегах, грязнее всего в болотах, у рек и в пустынях. HUD человека словами говорит, когда придёт следующая стадия токсинов.\n\nНакопленная доза: половина каждой дозы остаётся в костях; каждые 20 её единиц отнимают сердце максимума здоровья, всего не больше 8 сердец, пока станция радиационной очистки или антирадин её не снимут.'),
+        text('Wound infection: a blow of a mutant brings toxins for 60 seconds; the sorbent and the antiseptic stop it. Sleep in a sealed room takes away 30% of the toxins; sleep outside takes away nothing.',
+            'Заражение раны: удар мутанта даёт токсины 60 секунд; останавливают сорбент и антисептик. Сон в герметичном помещении снимает 30% токсинов, сон снаружи — ничего.'),
+        item(P + 'antiseptic', 'Antiseptic: stops a wound infection and takes away 10 of the toxic load.', 'Антисептик: останавливает заражение раны и снимает 10 единиц токсинов.'),
+        recipe(P + 'antiseptic')
+    ]),
+    entry('wasteland_stages', 'minecraft:wither_rose', -3, 2, ['hostile_world'], 'Stages of the Wasteland', 'Стадии Пустоши', [
+        text('ARCHIVIST · STAGES OF THE WASTELAND\n\nThe environment does not recover. Burial sites leak, reactors fall apart, decay products go into the water and the soil. The readings worsen with time. The archive tells four stages: Stagnation, Leak, Rot, Decay.',
+            'АРХИВАРИУС · СТАДИИ ПУСТОШИ\n\nОкружающая среда не восстанавливается. Могильники протекают, реакторы разрушаются, продукты распада уходят в воду и почву. Показатели ухудшаются со временем. Архив выделяет четыре стадии: Застой, Протечка, Гниение, Распад.'),
+        text('With each stage the background of the air is higher, and catastrophes come more often and stronger.',
+            'С каждой стадией выше фон воздуха, а катастрофы приходят чаще и сильнее.'),
+        note('L.: The first days are the quietest. After that it only gets worse. Be reborn in time.',
+            'Л.: Первые дни — самые тихие. Дальше будет только хуже. Успей переродиться.'),
+        text('REFERENCE\n\nII from day 10 of the world, III from day 30, IV from day 60 (sleep counts, the time command does not). The air of the Wasteland by stage: ×1, ×1.25, ×1.5, ×2; catastrophes more often: ×1, ×1.2, ×1.4, ×1.7; stronger: ×1, ×1.1, ×1.25, ×1.4. The HUD of a person shows the stage ("Wasteland II").',
+            'СПРАВКА\n\nII — с 10-го дня мира, III — с 30-го, IV — с 60-го (сон считается, команда времени — нет). Воздух Пустоши по стадиям: ×1, ×1,25, ×1,5, ×2; катастрофы чаще: ×1, ×1,2, ×1,4, ×1,7; сильнее: ×1, ×1,1, ×1,25, ×1,4. Стадия видна в HUD человека («Пустошь II»).'),
+        text('Game rules of a world: rebirthWastelandEscalation (the stages grow), rebirthWastelandMaxStage (the highest stage). Preset of the server: Gentle, Wasteland or Hell. A world made before 1.9 starts at no higher stage than II.',
+            'Правила игры мира: rebirthWastelandEscalation (стадии растут), rebirthWastelandMaxStage (высшая стадия). Набор сложности сервера: «Мягкая», «Пустошь» или «Ад». Мир, созданный до 1.9, начинает не выше стадии II.')
+    ]),
+    entry('contaminated_food', 'minecraft:carrot', -5, 2, ['human_body'], 'Contaminated Food', 'Заражённая еда', [
+        text('ARCHIVIST · CONTAMINATED FOOD\n\nA harvest under the open sky takes in what falls with precipitation. The tissue of animals from contaminated zones holds remains of the agent. Eating such food raises the toxic load.',
+            'АРХИВАРИУС · ЗАРАЖЁННАЯ ПИЩА\n\nУрожай под открытым небом впитывает то, что выпадает с осадками. Ткани животных из заражённых зон содержат остатки агента. Употребление такой пищи повышает токсическую нагрузку.'),
+        text('Heat treatment lowers the contamination but does not remove it. Full cleaning is washing. Food grown in a sealed room is clean.',
+            'Термическая обработка снижает загрязнение, но не устраняет его. Полная очистка — промывка. Пища, выращенная в герметичном помещении, чиста.'),
+        note('L.: A carrot after acid rain looks like any carrot. Look at the mark.',
+            'Л.: Морковь после кислотного дождя выглядит как обычная морковь. Смотри на метку.'),
+        text('REFERENCE\n\nContaminated: a harvest picked under the open sky during acid rain, a toxic storm or a radiation burst, anything picked in a contaminated zone, the meat of animals killed in a zone. The tooltip says "☣ Contaminated". Produce +15 toxins, meat +25; after cooking (furnace, smoker, campfire) 40% is left. The water purifier washes one piece at a time, like a bottle of water; the decontamination chamber washes a stack a second in the inventory of whoever stands in it.',
+            'СПРАВКА\n\nЗаражается урожай, собранный под открытым небом во время кислотного дождя, токсичного шторма или радиационного выброса, всё, что собрано в заражённой зоне, и мясо животных, убитых в зоне. Подсказка предмета: «☣ Заражено». Овощи +15 токсинов, мясо +25; после готовки (печь, коптильня, костёр) остаётся 40%. Водоочиститель промывает по одной штуке, как бутылку воды; дезактивационная камера — по стопке в секунду в инвентаре того, кто стоит в ней.')
     ]),
     entry('catastrophes', 'minecraft:clock', -1, -1, ['hostile_world'], 'Catastrophes', 'Катастрофы', [
         text('Catastrophes come by themselves, the first one no sooner than 40 minutes into a new world. Two minutes before, a message, a siren and a HUD line warn you.\n\nAcid rain: real rain; toxins and damage in the open, it wears gear and bodies without a sealing module.',
@@ -542,7 +583,9 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'dosimeter'),
         note('Nobody feels radiation. Without a dosimeter the HUD does not show the dose at all.', 'Радиацию никто не чувствует. Без дозиметра HUD дозу вовсе не показывает.'),
         text('The dosimeter tells what reaches you. Where it comes from, the field analyzer tells: held in hand, it shows the contamination of the ground and of the sources around you (see Scouting in the Field).',
-            'Дозиметр говорит, сколько радиации до вас доходит. Откуда она — скажет полевой анализатор: в руке он показывает заражение земли и источников вокруг (см. «Разведка в поле»).')
+            'Дозиметр говорит, сколько радиации до вас доходит. Откуда она — скажет полевой анализатор: в руке он показывает заражение земли и источников вокруг (см. «Разведка в поле»).'),
+        note('Since 1.9 the HUD also shows the accumulated dose and the hearts of maximum health it has taken (without a dosimeter only the hearts).',
+            'С 1.9 HUD показывает и накопленную дозу, и сколько сердец максимума здоровья она отняла (без дозиметра — только сердца).')
     ]),
     entry('medicine', P + 'antiradin', 1, -1, ['catastrophes'], 'Medicine', 'Лекарства', [
         item(P + 'antiradin', 'Antiradin: drink it to lose 80 of the dose.', 'Антирадин: выпейте, чтобы снять 80 единиц дозы.'),
@@ -567,7 +610,9 @@ category('shelter', P + 'air_filtration_unit', 'Shelter', 'Убежище', [
         recipe(P + 'air_filtration_unit'),
         text('Walls are blocks that close a whole face: full blocks, glass, slabs and stairs by their whole side. Leaves, fences, panes and open sky leak.',
             'Стены — блоки, закрывающие грань целиком: полные блоки, стекло, полублоки и ступени целой гранью. Листва, заборы, панели и открытое небо — утечка.'),
-        note('The mod\'s energy cable may go through a wall: the room stays sealed.', 'Энергокабель мода можно провести сквозь стену: помещение останется герметичным.')
+        note('The mod\'s energy cable may go through a wall: the room stays sealed.', 'Энергокабель мода можно провести сквозь стену: помещение останется герметичным.'),
+        text('Since 1.9 the air of the Wasteland stays outside a sealed room: inside, the body clears its toxins and dose by itself, a night of sleep takes away 30% of the toxins, and what grows inside is clean.',
+            'С 1.9 воздух Пустоши остаётся за стенами герметичного помещения: внутри тело само выводит токсины и дозу, ночь сна снимает 30% токсинов, а выращенное внутри чисто.')
     ]),
     entry('shelter_doors', P + 'airlock_door', -1, -1, ['sealed_room'], 'Doors and Airlock', 'Двери и шлюз', [
         block(P + 'airlock_door', 'The airlock door holds the air when closed.', 'Шлюзовая дверь держит воздух, когда закрыта.'),

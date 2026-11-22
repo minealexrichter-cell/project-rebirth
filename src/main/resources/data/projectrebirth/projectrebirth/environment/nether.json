@@ -11,5 +11,6 @@
     "radiation_burst": 0,
     "dust_storm": 0,
     "emi_storm": 0
-  }
+  },
+  "wasteland": 1.5
 }

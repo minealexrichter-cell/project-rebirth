@@ -1,0 +1,30 @@
+{
+  "icon": "minecraft:wither_rose",
+  "x": -3,
+  "y": 2,
+  "parents": [
+    "hostile_world"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wasteland_stages.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wasteland_stages.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.wasteland_stages.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wasteland_stages.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wasteland_stages.p5"
+    }
+  ]
+}

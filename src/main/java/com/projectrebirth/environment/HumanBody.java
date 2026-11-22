@@ -5,6 +5,7 @@ import com.projectrebirth.bodies.HumanShellEntity;
 import com.projectrebirth.bodies.BodyBlocks;
 import com.projectrebirth.bodies.TransferService;
 import com.projectrebirth.config.RebirthConfig;
+import com.projectrebirth.config.WastelandConfig;
 import com.projectrebirth.powerarmor.ArmorUpgradeEffects;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
 
@@ -87,7 +88,7 @@ public final class HumanBody {
             clearSymptoms(player);
             Temperature.clearSymptoms(player);
             // The dosimeter still measures, it only does not gain anything.
-            tellClient(player, Environment.isEnabled() ? exposure : Exposure.NONE);
+            tellClient(player, Environment.isEnabled() ? exposure : Exposure.NONE, 0.0f, false);
             return;
         }
         if (TransferService.isInArtificialBody(player)) {
@@ -96,14 +97,21 @@ public final class HumanBody {
             clearSymptoms(player);
             Temperature.recoverSecond(player);
             MachineBody.onSecond(player, exposure);
-            tellClient(player, exposure);
+            tellClient(player, exposure, 0.0f, false);
             return;
         }
         float radiation = reaching(player, exposure, Hazard.RADIATION);
         float pollution = reaching(player, exposure, Hazard.POLLUTION);
         float acid = reaching(player, exposure, Hazard.ACID);
         float dust = reaching(player, exposure, Hazard.DUST);
+        // 1.9.0: the air of the Wasteland and the deep rock; the sealed cockpit of a power armor keeps them out
+        boolean cockpit = player.getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked();
+        net.minecraft.core.BlockPos eyes = net.minecraft.core.BlockPos.containing(player.getEyePosition());
+        float air = cockpit ? 0.0f : WastelandAir.toxinAt(player.serverLevel(), eyes);
+        float airReaching = air * (1.0f - WastelandAir.protection(player));
+        float deepRock = cockpit ? 0.0f : WastelandAir.deepRockDoseAt(player.serverLevel(), eyes);
         if (!(player.getVehicle() instanceof PowerArmorEntity)) {
+            WastelandAir.useFilter(player, air);
             // dust clogs the filter faster than polluted air
             Protection.useFilter(player, exposure.get(Hazard.POLLUTION)
                     + exposure.get(Hazard.DUST) * RebirthConfig.PROTECTION_FILTER_DUST_MULTIPLIER.get().floatValue());
@@ -111,7 +119,9 @@ public final class HumanBody {
                 Protection.wearByAcid(player);
             }
         }
-        setBiology(player, afterSecond(biology(player), radiation, pollution, acid, dust));
+        float toxinBefore = biology(player).toxin();
+        setBiology(player, afterSecond(biology(player), radiation, pollution, acid, dust,
+                airReaching + WoundInfection.toxinPerSecond(player), deepRock, WastelandAir.clearance(air)));
         applySymptoms(player);
         dustSecond(player, dust);
         hurtBySymptoms(player, acid);
@@ -120,11 +130,11 @@ public final class HumanBody {
         } else {
             Temperature.second(player);
         }
-        tellClient(player, exposure);
+        tellClient(player, exposure, biology(player).toxin() - toxinBefore, airReaching > 0.0005f);
     }
 
     /** What this person's own HUD may show. Test players have no real client behind them. */
-    private static void tellClient(ServerPlayer player, Exposure exposure) {
+    private static void tellClient(ServerPlayer player, Exposure exposure, float toxinRate, boolean wastelandAir) {
         if (player.connection.hasChannel(EnvironmentStatusPayload.TYPE)) {
             Biology biology = biology(player);
             float radiation = reaching(player, exposure, Hazard.RADIATION);
@@ -139,7 +149,10 @@ public final class HumanBody {
                     com.projectrebirth.shelter.Shelters.stateAt(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())),
                     com.projectrebirth.shelter.Contamination.of(player),
                     TemperatureRegistry.enabled() ? Temperature.at(player.serverLevel(), net.minecraft.core.BlockPos.containing(player.getEyePosition())) : Float.NaN,
-                    Temperature.stress(player), zone, ContaminationZones.visualStrength(ground.radiation(), ground.toxin())));
+                    Temperature.stress(player), zone, ContaminationZones.visualStrength(ground.radiation(), ground.toxin()),
+                    toxinRate, biology.residual(), maxHealthPenalty(biology), Wasteland.stage(player.serverLevel()),
+                    (WoundInfection.infected(player) ? EnvironmentStatusPayload.FLAG_WOUND : 0)
+                            | (wastelandAir ? EnvironmentStatusPayload.FLAG_WASTELAND_AIR : 0)));
         }
     }
 
@@ -175,11 +188,34 @@ public final class HumanBody {
 
     /** The numbers of one second, with dust (1.5.0): a little toxic load. */
     public static Biology afterSecond(Biology biology, float radiation, float pollution, float acid, float dust) {
-        float doseGain = radiation * RebirthConfig.HUMAN_DOSE_PER_RADIATION.get().floatValue();
+        return afterSecond(biology, radiation, pollution, acid, dust, 0.0f, 0.0f, 1.0f);
+    }
+
+    /**
+     * The numbers of one second (1.9.0): the hazards reaching the person, the toxic load and the dose that come straight (the
+     * air of the Wasteland after gear, a wound infection; the deep rock), and the share of its own clearance the body keeps
+     * (none while it breathes the air of the Wasteland; below 0 it takes back a clearance counted elsewhere). A share of every
+     * dose gained accumulates and is not cleared.
+     */
+    public static Biology afterSecond(Biology biology, float radiation, float pollution, float acid, float dust, float extraToxin, float extraDose,
+                                      float clearance) {
+        float doseGain = radiation * RebirthConfig.HUMAN_DOSE_PER_RADIATION.get().floatValue() + extraDose;
         float toxinGain = pollution * RebirthConfig.HUMAN_TOXIN_PER_POLLUTION.get().floatValue() + acid * RebirthConfig.HUMAN_TOXIN_PER_ACID.get().floatValue()
-                + dust * RebirthConfig.HUMAN_TOXIN_PER_DUST.get().floatValue();
-        return new Biology(biology.dose() + doseGain - RebirthConfig.HUMAN_DOSE_CLEARANCE.get().floatValue(),
-                biology.toxin() + toxinGain - RebirthConfig.HUMAN_TOXIN_CLEARANCE.get().floatValue()).clamped();
+                + dust * RebirthConfig.HUMAN_TOXIN_PER_DUST.get().floatValue() + extraToxin;
+        float residualGain = WastelandConfig.DOSE_ENABLED.get() ? doseGain * WastelandConfig.DOSE_RESIDUAL_SHARE.get().floatValue() : 0.0f;
+        return new Biology(biology.dose() + doseGain - RebirthConfig.HUMAN_DOSE_CLEARANCE.get().floatValue() * clearance,
+                biology.toxin() + toxinGain - RebirthConfig.HUMAN_TOXIN_CLEARANCE.get().floatValue() * clearance,
+                biology.residual() + residualGain).clamped();
+    }
+
+    /** Maximum health lost to the dose now: the accumulated dose (1.9.0) and a very high dose, together at most [wasteland.dose] maxHealthPenalty. */
+    public static float maxHealthPenalty(Biology biology) {
+        float high = doseStage(biology.dose()) >= 3 ? RebirthConfig.HUMAN_DOSE_HEALTH_PENALTY.get().floatValue() : 0.0f;
+        if (!WastelandConfig.DOSE_ENABLED.get()) {
+            return high;
+        }
+        float accumulated = biology.residual() * WastelandConfig.DOSE_HEALTH_PER_RESIDUAL.get().floatValue();
+        return Math.min(WastelandConfig.DOSE_MAX_HEALTH_PENALTY.get().floatValue(), high + accumulated);
     }
 
     /** How far the dose has gone: 0 none, 1 weakness, 2 slow healing, 3 lower maximum health, 4 damage. */
@@ -219,7 +255,7 @@ public final class HumanBody {
         setModifier(player, Attributes.ATTACK_DAMAGE, RADIATION_WEAK_ATTACK, dose >= 1 ? -attack : 0.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(player, Attributes.MOVEMENT_SPEED, TOXIN_WEAK_SPEED, toxin >= 2 ? -speed : 0.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(player, Attributes.ATTACK_DAMAGE, TOXIN_WEAK_ATTACK, toxin >= 2 ? -attack : 0.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-        setModifier(player, Attributes.MAX_HEALTH, RADIATION_MAX_HEALTH, dose >= 3 ? -RebirthConfig.HUMAN_DOSE_HEALTH_PENALTY.get() : 0.0, AttributeModifier.Operation.ADD_VALUE);
+        setModifier(player, Attributes.MAX_HEALTH, RADIATION_MAX_HEALTH, -(double) Math.round(maxHealthPenalty(biology) * 2.0f) / 2.0, AttributeModifier.Operation.ADD_VALUE);
         if (player.getHealth() > player.getMaxHealth()) {
             player.setHealth(player.getMaxHealth());
         }
@@ -339,8 +375,12 @@ public final class HumanBody {
             return;
         }
         Exposure exposure = Environment.exposureAt(level, shell.blockPosition());
-        // One more second on top of what the capsule-free recovery of onSecond takes back.
-        Biology after = afterSecond(biology(owner), exposure.get(Hazard.RADIATION), exposure.get(Hazard.POLLUTION), exposure.get(Hazard.ACID));
+        // 1.9.0: the air of the Wasteland reaches it too (none in a sealed room); while it breathes that air the recovery that
+        // onSecond counts for a body in its capsule is taken back
+        net.minecraft.core.BlockPos head = shell.blockPosition().above();
+        float air = WastelandAir.toxinAt(level, head);
+        Biology after = afterSecond(biology(owner), exposure.get(Hazard.RADIATION), exposure.get(Hazard.POLLUTION), exposure.get(Hazard.ACID), 0.0f,
+                air, WastelandAir.deepRockDoseAt(level, head), WastelandAir.clearance(air) - 1.0f);
         setBiology(owner, after);
         if ((level.getGameTime() / TICKS_PER_SECOND) % RebirthConfig.HUMAN_SICKNESS_DAMAGE_INTERVAL.get() == 0
                 && (doseStage(after.dose()) >= 4 || toxinStage(after.toxin()) >= 3)) {
@@ -372,7 +412,7 @@ public final class HumanBody {
         if (event.isWasDeath()) {
             float kept = RebirthConfig.HUMAN_KEPT_ON_DEATH.get().floatValue();
             Biology old = biology(event.getOriginal());
-            setBiology(event.getEntity(), new Biology(old.dose() * kept, old.toxin() * kept));
+            setBiology(event.getEntity(), new Biology(old.dose() * kept, old.toxin() * kept, old.residual() * kept));
             Temperature.setStress(event.getEntity(), 0.0f);
         } else {
             setBiology(event.getEntity(), biology(event.getOriginal()));

@@ -9,5 +9,6 @@
     "acid_rain": 0,
     "toxic_storm": 0,
     "radiation_burst": 0
-  }
+  },
+  "wasteland": 0.8
 }

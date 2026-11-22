@@ -159,7 +159,7 @@ public final class Environment {
         if (event.getLevel() instanceof ServerLevel level && isEnabled() && level.getGameTime() % TICKS_PER_SECOND == 0) {
             EnvironmentState state = EnvironmentState.get(level);
             String before = state.event();
-            EnvironmentState.Change change = state.tickSecond(level.getRandom(), hasCatastrophes(level.registryAccess(), level.dimension()));
+            EnvironmentState.Change change = state.tickSecond(level.getRandom(), hasCatastrophes(level.registryAccess(), level.dimension()), Wasteland.stage(level));
             Catastrophes.onSecond(level, state, change, before);
         }
     }

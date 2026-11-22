@@ -8,5 +8,6 @@
   "event_multipliers": {
     "toxic_storm": 1.3,
     "dust_storm": 0.4
-  }
+  },
+  "wasteland": 1.6
 }

@@ -1,0 +1,13 @@
+{
+  "biomes": "#minecraft:is_river",
+  "priority": 10,
+  "background": {
+    "pollution": 1.5,
+    "radiation": 1
+  },
+  "event_multipliers": {
+    "toxic_storm": 1.2,
+    "dust_storm": 0.4
+  },
+  "wasteland": 1.5
+}

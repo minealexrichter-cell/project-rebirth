@@ -26,6 +26,8 @@ public class EnvironmentState extends SavedData {
 
     /** Worldwide factors on the background of the biomes. Later events can leave their marks here. */
     private final Map<Hazard, Float> backgroundFactors = new EnumMap<>(Hazard.class);
+    /** 1.9.0: the stage of the Wasteland of the last second (not saved: it is counted anew every second). */
+    private int stage = 1;
     private EventPhase phase = EventPhase.CALM;
     @Nullable
     private String event;
@@ -210,6 +212,15 @@ public class EnvironmentState extends SavedData {
      * @return what changed
      */
     public Change tickSecond(RandomSource random, boolean catastrophes) {
+        return tickSecond(random, catastrophes, 1);
+    }
+
+    /**
+     * The same at a stage of the Wasteland (1.9.0): a new calm is shorter and a new catastrophe stronger by [wasteland.stages]
+     * and the preset.
+     */
+    public Change tickSecond(RandomSource random, boolean catastrophes, int stage) {
+        this.stage = stage;
         if (phase == EventPhase.CALM) {
             if (!scheduled) {
                 startCalm(calmSeconds(random));
@@ -261,14 +272,18 @@ public class EnvironmentState extends SavedData {
         plannedEvent = chooseEvent(random, id -> true);
         if (plannedEvent != null) {
             RebirthConfig.EnvironmentEventStats stats = RebirthConfig.environmentEvent(plannedEvent);
-            plannedIntensity = between(random, stats.minIntensity().get().floatValue(), stats.maxIntensity().get().floatValue());
+            plannedIntensity = between(random, stats.minIntensity().get().floatValue(), stats.maxIntensity().get().floatValue())
+                    * com.projectrebirth.config.WastelandConfig.byStage(com.projectrebirth.config.WastelandConfig.STAGE_CATASTROPHE_STRENGTH, stage);
             plannedActiveSeconds = between(random, stats.minActiveSeconds().get(), stats.maxActiveSeconds().get());
         }
         setDirty();
     }
 
-    private static int calmSeconds(RandomSource random) {
-        return between(random, RebirthConfig.ENVIRONMENT_MIN_CALM_SECONDS.get(), RebirthConfig.ENVIRONMENT_MAX_CALM_SECONDS.get());
+    private int calmSeconds(RandomSource random) {
+        int seconds = between(random, RebirthConfig.ENVIRONMENT_MIN_CALM_SECONDS.get(), RebirthConfig.ENVIRONMENT_MAX_CALM_SECONDS.get());
+        float often = com.projectrebirth.config.WastelandConfig.byStage(com.projectrebirth.config.WastelandConfig.STAGE_CATASTROPHE_FREQUENCY, stage)
+                * com.projectrebirth.config.WastelandConfig.preset().catastropheFrequency().get().floatValue();
+        return Math.max(1, Math.round(seconds / Math.max(0.01f, often)));
     }
 
     private static int between(RandomSource random, int min, int max) {

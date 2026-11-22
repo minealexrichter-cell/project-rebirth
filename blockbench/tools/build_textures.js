@@ -1891,6 +1891,8 @@
     item('antiradin', () => bottle(['....kWyWWyWk....', '....kWWyyWWk....', '....kWWWyWWk....'], {C: '#d84a3a', l: '#f0a830', y: '#14181d'}));
     // Sorbent: black charcoal liquid, a green cross on the label.
     item('sorbent', () => bottle(['....kWWyyWWk....', '....kWyyyyWk....', '....kWWyyWWk....'], {C: '#4caf50', l: '#3a3f46', y: '#3d9a42'}));
+    // Antiseptic (1.9.0): iodine-brown liquid, a red cross on the label.
+    item('antiseptic', () => bottle(['....kWWyyWWk....', '....kWyyyyWk....', '....kWWyyWWk....'], {C: '#d32f2f', l: '#8a4b1c', y: '#d32f2f'}));
 
     // Worn gear (respirator and suits) is painted with its 3D model by blockbench/tools/build_gear.js since 1.5.1.
 

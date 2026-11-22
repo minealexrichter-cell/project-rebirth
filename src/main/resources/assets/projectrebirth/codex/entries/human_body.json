@@ -1,0 +1,43 @@
+{
+  "icon": "minecraft:player_head",
+  "x": -5,
+  "y": 0,
+  "parents": [
+    "hostile_world"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.human_body.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.human_body.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.human_body.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.human_body.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.human_body.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.human_body.p6"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:antiseptic",
+      "text": "codex.projectrebirth.human_body.p7"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:antiseptic"
+    }
+  ]
+}

@@ -15,7 +15,7 @@
       "text": "codex.projectrebirth.path.p2"
     },
     {
-      "type": "text",
+      "type": "note",
       "text": "codex.projectrebirth.path.p3"
     },
     {
@@ -23,8 +23,24 @@
       "text": "codex.projectrebirth.path.p4"
     },
     {
-      "type": "note",
+      "type": "text",
       "text": "codex.projectrebirth.path.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.path.p6"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.path.p7"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.path.p8"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.path.p9"
     }
   ]
 }

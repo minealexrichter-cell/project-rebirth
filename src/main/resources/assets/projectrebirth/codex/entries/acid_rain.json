@@ -1,0 +1,26 @@
+{
+  "icon": "minecraft:water_bucket",
+  "x": 0,
+  "y": 0,
+  "parents": [
+    "catastrophes"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.acid_rain.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.acid_rain.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.acid_rain.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.acid_rain.p4"
+    }
+  ]
+}

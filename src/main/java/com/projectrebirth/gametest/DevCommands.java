@@ -83,6 +83,21 @@ public final class DevCommands {
                         .then(Commands.argument("module", StringArgumentType.word())
                                 .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                         .executes(DevCommands::android)))));
+        // 1.8.0, block J: a work order without an area (the android finds its work and storage itself)
+        root.then(Commands.literal("ownwork")
+                .then(Commands.argument("machine", net.minecraft.commands.arguments.EntityArgument.entity())
+                        .then(Commands.argument("kind", StringArgumentType.word())
+                                .executes(ctx -> {
+                                    net.minecraft.world.entity.Entity machine = net.minecraft.commands.arguments.EntityArgument.getEntity(ctx, "machine");
+                                    if (!(machine instanceof com.projectrebirth.garrison.GarrisonMachine garrison)) {
+                                        ctx.getSource().sendFailure(Component.literal("not a machine"));
+                                        return 0;
+                                    }
+                                    garrison.machineCore().setTask(com.projectrebirth.garrison.MachineTask.workOwn(StringArgumentType.getString(ctx, "kind")));
+                                    ctx.getSource().sendSuccess(() -> Component.literal("own work " + StringArgumentType.getString(ctx, "kind") + " to "
+                                            + machine.getName().getString()), false);
+                                    return 1;
+                                }))));
         root.then(Commands.literal("work")
                 .then(Commands.argument("console", BlockPosArgument.blockPos())
                         .then(Commands.argument("machine", net.minecraft.commands.arguments.EntityArgument.entity())

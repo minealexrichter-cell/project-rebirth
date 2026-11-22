@@ -213,8 +213,12 @@ public final class MineShaft {
     /** The places a mine keeps away from: the faction's cores, the shelters and the storages of the world. */
     private static List<BlockPos> keepOff(ServerLevel level, @Nullable UUID owner) {
         List<BlockPos> out = new ArrayList<>(Storages.all(level));
-        for (long unit : Shelters.find(level).unitPositions()) {
-            out.add(BlockPos.of(unit));
+        // a world with no shelter has no shelter manager (find gives null)
+        Shelters shelters = Shelters.find(level);
+        if (shelters != null) {
+            for (long unit : shelters.unitPositions()) {
+                out.add(BlockPos.of(unit));
+            }
         }
         Optional<Faction> faction = FactionData.get(level.getServer()).of(owner);
         faction.ifPresent(f -> {

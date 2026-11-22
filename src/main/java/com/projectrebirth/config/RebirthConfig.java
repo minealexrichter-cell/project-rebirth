@@ -316,6 +316,17 @@ public final class RebirthConfig {
     }
 
     public static final ModConfigSpec.BooleanValue WORK_MINE;
+    // 1.8.0, block J: the storage and work androids that find their work themselves
+    public static final ModConfigSpec.BooleanValue STORAGE_ENABLED;
+    public static final ModConfigSpec.IntValue STORAGE_SLOTS;
+    public static final ModConfigSpec.IntValue STORAGE_RANGE;
+    public static final ModConfigSpec.BooleanValue WORK_AUTO;
+    public static final ModConfigSpec.IntValue WORK_SEARCH_RADIUS;
+    public static final ModConfigSpec.IntValue MINE_DEPTH;
+    public static final ModConfigSpec.IntValue MINE_BASE_DISTANCE;
+    public static final ModConfigSpec.IntValue MINE_CORRIDOR;
+    public static final ModConfigSpec.IntValue MINE_BRANCH;
+    public static final ModConfigSpec.IntValue MINE_TORCH_EVERY;
     public static final ModConfigSpec.BooleanValue WORK_LUMBER;
     public static final ModConfigSpec.BooleanValue WORK_FARM;
     public static final ModConfigSpec.DoubleValue WORK_ENERGY_PER_BLOCK;
@@ -1327,6 +1338,12 @@ public final class RebirthConfig {
                     builder.comment("Work speed (mining, felling, harvesting) as a share of a player's with the same tool").defineInRange("workSpeed", workSpeeds[i], 0.05, 10.0)));
             builder.pop();
         }
+        builder.comment("1.8.0, block J: the storage, a multiblock of 4 x 4 x 3: one store for a faction; work androids hand in there and take",
+                "tools, seeds and saplings from it.").push("storage");
+        STORAGE_ENABLED = builder.comment("Whether storages work").define("enabled", true);
+        STORAGE_SLOTS = builder.comment("Slots of a storage (a stack of 64 each); a storage built before keeps its slots if there were more")
+                .defineInRange("slots", 256, 27, 4096);
+        builder.pop();
         builder.comment("Work androids (block F): a miner, a lumberjack and a farmer in an area marked with the tactical tablet.").push("work");
         WORK_MINE = builder.comment("Whether work androids mine").define("mine", true);
         WORK_LUMBER = builder.comment("Whether work androids fell trees").define("lumber", true);
@@ -1335,11 +1352,23 @@ public final class RebirthConfig {
         WORK_ORE_BLOCKS = builder.comment("Blocks the miner keeps in the 'ores only' work besides the tag c:ores").defineListAllowEmpty("oreBlocks",
                 java.util.List.of("minecraft:obsidian", "minecraft:crying_obsidian", "minecraft:amethyst_cluster", "minecraft:raw_iron_block",
                         "minecraft:raw_copper_block", "minecraft:raw_gold_block"), () -> "minecraft:obsidian", o -> o instanceof String);
-        WORK_FILLER_BLOCKS = builder.comment("Blocks of its gear the miner plugs water and lava with (it keeps a stack of them)").defineListAllowEmpty("fillerBlocks",
+        WORK_FILLER_BLOCKS = builder.comment("Blocks of its gear the miner plugs water and lava with and builds its stair of (it keeps a stack of them);", "1.8.0: a block that falls (sand, gravel, concrete powder...) is never used, even when it is named here").defineListAllowEmpty("fillerBlocks",
                 java.util.List.of("minecraft:cobblestone", "minecraft:cobbled_deepslate", "minecraft:dirt", "minecraft:netherrack", "minecraft:stone",
                         "minecraft:deepslate", "minecraft:andesite", "minecraft:diorite", "minecraft:granite", "minecraft:tuff"), () -> "minecraft:cobblestone",
                 o -> o instanceof String);
         WORK_REPLANT_SAPLINGS = builder.comment("Whether the lumberjack plants a sapling where a tree stood").define("replantSaplings", true);
+        WORK_AUTO = builder.comment("1.8.0: a work order without an area: the android finds its work itself (a mine out of the base, natural trees,",
+                "the fields of its faction) and hands in at the nearest storage of its faction; an area and a chest from the tablet come first")
+                .define("findWorkItself", true);
+        WORK_SEARCH_RADIUS = builder.comment("1.8.0: blocks round the storage (or the android) in which a lumberjack and a farmer look for work (a console may set less)")
+                .defineInRange("searchRadius", 32, 8, 96);
+        STORAGE_RANGE = builder.comment("1.8.0: blocks in which a work android looks for a storage of its faction").defineInRange("storageRange", 128, 8, 512);
+        MINE_DEPTH = builder.comment("1.8.0: the deepest level (Y) a miner of its own digs down to").defineInRange("mineDepth", -54, -64, 320);
+        MINE_BASE_DISTANCE = builder.comment("1.8.0: blocks a miner keeps its mine from the faction core, shelters and storages (and off its faction's land)")
+                .defineInRange("mineBaseDistance", 48, 0, 512);
+        MINE_CORRIDOR = builder.comment("1.8.0: the length of the main tunnel at the bottom of a mine").defineInRange("mineCorridor", 48, 4, 256);
+        MINE_BRANCH = builder.comment("1.8.0: the length of the side tunnels, every third block of the main one, both ways").defineInRange("mineBranch", 16, 0, 128);
+        MINE_TORCH_EVERY = builder.comment("1.8.0: a torch from its gear every that many blocks of a mine (0: none)").defineInRange("mineTorchEvery", 8, 0, 64);
         WORK_CUT_LEAVES = builder.comment("Whether the lumberjack cuts the leaves of a felled tree (else they fall by themselves and it picks up what drops)").define("cutLeaves", true);
         WORK_TILL = builder.comment("Whether the farmer tills dirt and grass in its area with a hoe in hand (off: it only harvests and replants)").define("till", false);
         WORK_KEEP_SEEDS = builder.comment("Seeds, saplings or fillers of one kind it keeps in its gear when it hands the rest in").defineInRange("keepSeeds", 16, 0, 64);

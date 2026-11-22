@@ -1,0 +1,28 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "electronics_fabricator",
+  "sort": 103,
+  "time": 300,
+  "ingredients": [
+    {
+      "item": "projectrebirth:circuit_board",
+      "count": 2
+    },
+    {
+      "item": "minecraft:iron_block",
+      "count": 1
+    },
+    {
+      "item": "minecraft:chest",
+      "count": 4
+    },
+    {
+      "item": "minecraft:hopper",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:storage_controller",
+    "count": 1
+  }
+}

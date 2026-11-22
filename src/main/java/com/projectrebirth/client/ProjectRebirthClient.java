@@ -117,6 +117,7 @@ public class ProjectRebirthClient {
         event.register(TechMenus.MAINTENANCE.get(), MaintenanceScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.MACHINE_MOUNTING.get(), com.projectrebirth.client.screen.MachineMountingScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.CONSOLE_MENU.get(), com.projectrebirth.client.garrison.ConsoleScreen::new);
+        event.register(com.projectrebirth.logistics.LogisticsRegistry.STORAGE_MENU.get(), com.projectrebirth.client.logistics.StorageScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.ANDROID_GEAR.get(), com.projectrebirth.client.screen.AndroidGearScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.TURRET_MOUNT_MENU.get(), com.projectrebirth.client.garrison.TurretMountScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.SERVICE_POST_MENU.get(), com.projectrebirth.client.garrison.ServicePostScreen::new);

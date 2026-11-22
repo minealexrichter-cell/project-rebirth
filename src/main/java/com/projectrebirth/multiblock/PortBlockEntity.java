@@ -35,13 +35,13 @@ public class PortBlockEntity extends BlockEntity {
         }
     }
 
-    /** The controller it serves, if that is loaded, whole and still names this port. */
+    /** The controller it serves (an assembler, 1.8.0: or a storage), if that is loaded, whole and still names this port. */
     @Nullable
-    public MultiblockControllerBlockEntity controller() {
+    public PortHost controller() {
         if (controller == null || level == null || !level.isLoaded(controller)) {
             return null;
         }
-        return level.getBlockEntity(controller) instanceof MultiblockControllerBlockEntity found && found.serves(worldPosition) ? found : null;
+        return level.getBlockEntity(controller) instanceof PortHost found && found.serves(worldPosition) ? found : null;
     }
 
     @Override

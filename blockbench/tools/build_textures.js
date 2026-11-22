@@ -2355,6 +2355,43 @@
     block('multiblock_controller_front_on', () => controllerFront(true));
     block('multiblock_controller_side', () => casing(new Painter(195), '#e0b33a'));
 
+    // ---------------------------------------------------------------- the storage (version 1.8.0, block J)
+
+    const STORE_TEAL = '#37c6e8';
+    // The storage controller: a terminal with a list of stock lines and a fill gauge; the lit one glows teal.
+    function storageFront(on) {
+        const p = casing(new Painter(250), STORE_TEAL);
+        p.inset(2, 2, 12, 8, '#14181c', 0.02);
+        for (let y = 3; y < 9; y += 2) p.rect(3, y, on ? 6 + (y % 3) : 5, 1, on ? '#e0b33a' : '#3a3424').rect(11, y, 2, 1, on ? STORE_TEAL : '#24363d');
+        p.bevel(2, 11, 12, 3, '#2a3036', 0.02);
+        p.rect(3, 12, on ? 7 : 3, 1, on ? STORE_TEAL : '#24363d');
+        p.px(on ? '#5fbf3a' : '#3a2a2a', [13, 12]);
+        return p;
+    }
+    block('storage_controller_front', () => storageFront(false));
+    block('storage_controller_front_on', () => storageFront(true));
+    block('storage_controller_side', () => casing(new Painter(251), STORE_TEAL));
+    // A storage rack: a steel frame with two shelves of crates, the crates' faces in two shades.
+    block('storage_rack', () => {
+        const p = new Painter(252);
+        p.rect(0, 0, 16, 16, '#23272c');
+        p.bevel(0, 0, 2, 16, '#6b737c', 0.04).bevel(14, 0, 2, 16, '#6b737c', 0.04);
+        p.bevel(0, 0, 16, 2, '#7c858f', 0.04).bevel(0, 7, 16, 2, '#7c858f', 0.04).bevel(0, 14, 16, 2, '#7c858f', 0.04);
+        for (const [x, y, c] of [[2, 2, '#8a6a3e'], [8, 2, '#6f5532'], [2, 9, '#6f5532'], [8, 9, '#8a6a3e']]) {
+            p.bevel(x, y, 6, 5, c, 0.05);
+            p.rect(x + 2, y + 2, 2, 1, '#e0b33a');
+        }
+        return p;
+    });
+    block('storage_rack_top', () => {
+        const p = new Painter(253);
+        p.bevel(0, 0, 16, 16, '#59626c', 0.04);
+        p.inset(2, 2, 12, 12, '#3b4148', 0.03);
+        p.rect(7, 2, 2, 12, '#6b737c').rect(2, 7, 12, 2, '#6b737c');
+        p.px(STORE_TEAL, [0, 0], [15, 0], [0, 15], [15, 15]);
+        return p;
+    });
+
     // ---------------------------------------------------------------- multiblocks (version 1.7.0, block B)
 
     // The assembly plate: the floor of the workshops, a heavy steel plate in four tiles with a yellow mark in the middle.

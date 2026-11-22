@@ -25,11 +25,11 @@ public final class MultiblockTracker {
     private MultiblockTracker() {
     }
 
-    static void track(ServerLevel level, BlockPos controller, BoundingBox bounds) {
+    public static void track(ServerLevel level, BlockPos controller, BoundingBox bounds) {
         BOUNDS.computeIfAbsent(level, key -> new HashMap<>()).put(controller.immutable(), bounds);
     }
 
-    static void untrack(ServerLevel level, BlockPos controller) {
+    public static void untrack(ServerLevel level, BlockPos controller) {
         Map<BlockPos, BoundingBox> map = BOUNDS.get(level);
         if (map != null) {
             map.remove(controller);
@@ -47,7 +47,7 @@ public final class MultiblockTracker {
         }
         BlockPos pos = event.getPos();
         for (Map.Entry<BlockPos, BoundingBox> entry : map.entrySet()) {
-            if (entry.getValue().isInside(pos) && level.getBlockEntity(entry.getKey()) instanceof MultiblockControllerBlockEntity controller) {
+            if (entry.getValue().isInside(pos) && level.getBlockEntity(entry.getKey()) instanceof PortHost controller) {
                 controller.markDirty();
             }
         }

@@ -17,7 +17,7 @@ import net.minecraft.core.UUIDUtil;
  */
 public record ConsoleView(int energy, int capacity, boolean powered, boolean intruderAllowed, boolean intruderMode, boolean weatherLink,
                           boolean sheltering, List<Row> rows, List<Group> groups, List<Line> log, Optional<Snapshot> map, int range,
-                          int rules, List<Site> sites) {
+                          int rules, List<Site> sites, List<Zone> zones, int searchRadius) {
     /**
      * 1.8.0: the facts of a machine for the console's cards and map: energy share (-1: none), rounds (-1: none), how far it shoots,
      * a work android, the points of its order (guard point, route, area corners and chest, area centre) and its alarms going on.
@@ -33,7 +33,23 @@ public record ConsoleView(int energy, int capacity, boolean powered, boolean int
                 Codec.INT.listOf().fieldOf("alarms").forGetter(Facts::alarms)).apply(i, Facts::new));
     }
 
-    /** 1.8.0: a service post (kind 0) or a charging pad (kind 1) near the console. */
+    /** 1.8.0, block J: a zone of the console where work androids touch nothing (block columns, both corners included). */
+    public record Zone(int x1, int z1, int x2, int z2) {
+        public static final Codec<Zone> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.INT.fieldOf("x1").forGetter(Zone::x1),
+                Codec.INT.fieldOf("z1").forGetter(Zone::z1),
+                Codec.INT.fieldOf("x2").forGetter(Zone::x2),
+                Codec.INT.fieldOf("z2").forGetter(Zone::z2)).apply(i, Zone::new));
+
+        public boolean contains(int x, int z) {
+            return x >= Math.min(x1, x2) && x <= Math.max(x1, x2) && z >= Math.min(z1, z2) && z <= Math.max(z1, z2);
+        }
+    }
+
+    /**
+     * 1.8.0: a place on the map near the console: a service post (kind 0), a charging pad (1); block J: a storage (2), the mine of a
+     * work android (3), the forest (4) and the fields (5) it found.
+     */
     public record Site(int kind, int x, int y, int z) {
         public static final Codec<Site> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.INT.fieldOf("kind").forGetter(Site::kind),
@@ -108,5 +124,7 @@ public record ConsoleView(int energy, int capacity, boolean powered, boolean int
             Snapshot.CODEC.optionalFieldOf("map").forGetter(ConsoleView::map),
             Codec.INT.fieldOf("range").forGetter(ConsoleView::range),
             Codec.INT.optionalFieldOf("rules", OrderRules.DEFAULT_RULES).forGetter(ConsoleView::rules),
-            Site.CODEC.listOf().optionalFieldOf("sites", List.of()).forGetter(ConsoleView::sites)).apply(i, ConsoleView::new));
+            Site.CODEC.listOf().optionalFieldOf("sites", List.of()).forGetter(ConsoleView::sites),
+            Zone.CODEC.listOf().optionalFieldOf("zones", List.of()).forGetter(ConsoleView::zones),
+            Codec.INT.optionalFieldOf("search_radius", 0).forGetter(ConsoleView::searchRadius)).apply(i, ConsoleView::new));
 }

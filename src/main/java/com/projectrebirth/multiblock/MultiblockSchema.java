@@ -124,7 +124,9 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
                 return state.isAir() || state.canBeReplaced();
             }
             if (controller) {
-                return state.getBlock() instanceof MultiblockControllerBlock;
+                // 1.8.0: a plan may name its own controller (the storage); else any assembler's controller
+                return blocks.isEmpty() ? state.getBlock() instanceof MultiblockControllerBlock
+                        : blocks.contains(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
             }
             if (port.isPresent()) {
                 return state.getBlock() instanceof PortBlock portBlock && portBlock.kind().equals(port.get());
@@ -140,7 +142,8 @@ public record MultiblockSchema(List<List<String>> layers, Map<String, Cell> key,
                 return Blocks.AIR.defaultBlockState();
             }
             if (controller) {
-                return MultiblockRegistry.CONTROLLER.get().defaultBlockState();
+                return blocks.isEmpty() ? MultiblockRegistry.CONTROLLER.get().defaultBlockState()
+                        : BuiltInRegistries.BLOCK.get(blocks.get(0)).defaultBlockState();
             }
             if (port.isPresent()) {
                 return ("cargo".equals(port.get()) ? MultiblockRegistry.CARGO_PORT : MultiblockRegistry.ENERGY_PORT).get().defaultBlockState();

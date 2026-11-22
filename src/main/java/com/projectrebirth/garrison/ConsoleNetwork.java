@@ -37,6 +37,10 @@ public final class ConsoleNetwork {
     public static final int REQUEST_VIEW = 6;
     /** 1.8.0: the target rules (OrderRules bits in value) of a group, or with ALL of the machines without a group. */
     public static final int SET_RULES = 7;
+    /** 1.8.0, block J: a zone «do not touch» (its corner in value and extra, its sizes in group), the search radius. */
+    public static final int ADD_ZONE = 8;
+    public static final int REMOVE_ZONE = 9;
+    public static final int SEARCH_RADIUS = 10;
     /** The longest name the console's window may give a machine. */
     public static final int NAME_LENGTH = 32;
 
@@ -300,6 +304,15 @@ public final class ConsoleNetwork {
             }
             case WEATHER -> console.setWeatherLink(payload.value() != 0);
             case SET_RULES -> console.setRules(payload.group(), payload.value());
+            case ADD_ZONE -> {
+                // value, extra: the corner with the least x and z; group: the size along x times 512 plus the size along z
+                int sx = Math.max(0, payload.group()) / 512, sz = Math.max(0, payload.group()) % 512;
+                if (!console.addZone(new ConsoleView.Zone(payload.value(), payload.extra(), payload.value() + sx, payload.extra() + sz))) {
+                    player.displayClientMessage(Component.translatable("message.projectrebirth.console.zone_refused", ConsoleBlockEntity.MAX_ZONES), true);
+                }
+            }
+            case REMOVE_ZONE -> console.removeZonesAt(payload.value(), payload.extra());
+            case SEARCH_RADIUS -> console.setSearchRadius(payload.value());
             case UNLINK -> payload.machine().ifPresent(console::unlink);
             case REQUEST_VIEW -> {
             }
@@ -425,10 +438,20 @@ public final class ConsoleNetwork {
                 task = MachineTask.patrol(points);
             }
             case WORK -> {
-                if (points.size() < 2) {
-                    return Component.translatable("message.projectrebirth.console.map_area_needed");
-                }
                 int kind = Math.floorMod(payload.work(), MachineTask.WORKS.size());
+                if (points.size() < 2) {
+                    if (!RebirthConfig.WORK_AUTO.get()) {
+                        return Component.translatable("message.projectrebirth.console.map_area_needed");
+                    }
+                    // 1.8.0, block J: no area: they find their work and their storage themselves
+                    task = MachineTask.workOwn(MachineTask.WORKS.get(kind));
+                    for (UUID machine : able) {
+                        console.order(machine, task);
+                    }
+                    sendView(player, console);
+                    ack(player, type, able, refused, problem);
+                    return Component.translatable("message.projectrebirth.console.ordered_own_work", able.size());
+                }
                 BlockPos[] box = workBox(MachineTask.WORKS.get(kind), points.get(0), points.get(1));
                 Component tooBig = areaProblem(kind, box[0], box[1]);
                 if (tooBig != null) {

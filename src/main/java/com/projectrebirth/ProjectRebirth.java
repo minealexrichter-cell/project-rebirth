@@ -76,6 +76,7 @@ public class ProjectRebirth {
         com.projectrebirth.structures.StructureRegistry.register(modEventBus);
         com.projectrebirth.structures.StructureBlocks.register(modEventBus);
         com.projectrebirth.hostile.HostileRegistry.register(modEventBus);
+        com.projectrebirth.logistics.LogisticsRegistry.register(modEventBus);
         com.projectrebirth.water.WaterRegistry.register(modEventBus);
         com.projectrebirth.weather.WeatherRegistry.register(modEventBus);
         com.projectrebirth.monitoring.MonitoringRegistry.register(modEventBus);

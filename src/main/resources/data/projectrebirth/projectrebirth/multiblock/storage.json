@@ -1,0 +1,48 @@
+{
+  "layers": [
+    [
+      "RRRR",
+      "RRRR",
+      "RRRR",
+      "FCGF"
+    ],
+    [
+      "RRRR",
+      "RRRR",
+      "RRRR",
+      "FFGF"
+    ],
+    [
+      "PPPP",
+      "PPPP",
+      "PPPP",
+      "PPPP"
+    ]
+  ],
+  "key": {
+    "R": {
+      "blocks": [
+        "projectrebirth:storage_rack"
+      ]
+    },
+    "F": {
+      "blocks": [
+        "projectrebirth:assembly_frame"
+      ]
+    },
+    "P": {
+      "blocks": [
+        "projectrebirth:assembly_plate"
+      ]
+    },
+    "C": {
+      "controller": true,
+      "blocks": [
+        "projectrebirth:storage_controller"
+      ]
+    },
+    "G": {
+      "port": "cargo"
+    }
+  }
+}

@@ -21,7 +21,11 @@ public enum ConsoleAlarm {
     CHEST_FULL(2, true),
     // 1.7.2, block B (new ones only at the end: the console saves alarms by their place in this list)
     STUCK(3, true),
-    NO_POST(3, true);
+    NO_POST(3, true),
+    // 1.8.0, block J: a work android that finds its work itself has no storage (nor a chest of its order) in reach; a miner finds no
+    // place for a mine near it
+    NO_STORAGE(2, true),
+    NO_MINE_SITE(1, true);
 
     private final int signal;
     private final boolean told;

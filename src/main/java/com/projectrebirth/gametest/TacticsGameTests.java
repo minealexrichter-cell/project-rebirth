@@ -110,6 +110,9 @@ public class TacticsGameTests {
         android.gear().setItem(0, new ItemStack(Items.IRON_SWORD));
         android.gear().setItem(AndroidEntity.OFFHAND, new ItemStack(Items.SHIELD));
         Zombie zombie = zombie(helper, 12, 12, false);
+        // a tough zombie: the fight lasts long enough for it to swing (a strong android kills a plain one first)
+        zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(200.0);
+        zombie.setHealth(200.0f);
         zombie.setTarget(android);
         boolean[] raised = new boolean[1];
         helper.onEachTick(() -> {

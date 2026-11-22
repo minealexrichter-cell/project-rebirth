@@ -154,14 +154,14 @@ public final class MultiblockRegistry {
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, PORT_ENTITY.get(), (port, side) -> {
-            MultiblockControllerBlockEntity controller = port.getBlockState().getBlock() instanceof PortBlock block && block.kind().equals(PortBlock.ENERGY)
+            PortHost controller = port.getBlockState().getBlock() instanceof PortBlock block && block.kind().equals(PortBlock.ENERGY)
                     ? port.controller() : null;
-            return controller == null ? null : controller.energy().inputOnly();
+            return controller == null ? null : controller.portEnergy();
         });
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, PORT_ENTITY.get(), (port, side) -> {
-            MultiblockControllerBlockEntity controller = port.getBlockState().getBlock() instanceof PortBlock block && block.kind().equals(PortBlock.CARGO)
+            PortHost controller = port.getBlockState().getBlock() instanceof PortBlock block && block.kind().equals(PortBlock.CARGO)
                     ? port.controller() : null;
-            return controller == null ? null : controller.automation();
+            return controller == null ? null : controller.portItems();
         });
     }
 

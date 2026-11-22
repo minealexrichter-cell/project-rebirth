@@ -1,0 +1,34 @@
+{
+  "icon": "projectrebirth:storage_controller",
+  "x": 12,
+  "y": -5,
+  "parents": [
+    "work_android",
+    "multiblocks"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.storage.p1"
+    },
+    {
+      "type": "multiblock",
+      "value": "projectrebirth:storage",
+      "text": "codex.projectrebirth.storage.p2"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:storage_controller",
+      "text": "codex.projectrebirth.storage.p3"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:storage_rack",
+      "text": "codex.projectrebirth.storage.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.storage.p5"
+    }
+  ]
+}

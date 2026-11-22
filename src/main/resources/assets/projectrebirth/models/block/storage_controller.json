@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "projectrebirth:block/storage_controller_front",
+    "side": "projectrebirth:block/storage_controller_side",
+    "top": "projectrebirth:block/storage_controller_side"
+  }
+}

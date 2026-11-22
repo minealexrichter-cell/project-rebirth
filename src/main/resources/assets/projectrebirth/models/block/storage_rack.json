@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "side": "projectrebirth:block/storage_rack",
+    "end": "projectrebirth:block/storage_rack_top"
+  }
+}

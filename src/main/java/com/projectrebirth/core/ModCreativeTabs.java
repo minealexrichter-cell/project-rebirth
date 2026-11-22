@@ -217,6 +217,9 @@ public final class ModCreativeTabs {
         out.accept(GarrisonRegistry.CONSOLE_ITEM.get());
         out.accept(GarrisonRegistry.TABLET.get());
         out.accept(GarrisonRegistry.SERVICE_POST_ITEM.get());
+        // 1.8.0, block J: the storage
+        out.accept(com.projectrebirth.logistics.LogisticsRegistry.STORAGE_CONTROLLER_ITEM.get());
+        out.accept(com.projectrebirth.logistics.LogisticsRegistry.STORAGE_RACK_ITEM.get());
         out.accept(GarrisonRegistry.SERVICE_POST_PLATE_ITEM.get());
         out.accept(GarrisonRegistry.TURRET_MOUNT_ITEM.get());
         out.accept(GarrisonRegistry.MACHINE_GUN_TURRET_ITEM.get());

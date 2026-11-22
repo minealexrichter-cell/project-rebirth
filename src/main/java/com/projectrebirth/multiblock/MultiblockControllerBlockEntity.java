@@ -45,7 +45,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * materials of a stage are taken when it begins, its time runs while there is energy for each tick. Broken, it drops what it
  * holds and the materials of the stages already begun. Numbers in the config ([garrison.multiblocks]).
  */
-public class MultiblockControllerBlockEntity extends BlockEntity implements MenuProvider {
+public class MultiblockControllerBlockEntity extends BlockEntity implements MenuProvider, PortHost {
     public static final int BASE_SLOT = 0;
     public static final int FIRST_MATERIAL = 1;
     public static final int MATERIALS = AssemblyRecipe.MAX_MATERIALS;
@@ -289,6 +289,7 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     }
 
     /** Whether the port at that place is one of this construction's. */
+    @Override
     public boolean serves(BlockPos port) {
         return linked.contains(port);
     }
@@ -347,6 +348,19 @@ public class MultiblockControllerBlockEntity extends BlockEntity implements Menu
     // ---------------------------------------------------------------- the construction
 
     /** A block inside the bounds changed: look again on the next tick. */
+    @Override
+    @javax.annotation.Nullable
+    public net.neoforged.neoforge.energy.IEnergyStorage portEnergy() {
+        return energy().inputOnly();
+    }
+
+    @Override
+    @javax.annotation.Nullable
+    public net.neoforged.neoforge.items.IItemHandler portItems() {
+        return automation();
+    }
+
+    @Override
     public void markDirty() {
         dirty = true;
     }

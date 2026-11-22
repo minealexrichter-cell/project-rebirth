@@ -108,7 +108,7 @@
 
 ## Архитектура
 
-Подпакеты `com.projectrebirth`: `core`, `config`, `bodies` (перенос, тела, `bodies/power` — заряд, нагрев, износ), `powerarmor`, `weapons`, `upgrades`, `technology` (руды, станции, `technology/energy`), `factions`, `environment` (среда, катастрофы, заражение), `shelter`, `water`, `weather`, `monitoring`, `scouting`, `structures`, `hostile` (враги), `multiblock`, `garrison` (машины игрока), `codex`, `mixin`, `client`, `gametest`. Точная структура — в STATUS, раздел «Структура кода». Можешь менять её, если объяснишь причину и сохранишь разделение ответственности.
+Подпакеты `com.projectrebirth`: `core`, `config`, `bodies` (перенос, тела, `bodies/power` — заряд, нагрев, износ), `powerarmor`, `weapons`, `upgrades`, `technology` (руды, станции, `technology/energy`), `factions`, `environment` (среда, катастрофы, заражение), `shelter`, `water`, `weather`, `monitoring`, `scouting`, `structures`, `hostile` (враги), `multiblock`, `garrison` (машины игрока), `logistics` (хранилище), `codex`, `mixin`, `client`, `gametest`. Точная структура — в STATUS, раздел «Структура кода». Можешь менять её, если объяснишь причину и сохранишь разделение ответственности.
 
 ## Субагенты
 

@@ -108,6 +108,11 @@ public record MachineTask(Type type, Optional<BlockPos> point, List<BlockPos> ro
         return new MachineTask(Type.ESCORT, Optional.empty(), List.of(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(whom), "");
     }
 
+    /** 1.8.0, block J: work without an area: the android finds its work and its storage itself. */
+    public static MachineTask workOwn(String work) {
+        return new MachineTask(Type.WORK, Optional.empty(), List.of(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), work);
+    }
+
     public static MachineTask work(String work, BlockPos from, BlockPos to, BlockPos chest) {
         return new MachineTask(Type.WORK, Optional.empty(), List.of(), Optional.of(from.immutable()), Optional.of(to.immutable()),
                 Optional.of(chest.immutable()), Optional.empty(), work);

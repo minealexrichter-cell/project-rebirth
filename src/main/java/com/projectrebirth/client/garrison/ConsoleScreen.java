@@ -229,6 +229,10 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
         addRenderableWidget(new UiDropdown<>(leftPos + W - 7 - 110, topPos + ORDERS_Y + 17, 110, List.of(0, 1, 2, 3),
                 value -> tr("work_kind", Component.translatable("work_kind.projectrebirth." + MachineTask.WORKS.get(value))), () -> workKind,
                 value -> workKind = value));
+        // 1.8.0, block J: how far work androids look for work round their storage (0: the server's)
+        addRenderableWidget(new UiDropdown<>(leftPos + W - 7 - 110 - 4 - 92, topPos + ORDERS_Y + 17, 92, List.of(0, 16, 24, 32, 48, 64),
+                value -> value == 0 ? tr("search_radius_default") : tr("search_radius", value),
+                () -> menu.view() == null ? 0 : menu.view().searchRadius(), value -> send(ConsoleNetwork.SEARCH_RADIUS, null, -1, value)));
         // the map's zoom buttons, in its corner
         addRenderableWidget(UiButton.icon(leftPos + MAP_X + MAP_W - 15, topPos + MAP_Y + 3, 12, UiSprites.ICON_ARROW_UP, 7, tr("zoom_in"),
                 () -> map.mouseScrolled(map.getX() + MAP_W / 2.0, map.getY() + MAP_H / 2.0, 0, 1)));
@@ -450,9 +454,14 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
                     areaFrom = null;
                     areaTo = null;
                     armed = null;
-                } else {
+                } else if (hasShiftDown()) {
+                    // Shift: the area is marked on the map next
                     armed = MachineTask.Type.WORK;
                     say(tr("arm.work"), false);
+                } else {
+                    // 1.8.0, block J: no area: they find their work (and their storage) themselves
+                    armed = null;
+                    order(MachineTask.Type.WORK, List.of());
                 }
             }
             default -> {
@@ -490,7 +499,14 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
             return marks;
         }
         for (ConsoleView.Site site : view.sites()) {
-            marks.add(new UiMap.Mark(site.x() + 0.5, site.z() + 0.5, 0xFF37C6E8, null, tr("map.site." + site.kind()), 4));
+            int color = switch (site.kind()) {
+                case 2 -> 0xFFE0B33A;
+                case 3 -> 0xFFB0B8C0;
+                case 4 -> 0xFF5FBF3A;
+                case 5 -> 0xFFD8C24A;
+                default -> 0xFF37C6E8;
+            };
+            marks.add(new UiMap.Mark(site.x() + 0.5, site.z() + 0.5, color, null, tr("map.site." + site.kind()), 4));
         }
         view.map().ifPresent(snapshot -> {
             for (var marker : snapshot.markers()) {
@@ -516,6 +532,10 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
         ConsoleView view = menu.view();
         if (view == null) {
             return;
+        }
+        for (ConsoleView.Zone zone : view.zones()) {
+            map.rect(graphics, Math.min(zone.x1(), zone.x2()), Math.min(zone.z1(), zone.z2()), Math.max(zone.x1(), zone.x2()) + 1,
+                    Math.max(zone.z1(), zone.z2()) + 1, 0xC0E05A4A);
         }
         for (ConsoleView.Row row : view.rows()) {
             if (row.facts().range() > 0) {
@@ -735,6 +755,21 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
      * route point; a drag marks a work area (and orders the work if it was armed).
      */
     private void mapRight(double mouseX, double mouseY, boolean drag) {
+        if (hasControlDown()) {
+            // 1.8.0, block J: Ctrl + drag marks a zone «do not touch», Ctrl + click takes the zones there away
+            BlockPos a = mapBlock(pressX, pressY), b = mapBlock(mouseX, mouseY);
+            if (drag) {
+                int x = Math.min(a.getX(), b.getX()), z = Math.min(a.getZ(), b.getZ());
+                int sx = Math.min(256, Math.abs(a.getX() - b.getX())), sz = Math.min(256, Math.abs(a.getZ() - b.getZ()));
+                ConsoleOrders.send(menu.pos(), ConsoleNetwork.ADD_ZONE, null, sx * 512 + sz, x, z, false);
+                say(tr("zone_marked"), false);
+            } else {
+                ConsoleOrders.send(menu.pos(), ConsoleNetwork.REMOVE_ZONE, null, -1, b.getX(), b.getZ(), false);
+                say(tr("zone_removed"), false);
+            }
+            UiSounds.CLICK.play();
+            return;
+        }
         if (drag) {
             areaFrom = mapBlock(pressX, pressY);
             areaTo = mapBlock(mouseX, mouseY);

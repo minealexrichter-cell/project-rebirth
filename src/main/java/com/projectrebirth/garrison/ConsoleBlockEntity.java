@@ -91,6 +91,9 @@ public class ConsoleBlockEntity extends BlockEntity {
     private int rules = OrderRules.DEFAULT_RULES;
     private boolean intruderMode;
     private boolean weatherLink;
+    /** 1.8.0, block J: the zones where its work androids touch nothing, and the radius they look for work in (0: the config's). */
+    private final List<ConsoleView.Zone> zones = new ArrayList<>();
+    private int searchRadius;
     private boolean sheltering;
     private final Map<UUID, MachineTask> beforeShelter = new HashMap<>();
     private final Deque<Logged> log = new ArrayDeque<>();
@@ -369,6 +372,51 @@ public class ConsoleBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    /** 1.8.0: whether a block lies in one of its «do not touch» zones. */
+    public boolean untouchable(BlockPos pos) {
+        for (ConsoleView.Zone zone : zones) {
+            if (zone.contains(pos.getX(), pos.getZ())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static final int MAX_ZONES = 16;
+
+    /** 1.8.0: a zone «do not touch» (at most 16, at most 256 blocks a side); false when it is not taken. */
+    public boolean addZone(ConsoleView.Zone zone) {
+        if (zones.size() >= MAX_ZONES || Math.abs(zone.x2() - zone.x1()) > 256 || Math.abs(zone.z2() - zone.z1()) > 256) {
+            return false;
+        }
+        zones.add(zone);
+        setChanged();
+        return true;
+    }
+
+    /** 1.8.0: takes away the zones over that column; how many. */
+    public int removeZonesAt(int x, int z) {
+        int before = zones.size();
+        zones.removeIf(zone -> zone.contains(x, z));
+        if (zones.size() != before) {
+            setChanged();
+        }
+        return before - zones.size();
+    }
+
+    public List<ConsoleView.Zone> zones() {
+        return List.copyOf(zones);
+    }
+
+    public int searchRadius() {
+        return searchRadius;
+    }
+
+    public void setSearchRadius(int radius) {
+        searchRadius = Math.max(0, Math.min(radius, 96));
+        setChanged();
+    }
+
     public boolean weatherLink() {
         return weatherLink;
     }
@@ -583,6 +631,24 @@ public class ConsoleBlockEntity extends BlockEntity {
                 }
             }
         }
+        // 1.8.0, block J: the storages near, and the places its work androids found for themselves
+        for (BlockPos pos : com.projectrebirth.logistics.Storages.all(server)) {
+            if (pos.distSqr(worldPosition) <= (double) range * range && out.size() < 96) {
+                out.add(new ConsoleView.Site(2, pos.getX(), pos.getY(), pos.getZ()));
+            }
+        }
+        WorkSites work = WorkSites.get(server.getServer());
+        for (UUID machine : machines.keySet()) {
+            WorkSites.Site site = work.of(machine);
+            if (site != null && site.dimension().equals(server.dimension()) && out.size() < 128) {
+                int kind = switch (site.kind()) {
+                    case "mine" -> 3;
+                    case "lumber" -> 4;
+                    default -> 5;
+                };
+                out.add(new ConsoleView.Site(kind, site.pos().getX(), site.pos().getY(), site.pos().getZ()));
+            }
+        }
         return out;
     }
 
@@ -620,7 +686,7 @@ public class ConsoleBlockEntity extends BlockEntity {
             }
         }
         return new ConsoleView(energy.getEnergyStored(), energy.getMaxEnergyStored(), powered, RebirthConfig.ALLOW_INTRUDER_MODE.get(),
-                intruderMode, weatherLink, sheltering, rows, groups, lines, map, RebirthConfig.CONSOLE_RANGE.get(), rules, sites(server));
+                intruderMode, weatherLink, sheltering, rows, groups, lines, map, RebirthConfig.CONSOLE_RANGE.get(), rules, sites(server), zones(), searchRadius);
     }
 
     // ------------------------------------------------------------------ saving
@@ -671,6 +737,12 @@ public class ConsoleBlockEntity extends BlockEntity {
         tag.putIntArray("group_rules", groupRules);
         tag.putBoolean("intruders", intruderMode);
         tag.putBoolean("weather", weatherLink);
+        net.minecraft.nbt.ListTag zoneList = new net.minecraft.nbt.ListTag();
+        for (ConsoleView.Zone zone : zones) {
+            zoneList.add(new net.minecraft.nbt.IntArrayTag(new int[] {zone.x1(), zone.z1(), zone.x2(), zone.z2()}));
+        }
+        tag.put("zones", zoneList);
+        tag.putInt("search_radius", searchRadius);
         tag.putBoolean("sheltering", sheltering);
         ListTag lines = new ListTag();
         for (Logged logged : log) {
@@ -729,6 +801,14 @@ public class ConsoleBlockEntity extends BlockEntity {
         }
         intruderMode = tag.getBoolean("intruders");
         weatherLink = tag.getBoolean("weather");
+        zones.clear();
+        for (net.minecraft.nbt.Tag entry : tag.getList("zones", net.minecraft.nbt.Tag.TAG_INT_ARRAY)) {
+            int[] c = ((net.minecraft.nbt.IntArrayTag) entry).getAsIntArray();
+            if (c.length == 4) {
+                zones.add(new ConsoleView.Zone(c[0], c[1], c[2], c[3]));
+            }
+        }
+        searchRadius = tag.getInt("search_radius");
         sheltering = tag.getBoolean("sheltering");
         log.clear();
         for (Tag found : tag.getList("log", Tag.TAG_COMPOUND)) {

@@ -85,8 +85,15 @@ public class StorageRoofBlock extends Block {
         builder.add(FrameBlock.FORMED, PART, FACING);
     }
 
+    /** The frame round the block under the mouse: a whole block (steps would look odd on the smooth roof). */
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Shapes.block();
+    }
+
+    /** What one bumps into: on the roof of a whole storage four steps along the slope. */
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         if (!state.getValue(FrameBlock.FORMED)) {
             return Shapes.block();
         }

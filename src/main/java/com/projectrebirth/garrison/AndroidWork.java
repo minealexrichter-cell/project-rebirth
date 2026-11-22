@@ -121,6 +121,8 @@ public final class AndroidWork {
     /** 1.8.0: when it may go to its chest or storage again for a tool it lacks (an axe, a hoe) and for saplings to plant. */
     private long toolRetryAt;
     private long saplingRetryAt;
+    /** 1.8.0: when a miner may go to its chest or storage again for fillers to plug water and lava with. */
+    private long fillerRetryAt;
     private int cursor;
     private boolean workedThisPass;
     /** 1.8.0: a miner of its own with no place for a quarry yet: it hands in and fetches its tool, but digs nothing. */
@@ -658,7 +660,15 @@ public final class AndroidWork {
 
     @Nullable
     private Job mineJob(ServerLevel level, BlockPos pos) {
-        if (plugged.contains(pos.asLong()) || isStep(pos)) {
+        if (plugged.contains(pos.asLong())) {
+            return null;
+        }
+        // 1.8.0: water and lava that would come in from outside the area: the wall is plugged first
+        Job seal = sealJob(level, pos);
+        if (seal != null) {
+            return seal;
+        }
+        if (isStep(pos)) {
             return null;
         }
         BlockState state = level.getBlockState(pos);
@@ -666,19 +676,158 @@ public final class AndroidWork {
             return null;
         }
         if (state.getBlock() instanceof LiquidBlock) {
-            // water and lava: plugged with a filler from the gear, or left
-            int filler = fillerSlot();
-            if (filler < 0) {
+            // 1.8.0: a source is filled (and the filler dug out on a later pass); flowing water or lava runs dry by itself once
+            // its sources are plugged, so it is left for now
+            if (!level.getFluidState(pos).isSource() || !mayWorkAt(level, pos)) {
                 skipped.add(pos.asLong());
                 return null;
             }
-            return new Job(Kind.PLANT, pos, false);
+            if (fillerSlot() < 0) {
+                wantFillers(level);
+                skipped.add(pos.asLong());
+                return null;
+            }
+            return new Job(Kind.FILL, pos, true);
         }
         if (!mayBreak(level, pos, state)) {
             skipped.add(pos.asLong());
             return null;
         }
         return new Job(Kind.BREAK, pos, false);
+    }
+
+    /** Whether a cell is in its area. */
+    private boolean inArea(BlockPos pos) {
+        return pos.getX() >= minX() && pos.getX() <= maxX() && pos.getZ() >= minZ() && pos.getZ() <= maxZ() && pos.getY() >= minY()
+                && pos.getY() <= maxY();
+    }
+
+    /**
+     * 1.8.0: for a cell at the wall or the top of its area, a liquid just outside it (beside, over it, or over the ground next to
+     * the top) to plug with a filler before the cell is opened; null when there is none (or no filler: then it fetches some).
+     */
+    @Nullable
+    private Job sealJob(ServerLevel level, BlockPos pos) {
+        if (task.from().isEmpty() || task.to().isEmpty()) {
+            return null;
+        }
+        boolean top = pos.getY() == maxY();
+        boolean wall = pos.getX() == minX() || pos.getX() == maxX() || pos.getZ() == minZ() || pos.getZ() == maxZ();
+        if (!top && !wall) {
+            return null;
+        }
+        for (net.minecraft.core.Direction side : net.minecraft.core.Direction.values()) {
+            if (side == net.minecraft.core.Direction.DOWN) {
+                continue;
+            }
+            BlockPos near = pos.relative(side);
+            if (inArea(near)) {
+                continue;
+            }
+            BlockPos wet = wet(level, near) ? near : top && side.getAxis().isHorizontal() && wet(level, near.above()) ? near.above() : null;
+            if (wet == null) {
+                continue;
+            }
+            if (fillerSlot() < 0) {
+                wantFillers(level);
+                return null;
+            }
+            // running water or lava: its spring is plugged (else it runs round the plug), when it is near
+            BlockPos spring = springOf(level, wet);
+            // a spring it could not get to: the cell at the wall is plugged instead
+            return new Job(Kind.FILL, skipped.contains(spring.asLong()) ? wet : spring, true);
+        }
+        return null;
+    }
+
+    /** The source a flowing liquid comes from (up its stream, at most 64 cells, outside the area), or the cell itself. */
+    private BlockPos springOf(ServerLevel level, BlockPos wet) {
+        net.minecraft.world.level.material.FluidState fluid = level.getFluidState(wet);
+        if (fluid.isSource()) {
+            return wet;
+        }
+        java.util.ArrayDeque<BlockPos> open = new java.util.ArrayDeque<>();
+        Set<Long> seen = new HashSet<>();
+        open.add(wet);
+        seen.add(wet.asLong());
+        while (!open.isEmpty() && seen.size() < 64) {
+            BlockPos at = open.poll();
+            for (net.minecraft.core.Direction side : net.minecraft.core.Direction.values()) {
+                if (side == net.minecraft.core.Direction.DOWN) {
+                    continue;
+                }
+                BlockPos next = at.relative(side);
+                if (!seen.add(next.asLong()) || inArea(next) || !level.isLoaded(next)) {
+                    continue;
+                }
+                net.minecraft.world.level.material.FluidState there = level.getFluidState(next);
+                if (there.isEmpty() || !there.getType().isSame(fluid.getType())) {
+                    continue;
+                }
+                if (there.isSource() && mayWorkAt(level, next)) {
+                    return next;
+                }
+                // up the stream: the same level or higher, or from above
+                if (side == net.minecraft.core.Direction.UP || there.getAmount() >= level.getFluidState(at).getAmount()) {
+                    open.add(next);
+                }
+            }
+        }
+        return wet;
+    }
+
+    private boolean wet(ServerLevel level, BlockPos pos) {
+        // one it could not get to is left for this pass (else it would try it again and again and dig nothing)
+        return level.isLoaded(pos) && !level.getFluidState(pos).isEmpty() && !plugged.contains(pos.asLong()) && !skipped.contains(pos.asLong())
+                && mayWorkAt(level, pos);
+    }
+
+    /** No filler for water or lava: to its chest or storage for some (not again for two minutes). */
+    private void wantFillers(ServerLevel level) {
+        if (level.getGameTime() >= fillerRetryAt) {
+            fillerRetryAt = level.getGameTime() + 2400;
+            unloading = true;
+        }
+    }
+
+    /**
+     * 1.8.0: a miner digs with the tool of its gear that digs that block best: a shovel for dirt, sand, gravel, clay and snow,
+     * the pickaxe for stone and ore. It is put in its hand.
+     */
+    private void equipFor(BlockState state) {
+        SimpleContainer gear = android.gear();
+        int best = 0;
+        float bestSpeed = digSpeed(gear.getItem(0), state);
+        for (int i = 1; i < 36; i++) {
+            ItemStack stack = gear.getItem(i);
+            if (!stack.is(ItemTags.PICKAXES) && !stack.is(ItemTags.SHOVELS)) {
+                continue;
+            }
+            float speed = digSpeed(stack, state);
+            if (speed > bestSpeed + 0.01f) {
+                best = i;
+                bestSpeed = speed;
+            }
+        }
+        if (best != 0) {
+            ItemStack hand = gear.getItem(0);
+            gear.setItem(0, gear.getItem(best));
+            gear.setItem(best, hand);
+            gear.setChanged();
+        }
+    }
+
+    private static float digSpeed(ItemStack tool, BlockState state) {
+        if (tool.isEmpty() || !AndroidEntity.usable(tool)) {
+            return 0.0f;
+        }
+        boolean correct = !state.requiresCorrectToolForDrops() || tool.isCorrectToolForDrops(state);
+        return Math.max(1.0f, tool.getDestroySpeed(state)) * (correct ? 1.0f : 0.3f);
+    }
+
+    /** Its work's tool: the axe, the hoe, the pickaxe; for a miner its shovel too. */
+    private boolean workTool(ItemStack stack) {
+        return stack.is(toolTag()) || mining() && stack.is(ItemTags.SHOVELS);
     }
 
     private boolean keepsAll() {
@@ -998,6 +1147,9 @@ public final class AndroidWork {
                     finishJob(false);
                     return;
                 }
+                if (progress == 0.0f && mining()) {
+                    equipFor(state);
+                }
                 progress += breakSpeed(level, now.pos(), state);
                 if (level.getGameTime() % 5 == 0) {
                     android.workSwing();
@@ -1076,7 +1228,10 @@ public final class AndroidWork {
                 level.playSound(null, now.pos(), SoundEvents.STONE_PLACE, SoundSource.BLOCKS, 1.0f, 1.0f);
                 filler.shrink(1);
                 android.gear().setChanged();
-                plugged.add(now.pos().asLong());
+                if (!(mining() && inArea(now.pos()))) {
+                    // in its own area a filled source is dug out later (the wall round it is plugged by then)
+                    plugged.add(now.pos().asLong());
+                }
                 android.workSwing();
                 finishJob(true);
             }
@@ -1227,12 +1382,20 @@ public final class AndroidWork {
 
     /** The miner cannot work without a pickaxe; the lumberjack fells by hand and the farmer needs a hoe only to till. */
     private boolean needsTool() {
-        return mining() && !android.gear().getItem(0).is(ItemTags.PICKAXES);
+        if (!mining()) {
+            return false;
+        }
+        for (int i = 0; i < 36; i++) {
+            if (android.gear().getItem(i).is(ItemTags.PICKAXES)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** How many of this it keeps when it hands in: its tools, and a few seeds, saplings or fillers of a kind. */
     private int keep(ItemStack stack) {
-        if (stack.is(toolTag())) {
+        if (workTool(stack)) {
             return Integer.MAX_VALUE;
         }
         boolean wanted = switch (work()) {
@@ -1292,6 +1455,9 @@ public final class AndroidWork {
         android.getLookControl().setLookAt(Vec3.atCenterOf(chest));
         boolean full = handIn(handler);
         boolean tool = takeTool(handler);
+        if (mining()) {
+            takeShovel(handler);
+        }
         takeSupplies(handler);
         android.workSwing();
         level.playSound(null, chest, SoundEvents.CHEST_CLOSE, SoundSource.BLOCKS, 0.5f, 1.0f);
@@ -1336,7 +1502,7 @@ public final class AndroidWork {
         SimpleContainer gear = android.gear();
         for (int slot = 0; slot < handler.getSlots(); slot++) {
             ItemStack there = handler.getStackInSlot(slot);
-            int keep = there.isEmpty() || there.is(toolTag()) ? 0 : keep(there);
+            int keep = there.isEmpty() || workTool(there) ? 0 : keep(there);
             if (keep <= 0) {
                 continue;
             }
@@ -1353,6 +1519,26 @@ public final class AndroidWork {
             ItemStack left = insert(gear, taken);
             if (!left.isEmpty()) {
                 ItemHandlerHelper.insertItem(handler, left, false);
+            }
+        }
+    }
+
+    /** 1.8.0: a miner with no shovel takes one from its chest or storage, when there is one. */
+    private void takeShovel(IItemHandler handler) {
+        SimpleContainer gear = android.gear();
+        for (int i = 0; i < 36; i++) {
+            if (gear.getItem(i).is(ItemTags.SHOVELS)) {
+                return;
+            }
+        }
+        for (int slot = 0; slot < handler.getSlots(); slot++) {
+            if (handler.getStackInSlot(slot).is(ItemTags.SHOVELS)) {
+                ItemStack taken = handler.extractItem(slot, 1, false);
+                ItemStack left = insert(gear, taken);
+                if (!left.isEmpty()) {
+                    ItemHandlerHelper.insertItem(handler, left, false);
+                }
+                return;
             }
         }
     }

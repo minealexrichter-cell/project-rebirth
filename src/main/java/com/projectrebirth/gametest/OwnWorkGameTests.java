@@ -249,6 +249,82 @@ public class OwnWorkGameTests {
         });
     }
 
+    /** 1.8.0 (owner): water at the wall and in the quarry: the wall is plugged, the quarry is dug out dry. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 3600, batch = "own_work")
+    public static void aMinerPlugsWaterAndDigsItsQuarryDry(GameTestHelper helper) {
+        Runnable restore = smallMine(helper);
+        ServerPlayer owner = player(helper);
+        chest(helper, new BlockPos(2, STAND, 2));
+        AndroidEntity android = worker(helper, owner, 2, 8);
+        android.gear().setItem(0, new ItemStack(Items.DIAMOND_PICKAXE));
+        android.gear().setItem(1, new ItemStack(Items.COBBLESTONE, 32));
+        BlockPos corner = mineAt(helper, android, 4, 4, 0);
+        // a spring in the wall next to the second layer, a pool on the ground by the quarry, a spring inside it
+        // (from the corner of the quarry, in the world's axes: the quarry is laid out so, whichever way the plot is turned)
+        BlockPos wall = corner.offset(-1, -1, 2), pool = corner.offset(2, 1, 5), inside = corner.offset(2, -2, 2);
+        for (BlockPos water : new BlockPos[] {wall, pool, inside}) {
+            helper.getLevel().setBlock(water, Blocks.WATER.defaultBlockState(), 3);
+        }
+        android.machineCore().setTask(ownWork(helper, "mine", new BlockPos(2, STAND, 2)));
+        helper.succeedWhen(() -> {
+            for (int layer = 0; layer < 4; layer++) {
+                for (int x = 0; x < 5; x++) {
+                    for (int z = 0; z < 5; z++) {
+                        BlockPos pos = corner.offset(x, -layer, z);
+                        BlockState state = helper.getLevel().getBlockState(pos);
+                        helper.assertTrue(pos.equals(step(corner, layer)) || state.isAir() || state.is(Blocks.TORCH),
+                                "Dug out and dry at corner + " + pos.subtract(corner) + ": " + state + ", it is at corner + " + android.blockPosition().subtract(corner) + ", holding " + android.gear().getItem(1) + ", reports " + java.util.Arrays.stream(ConsoleAlarm.values()).filter(android::workReported).toList() + ", site " + WorkSites.get(helper.getLevel().getServer()).of(android.getUUID()));
+                    }
+                }
+            }
+            helper.assertTrue(helper.getLevel().getFluidState(wall).isEmpty(), "The spring in the wall plugged");
+            restore.run();
+            WorkSites.get(helper.getLevel().getServer()).set(android.getUUID(), null);
+            android.discard();
+        });
+    }
+
+    /** 1.8.0 (owner): a miner with a pickaxe and a shovel digs dirt with the shovel and stone with the pickaxe. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 3600, batch = "own_work")
+    public static void aMinerDigsDirtWithItsShovelAndStoneWithItsPickaxe(GameTestHelper helper) {
+        Runnable restore = smallMine(helper);
+        ServerPlayer owner = player(helper);
+        chest(helper, new BlockPos(2, STAND, 2));
+        AndroidEntity android = worker(helper, owner, 2, 8);
+        android.gear().setItem(0, new ItemStack(Items.IRON_PICKAXE));
+        android.gear().setItem(1, new ItemStack(Items.IRON_SHOVEL));
+        BlockPos corner = mineAt(helper, android, 4, 4, 0);
+        // the top layer dirt, the rest stone
+        for (int x = 0; x < 5; x++) {
+            for (int z = 0; z < 5; z++) {
+                helper.getLevel().setBlock(corner.offset(x, 0, z), Blocks.DIRT.defaultBlockState(), 3);
+            }
+        }
+        android.machineCore().setTask(ownWork(helper, "mine", new BlockPos(2, STAND, 2)));
+        boolean[] shovelOnDirt = new boolean[1];
+        helper.onEachTick(() -> {
+            ItemStack hand = android.gear().getItem(0);
+            shovelOnDirt[0] |= hand.is(Items.IRON_SHOVEL) && hand.getDamageValue() > 0;
+        });
+        helper.succeedWhen(() -> {
+            for (int layer = 0; layer < 4; layer++) {
+                String problem = layerProblem(helper, corner, layer);
+                helper.assertTrue(problem == null, "Layer " + layer + ": " + problem);
+            }
+            helper.assertTrue(shovelOnDirt[0], "It dug the dirt with its shovel");
+            int pickaxeWear = 0;
+            for (int i = 0; i < 36; i++) {
+                if (android.gear().getItem(i).is(Items.IRON_PICKAXE)) {
+                    pickaxeWear = android.gear().getItem(i).getDamageValue();
+                }
+            }
+            helper.assertTrue(pickaxeWear >= 40, "And the stone with its pickaxe: worn " + pickaxeWear);
+            restore.run();
+            WorkSites.get(helper.getLevel().getServer()).set(android.getUUID(), null);
+            android.discard();
+        });
+    }
+
     @GameTest(template = TEMPLATE, timeoutTicks = 600, batch = "own_work")
     public static void aMinerNeverBuildsWithSandOrGravel(GameTestHelper helper) {
         // whatever the list says, a block that falls is never a filler

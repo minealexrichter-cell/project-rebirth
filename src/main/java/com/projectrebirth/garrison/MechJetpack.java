@@ -40,6 +40,12 @@ final class MechJetpack {
     private int rest;
     private double orbit;
     private boolean landing;
+    /** How high this hop may rise over where it took off (maxRise; escapeRise for a way out of a pit). */
+    private double riseLimit;
+    /** 1.8.0: how high it got on its way up, and for how many ticks no higher. */
+    private double climbedTo;
+    private int stalled;
+    private double startY;
 
     MechJetpack(GuardMechEntity mech) {
         this.mech = mech;
@@ -64,6 +70,14 @@ final class MechJetpack {
 
     /** A hop over what stands in the way to the goal; whether it took off. */
     boolean hop(Vec3 goal) {
+        return hop(goal, false);
+    }
+
+    /**
+     * A hop towards the goal; with escape (stuck, its mover asks) it may rise up to escapeRise instead of maxRise: out of a deep
+     * pit, a quarry, whose walls are higher than an obstacle it would fly over.
+     */
+    boolean hop(Vec3 goal, boolean escape) {
         if (!ready()) {
             return false;
         }
@@ -86,11 +100,16 @@ final class MechJetpack {
             }
         }
         BlockPos down = BlockPos.containing(to.x, mech.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Mth.floor(to.x), Mth.floor(to.z)) - 1, to.z);
-        if (!mech.level().getFluidState(down).isEmpty() || highest - mech.getY() > RebirthConfig.GUARD_MECH_MAX_RISE.get()) {
+        riseLimit = escape ? Math.max(RebirthConfig.GUARD_MECH_MAX_RISE.get(), RebirthConfig.GUARD_MECH_ESCAPE_RISE.get())
+                : RebirthConfig.GUARD_MECH_MAX_RISE.get();
+        if (!mech.level().getFluidState(down).isEmpty() || highest - mech.getY() > riseLimit) {
             return false;
         }
         destination = new Vec3(to.x, down.getY() + 1, to.z);
         cruiseY = highest + 1.0;
+        climbedTo = mech.getY();
+        startY = mech.getY();
+        stalled = 0;
         start(Mode.HOP);
         return true;
     }
@@ -153,7 +172,9 @@ final class MechJetpack {
         mech.setZza(0.0f);
         mech.setXxa(0.0f);
         mech.useEnergy((float) (RebirthConfig.GUARD_MECH_FLIGHT_ENERGY.get() / 20.0));
-        if (!mech.machineCore().active() || mech.energy() <= 0.0f || ticks > RebirthConfig.GUARD_MECH_FLIGHT_SECONDS.get() * 20 + 100) {
+        // a hop has time for its climb on top (up at CLIMB blocks a tick)
+        int longest = RebirthConfig.GUARD_MECH_FLIGHT_SECONDS.get() * 20 + 100 + (mode == Mode.HOP ? (int) (riseLimit / CLIMB) : 0);
+        if (!mech.machineCore().active() || mech.energy() <= 0.0f || ticks > longest) {
             land();
             return;
         }
@@ -182,8 +203,18 @@ final class MechJetpack {
             land();
             return;
         }
+        // 1.8.0: it does not get higher on its way up (a roof over it): no way over here, it comes down (its mover tries another)
+        if (cruiseY - mech.getY() > 0.5) {
+            if (mech.getY() > climbedTo + 0.05) {
+                climbedTo = mech.getY();
+                stalled = 0;
+            } else if (++stalled > 10) {
+                        land();
+                return;
+            }
+        }
         // up over the highest ground first; a wall met on the way raises the flight
-        if (mech.horizontalCollision && cruiseY - mech.getY() < RebirthConfig.GUARD_MECH_MAX_RISE.get()) {
+        if (mech.horizontalCollision && cruiseY - mech.getY() < 2.0 && cruiseY - startY < riseLimit) {
             cruiseY += 1.0;
         }
         Vec3 direction = flat.normalize();

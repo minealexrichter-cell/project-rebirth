@@ -283,6 +283,42 @@ public class TacticsGameTests {
         }));
     }
 
+    /** 1.8.0 (owner): falling back, a small robot backs away with its gun on its target and fires on. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 300)
+    public static void aRobotFallingBackFacesItsTargetAndFiresOn(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        Zombie target = zombie(helper, 16, 12, true);
+        target.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(500.0);
+        target.setHealth(500.0f);
+        SmallRobotEntity robot = robot(helper, owner, 10, 12);
+        var core = robot.machineCore();
+        core.setIntegrity(core.maxStructural() * 0.2f, core.maxCritical());
+        double start = robot.distanceTo(target);
+        int rounds = robot.rounds();
+        int[] facing = new int[2];
+        double[] farthest = new double[1];
+        helper.onEachTick(() -> {
+            farthest[0] = Math.max(farthest[0], robot.distanceTo(target));
+            if (robot.tactics().retreating && robot.getDeltaMovement().horizontalDistanceSqr() > 1.0e-4) {
+                // moving: is its body turned to the target (within 45°)?
+                Vec3 to = target.position().subtract(robot.position()).multiply(1, 0, 1).normalize();
+                double yaw = robot.yBodyRot * net.minecraft.util.Mth.DEG_TO_RAD;
+                Vec3 forward = new Vec3(-Math.sin(yaw), 0.0, Math.cos(yaw));
+                facing[forward.dot(to) > 0.7 ? 0 : 1]++;
+            }
+        });
+        helper.runAfterDelay(200, () -> {
+            helper.assertTrue(robot.tactics().retreating, "Below 30 % it falls back");
+            // without a post it backs off to 3/4 of its range, no further
+            helper.assertTrue(farthest[0] > start + 1.0, "Away from the fight: " + start + " -> " + farthest[0]);
+            helper.assertTrue(facing[0] > facing[1] * 3, "Walking, it faces its target: " + facing[0] + " ticks facing, " + facing[1] + " not");
+            helper.assertTrue(robot.rounds() < rounds, "It fired on while falling back: " + robot.rounds() + "/" + rounds);
+            robot.discard();
+            target.discard();
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = TEMPLATE, timeoutTicks = 700)
     public static void aGuardingRobotDoesNotChasePastItsAreaAndComesBack(GameTestHelper helper) {
         ServerPlayer owner = player(helper);

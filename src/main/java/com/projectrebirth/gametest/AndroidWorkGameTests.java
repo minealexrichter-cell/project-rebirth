@@ -153,8 +153,10 @@ public class AndroidWorkGameTests {
         android.gear().setItem(3, new ItemStack(Items.COBBLESTONE, 4));
         order(helper, android, "mine", new BlockPos(3, 1, 3), new BlockPos(3, 1, 3), new BlockPos(7, 2, 7));
         helper.succeedWhen(() -> {
-            helper.assertBlockPresent(Blocks.COBBLESTONE, new BlockPos(3, 1, 3));
-            helper.assertTrue(android.workReported(ConsoleAlarm.WORK_DONE), "And leaves the plug: the area is done");
+            // 1.8.0: the water filled with its cobblestone, then dug out with the rest of the area: dry
+            helper.assertTrue(helper.getLevel().getFluidState(helper.absolutePos(new BlockPos(3, 1, 3))).isEmpty()
+                    && !helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(3, 1, 3))).is(Blocks.WATER), "The water is gone");
+            helper.assertTrue(android.workReported(ConsoleAlarm.WORK_DONE), "The area is done");
             android.discard();
         });
     }

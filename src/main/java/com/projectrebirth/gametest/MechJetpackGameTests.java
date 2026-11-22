@@ -96,6 +96,54 @@ public class MechJetpackGameTests {
         });
     }
 
+    private static int maxRise = -1;
+
+    /** The plots have a ceiling of barriers a few blocks up: the pit is low, and so is maxRise for the batch. */
+    @net.minecraft.gametest.framework.BeforeBatch(batch = "mech_pit")
+    public static void lowRise(net.minecraft.server.level.ServerLevel level) {
+        maxRise = RebirthConfig.GUARD_MECH_MAX_RISE.get();
+        RebirthConfig.GUARD_MECH_MAX_RISE.set(2);
+    }
+
+    @net.minecraft.gametest.framework.AfterBatch(batch = "mech_pit")
+    public static void riseBack(net.minecraft.server.level.ServerLevel level) {
+        if (maxRise > 0) {
+            RebirthConfig.GUARD_MECH_MAX_RISE.set(maxRise);
+            maxRise = -1;
+        }
+    }
+
+    /** 1.8.0: walls higher than maxRise all round (a deep pit, a quarry): stuck, it flies out anyway. */
+    @GameTest(template = TEMPLATE, timeoutTicks = 1000, batch = "mech_pit")
+    public static void aMechStuckInADeepPitFliesOut(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        int top = 4;
+        for (int y = 2; y <= top; y++) {
+            for (int i = 0; i <= 8; i++) {
+                helper.setBlock(new BlockPos(5, y, i), Blocks.STONE);
+                if (i <= 5) {
+                    helper.setBlock(new BlockPos(i, y, 0), Blocks.STONE);
+                    helper.setBlock(new BlockPos(i, y, 8), Blocks.STONE);
+                    helper.setBlock(new BlockPos(0, y, i), Blocks.STONE);
+                    helper.setBlock(new BlockPos(0, y, i + 3), Blocks.STONE);
+                }
+            }
+        }
+        GuardMechEntity mech = unarmed(helper, owner, new BlockPos(2, 2, 4));
+        BlockPos point = helper.absolutePos(new BlockPos(7, 1, 4));
+        mech.machineCore().setTask(MachineTask.at(MachineTask.Type.GUARD, point));
+        boolean[] flew = new boolean[1];
+        double[] high = {-1.0e9};
+        helper.onEachTick(() -> { flew[0] |= mech.flying(); high[0] = Math.max(high[0], mech.getY()); });
+        helper.succeedWhen(() -> {
+            helper.assertTrue(flew[0], "It took off");
+            helper.assertTrue(!mech.flying() && mech.onGround() && mech.distanceToSqr(Vec3.atBottomCenterOf(point.above())) < 9.0,
+                    "Out of the pit, at its point: " + mech.position() + " / " + point + ", flew " + flew[0] + ", ready " + mech.jetpackReady()
+                            + ", checks " + mech.mover().failedChecks() + ", energy " + mech.energy() + ", highest " + high[0] + " (walls to " + helper.absolutePos(new BlockPos(0, top, 0)).getY() + ")");
+            mech.discard();
+        });
+    }
+
     @GameTest(template = TEMPLATE, timeoutTicks = 300)
     public static void aMechTakesOffOverATargetOutOfReach(GameTestHelper helper) {
         ServerPlayer owner = player(helper);

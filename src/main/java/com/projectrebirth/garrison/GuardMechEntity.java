@@ -148,8 +148,16 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     /** 1.7.1: a machine of another kind on the mech's logic (the small robot), with its own numbers from {@link #stats()}. */
     protected GuardMechEntity(EntityType<? extends GuardMechEntity> type, Level level, MachineKind kind) {
         super(type, level, kind);
-        mover.setLift(jetpack::hop);
+        // 1.8.0: stuck, it may rise higher than over an obstacle: out of a deep pit
+        mover.setLift(goal -> jetpack.hop(goal, true));
+        // 1.8.0: a small robot in a fight walks with its gun on its target (backs away, circles), see fightWithTactics
+        this.moveControl = new FacingMoveControl(this, () -> facingAt >= level().getGameTime() - 1 ? facingTarget : null);
     }
+
+    /** 1.8.0: what it keeps its body turned to while it walks, set every tick of a fight (a small robot's target). */
+    @Nullable
+    private LivingEntity facingTarget;
+    private long facingAt = Long.MIN_VALUE;
 
     // ------------------------------------------------------------------ 1.7.2: the jetpack and the stomp
 
@@ -810,6 +818,11 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         }
         if (move != null) {
             walkTo(move);
+            if (robot && sees && distance <= range + 2.0) {
+                // backing away, circling, falling back: it walks with its gun on the target and fires on
+                facingTarget = target;
+                facingAt = now;
+            }
         } else if (!jetpack.flying()) {
             mover.stop();
         }

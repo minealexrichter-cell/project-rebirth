@@ -401,6 +401,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.DoubleValue GUARD_MECH_HOVER_HEIGHT;
     public static final ModConfigSpec.IntValue GUARD_MECH_HOP_RANGE;
     public static final ModConfigSpec.IntValue GUARD_MECH_MAX_RISE;
+    public static final ModConfigSpec.IntValue GUARD_MECH_ESCAPE_RISE;
     public static final ModConfigSpec.IntValue GUARD_MECH_COMBAT_FLIGHT_CHANCE;
     public static final ModConfigSpec.DoubleValue GUARD_MECH_STOMP_DAMAGE;
     public static final ModConfigSpec.DoubleValue GUARD_MECH_STOMP_RADIUS;
@@ -1182,6 +1183,8 @@ public final class RebirthConfig {
         GUARD_MECH_STOMP_DAMAGE = builder.comment("Damage of its stomp (up close, and when it lands from a flight)").defineInRange("stompDamage", 14.0, 0.0, 1000.0);
         GUARD_MECH_STOMP_RADIUS = builder.comment("Blocks from its body the stomp reaches").defineInRange("stompRadius", 3.0, 0.5, 16.0);
         GUARD_MECH_STOMP_COOLDOWN = builder.comment("Ticks between two stomps").defineInRange("stompCooldownTicks", 60, 5, 2000);
+        GUARD_MECH_ESCAPE_RISE = builder.comment("1.8.0: blocks it rises at most when it is stuck and cannot get on on foot (out of a deep pit, a quarry)")
+                .defineInRange("escapeRise", 96, 2, 384);
         builder.pop();
         builder.comment("The small robot (1.7.1): a cheap soldier of the heavy dock on the mech's logic, with a built-in machine gun. Integrity in",
                 "[garrison.machines.robot]; it charges at a service post or a charging pad.").push("small_robot");

@@ -558,7 +558,17 @@ public final class ConsoleNetwork {
 
     /** Whether an order needs points marked in the world (1.7.1): those go to the tablet and wait for the player's clicks. */
     public static boolean needsPoints(MachineTask.Type type) {
-        return type == MachineTask.Type.GUARD || type == MachineTask.Type.PATROL || type == MachineTask.Type.WORK;
+        // 1.8.0, block J: work needs no area when work androids find their work themselves (the console's map can still give one)
+        return type == MachineTask.Type.GUARD || type == MachineTask.Type.PATROL || type == MachineTask.Type.WORK && !ownWork();
+    }
+
+    /** Whether a work order without an area lets the androids find their work (on when the config is not there, as on a client). */
+    public static boolean ownWork() {
+        try {
+            return RebirthConfig.WORK_AUTO.get();
+        } catch (IllegalStateException notLoaded) {
+            return true;
+        }
     }
 
     /**
@@ -591,7 +601,9 @@ public final class ConsoleNetwork {
                     centre.getX(), centre.getY(), centre.getZ());
         }
         if (!needsPoints(type)) {
-            MachineTask task = type == MachineTask.Type.ESCORT ? MachineTask.escort(player.getUUID()) : MachineTask.simple(type);
+            MachineTask task = type == MachineTask.Type.ESCORT ? MachineTask.escort(player.getUUID())
+                    : type == MachineTask.Type.WORK ? MachineTask.workOwn(MachineTask.WORKS.get(Math.floorMod(work, MachineTask.WORKS.size())))
+                    : MachineTask.simple(type);
             return deliver(player, console, machine, group, type, task);
         }
         ItemStack tablet = TabletItem.linkedTablet(player, console);

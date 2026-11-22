@@ -245,37 +245,49 @@ public class ConsoleGameTests {
         answer = TabletItem.air(owner, held);
         helper.assertTrue(key(answer).startsWith("message.projectrebirth.console.ordered") && console.taskFor(machine.getUUID()).route().size() == 2,
                 "The route of two points goes out: " + key(answer));
-        // work: two corners and a chest; too big a corner is refused and the order waits
-        BlockPos chest = helper.absolutePos(new BlockPos(0, 2, 8));
-        helper.setBlock(new BlockPos(0, 2, 8), net.minecraft.world.level.block.Blocks.CHEST);
-        ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.WORK.ordinal(), 2, true));
-        TabletItem.point(owner, held, guard);
-        answer = TabletItem.point(owner, held, guard.offset(40, -3, 5));
-        helper.assertTrue(key(answer).equals("message.projectrebirth.console.area_too_big") && TabletItem.data(held).pending().orElseThrow().points().size() == 1,
-                "A farm of 41 blocks is too big: " + key(answer));
-        TabletItem.point(owner, held, guard.offset(10, -3, 5));
-        answer = TabletItem.point(owner, held, guard.offset(1, 0, 1));
-        helper.assertTrue(key(answer).equals("message.projectrebirth.tablet.not_a_chest"), "The last point must be a store: " + key(answer));
-        answer = TabletItem.point(owner, held, chest);
-        MachineTask work = console.taskFor(machine.getUUID());
-        helper.assertTrue(work.type() == MachineTask.Type.WORK && work.work().equals("farm") && work.chest().orElseThrow().equals(chest), "A farm of 11 blocks: " + key(answer));
-        // cancelling with a click in the air
-        ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.GUARD.ordinal(), 0, true));
-        answer = TabletItem.air(owner, held);
-        helper.assertTrue(key(answer).equals("message.projectrebirth.tablet.cancelled") && console.taskFor(machine.getUUID()).type() == MachineTask.Type.WORK,
-                "Cancelled, the old order stays");
-        // an order to every machine
-        answer = ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, Optional.empty(), ConsoleBlockEntity.ALL,
-                MachineTask.Type.HOLD.ordinal(), 0, true));
-        helper.assertTrue(console.taskFor(machine.getUUID()).type() == MachineTask.Type.HOLD, "Every machine holds: " + key(answer));
+        // 1.8.0: work of its own (findWorkItself, the default): the order goes out at once, with no area and no chest
+        boolean ownWork = com.projectrebirth.config.RebirthConfig.WORK_AUTO.get();
+        com.projectrebirth.config.RebirthConfig.WORK_AUTO.set(true);
         answer = ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.WORK.ordinal(), 2, true));
-        TabletItem.point(owner, held, guard);
-        TabletItem.point(owner, held, guard.offset(10, -3, 5));
-        TabletItem.point(owner, held, chest);
-        stranger.moveTo(owner.position());
-        answer = ConsoleNetwork.act(stranger, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.STAND_DOWN.ordinal(), 0, true));
-        helper.assertTrue(key(answer).equals("message.projectrebirth.console.not_yours") && console.taskFor(machine.getUUID()).type() == MachineTask.Type.WORK,
-                "A stranger's order is refused");
+        MachineTask own = console.taskFor(machine.getUUID());
+        helper.assertTrue(own.type() == MachineTask.Type.WORK && own.from().isEmpty() && own.work().equals("farm") && TabletItem.data(held).pending().isEmpty(),
+                "Work of its own goes out at once, no area to mark: " + key(answer) + " " + own);
+        // work in an area (findWorkItself off): two corners and a chest; too big a corner is refused and the order waits
+        com.projectrebirth.config.RebirthConfig.WORK_AUTO.set(false);
+        try {
+            BlockPos chest = helper.absolutePos(new BlockPos(0, 2, 8));
+            helper.setBlock(new BlockPos(0, 2, 8), net.minecraft.world.level.block.Blocks.CHEST);
+            ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.WORK.ordinal(), 2, true));
+            TabletItem.point(owner, held, guard);
+            answer = TabletItem.point(owner, held, guard.offset(40, -3, 5));
+            helper.assertTrue(key(answer).equals("message.projectrebirth.console.area_too_big") && TabletItem.data(held).pending().orElseThrow().points().size() == 1,
+                    "A farm of 41 blocks is too big: " + key(answer));
+            TabletItem.point(owner, held, guard.offset(10, -3, 5));
+            answer = TabletItem.point(owner, held, guard.offset(1, 0, 1));
+            helper.assertTrue(key(answer).equals("message.projectrebirth.tablet.not_a_chest"), "The last point must be a store: " + key(answer));
+            answer = TabletItem.point(owner, held, chest);
+            MachineTask work = console.taskFor(machine.getUUID());
+            helper.assertTrue(work.type() == MachineTask.Type.WORK && work.work().equals("farm") && work.chest().orElseThrow().equals(chest), "A farm of 11 blocks: " + key(answer));
+            // cancelling with a click in the air
+            ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.GUARD.ordinal(), 0, true));
+            answer = TabletItem.air(owner, held);
+            helper.assertTrue(key(answer).equals("message.projectrebirth.tablet.cancelled") && console.taskFor(machine.getUUID()).type() == MachineTask.Type.WORK,
+                    "Cancelled, the old order stays");
+            // an order to every machine
+            answer = ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, Optional.empty(), ConsoleBlockEntity.ALL,
+                    MachineTask.Type.HOLD.ordinal(), 0, true));
+            helper.assertTrue(console.taskFor(machine.getUUID()).type() == MachineTask.Type.HOLD, "Every machine holds: " + key(answer));
+            answer = ConsoleNetwork.act(owner, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.WORK.ordinal(), 2, true));
+            TabletItem.point(owner, held, guard);
+            TabletItem.point(owner, held, guard.offset(10, -3, 5));
+            TabletItem.point(owner, held, chest);
+            stranger.moveTo(owner.position());
+            answer = ConsoleNetwork.act(stranger, new ConsoleNetwork.ActionPayload(pos, ConsoleNetwork.ORDER, target, -1, MachineTask.Type.STAND_DOWN.ordinal(), 0, true));
+            helper.assertTrue(key(answer).equals("message.projectrebirth.console.not_yours") && console.taskFor(machine.getUUID()).type() == MachineTask.Type.WORK,
+                    "A stranger's order is refused");
+        } finally {
+            com.projectrebirth.config.RebirthConfig.WORK_AUTO.set(ownWork);
+        }
         machine.packUp(owner);
         helper.assertFalse(console.knows(machine.getUUID()), "Packed up, the console lets it go");
         helper.succeed();

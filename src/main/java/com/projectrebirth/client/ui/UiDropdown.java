@@ -41,6 +41,15 @@ public class UiDropdown<T> extends AbstractWidget {
         return visible && mouseX >= getX() && mouseX < getX() + width && mouseY >= getY() && mouseY < getY() + height + (open ? listHeight() : 0);
     }
 
+    /**
+     * A click counts on the open list too: the game takes a widget's own box for a click, and the list hangs below it (without
+     * this, a click on a line only closed the list).
+     */
+    @Override
+    protected boolean clicked(double mouseX, double mouseY) {
+        return active && isMouseOver(mouseX, mouseY);
+    }
+
     private int listHeight() {
         return options.size() * LINE + 2;
     }

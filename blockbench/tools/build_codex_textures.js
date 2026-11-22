@@ -1,5 +1,5 @@
 // Paints the textures of the Rebirth Codex (version 1.4.1): the book's frame, parchment, map nodes, tabs, arrows and the
-// item icon. A plain Node script (no Blockbench needed): node blockbench/tools/build_codex_textures.js
+// item icon (1.8.0: a pocket computer). A plain Node script (no Blockbench needed): node blockbench/tools/build_codex_textures.js
 // The atlas layout is mirrored by client/codex/CodexAtlas.java.
 const fs = require('fs');
 const path = require('path');
@@ -129,26 +129,29 @@ for (let i = 0; i < 96; i++) { const d = Math.abs(i - 47.5) / 47.5; if (d < 0.97
 fs.mkdirSync(ROOT + 'gui', {recursive: true});
 fs.writeFileSync(ROOT + 'gui/codex.png', atlas.png());
 
-// ---------------------------------------------------------------- the item: a leather book with brass corners and a green emblem
+// ---------------------------------------------------------------- the item
+// 1.8.0 (owner's wish): a pocket computer as the screen of the Codex — a graphite body with rubber corners and an antenna,
+// an amber screen with lines of text, a green lamp, amber keys and a speaker grille under the screen
 const icon = new Image(16, 16, 5);
 const rows = [
-    '................',
-    '..bbbbbbbbbbbb..',
-    '.bcllllllllllcb.',
-    '.blLLLLLLLLLLlpb',
-    '.blLLLggggLLLlpb',
-    '.blLLgGGGGgLLlpb',
-    '.blLLgGeeGgLLlpb',
-    '.blLLgGeeGgLLlpb',
-    '.blLLgGGGGgLLlpb',
-    '.blLLLggggLLLlpb',
-    '.blLLLLLLLLLLlpb',
-    '.blLLLLLLLLLLlpb',
-    '.bcllllllllllcpb',
-    '..bbbbbbbbbbbbpb',
-    '...ppppppppppppb',
-    '....bbbbbbbbbbb.'];
-const pal = {b: hex(LEATHER_DARK), l: hex(LEATHER), L: shade(LEATHER, 1.15), c: hex(BRASS), p: hex(PARCHMENT), g: hex(BRASS), G: hex('#2f8a52'), e: hex('#9ff0b8')};
+    '...t............',
+    '...a............',
+    '..RoooooooooooR.',
+    '..oghhhhhhhhhLo.',
+    '..ogssssssssggo.',
+    '..ogsAAAAAAsggo.',
+    '..ogsDDDDDDsggo.',
+    '..ogsAAAADDsggo.',
+    '..ogsDDDDDDsggo.',
+    '..ogsAAADDDsggo.',
+    '..ogssssssssggo.',
+    '..ogKKgKKgKKggo.',
+    '..oggggggggggxo.',
+    '..ogdgdgdgdggxo.',
+    '..RoooooooooooR.',
+    '................'];
+const pal = {o: hex('#16191b'), g: hex('#3d4347'), h: hex('#5d666c'), x: hex('#2c3135'), R: hex('#0b0c0d'), s: hex('#0e1311'), D: hex('#2a2416'),
+    A: hex('#ffb648'), L: hex('#7bd88f'), t: hex('#9aa3a9'), a: hex('#2b2f33'), K: hex('#c7a46a'), d: hex('#1f2326')};
 rows.forEach((row, j) => [...row].forEach((ch, i) => { if (ch !== '.') icon.set(i, j, pal[ch]); }));
 fs.mkdirSync(ROOT + 'item', {recursive: true});
 fs.writeFileSync(ROOT + 'item/rebirth_codex.png', icon.png());

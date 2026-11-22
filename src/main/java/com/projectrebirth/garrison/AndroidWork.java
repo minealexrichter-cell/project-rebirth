@@ -118,11 +118,15 @@ public final class AndroidWork {
     private MachineTask order = MachineTask.STAND_DOWN;
     private boolean resolved;
     private long resolvedAt = Long.MIN_VALUE;
-    /** The miner of its own: how often it began the column of its mine it works at. */
-    private int columnTries;
-    private int siteWait;
+    /** 1.8.0: when it may go to its chest or storage again for a tool it lacks (an axe, a hoe) and for saplings to plant. */
+    private long toolRetryAt;
+    private long saplingRetryAt;
     private int cursor;
     private boolean workedThisPass;
+    /** 1.8.0: a miner of its own with no place for a quarry yet: it hands in and fetches its tool, but digs nothing. */
+    private boolean noSite;
+    /** The last layer of its quarry it looked at for its progress and a torch (once a layer). */
+    private int layerChecked = -1;
     private final Set<Long> plugged = new HashSet<>();
     private final Set<Long> skipped = new HashSet<>();
     private final List<BlockPos> toPlant = new ArrayList<>();
@@ -191,8 +195,29 @@ public final class AndroidWork {
         }
         int r = searchRadius(level);
         MachineTask next;
+        int layersDone = 0;
         if (order.work().startsWith("mine")) {
-            next = MachineTask.work(order.work(), chest, chest, chest);
+            // its quarry (kept with the world), or a new place for one
+            WorkSites sites = WorkSites.get(level.getServer());
+            WorkSites.Site site = sites.of(android.getUUID());
+            if (site == null || !site.kind().equals("mine") || !site.dimension().equals(level.dimension())) {
+                BlockPos found = MineShaft.findSite(level, chest, android.machineCore().owner(), android.getRandom());
+                report(ConsoleAlarm.NO_MINE_SITE, found == null);
+                noSite = found == null;
+                if (found == null) {
+                    task = MachineTask.work(order.work(), chest, chest, chest);
+                    return;
+                }
+                site = new WorkSites.Site("mine", level.dimension(), found, net.minecraft.core.Direction.EAST, 0);
+                sites.set(android.getUUID(), site);
+            }
+            report(ConsoleAlarm.NO_MINE_SITE, false);
+            noSite = false;
+            BlockPos corner = site.pos();
+            int size = MineShaft.size();
+            int depth = Math.min(RebirthConfig.MINE_DEPTH.get(), corner.getY());
+            next = MachineTask.work(order.work(), corner, new BlockPos(corner.getX() + size - 1, depth, corner.getZ() + size - 1), chest);
+            layersDone = site.progress();
         } else {
             int down = order.work().equals("lumber") ? 5 : 3;
             next = MachineTask.work(order.work(), chest.offset(-r, -down, -r), chest.offset(r, down, r), chest);
@@ -202,7 +227,8 @@ public final class AndroidWork {
             boolean moved = !next.from().equals(task.from()) || !next.to().equals(task.to());
             task = next;
             if (moved) {
-                cursor = 0;
+                // a quarry goes on from the layer it got to (after a restart too)
+                cursor = mining() ? Math.min(layersDone * sizeX() * sizeZ(), cells() - 1) : 0;
                 skipped.clear();
             }
         }
@@ -241,7 +267,6 @@ public final class AndroidWork {
             }
             resolved = !own(now);
             resolvedAt = Long.MIN_VALUE;
-            columnTries = 0;
         }
         if (own(order) && hasOrder() && android.level() instanceof ServerLevel level && (resolvedAt == Long.MIN_VALUE || level.getGameTime() - resolvedAt >= 200)) {
             resolve(level);
@@ -414,6 +439,12 @@ public final class AndroidWork {
         if (needsTool() && !unloading) {
             unloading = true;
         }
+        // 1.8.0: a lumberjack or a farmer without its tool fetches one from its chest or storage (a miner must, see needsTool);
+        // when there is none, not again for a while
+        if (!unloading && !mining() && !android.gear().getItem(0).is(toolTag()) && level.getGameTime() >= toolRetryAt) {
+            unloading = true;
+            toolRetryAt = level.getGameTime() + 6000;
+        }
         if (unloading) {
             unload(level);
             return;
@@ -426,11 +457,6 @@ public final class AndroidWork {
             doPickup();
             return;
         }
-        if (!queue.isEmpty()) {
-            job = queue.poll();
-            approach = 0;
-            return;
-        }
         if (!treeBases.isEmpty()) {
             if (RebirthConfig.WORK_REPLANT_SAPLINGS.get()) {
                 toPlant.addAll(treeBases);
@@ -439,6 +465,15 @@ public final class AndroidWork {
                 }
             }
             treeBases.clear();
+        }
+        // a sapling in its gear goes in as soon as the stump is gone, before the leaves left to cut
+        if (!toPlant.isEmpty() && hasSapling() && plantSapling(level)) {
+            return;
+        }
+        if (!queue.isEmpty()) {
+            job = queue.poll();
+            approach = 0;
+            return;
         }
         if (!toPlant.isEmpty() && plantSapling(level)) {
             return;
@@ -451,8 +486,8 @@ public final class AndroidWork {
                 return;
             }
         }
-        if (own(order) && mining()) {
-            mineTick(level);
+        if (noSite && own(order)) {
+            android.getNavigation().stop();
             return;
         }
         scan(level);
@@ -475,88 +510,6 @@ public final class AndroidWork {
         return true;
     }
 
-    /**
-     * 1.8.0: the miner of its own. Its mine (WorkSites) or, without one, a new place for it; then the next column of the mine,
-     * its actions queued as jobs; a column done moves the mine on by one (saved with the world).
-     */
-    private void mineTick(ServerLevel level) {
-        WorkSites sites = WorkSites.get(level.getServer());
-        WorkSites.Site site = sites.of(android.getUUID());
-        if (site == null || !site.kind().equals("mine") || !site.dimension().equals(level.dimension())) {
-            if (--siteWait > 0) {
-                return;
-            }
-            siteWait = 100;
-            BlockPos found = MineShaft.findSite(level, task.chest().get(), android.machineCore().owner(), android.getRandom());
-            report(ConsoleAlarm.NO_MINE_SITE, found == null);
-            if (found == null) {
-                return;
-            }
-            site = new WorkSites.Site("mine", level.dimension(), found, net.minecraft.core.Direction.EAST, 0);
-            sites.set(android.getUUID(), site);
-            columnTries = 0;
-        }
-        MineShaft.Step step = MineShaft.step(site.pos(), site.facing(), site.progress());
-        if (step == null) {
-            // the mine is done: a new one next time
-            sites.set(android.getUUID(), null);
-            report(ConsoleAlarm.WORK_DONE, true);
-            rest = RebirthConfig.WORK_REST_SECONDS.get() * 20;
-            return;
-        }
-        if (!level.isLoaded(step.feet()) || !level.isLoaded(step.feet().below(2))) {
-            rest = 100;
-            return;
-        }
-        List<MineShaft.Action> todo = MineShaft.column(level, step, site.progress());
-        if (todo.stream().allMatch(a -> a.op() == MineShaft.Op.TORCH && torchSlot() < 0 || a.op() == MineShaft.Op.TORCH && columnTries > 0)) {
-            // nothing left to dig or fill here: the mine goes on by one (saved with the world)
-            sites.set(android.getUUID(), site.withProgress(site.progress() + 1));
-            columnTries = 0;
-            return;
-        }
-        if (++columnTries > 6) {
-            // it cannot get on with this mine (something it may not break, a place it cannot reach): another one
-            sites.set(android.getUUID(), null);
-            columnTries = 0;
-            return;
-        }
-        if (hasLoad() && android.gear().getItem(35).getCount() > 0) {
-            unloading = true;
-            return;
-        }
-        for (MineShaft.Action action : todo) {
-            switch (action.op()) {
-                case DIG -> {
-                    BlockState state = level.getBlockState(action.pos());
-                    if (!state.isAir() && !(state.getBlock() instanceof LiquidBlock) && !mayBreak(level, action.pos(), state)) {
-                        // not to be broken here: this mine ends
-                        sites.set(android.getUUID(), null);
-                        queue.clear();
-                        return;
-                    }
-                    if (!state.isAir() && !(state.getBlock() instanceof LiquidBlock)) {
-                        queue.add(new Job(Kind.BREAK, action.pos(), true));
-                    }
-                }
-                case FILL -> {
-                    if (fillerSlot() < 0) {
-                        // nothing safe to fill with: to the storage for fillers (never sand or gravel)
-                        queue.clear();
-                        unloading = true;
-                        return;
-                    }
-                    queue.add(new Job(Kind.FILL, action.pos(), true));
-                }
-                case TORCH -> {
-                    if (torchSlot() >= 0) {
-                        queue.add(new Job(Kind.TORCH, action.pos(), true));
-                    }
-                }
-            }
-        }
-    }
-
     private int torchSlot() {
         SimpleContainer gear = android.gear();
         for (int i = 1; i < 36; i++) {
@@ -567,14 +520,76 @@ public final class AndroidWork {
         return -1;
     }
 
+    /**
+     * 1.8.0: a layer of its quarry looked through: the world keeps how far it got (once), and every mineTorchEvery layers a torch
+     * goes on the stair. True when that gave it a job.
+     */
+    private boolean layerDone(ServerLevel level, int layer) {
+        if (layer == layerChecked) {
+            return false;
+        }
+        layerChecked = layer;
+        WorkSites sites = WorkSites.get(level.getServer());
+        WorkSites.Site site = sites.of(android.getUUID());
+        if (site != null && site.kind().equals("mine") && site.progress() < layer + 1) {
+            sites.set(android.getUUID(), site.withProgress(layer + 1));
+        }
+        int every = RebirthConfig.MINE_TORCH_EVERY.get();
+        if (every <= 0 || (layer + 1) % every != 0 || torchSlot() < 0) {
+            return false;
+        }
+        BlockPos step = stepOf(layer);
+        BlockPos on = step == null ? null : step.above();
+        if (on == null || !level.getBlockState(on).isAir() || !level.getBlockState(step).isFaceSturdy(level, step, net.minecraft.core.Direction.UP)) {
+            return false;
+        }
+        job = new Job(Kind.TORCH, on, true);
+        approach = 0;
+        return true;
+    }
+
+    /** The block of the stair left standing in that layer (see isStep), or null when the area has no stair. */
+    @Nullable
+    private BlockPos stepOf(int layer) {
+        int sx = sizeX(), sz = sizeZ();
+        if (sx < 3 || sz < 3) {
+            return null;
+        }
+        int index = Math.floorMod(layer, 2 * (sx + sz) - 4);
+        int x, z;
+        if (index < sx) {
+            x = index;
+            z = 0;
+        } else if (index < sx - 1 + sz) {
+            x = sx - 1;
+            z = index - (sx - 1);
+        } else if (index < 2 * (sx - 1) + sz) {
+            x = sx - 1 - (index - (sx - 1 + sz - 1));
+            z = sz - 1;
+        } else {
+            x = 0;
+            z = sz - 1 - (index - (2 * (sx - 1) + sz - 1));
+        }
+        return new BlockPos(minX() + x, maxY() - layer, minZ() + z);
+    }
+
     /** Looks at the next cells for a job; at the end of a pass with nothing done the area is done for now. */
     private void scan(ServerLevel level) {
         int total = cells();
         for (int i = 0; i < SCAN_PER_TICK; i++) {
+            if (mining() && own(order) && cursor > 0 && cursor % (sizeX() * sizeZ()) == 0 && layerDone(level, cursor / (sizeX() * sizeZ()) - 1)) {
+                return;
+            }
             if (cursor >= total) {
                 cursor = 0;
                 skipped.clear();
                 ignoredItems.clear();
+                if (!toPlant.isEmpty() && !hasSapling() && level.getGameTime() >= saplingRetryAt) {
+                    // 1.8.0: stumps to plant again and no sapling: it fetches saplings from its chest or storage (once in a while)
+                    saplingRetryAt = level.getGameTime() + 2400;
+                    unloading = true;
+                    return;
+                }
                 if (workedThisPass) {
                     workedThisPass = false;
                     return;
@@ -585,6 +600,11 @@ public final class AndroidWork {
                 }
                 report(ConsoleAlarm.WORK_DONE, true);
                 rest = RebirthConfig.WORK_REST_SECONDS.get() * 20;
+                if (own(order) && mining()) {
+                    // the quarry is dug out: a new one next time
+                    WorkSites.get(level.getServer()).set(android.getUUID(), null);
+                    resolvedAt = Long.MIN_VALUE;
+                }
                 return;
             }
             BlockPos pos = cell(cursor++);
@@ -642,7 +662,7 @@ public final class AndroidWork {
             return null;
         }
         BlockState state = level.getBlockState(pos);
-        if (state.isAir()) {
+        if (state.isAir() || state.is(Blocks.TORCH) || state.is(Blocks.WALL_TORCH)) {
             return null;
         }
         if (state.getBlock() instanceof LiquidBlock) {
@@ -781,8 +801,24 @@ public final class AndroidWork {
     }
 
     /** The sapling of the kind of the felled tree when it has one, else any. */
+    private boolean hasSapling() {
+        for (int i = 1; i < 36; i++) {
+            if (android.gear().getItem(i).is(ItemTags.SAPLINGS)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean plantSapling(ServerLevel level) {
         BlockPos pos = toPlant.get(0);
+        if (level.isLoaded(pos) && level.getBlockState(pos).is(BlockTags.LOGS)) {
+            // the stump is still to be cut: the next sapling first, this one later
+            if (toPlant.size() > 1) {
+                toPlant.add(toPlant.remove(0));
+            }
+            return false;
+        }
         if (!level.isLoaded(pos) || !level.getBlockState(pos).canBeReplaced() || !level.getBlockState(pos).getFluidState().isEmpty()
                 || !mayWorkAt(level, pos)) {
             toPlant.remove(0);
@@ -974,7 +1010,8 @@ public final class AndroidWork {
                 if (progress >= 1.0f) {
                     breakBlock(level, now.pos(), state);
                     finishJob(true);
-                    pause = 5;
+                    // leaves go one after another; other blocks with a short pause
+                    pause = state.is(BlockTags.LEAVES) ? 1 : 5;
                 }
             }
             case BERRIES -> {

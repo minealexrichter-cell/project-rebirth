@@ -46,6 +46,16 @@ public final class DevUiShots {
                     minecraft.setScreen(null);
                     return;
                 }
+                if (text.startsWith("click ") && minecraft.screen != null) {
+                    // a left click on the open window at GUI coordinates (x y), as the mouse would give it
+                    String[] at = text.split(" ");
+                    double x = Double.parseDouble(at[1]), y = Double.parseDouble(at[2]);
+                    minecraft.screen.mouseClicked(x, y, 0);
+                    minecraft.screen.mouseReleased(x, y, 0);
+                    ProjectRebirth.LOGGER.info("UI click at {} {} (window {}x{}, scale {})", x, y, minecraft.getWindow().getGuiScaledWidth(),
+                            minecraft.getWindow().getGuiScaledHeight(), minecraft.getWindow().getGuiScale());
+                    return;
+                }
                 if (text.equals("respawn")) {
                     if (minecraft.player != null && minecraft.player.isDeadOrDying()) {
                         minecraft.player.respawn();

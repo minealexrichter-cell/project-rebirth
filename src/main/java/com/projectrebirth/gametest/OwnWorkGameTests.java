@@ -95,43 +95,115 @@ public class OwnWorkGameTests {
         return total;
     }
 
-    /** A small mine for the plot: down to test y 3 (four steps), a main tunnel of 3, no side tunnels, no torches. */
+    /** The config as it was before the batch of quarries (the tests of a batch run at once and share it). */
+    private static int[] mineConfig;
+
+    /**
+     * A small quarry for the plot: 5 × 5, down to test y 3 (four layers: 6, 5, 4, 3), a torch every second layer (only with torches
+     * in its gear). Set for the whole batch and put back after it (a test putting it back would change the quarries of the others).
+     */
     private static Runnable smallMine(GameTestHelper helper) {
-        int depth = RebirthConfig.MINE_DEPTH.get(), corridor = RebirthConfig.MINE_CORRIDOR.get(), branch = RebirthConfig.MINE_BRANCH.get(),
-                torch = RebirthConfig.MINE_TORCH_EVERY.get();
+        if (mineConfig == null) {
+            mineConfig = new int[] {RebirthConfig.MINE_DEPTH.get(), RebirthConfig.MINE_SIZE.get(), RebirthConfig.MINE_TORCH_EVERY.get()};
+        }
         RebirthConfig.MINE_DEPTH.set(helper.absolutePos(new BlockPos(0, 3, 0)).getY());
-        RebirthConfig.MINE_CORRIDOR.set(3);
-        RebirthConfig.MINE_BRANCH.set(0);
-        RebirthConfig.MINE_TORCH_EVERY.set(0);
+        RebirthConfig.MINE_SIZE.set(5);
+        RebirthConfig.MINE_TORCH_EVERY.set(2);
         return () -> {
-            RebirthConfig.MINE_DEPTH.set(depth);
-            RebirthConfig.MINE_CORRIDOR.set(corridor);
-            RebirthConfig.MINE_BRANCH.set(branch);
-            RebirthConfig.MINE_TORCH_EVERY.set(torch);
         };
     }
 
-    /** Its mine starts at that column (the test chooses the place: the real search looks 56 blocks and more out). */
+    private static int searchRadius = -1;
+
+    /** The lumberjacks look round their own plot only (left-overs of other tests lie in the plots next to theirs). */
+    @net.minecraft.gametest.framework.BeforeBatch(batch = "own_work_trees")
+    public static void nearTrees(ServerLevel level) {
+        nearOnly();
+    }
+
+    @net.minecraft.gametest.framework.BeforeBatch(batch = "own_work_lumber")
+    public static void nearLumber(ServerLevel level) {
+        nearOnly();
+    }
+
+    private static void nearOnly() {
+        searchRadius = RebirthConfig.WORK_SEARCH_RADIUS.get();
+        RebirthConfig.WORK_SEARCH_RADIUS.set(14);
+    }
+
+    @net.minecraft.gametest.framework.AfterBatch(batch = "own_work_trees")
+    public static void farTrees(ServerLevel level) {
+        farAgain();
+    }
+
+    @net.minecraft.gametest.framework.AfterBatch(batch = "own_work_lumber")
+    public static void farLumber(ServerLevel level) {
+        farAgain();
+    }
+
+    private static void farAgain() {
+        if (searchRadius > 0) {
+            RebirthConfig.WORK_SEARCH_RADIUS.set(searchRadius);
+            searchRadius = -1;
+        }
+    }
+
+    @net.minecraft.gametest.framework.AfterBatch(batch = "own_work")
+    public static void putTheMineConfigBack(ServerLevel level) {
+        if (mineConfig != null) {
+            RebirthConfig.MINE_DEPTH.set(mineConfig[0]);
+            RebirthConfig.MINE_SIZE.set(mineConfig[1]);
+            RebirthConfig.MINE_TORCH_EVERY.set(mineConfig[2]);
+            mineConfig = null;
+        }
+    }
+
+    /** Its quarry has its corner at that column, its top layer the ground (the real search looks 56 blocks and more out). */
     private static BlockPos mineAt(GameTestHelper helper, AndroidEntity android, int x, int z, int progress) {
-        BlockPos origin = helper.absolutePos(new BlockPos(x, STAND, z));
+        BlockPos corner = helper.absolutePos(new BlockPos(x, GROUND, z));
         WorkSites.get(helper.getLevel().getServer()).set(android.getUUID(),
-                new WorkSites.Site("mine", helper.getLevel().dimension(), origin, Direction.EAST, progress));
-        return origin;
+                new WorkSites.Site("mine", helper.getLevel().dimension(), corner, Direction.EAST, progress));
+        return corner;
+    }
+
+    /** The stair block of a layer of the 5 × 5 quarry at that corner: along its wall, one block on each layer down. */
+    private static BlockPos step(BlockPos corner, int layer) {
+        int[][] ring = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {4, 1}, {4, 2}, {4, 3}, {4, 4}, {3, 4}, {2, 4}, {1, 4}, {0, 4}, {0, 3}, {0, 2}, {0, 1}};
+        int[] at = ring[layer % ring.length];
+        return corner.offset(at[0], -layer, at[1]);
+    }
+
+    /** What is wrong with a layer of the quarry: a block other than its stair left, or the stair dug away; null when it is right. */
+    private static String layerProblem(GameTestHelper helper, BlockPos corner, int layer) {
+        BlockPos stair = step(corner, layer);
+        for (int x = 0; x < 5; x++) {
+            for (int z = 0; z < 5; z++) {
+                BlockPos pos = corner.offset(x, -layer, z);
+                BlockState state = helper.getLevel().getBlockState(pos);
+                boolean open = state.isAir() || state.is(Blocks.TORCH) || !state.getFluidState().isEmpty();
+                if (pos.equals(stair) ? open : !open) {
+                    return (pos.equals(stair) ? "the stair dug away at " : state + " left at ") + pos;
+                }
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------ the place of a mine
 
     @GameTest(template = TEMPLATE, batch = "own_work")
     public static void aMineGoesOnlyFarFromTheBaseAndOffAnyFactionsLand(GameTestHelper helper) {
+        Runnable restore = smallMine(helper);
         ServerLevel level = helper.getLevel();
         BlockPos middle = helper.absolutePos(new BlockPos(8, GROUND, 8));
-        helper.assertTrue(MineShaft.siteAt(level, middle.getX(), middle.getZ(), List.of()) != null, "Open dry ground: a mine fits");
+        BlockPos site = MineShaft.siteAt(level, middle.getX(), middle.getZ(), List.of());
+        helper.assertTrue(site != null && site.getY() == middle.getY(), "Open dry ground: a quarry fits, its top the ground: " + site);
         helper.assertTrue(MineShaft.siteAt(level, middle.getX(), middle.getZ(), List.of(middle.offset(10, 0, 0))) == null,
                 "Too near a storage, shelter or core: no mine");
-        // water on the square of the stair: no mine
-        helper.setBlock(new BlockPos(11, GROUND, 11), Blocks.WATER);
-        helper.assertTrue(MineShaft.siteAt(level, middle.getX(), middle.getZ(), List.of()) == null, "Wet ground: no mine: "
-                + MineShaft.siteAt(level, middle.getX(), middle.getZ(), List.of()) + " water at " + helper.absolutePos(new BlockPos(11, GROUND, 11)));
+        // water on the square of the quarry: no mine
+        helper.setBlock(new BlockPos(10, GROUND, 10), Blocks.WATER);
+        helper.assertTrue(MineShaft.siteAt(level, middle.getX(), middle.getZ(), List.of()) == null, "Wet ground: no mine");
+        restore.run();
         helper.succeed();
     }
 
@@ -150,31 +222,27 @@ public class OwnWorkGameTests {
         helper.succeed();
     }
 
-    // ------------------------------------------------------------------ the mine
+    // ------------------------------------------------------------------ the quarry
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 2400, batch = "own_work")
-    public static void aMinerDigsItsStairDownToTheDepthAndItsTunnel(GameTestHelper helper) {
+    @GameTest(template = TEMPLATE, timeoutTicks = 3600, batch = "own_work")
+    public static void aMinerDigsOutItsQuarryLayerByLayerWithAStairAlongTheWall(GameTestHelper helper) {
         Runnable restore = smallMine(helper);
         ServerPlayer owner = player(helper);
         chest(helper, new BlockPos(2, STAND, 2));
-        AndroidEntity android = worker(helper, owner, 3, 8);
+        AndroidEntity android = worker(helper, owner, 2, 8);
         android.gear().setItem(0, new ItemStack(Items.DIAMOND_PICKAXE));
-        android.gear().setItem(1, new ItemStack(Items.COBBLESTONE, 32));
-        BlockPos origin = mineAt(helper, android, 4, 8, 0);
+        android.gear().setItem(1, new ItemStack(Items.TORCH, 8));
+        BlockPos corner = mineAt(helper, android, 4, 4, 0);
         android.machineCore().setTask(ownWork(helper, "mine", new BlockPos(2, STAND, 2)));
-        int depth = RebirthConfig.MINE_DEPTH.get();
         helper.succeedWhen(() -> {
-            // the stair: four steps east, each a block lower; then the tunnel three blocks on
-            for (int i = 1; i <= 4; i++) {
-                BlockPos feet = origin.offset(i, -i, 0);
-                helper.assertTrue(helper.getLevel().getBlockState(feet).isAir() && helper.getLevel().getBlockState(feet.above()).isAir(),
-                        "Step " + i + " dug at " + feet);
+            for (int layer = 0; layer < 4; layer++) {
+                String problem = layerProblem(helper, corner, layer);
+                helper.assertTrue(problem == null, "Layer " + layer + ": " + problem);
             }
-            for (int j = 1; j <= 3; j++) {
-                BlockPos feet = origin.offset(4 + j, -4, 0);
-                helper.assertTrue(helper.getLevel().getBlockState(feet).isAir(), "Tunnel " + j + " dug at " + feet);
-            }
-            helper.assertTrue(origin.getY() - 4 == depth, "Down to the depth");
+            // a torch on the stair every second layer
+            helper.assertTrue(helper.getLevel().getBlockState(step(corner, 1).above()).is(Blocks.TORCH), "A torch over the second step: " + helper.getLevel().getBlockState(step(corner, 1).above()) + " at " + step(corner, 1).above() + ", torches " + android.gear().getItem(1));
+            helper.assertTrue(helper.getLevel().getBlockState(step(corner, 3).above()).is(Blocks.TORCH), "A torch over the fourth step");
+            helper.assertTrue(helper.getLevel().getBlockState(corner.offset(2, -4, 2)).isSolid(), "Not deeper than mineDepth");
             restore.run();
             WorkSites.get(helper.getLevel().getServer()).set(android.getUUID(), null);
             android.discard();
@@ -193,17 +261,16 @@ public class OwnWorkGameTests {
         Runnable restore = smallMine(helper);
         ServerPlayer owner = player(helper);
         chest(helper, new BlockPos(2, STAND, 2));
-        AndroidEntity android = worker(helper, owner, 3, 8);
+        AndroidEntity android = worker(helper, owner, 2, 8);
         android.gear().setItem(0, new ItemStack(Items.DIAMOND_PICKAXE));
         android.gear().setItem(1, new ItemStack(Items.SAND, 64));
         android.gear().setItem(2, new ItemStack(Items.GRAVEL, 64));
-        BlockPos origin = mineAt(helper, android, 4, 8, 0);
-        // a hollow under the second step: its floor must be filled
-        helper.setBlock(new BlockPos(6, 4, 8), Blocks.AIR);
-        helper.setBlock(new BlockPos(6, 3, 8), Blocks.AIR);
+        BlockPos corner = mineAt(helper, android, 4, 4, 0);
+        // water in the quarry: to be plugged, but never with sand or gravel
+        helper.setBlock(new BlockPos(6, 4, 6), Blocks.WATER);
         android.machineCore().setTask(ownWork(helper, "mine", new BlockPos(2, STAND, 2)));
         helper.onEachTick(() -> {
-            for (BlockPos pos : BlockPos.betweenClosed(origin.offset(0, -6, -1), origin.offset(8, 2, 1))) {
+            for (BlockPos pos : BlockPos.betweenClosed(corner.offset(-1, -5, -1), corner.offset(5, 2, 5))) {
                 BlockState state = helper.getLevel().getBlockState(pos);
                 helper.assertFalse(state.is(Blocks.SAND) || state.is(Blocks.GRAVEL), "No sand or gravel placed at " + pos);
             }
@@ -219,33 +286,28 @@ public class OwnWorkGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 1600, batch = "own_work")
+    @GameTest(template = TEMPLATE, timeoutTicks = 3600, batch = "own_work")
     public static void aMinerUnderGravelNeitherDiesNorGetsStuck(GameTestHelper helper) {
         Runnable restore = smallMine(helper);
         ServerPlayer owner = player(helper);
         chest(helper, new BlockPos(2, STAND, 2));
-        // gravel over the first steps of the stair, in the ground and above it
-        for (int x = 4; x <= 8; x++) {
-            for (int y = 4; y <= GROUND + 3; y++) {
-                if (y > GROUND && x < 5) {
-                    continue;
-                }
-                helper.setBlock(new BlockPos(x, y, 8), Blocks.GRAVEL);
-            }
+        // a column of gravel in the quarry, from its bottom to three blocks over the ground
+        for (int y = 3; y <= GROUND + 3; y++) {
+            helper.setBlock(new BlockPos(6, y, 6), Blocks.GRAVEL);
         }
-        AndroidEntity android = worker(helper, owner, 3, 8);
+        AndroidEntity android = worker(helper, owner, 2, 8);
         android.gear().setItem(0, new ItemStack(Items.DIAMOND_PICKAXE));
-        android.gear().setItem(1, new ItemStack(Items.COBBLESTONE, 64));
-        BlockPos origin = mineAt(helper, android, 4, 8, 0);
+        BlockPos corner = mineAt(helper, android, 4, 4, 0);
         android.machineCore().setTask(ownWork(helper, "mine", new BlockPos(2, STAND, 2)));
         float health = android.getHealth();
         helper.onEachTick(() -> helper.assertTrue(android.isAlive() && android.getLastDamageSource() == null
                 || android.getLastDamageSource() != null && !android.getLastDamageSource().is(net.minecraft.world.damagesource.DamageTypes.IN_WALL),
                 "It is never buried"));
         helper.succeedWhen(() -> {
-            BlockPos fourth = origin.offset(4, -4, 0);
-            helper.assertTrue(helper.getLevel().getBlockState(fourth).isAir() && helper.getLevel().getBlockState(fourth.above()).isAir(),
-                    "It got through the gravel down to the fourth step");
+            for (int layer = 0; layer < 4; layer++) {
+                String problem = layerProblem(helper, corner, layer);
+                helper.assertTrue(problem == null, "Layer " + layer + ": " + problem);
+            }
             helper.assertTrue(android.getHealth() >= health, "Unhurt");
             restore.run();
             WorkSites.get(helper.getLevel().getServer()).set(android.getUUID(), null);
@@ -253,37 +315,39 @@ public class OwnWorkGameTests {
         });
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 1600, batch = "own_work")
+    @GameTest(template = TEMPLATE, timeoutTicks = 2400, batch = "own_work")
     public static void aMinerGoesOnWithItsMineWhereItLeftOff(GameTestHelper helper) {
         Runnable restore = smallMine(helper);
         ServerPlayer owner = player(helper);
         chest(helper, new BlockPos(2, STAND, 2));
-        AndroidEntity android = worker(helper, owner, 3, 8);
+        AndroidEntity android = worker(helper, owner, 2, 8);
         android.gear().setItem(0, new ItemStack(Items.DIAMOND_PICKAXE));
-        android.gear().setItem(1, new ItemStack(Items.COBBLESTONE, 32));
-        // the first two steps were dug before the restart, the mine remembers two done
-        BlockPos origin = mineAt(helper, android, 4, 8, 3);
-        for (int i = 0; i <= 2; i++) {
-            BlockPos feet = origin.offset(i, -i, 0);
-            for (int h = 0; h < 3; h++) {
-                helper.getLevel().setBlock(feet.above(h), Blocks.AIR.defaultBlockState(), 3);
+        // the first two layers were dug before the restart (all but their stair), the world remembers two done
+        BlockPos corner = mineAt(helper, android, 4, 4, 2);
+        for (int layer = 0; layer < 2; layer++) {
+            for (int x = 0; x < 5; x++) {
+                for (int z = 0; z < 5; z++) {
+                    BlockPos pos = corner.offset(x, -layer, z);
+                    if (!pos.equals(step(corner, layer))) {
+                        helper.getLevel().setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
             }
         }
-        // what the world keeps of it comes back the same
+        // a block it would dig first if it started over
+        BlockPos marker = corner.offset(2, 0, 2);
+        helper.getLevel().setBlock(marker, Blocks.STONE.defaultBlockState(), 3);
         WorkSites sites = WorkSites.get(helper.getLevel().getServer());
-        helper.assertTrue(sites.of(android.getUUID()).progress() == 3, "Saved where it was");
+        helper.assertTrue(sites.of(android.getUUID()).progress() == 2, "Saved where it was");
         android.machineCore().setTask(ownWork(helper, "mine", new BlockPos(2, STAND, 2)));
-        int[] lowest = {Integer.MAX_VALUE};
-        helper.onEachTick(() -> {
-            WorkSites.Site site = sites.of(android.getUUID());
-            if (site != null) {
-                lowest[0] = Math.min(lowest[0], site.progress());
-            }
-        });
         helper.succeedWhen(() -> {
-            BlockPos third = origin.offset(3, -3, 0);
-            helper.assertTrue(helper.getLevel().getBlockState(third).isAir(), "The third step dug");
-            helper.assertTrue(lowest[0] >= 3, "It never started over: " + lowest[0]);
+            for (int layer = 2; layer < 4; layer++) {
+                String problem = layerProblem(helper, corner, layer);
+                helper.assertTrue(problem == null, "Layer " + layer + ": " + problem);
+            }
+            helper.assertTrue(helper.getLevel().getBlockState(marker).is(Blocks.STONE), "It went on from the third layer, not from the top");
+            helper.assertTrue(sites.of(android.getUUID()) != null && sites.of(android.getUUID()).progress() >= 3,
+                    "The world keeps how far it got: " + sites.of(android.getUUID()));
             restore.run();
             sites.set(android.getUUID(), null);
             android.discard();
@@ -303,7 +367,7 @@ public class OwnWorkGameTests {
         }
     }
 
-    @GameTest(template = TEMPLATE, timeoutTicks = 1600, batch = "own_work")
+    @GameTest(template = TEMPLATE, timeoutTicks = 1600, batch = "own_work_trees")
     public static void aLumberjackFindsATreeItself(GameTestHelper helper) {
         ServerPlayer owner = player(helper);
         Container chest = chest(helper, new BlockPos(4, STAND, 4));
@@ -313,7 +377,34 @@ public class OwnWorkGameTests {
         android.gear().setItem(0, new ItemStack(Items.DIAMOND_AXE));
         android.machineCore().setTask(ownWork(helper, "lumber", new BlockPos(4, STAND, 4)));
         helper.succeedWhen(() -> {
-            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(16, STAND + 1, 16))).isAir(), "The tree is felled");
+            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(16, STAND + 1, 16))).isAir(), "The tree is felled; it is at " + helper.relativePos(android.blockPosition()) + " with " + android.gear().getItem(0) + ", " + android.gear().getItem(1) + ", work " + android.machineCore().task().work() + ", going to " + (android.getNavigation().getTargetPos() == null ? null : helper.relativePos(android.getNavigation().getTargetPos())) + ", there " + (android.getNavigation().getTargetPos() == null ? null : helper.getLevel().getBlockState(android.getNavigation().getTargetPos()) + "/" + helper.getLevel().getBlockState(android.getNavigation().getTargetPos().below())) + ", raised " + java.util.Arrays.stream(ConsoleAlarm.values()).filter(android::workReported).toList());
+            android.discard();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 1600, batch = "own_work_lumber")
+    public static void aLumberjackTakesAnAxeAndSaplingsFromItsChestAndPlantsAgain(GameTestHelper helper) {
+        ServerPlayer owner = player(helper);
+        Container chest = chest(helper, new BlockPos(4, STAND, 4));
+        chest.setItem(0, new ItemStack(Items.IRON_AXE));
+        chest.setItem(1, new ItemStack(Items.OAK_SAPLING, 4));
+        helper.setBlock(new BlockPos(16, GROUND, 16), Blocks.GRASS_BLOCK);
+        tree(helper, 16, 16);
+        AndroidEntity android = worker(helper, owner, 5, 5);
+        android.machineCore().setTask(ownWork(helper, "lumber", new BlockPos(4, STAND, 4)));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(android.gear().getItem(0).is(Items.IRON_AXE), "It took the axe from its chest");
+            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(16, STAND + 1, 16))).isAir()
+                    && helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(16, STAND + 3, 16))).isAir(), "The whole tree is felled");
+            for (BlockPos leaf : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(15, STAND + 3, 15)), helper.absolutePos(new BlockPos(17, STAND + 4, 17)))) {
+                helper.assertFalse(helper.getLevel().getBlockState(leaf).is(Blocks.OAK_LEAVES), "Its leaves cut too");
+            }
+            helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(16, STAND, 16))).is(Blocks.OAK_SAPLING),
+                    "A sapling where it stood");
+            // nothing of it left for the lumberjacks of the next batches (their plots come next to this one)
+            for (BlockPos left : BlockPos.betweenClosed(helper.absolutePos(new BlockPos(14, STAND + 1, 14)), helper.absolutePos(new BlockPos(18, STAND + 6, 18)))) {
+                helper.getLevel().setBlock(left, Blocks.AIR.defaultBlockState(), 2);
+            }
             android.discard();
         });
     }

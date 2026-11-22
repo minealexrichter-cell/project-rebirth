@@ -324,8 +324,7 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue WORK_SEARCH_RADIUS;
     public static final ModConfigSpec.IntValue MINE_DEPTH;
     public static final ModConfigSpec.IntValue MINE_BASE_DISTANCE;
-    public static final ModConfigSpec.IntValue MINE_CORRIDOR;
-    public static final ModConfigSpec.IntValue MINE_BRANCH;
+    public static final ModConfigSpec.IntValue MINE_SIZE;
     public static final ModConfigSpec.IntValue MINE_TORCH_EVERY;
     public static final ModConfigSpec.BooleanValue WORK_LUMBER;
     public static final ModConfigSpec.BooleanValue WORK_FARM;
@@ -1366,9 +1365,9 @@ public final class RebirthConfig {
         MINE_DEPTH = builder.comment("1.8.0: the deepest level (Y) a miner of its own digs down to").defineInRange("mineDepth", -54, -64, 320);
         MINE_BASE_DISTANCE = builder.comment("1.8.0: blocks a miner keeps its mine from the faction core, shelters and storages (and off its faction's land)")
                 .defineInRange("mineBaseDistance", 48, 0, 512);
-        MINE_CORRIDOR = builder.comment("1.8.0: the length of the main tunnel at the bottom of a mine").defineInRange("mineCorridor", 48, 4, 256);
-        MINE_BRANCH = builder.comment("1.8.0: the length of the side tunnels, every third block of the main one, both ways").defineInRange("mineBranch", 16, 0, 128);
-        MINE_TORCH_EVERY = builder.comment("1.8.0: a torch from its gear every that many blocks of a mine (0: none)").defineInRange("mineTorchEvery", 8, 0, 64);
+        MINE_SIZE = builder.comment("1.8.0: the side of the quarry a miner of its own digs out layer by layer (16: a whole chunk, on its borders)")
+                .defineInRange("mineSize", 16, 3, 16);
+        MINE_TORCH_EVERY = builder.comment("1.8.0: a torch from its gear on the stair of its quarry every that many layers (0: none)").defineInRange("mineTorchEveryLayers", 4, 0, 64);
         WORK_CUT_LEAVES = builder.comment("Whether the lumberjack cuts the leaves of a felled tree (else they fall by themselves and it picks up what drops)").define("cutLeaves", true);
         WORK_TILL = builder.comment("Whether the farmer tills dirt and grass in its area with a hoe in hand (off: it only harvests and replants)").define("till", false);
         WORK_KEEP_SEEDS = builder.comment("Seeds, saplings or fillers of one kind it keeps in its gear when it hands the rest in").defineInRange("keepSeeds", 16, 0, 64);

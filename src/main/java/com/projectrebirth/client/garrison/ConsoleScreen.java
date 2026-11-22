@@ -73,8 +73,8 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
     private static final int MAP_H = 152;
     private static final int RIGHT_X = 303;
     private static final int RIGHT_W = W - 7 - RIGHT_X;
-    private static final int ALARMS_Y = 129;
-    private static final int ALARM_H = 29;
+    private static final int ALARMS_Y = 126;
+    private static final int ALARM_H = 26;
     private static final int ORDERS_Y = 220;
     /** The orders of the panel, in the mock-up's order; WORK takes the kind of work chosen below. */
     private static final List<MachineTask.Type> ORDERS = List.of(MachineTask.Type.GUARD, MachineTask.Type.PATROL, MachineTask.Type.AREA_PATROL,
@@ -1158,16 +1158,16 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
             if (hovered) {
                 graphics.fill(ax + 1, ly, ax + RIGHT_W - 1, ly + ALARM_H - 1, 0x10FFFFFF);
             }
-            UiSprites.draw(graphics, tone.icon, ax + 3, ly + 2, 7, 7);
+            UiSprites.draw(graphics, tone.icon, ax + 3, ly + 1, 7, 7);
             Component time = ConsoleOrders.ago(line.secondsAgo());
             int timeWidth = font.width(time);
             Component what = Component.translatable("console_alarm.projectrebirth." + alarm.id() + (line.ended() ? "_ended" : ""))
                     .append(": ").append(ConsoleBlockEntity.display(line.name()));
-            text(graphics, what, ax + 12, ly + 2, RIGHT_W - 18 - timeWidth, tone.text);
-            graphics.drawString(font, time, ax + RIGHT_W - 3 - timeWidth, ly + 2, UiColors.TEXT_DIM, false);
+            text(graphics, what, ax + 12, ly + 1, RIGHT_W - 18 - timeWidth, tone.text);
+            graphics.drawString(font, time, ax + RIGHT_W - 3 - timeWidth, ly + 1, UiColors.TEXT_DIM, false);
             Component todo = line.ended() ? tr("alarm_over") : Component.translatable("console_alarm_todo.projectrebirth." + alarm.id());
-            text(graphics, todo, ax + 12, ly + 11, RIGHT_W - 15, UiColors.TEXT_SECONDARY);
-            text(graphics, tr("show_on_map"), ax + 12, ly + 19, RIGHT_W - 15, hovered ? UiColors.AMBER_LIGHT : UiColors.AMBER_DIM);
+            text(graphics, todo, ax + 12, ly + 9, RIGHT_W - 15, UiColors.TEXT_SECONDARY);
+            text(graphics, tr("show_on_map"), ax + 12, ly + 17, RIGHT_W - 15, hovered ? UiColors.AMBER_LIGHT : UiColors.AMBER_DIM);
             if (hovered) {
                 tooltip(ax, ly, RIGHT_W, ALARM_H, () -> UiTooltip.of(what).text(todo, UiColors.TEXT_SECONDARY)
                         .row(tr("card.where"), Component.literal(line.x() + " " + line.y() + " " + line.z()), UiColors.SCREEN_TEXT)

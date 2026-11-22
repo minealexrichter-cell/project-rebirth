@@ -138,7 +138,7 @@ public class TabletScreen extends Screen {
         ConsoleOrders.send(console, ConsoleNetwork.ORDER, target.group < 0 && target.group != ConsoleBlockEntity.ALL ? target.machine : null,
                 target.group, type.ordinal(), work, true);
         // an order with points closes the screen so that the player can mark them in the world
-        if (type == MachineTask.Type.WORK || ConsoleNetwork.needsPoints(type)) {
+        if (ConsoleNetwork.needsPoints(type)) {
             onClose();
         }
     }

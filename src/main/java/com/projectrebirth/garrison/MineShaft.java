@@ -15,7 +15,6 @@ import com.projectrebirth.logistics.Storages;
 import com.projectrebirth.shelter.Shelters;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -27,43 +26,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
- * 1.8.0, block J: the mine a miner of its own digs, step by step, the same every time from its start (so it goes on after a
- * restart from the steps done, {@link WorkSites}).
- * <ul>
- * <li><b>The stair:</b> a spiral going down round a square of 7 × 7, each side six steps down and a landing, three blocks high,
- * down to mineDepth;</li>
- * <li><b>the tunnels:</b> at the bottom a main tunnel of mineCorridor blocks, two high, and every third block a side tunnel of
- * mineBranch blocks each way, to come across ore.</li>
- * </ul>
- * Each step is a column of actions ({@link #column}): a liquid next to it is plugged first; a falling block (sand, gravel,
- * concrete powder: anything {@link Fallable}) over its top is replaced with a filler before the top is dug, so nothing falls on
- * the miner; the floor is made solid with a filler where it is not; now and then a torch. Fillers never fall
- * ({@link #safeFiller}).
+ * 1.8.0, block J: the mine a miner of its own digs: a quarry, a square of mineSize (a whole chunk by default, on its borders) dug
+ * layer by layer from the ground down to mineDepth, with a spiral stair along its wall (one block left standing a layer, each a
+ * step lower, AndroidWork#isStep), and a torch on the stair every mineTorchEvery layers. Water and lava in it are plugged with
+ * fillers that never fall ({@link #safeFiller}). The layer it got to is kept with the world ({@link WorkSites}), so it goes on
+ * after a restart.
  * <p>
- * The place ({@link #findSite}): on dry solid ground, in a loaded chunk, off the land of every faction, at least mineBaseDistance
+ * The place ({@link #findSite}): on dry solid ground, in loaded chunks, off the land of every faction, at least mineBaseDistance
  * from its faction's cores, shelters and storages, in no structure.
  */
 public final class MineShaft {
-    static final int SIDE = 6;
-    static final int STAIR_HEIGHT = 3;
-    static final int TUNNEL_HEIGHT = 2;
-
-    public enum Op {
-        /** Break the block (keep what drops). */
-        DIG,
-        /** Make the cell solid with a filler (break what is there first, unless it is air or a liquid). */
-        FILL,
-        /** A torch on the floor of the cell. */
-        TORCH
-    }
-
-    public record Action(Op op, BlockPos pos) {
-    }
-
-    /** Where the miner stands at a step, the way it faces, how high the passage is; null past the end of the mine. */
-    public record Step(BlockPos feet, Direction facing, int height) {
-    }
-
     private MineShaft() {
     }
 
@@ -77,117 +49,15 @@ public final class MineShaft {
         return state.getBlock() instanceof Fallable;
     }
 
-    /** The step of that index, or null after the last one. */
-    @Nullable
-    public static Step step(BlockPos origin, Direction first, int index) {
-        int depth = RebirthConfig.MINE_DEPTH.get();
-        int corridor = RebirthConfig.MINE_CORRIDOR.get();
-        int branch = RebirthConfig.MINE_BRANCH.get();
-        // the stair: index 0 is the first column, at its start
-        int x = origin.getX(), y = origin.getY(), z = origin.getZ();
-        Direction dir = first;
-        if (index == 0) {
-            return new Step(origin, dir, STAIR_HEIGHT);
-        }
-        int i = 0;
-        while (y > depth) {
-            int k = i % (SIDE + 1);
-            dir = rotate(first, i / (SIDE + 1));
-            x += dir.getStepX();
-            z += dir.getStepZ();
-            if (k < SIDE) {
-                y--;
-            }
-            i++;
-            if (i == index) {
-                return new Step(new BlockPos(x, y, z), dir, STAIR_HEIGHT);
-            }
-        }
-        // the tunnels, from the last column of the stair
-        int rest = index - i - 1;
-        Direction left = dir.getCounterClockWise(), right = dir.getClockWise();
-        for (int j = 1; j <= corridor; j++) {
-            BlockPos main = new BlockPos(x + dir.getStepX() * j, y, z + dir.getStepZ() * j);
-            if (rest-- == 0) {
-                return new Step(main, dir, TUNNEL_HEIGHT);
-            }
-            if (j % 3 == 0) {
-                for (Direction side : new Direction[] {left, right}) {
-                    for (int b = 1; b <= branch; b++) {
-                        if (rest-- == 0) {
-                            return new Step(main.relative(side, b), side, TUNNEL_HEIGHT);
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private static Direction rotate(Direction dir, int times) {
-        Direction out = dir;
-        for (int i = 0; i < (times & 3); i++) {
-            out = out.getClockWise();
-        }
-        return out;
-    }
-
-    /** What to do at a step, in order (see the class). */
-    public static List<Action> column(ServerLevel level, Step step, int index) {
-        List<Action> out = new ArrayList<>();
-        BlockPos feet = step.feet();
-        BlockPos top = feet.above(step.height() - 1);
-        // liquids round the passage and over it: plugged first
-        for (int h = 0; h < step.height(); h++) {
-            BlockPos cell = feet.above(h);
-            for (Direction side : Direction.Plane.HORIZONTAL) {
-                BlockPos near = cell.relative(side);
-                if (!level.getFluidState(near).isEmpty() && !inPassage(near, step)) {
-                    out.add(new Action(Op.FILL, near.immutable()));
-                }
-            }
-        }
-        BlockState over = level.getBlockState(top.above());
-        if (!level.getFluidState(top.above()).isEmpty() || falling(over)) {
-            // a liquid or something that would fall over the top: a filler holds it up
-            out.add(new Action(Op.FILL, top.above()));
-        }
-        // the passage, from the top down (what is above a dug cell is air or held up)
-        for (int h = step.height() - 1; h >= 0; h--) {
-            BlockPos cell = feet.above(h);
-            if (!level.getFluidState(cell).isEmpty()) {
-                out.add(new Action(Op.FILL, cell));
-            }
-            BlockState there = level.getBlockState(cell);
-            if (!there.isAir() && !there.is(Blocks.TORCH) || !level.getFluidState(cell).isEmpty()) {
-                out.add(new Action(Op.DIG, cell));
-            }
-        }
-        // a floor that holds: never air, a liquid, half a block, or a falling block over a hollow
-        BlockPos floor = feet.below();
-        BlockState ground = level.getBlockState(floor);
-        boolean holds = ground.isCollisionShapeFullBlock(level, floor) && level.getFluidState(floor).isEmpty()
-                && !(falling(ground) && level.getBlockState(floor.below()).isAir());
-        if (!holds) {
-            out.add(new Action(Op.FILL, floor));
-        }
-        int every = RebirthConfig.MINE_TORCH_EVERY.get();
-        if (every > 0 && index > 0 && index % every == 0 && !level.getBlockState(feet).is(Blocks.TORCH)) {
-            out.add(new Action(Op.TORCH, feet));
-        }
-        return out;
-    }
-
-    /** Whether a cell is part of this step's passage (not to be plugged). */
-    private static boolean inPassage(BlockPos pos, Step step) {
-        return pos.getX() == step.feet().getX() && pos.getZ() == step.feet().getZ() && pos.getY() >= step.feet().getY()
-                && pos.getY() < step.feet().getY() + step.height();
+    /** The side of a quarry (the config's, at most a chunk). */
+    public static int size() {
+        return RebirthConfig.MINE_SIZE.get();
     }
 
     // ------------------------------------------------------------------ the place
 
     /**
-     * A place for a mine near `from` (its storage, or itself), or null: tries a few dozen places on rings from mineBaseDistance
+     * A place for a quarry near `from` (its storage, or itself), or null: tries a few dozen places on rings from mineBaseDistance
      * to twice that out, takes the nearest that fits.
      */
     @Nullable
@@ -199,8 +69,9 @@ public final class MineShaft {
         for (int attempt = 0; attempt < 48; attempt++) {
             double angle = random.nextDouble() * Math.PI * 2.0;
             double distance = base + 8 + random.nextDouble() * (base + 16);
-            int x = Mth.floor(from.getX() + Math.cos(angle) * distance);
-            int z = Mth.floor(from.getZ() + Math.sin(angle) * distance);
+            // on the borders of a chunk: a whole chunk dug out
+            int x = Mth.floor(from.getX() + Math.cos(angle) * distance) & ~15;
+            int z = Mth.floor(from.getZ() + Math.sin(angle) * distance) & ~15;
             BlockPos site = siteAt(level, x, z, keepOff);
             if (site != null && site.distSqr(from) < bestDistance) {
                 best = site;
@@ -241,37 +112,46 @@ public final class MineShaft {
         return at.getY() + 1;
     }
 
-    /** The place of a mine at that column (where the miner stands to start), or null when it does not fit. Public for tests. */
+    /**
+     * The quarry with its north-west corner at that column, or null when it does not fit: its corner at the level of its highest
+     * ground (the first layer it digs). Public for tests.
+     */
     @Nullable
     public static BlockPos siteAt(ServerLevel level, int x, int z, List<BlockPos> keepOff) {
         int base = RebirthConfig.MINE_BASE_DISTANCE.get();
+        int size = size();
         BlockPos probe = new BlockPos(x, level.getSeaLevel(), z);
-        if (!level.hasChunkAt(probe) || !level.hasChunkAt(probe.offset(SIDE + 1, 0, SIDE + 1))) {
+        if (!level.hasChunkAt(probe) || !level.hasChunkAt(probe.offset(size - 1, 0, size - 1))) {
             return null;
         }
-        int y = surface(level, x, z);
-        BlockPos feet = new BlockPos(x, y, z);
+        BlockPos middle = new BlockPos(x + size / 2, surface(level, x + size / 2, z + size / 2), z + size / 2);
         for (BlockPos off : keepOff) {
-            if (off.distSqr(feet) < (double) base * base) {
+            if (off.distSqr(middle) < (double) base * base) {
                 return null;
             }
         }
-        // the whole square of the stair: solid dry ground, no faction's land, no structure, not much up and down
-        for (int dx = -1; dx <= SIDE + 1; dx += 2) {
-            for (int dz = -1; dz <= SIDE + 1; dz += 2) {
-                BlockPos column = new BlockPos(x + dx, 0, z + dz);
-                int top = surface(level, column.getX(), column.getZ());
-                BlockPos ground = new BlockPos(column.getX(), top - 1, column.getZ());
+        // the whole square: solid dry ground, no faction's land, no structure, not much up and down
+        int low = Integer.MAX_VALUE, high = Integer.MIN_VALUE;
+        for (int dx = 0; dx < size; dx += 2) {
+            for (int dz = 0; dz < size; dz += 2) {
+                int cx = x + Math.min(dx, size - 1), cz = z + Math.min(dz, size - 1);
+                int top = surface(level, cx, cz);
+                BlockPos ground = new BlockPos(cx, top - 1, cz);
                 BlockState state = level.getBlockState(ground);
-                if (Math.abs(top - y) > 3 || !state.isCollisionShapeFullBlock(level, ground) || !level.getFluidState(ground).isEmpty()
-                        || !level.getFluidState(ground.above()).isEmpty() || state.is(BlockTags.LEAVES) || falling(state)) {
+                if (!state.isCollisionShapeFullBlock(level, ground) || !level.getFluidState(ground).isEmpty()
+                        || !level.getFluidState(ground.above()).isEmpty() || state.is(BlockTags.LEAVES)) {
                     return null;
                 }
                 if (FactionService.territoryAt(level.getServer(), level, ground).isPresent() || level.structureManager().hasAnyStructureAt(ground)) {
                     return null;
                 }
+                low = Math.min(low, ground.getY());
+                high = Math.max(high, ground.getY());
             }
         }
-        return feet;
+        if (high - low > 8 || high <= RebirthConfig.MINE_DEPTH.get()) {
+            return null;
+        }
+        return new BlockPos(x, high, z);
     }
 }

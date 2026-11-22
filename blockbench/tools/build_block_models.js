@@ -1042,6 +1042,20 @@
     STATES.leaking_waste_barrel = {variants: {'': variant('leaking_waste_barrel')}};
     STATES.turret_mount = {variants: {'': variant('turret_mount')}};
     STATES.service_post_plate = {variants: {'': variant('service_post_plate')}};
+    // 1.8.0, block J: a storage rack — four steel posts and three shelves, open on every side (the storage's racks stand on both
+    // sides of its aisle, whichever way it faces); the shelves end a tenth inside the posts (no faces in one plane). The items on
+    // the shelves are drawn by the storage's renderer.
+    MODELS.storage_rack = {
+        parent: 'minecraft:block/block',
+        textures: {particle: 'projectrebirth:block/storage_rack', post: 'projectrebirth:block/storage_rack', shelf: 'projectrebirth:block/storage_rack_top'},
+        elements: [
+            ...[[2, 2], [12, 2], [2, 12], [12, 12]].map(([x, z]) => ({from: [x, 0, z], to: [x + 2, 16, z + 2],
+                faces: Object.fromEntries(DIRS.map(d => [d, {texture: '#post', uv: d === 'up' || d === 'down' ? [7, 7, 9, 9] : [7, 0, 9, 16]}]))})),
+            ...[1, 8, 14.9].map(y => ({from: [2.1, y, 2.1], to: [13.9, y + 1, 13.9],
+                faces: Object.fromEntries(DIRS.map(d => [d, {texture: '#shelf', uv: d === 'up' || d === 'down' ? [2, 2, 14, 14] : [2, 0, 14, 1]}]))}))
+        ]
+    };
+    STATES.storage_rack = {variants: {'formed=false': variant('storage_rack'), 'formed=true': variant('storage_rack')}};
     STATES.service_post = {variants: {'': variant('service_post')}};
 
     // Structure decoration (1.6.0): facing blocks look the way the model looks at north; the tank and the sludge have no facing.

@@ -125,6 +125,19 @@ public final class HallShell {
         }
     }
 
+    /**
+     * 1.8.0: a box given in the plan's own frame (cell units: column, layer, row), turned with the controller and drawn with that
+     * texture and the light of the cell it stands in (the storage's manipulator). The pose stands at the controller's block.
+     */
+    public static void drawBox(MultiblockSchema schema, BlockPos controller, Direction facing, PoseStack pose, VertexConsumer out,
+                               TextureAtlasSprite sprite, double x0, double y0, double z0, double x1, double y1, double z1) {
+        Level level = Minecraft.getInstance().level;
+        if (level != null) {
+            draw(schema, controller, facing, pose, out, sprite, new Box(x0, y0, z0, x1, y1, z1, WALL, (int) Math.floor((x0 + x1) / 2),
+                    (int) Math.floor((y0 + y1) / 2), (int) Math.floor((z0 + z1) / 2)), level);
+        }
+    }
+
     private static void draw(MultiblockSchema schema, BlockPos controller, Direction facing, PoseStack pose, VertexConsumer out,
                              TextureAtlasSprite sprite, Box box, Level level) {
         Vec3 a = schema.worldPoint(controller, facing, box.x0, box.y0, box.z0);

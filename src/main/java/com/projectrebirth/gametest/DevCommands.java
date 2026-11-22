@@ -503,6 +503,18 @@ public final class DevCommands {
         }
         var storage = (com.projectrebirth.logistics.StorageControllerBlockEntity) level.getBlockEntity(controller);
         storage.setOwner(player(ctx).getUUID());
+        // a few kinds in every rack's share, to see them on the shelves
+        net.minecraft.world.item.Item[] samples = {net.minecraft.world.item.Items.IRON_INGOT, net.minecraft.world.item.Items.COBBLESTONE,
+                net.minecraft.world.item.Items.OAK_LOG, net.minecraft.world.item.Items.WHEAT, net.minecraft.world.item.Items.DIAMOND,
+                net.minecraft.world.item.Items.REDSTONE, net.minecraft.world.item.Items.COPPER_INGOT, net.minecraft.world.item.Items.GOLD_INGOT,
+                net.minecraft.world.item.Items.TORCH, net.minecraft.world.item.Items.IRON_PICKAXE, net.minecraft.world.item.Items.CARROT,
+                net.minecraft.world.item.Items.BRICKS};
+        int per = storage.slots() / Math.max(1, com.projectrebirth.logistics.StorageControllerBlockEntity.racks(schema));
+        for (int k = 0; k * per < storage.slots(); k++) {
+            for (int j = 0; j < 4; j++) {
+                storage.store().setStackInSlot(k * per + j, new ItemStack(samples[(k * 5 + j * 3) % samples.length], 16));
+            }
+        }
         var check = storage.revalidate();
         ctx.getSource().sendSuccess(() -> Component.literal("storage at " + controller.toShortString() + ", whole " + (check != null && check.complete())), false);
         return 1;

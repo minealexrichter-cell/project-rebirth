@@ -2371,16 +2371,12 @@
     block('storage_controller_front', () => storageFront(false));
     block('storage_controller_front_on', () => storageFront(true));
     block('storage_controller_side', () => casing(new Painter(251), STORE_TEAL));
-    // A storage rack: a steel frame with two shelves of crates, the crates' faces in two shades.
+    // A storage rack (1.8.0): a steel post with holes for the shelf pins down its face, a teal mark (the model is posts and shelves).
     block('storage_rack', () => {
         const p = new Painter(252);
-        p.rect(0, 0, 16, 16, '#23272c');
-        p.bevel(0, 0, 2, 16, '#6b737c', 0.04).bevel(14, 0, 2, 16, '#6b737c', 0.04);
-        p.bevel(0, 0, 16, 2, '#7c858f', 0.04).bevel(0, 7, 16, 2, '#7c858f', 0.04).bevel(0, 14, 16, 2, '#7c858f', 0.04);
-        for (const [x, y, c] of [[2, 2, '#8a6a3e'], [8, 2, '#6f5532'], [2, 9, '#6f5532'], [8, 9, '#8a6a3e']]) {
-            p.bevel(x, y, 6, 5, c, 0.05);
-            p.rect(x + 2, y + 2, 2, 1, '#e0b33a');
-        }
+        p.bevel(0, 0, 16, 16, '#6b737c', 0.04);
+        for (let y = 1; y < 16; y += 3) p.rect(7, y, 2, 1, '#2a3036');
+        p.rect(0, 0, 16, 1, STORE_TEAL);
         return p;
     });
     // The hall of the whole storage: corrugated steel sheet (vertical ribs), a teal band and rivets along it.
@@ -2394,12 +2390,12 @@
         p.rect(0, 0, 16, 1, '#3d444b').rect(0, 15, 16, 1, '#3d444b');
         return p;
     });
+    // The shelves of a rack: a steel grating with a rim.
     block('storage_rack_top', () => {
         const p = new Painter(253);
-        p.bevel(0, 0, 16, 16, '#59626c', 0.04);
-        p.inset(2, 2, 12, 12, '#3b4148', 0.03);
-        p.rect(7, 2, 2, 12, '#6b737c').rect(2, 7, 12, 2, '#6b737c');
-        p.px(STORE_TEAL, [0, 0], [15, 0], [0, 15], [15, 15]);
+        p.rect(0, 0, 16, 16, '#2f353b');
+        for (let i = 1; i < 16; i += 3) p.rect(i, 0, 1, 16, '#7c858f').rect(0, i, 16, 1, '#6b737c');
+        p.rect(0, 0, 16, 1, '#8c97a3').rect(0, 15, 16, 1, '#4c535b');
         return p;
     });
 

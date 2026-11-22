@@ -2,13 +2,13 @@
   "layers": [
     [
       "RRRR",
-      "RRRR",
+      "ZZZZ",
       "RRRR",
       "FCGF"
     ],
     [
       "RRRR",
-      "RRRR",
+      "ZZZZ",
       "RRRR",
       "FFGF"
     ],
@@ -43,14 +43,23 @@
     },
     "G": {
       "port": "cargo"
+    },
+    "Z": {
+      "zone": true
     }
   },
   "shell": {
-    "hide": "RF",
-    "walls": "RF",
+    "hide": "F",
+    "walls": "RZF",
     "wall": "projectrebirth:block/storage_wall",
     "glass": "projectrebirth:block/workshop_glass",
     "post": "projectrebirth:block/workshop_post",
-    "front": "wall"
+    "front": "glass",
+    "windows": [
+      0,
+      1,
+      0,
+      2
+    ]
   }
 }

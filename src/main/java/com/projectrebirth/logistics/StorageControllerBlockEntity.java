@@ -51,6 +51,11 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
     /** The hall over a whole storage: whether it stands (the client draws it), and the racks and frames hidden under it. */
     private boolean formed;
     private final List<BlockPos> hidden = new ArrayList<>();
+    /** 1.8.0: what the racks show on their shelves (client: as last sent; four per rack), and whether the store changed since. */
+    private List<ItemStack> shelves = List.of();
+    private boolean shelvesChanged = true;
+    private long shelvesSentAt;
+    public static final int SHOWN_PER_RACK = 4;
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState state) {
         super(LogisticsRegistry.STORAGE_ENTITY.get(), pos, state);
@@ -70,6 +75,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
             @Override
             protected void onContentsChanged(int slot) {
                 setChanged();
+                shelvesChanged = true;
             }
         };
     }
@@ -160,6 +166,12 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
         }
         if (dirty) {
             revalidate();
+        }
+        // what lies on the shelves goes to the clients at most once a second, when the store changed
+        if (shelvesChanged && formed && level.getGameTime() - shelvesSentAt >= 20) {
+            shelvesChanged = false;
+            shelvesSentAt = level.getGameTime();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
         }
     }
 
@@ -266,16 +278,73 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
         return new net.minecraft.world.phys.AABB(worldPosition).inflate(5);
     }
 
+    /** The number of racks of the plan (each looks after an equal share of the slots, in the order of the plan). */
+    public static int racks(@Nullable MultiblockSchema schema) {
+        int racks = 0;
+        if (schema != null) {
+            for (int y = 0; y < schema.height(); y++) {
+                for (int r = 0; r < schema.depth(); r++) {
+                    for (int c = 0; c < schema.width(); c++) {
+                        if (schema.letter(y, r, c) == 'R') {
+                            racks++;
+                        }
+                    }
+                }
+            }
+        }
+        return racks;
+    }
+
+    /** What each rack shows: up to four kinds of what lies in its share of the slots (one of each), empty stacks for room left. */
+    private List<ItemStack> computeShelves() {
+        int racks = racks(schema());
+        List<ItemStack> out = new ArrayList<>();
+        if (racks <= 0) {
+            return out;
+        }
+        int per = Math.max(1, store.getSlots() / racks);
+        for (int k = 0; k < racks; k++) {
+            List<ItemStack> kinds = new ArrayList<>();
+            for (int i = k * per; i < Math.min(store.getSlots(), (k + 1) * per) && kinds.size() < SHOWN_PER_RACK; i++) {
+                ItemStack stack = store.getStackInSlot(i);
+                if (!stack.isEmpty() && kinds.stream().noneMatch(kind -> ItemStack.isSameItemSameComponents(kind, stack))) {
+                    kinds.add(stack.copyWithCount(1));
+                }
+            }
+            while (kinds.size() < SHOWN_PER_RACK) {
+                kinds.add(ItemStack.EMPTY);
+            }
+            out.addAll(kinds);
+        }
+        return out;
+    }
+
+    /** Client: what the racks show, four per rack in the order of the plan. */
+    public List<ItemStack> shelves() {
+        return shelves;
+    }
+
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = super.getUpdateTag(registries);
         tag.putBoolean("formed", formed);
+        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        for (ItemStack stack : computeShelves()) {
+            list.add(stack.isEmpty() ? new CompoundTag() : stack.save(registries));
+        }
+        tag.put("shelves", list);
         return tag;
     }
 
     @Override
     public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
         formed = tag.getBoolean("formed");
+        List<ItemStack> shown = new ArrayList<>();
+        for (net.minecraft.nbt.Tag entry : tag.getList("shelves", net.minecraft.nbt.Tag.TAG_COMPOUND)) {
+            CompoundTag item = (CompoundTag) entry;
+            shown.add(item.isEmpty() ? ItemStack.EMPTY : ItemStack.parseOptional(registries, item));
+        }
+        shelves = shown;
     }
 
     @Override

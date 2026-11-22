@@ -145,6 +145,30 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
     public void knockback(double strength, double x, double z) {
     }
 
+    /** 1.8.0, block I: where a hit came from that it could not see, and until when it faces there. */
+    @Nullable
+    private Vec3 hitFrom;
+    private long hitFromUntil;
+
+    /** 1.8.0: hit by someone it does not see (out of its range or behind cover), it turns toward the shot for a while. */
+    @Override
+    public boolean hurt(net.minecraft.world.damagesource.DamageSource source, float amount) {
+        boolean hurt = super.hurt(source, amount);
+        Entity attacker = source.getEntity();
+        if (hurt && !level().isClientSide && attacker != null && com.projectrebirth.garrison.tactics.Tactics.on() && RebirthConfig.TURRET_TURN_SECONDS.get() > 0
+                && !(attacker instanceof LivingEntity living && fair(living))) {
+            hitFrom = attacker.position();
+            hitFromUntil = level().getGameTime() + RebirthConfig.TURRET_TURN_SECONDS.get() * 20L;
+        }
+        return hurt;
+    }
+
+    /** Where it faces after a hit it could not see, or null (tests). */
+    @Nullable
+    public Vec3 facingHit() {
+        return hitFrom != null && level().getGameTime() <= hitFromUntil ? hitFrom : null;
+    }
+
     @Override
     public void tick() {
         // the speed a blast or a blow gave since the last tick must not move it this tick either
@@ -252,10 +276,16 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
             lockTicks = 0;
             shotsLeft = 0;
             lastTarget = null;
-            sweep();
+            Vec3 hit = facingHit();
+            if (hit != null) {
+                getLookControl().setLookAt(hit.x, hit.y + 1.0, hit.z, getHeadRotSpeed(), getMaxHeadXRot());
+            } else {
+                sweep();
+            }
             return;
         }
-        getLookControl().setLookAt(target.getX(), target.getEyeY() - 0.2, target.getZ(), getHeadRotSpeed(), getMaxHeadXRot());
+        Vec3 aim = aimPoint(target);
+        getLookControl().setLookAt(aim.x, aim.y, aim.z, getHeadRotSpeed(), getMaxHeadXRot());
         if (target != lastTarget) {
             lastTarget = target;
             lockTicks = 0;
@@ -308,9 +338,45 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
         }
     }
 
+    /**
+     * 1.8.0: where to aim: with turretLead, ahead of a moving target by the head's turn (a bullet flies at once; the head lags)
+     * or, for a rocket, by its flight.
+     */
+    private Vec3 aimPoint(LivingEntity target) {
+        Vec3 at = new Vec3(target.getX(), target.getEyeY() - 0.2, target.getZ());
+        if (!com.projectrebirth.garrison.tactics.Tactics.on() || !RebirthConfig.TURRET_LEAD.get()) {
+            return at;
+        }
+        Vec3 velocity = com.projectrebirth.garrison.tactics.Tactics.velocity(target).multiply(1, 0, 1);
+        return at.add(velocity.scale(turret.rocket() ? 14 + muzzle().distanceTo(at) * 0.6 : 2.0));
+    }
+
+    /** 1.8.0: the place it defends: its console (in this dimension), else where it stands. */
+    private Vec3 defended() {
+        net.minecraft.core.GlobalPos console = machineCore().console();
+        return console != null && console.dimension().equals(level().dimension()) ? Vec3.atCenterOf(console.pos()) : position();
+    }
+
     /** The nearest target it may attack, can see and reach, or null. */
     @Nullable
     private LivingEntity nearestTarget() {
+        if (com.projectrebirth.garrison.tactics.Tactics.on()) {
+            // 1.8.0: whoever hits its own first, then whoever hits it, then the one nearest to the place it defends
+            Vec3 defended = defended();
+            double range = range();
+            LivingEntity best = null;
+            double bestScore = Double.MAX_VALUE;
+            for (LivingEntity found : level().getEntitiesOfClass(LivingEntity.class, new AABB(blockPosition()).inflate(range),
+                    found -> found != this && found.isAlive())) {
+                int priority = com.projectrebirth.garrison.tactics.Tactics.priority(this, found);
+                double score = Math.min(priority, 3) * 1.0e6 + found.distanceToSqr(defended);
+                if (score < bestScore && fair(found)) {
+                    best = found;
+                    bestScore = score;
+                }
+            }
+            return best;
+        }
         double range = range();
         LivingEntity best = null;
         double bestDistance = Double.MAX_VALUE;
@@ -341,7 +407,7 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
     }
 
     private boolean aimedAt(LivingEntity target, double degrees) {
-        Vec3 to = target.getEyePosition().subtract(position().add(0.0, MUZZLE_HEIGHT, 0.0)).normalize();
+        Vec3 to = aimPoint(target).subtract(position().add(0.0, MUZZLE_HEIGHT, 0.0)).normalize();
         return barrelDirection().dot(to) >= Math.cos(degrees * Mth.DEG_TO_RAD);
     }
 
@@ -376,6 +442,10 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
         Vec3 from = muzzle();
         Vec3 to = target.position();
         int flight = 14 + (int) (from.distanceTo(to) * 0.6);
+        if (com.projectrebirth.garrison.tactics.Tactics.on() && RebirthConfig.TURRET_LEAD.get()) {
+            // 1.8.0: where a moving target will be when the rocket comes down
+            to = com.projectrebirth.garrison.tactics.Tactics.leadGround(target, flight);
+        }
         level().addFreshEntity(new MechRocketEntity(level(), this, from, to, flight, RebirthConfig.ROCKET_TURRET_POWER.get().floatValue(),
                 RebirthConfig.ROCKET_TURRET_BREAKS.get()));
         playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 1.4f, 0.7f);

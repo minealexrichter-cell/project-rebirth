@@ -15,7 +15,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
-import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -412,17 +411,20 @@ public final class MachineMover {
                     if (!fluid.isEmpty()) {
                         return true;
                     }
-                    if (dy == 0 || !state.isAir()) {
-                        PathType type = WalkNodeEvaluator.getPathTypeStatic(mob, pos);
-                        if (type == PathType.DAMAGE_FIRE || type == PathType.DAMAGE_OTHER || type == PathType.LAVA
-                                || type == PathType.DANGER_FIRE || type == PathType.POWDER_SNOW || type == PathType.DAMAGE_CAUTIOUS) {
-                            return true;
-                        }
+                    if (!state.isAir() && hurts(state)) {
+                        return true;
                     }
                 }
             }
         }
         return false;
+    }
+
+    /** Fire, magma, a lit campfire, cactus, a berry bush, powder snow, a wither rose, dripstone: what hurts to walk on or into. */
+    private static boolean hurts(BlockState state) {
+        return net.minecraft.world.level.pathfinder.NodeEvaluator.isBurningBlock(state) || state.is(net.minecraft.world.level.block.Blocks.CACTUS)
+                || state.is(net.minecraft.world.level.block.Blocks.SWEET_BERRY_BUSH) || state.is(net.minecraft.world.level.block.Blocks.POWDER_SNOW)
+                || state.is(net.minecraft.world.level.block.Blocks.WITHER_ROSE) || state.is(net.minecraft.world.level.block.Blocks.POINTED_DRIPSTONE);
     }
 
     /** For the development command: the points of its path as positions of its body (empty without a path). */

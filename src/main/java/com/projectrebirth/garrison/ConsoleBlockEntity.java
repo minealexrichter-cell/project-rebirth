@@ -241,9 +241,9 @@ public class ConsoleBlockEntity extends BlockEntity {
 
     public void setRules(int group, int value) {
         if (group >= 0 && group < GROUPS) {
-            groupRules[group] = value & OrderRules.DEFAULT_RULES;
+            groupRules[group] = value & OrderRules.ALL_BITS;
         } else {
-            rules = value & OrderRules.DEFAULT_RULES;
+            rules = value & OrderRules.ALL_BITS;
         }
         setChanged();
     }
@@ -722,10 +722,10 @@ public class ConsoleBlockEntity extends BlockEntity {
         for (int i = 0; i < GROUPS; i++) {
             groupIntruders[i] = (groups & (1 << i)) != 0;
         }
-        rules = tag.contains("rules") ? tag.getInt("rules") & OrderRules.DEFAULT_RULES : OrderRules.DEFAULT_RULES;
+        rules = tag.contains("rules") ? tag.getInt("rules") & OrderRules.ALL_BITS : OrderRules.DEFAULT_RULES;
         int[] savedRules = tag.getIntArray("group_rules");
         for (int i = 0; i < GROUPS; i++) {
-            groupRules[i] = i < savedRules.length ? savedRules[i] & OrderRules.DEFAULT_RULES : OrderRules.DEFAULT_RULES;
+            groupRules[i] = i < savedRules.length ? savedRules[i] & OrderRules.ALL_BITS : OrderRules.DEFAULT_RULES;
         }
         intruderMode = tag.getBoolean("intruders");
         weatherLink = tag.getBoolean("weather");

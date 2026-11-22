@@ -23,6 +23,10 @@
     {
       "type": "text",
       "text": "codex.projectrebirth.small_robot.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.small_robot.p5"
     }
   ]
 }

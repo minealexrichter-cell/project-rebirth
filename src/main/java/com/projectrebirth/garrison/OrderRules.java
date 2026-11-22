@@ -12,8 +12,15 @@ public final class OrderRules {
     public static final int MONSTERS = 1;
     public static final int WAR = 2;
     public static final int RETALIATE = 4;
+    /**
+     * 1.8.0, block I: set, the machines of the group do not come when one of them calls for help (no focus fire). A bit that is set
+     * to switch it off, so that the rules saved before keep focus fire on.
+     */
+    public static final int NO_FOCUS = 8;
     /** What machines did before 1.8.0: monsters, enemies at war, whoever attacks them. */
     public static final int DEFAULT_RULES = MONSTERS | WAR | RETALIATE;
+    /** All the bits a console keeps. */
+    public static final int ALL_BITS = DEFAULT_RULES | NO_FOCUS;
 
     private OrderRules() {
     }

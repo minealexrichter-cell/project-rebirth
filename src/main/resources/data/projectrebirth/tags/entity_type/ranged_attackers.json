@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "projectrebirth:guard_turret",
+    "projectrebirth:patrol_robot",
+    "projectrebirth:mech",
+    "projectrebirth:glowing_ghoul",
+    "minecraft:skeleton",
+    "minecraft:stray",
+    {"id": "minecraft:bogged", "required": false},
+    "minecraft:pillager",
+    "minecraft:witch",
+    "minecraft:blaze",
+    "minecraft:ghast",
+    "minecraft:shulker",
+    {"id": "minecraft:breeze", "required": false}
+  ]
+}

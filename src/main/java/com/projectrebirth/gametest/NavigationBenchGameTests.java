@@ -60,6 +60,12 @@ public class NavigationBenchGameTests {
 
     @GameTest(template = "floor_48x48", timeoutTicks = START + TICKS + 100000)
     public static void twentyMachinesWalkRoundWalls(GameTestHelper helper) {
+        String bench = System.getenv("REBIRTH_BENCH");
+        if (bench != null && !bench.equals("navigation")) {
+            // one measurement at a time: this one without REBIRTH_BENCH or with REBIRTH_BENCH=navigation
+            helper.succeed();
+            return;
+        }
         // walls across the floor at x 12, 24, 36: open at the far end, the near end, the far end
         for (int z = 0; z < 48; z++) {
             for (int y = 2; y <= 4; y++) {

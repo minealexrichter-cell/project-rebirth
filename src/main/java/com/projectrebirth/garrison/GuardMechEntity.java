@@ -124,6 +124,8 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     private int routeIndex;
     /** 1.7.2: how it gets to a place (paths, straight ways, getting unstuck). */
     protected final MachineMover mover = new MachineMover(this);
+    /** 1.8.0, block I: its tactics between ticks. */
+    protected final com.projectrebirth.garrison.tactics.TacticsState tactics = new com.projectrebirth.garrison.tactics.TacticsState();
     private boolean stuckReported;
     private boolean noPostReported;
     /** 1.7.2: where it was when it set out for the post; with no order it walks back there, off the plates, after it was served. */
@@ -500,6 +502,8 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             lacking = now;
             ConsoleLink.supply(this, core, lacking);
         }
+        // 1.8.0: below retreatBelow it falls back until it is repaired to returnAbove
+        tactics.retreating = com.projectrebirth.garrison.tactics.Tactics.retreating(core, tactics.retreating);
         boolean stuckNow = core.active() && mover.stuck();
         if (stuckNow != stuckReported) {
             stuckReported = stuckNow;
@@ -528,6 +532,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
     @Override
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
+        goalSelector.addGoal(1, new com.projectrebirth.garrison.tactics.FleeGoal(this, this, () -> working() && !jetpack.flying()));
         goalSelector.addGoal(1, new ChargeGoal());
         goalSelector.addGoal(2, new FightGoal());
         goalSelector.addGoal(3, new TaskGoal());
@@ -551,6 +556,10 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             return false;
         }
         double range = stats().range().get();
+        if (machineCore().calledTo(target, level().getGameTime())) {
+            // 1.8.0: a machine of its group called it to this one: it comes from farther
+            range += RebirthConfig.TACTICS_HELP_RADIUS.get();
+        }
         return distanceToSqr(target) <= range * range * 1.5 && TargetRules.mayAttack(this, target) && withinOrder(target);
     }
 
@@ -567,6 +576,22 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 return false;
             }
             wait = 5;
+            if (com.projectrebirth.garrison.tactics.Tactics.on()) {
+                // 1.8.0: by priority (whoever hits its people, then it, then the one it was called to, then the dangerous ones)
+                LivingEntity current = validTarget(getTarget()) ? getTarget() : null;
+                LivingEntity best = com.projectrebirth.garrison.tactics.Tactics.choose(GuardMechEntity.this, GuardMechEntity.this, stats().range().get(), current, GuardMechEntity.this::validTarget);
+                if (best == null) {
+                    LivingEntity called = com.projectrebirth.garrison.tactics.Tactics.calledTarget(GuardMechEntity.this, machineCore());
+                    best = called != null && validTarget(called) ? called : null;
+                }
+                if (best != getTarget()) {
+                    setTarget(best);
+                    if (best != null) {
+                        targetSince = level().getGameTime();
+                    }
+                }
+                return false;
+            }
             if (validTarget(getTarget())) {
                 return false;
             }
@@ -624,6 +649,10 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             if (target == null) {
                 return;
             }
+            if (com.projectrebirth.garrison.tactics.Tactics.on()) {
+                fightWithTactics(target);
+                return;
+            }
             getLookControl().setLookAt(target, 30.0f, 30.0f);
             double distance = Math.sqrt(distanceToSqr(target));
             boolean sees = getSensing().hasLineOfSight(target);
@@ -670,6 +699,299 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             }
             for (int side = 0; side < 2; side++) {
                 fireSide(side, target);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ 1.8.0, block I: the tactics of a mech and a small robot
+
+    /** Its tactics (tests). */
+    public com.projectrebirth.garrison.tactics.TacticsState tactics() {
+        return tactics;
+    }
+
+    /** The radius of the area its order keeps it in. */
+    private double orderRadius() {
+        return switch (machineCore().task().type()) {
+            case AREA_PATROL -> RebirthConfig.AREA_PATROL_RADIUS.get() + 8.0;
+            case HOLD -> RebirthConfig.ANDROID_HOLD_RADIUS.get() + 2.0;
+            default -> stats().guardRadius().get();
+        };
+    }
+
+    /** A point that far away from the enemy that it gets to on foot (no wall, pit or lava behind it), or null. */
+    @Nullable
+    private Vec3 awayFrom(LivingEntity enemy, double distance) {
+        long now = level().getGameTime();
+        Vec3 cached = tactics.cached(1, now);
+        if (cached != null && cached.distanceToSqr(position()) > 1.0) {
+            return cached;
+        }
+        return tactics.cache(1, now, awayFromNow(enemy, distance));
+    }
+
+    @Nullable
+    private Vec3 awayFromNow(LivingEntity enemy, double distance) {
+        Vec3 away = position().subtract(enemy.position()).multiply(1, 0, 1);
+        if (away.lengthSqr() < 1.0e-4) {
+            return null;
+        }
+        away = away.normalize();
+        for (double turn : new double[] {0.0, 35.0, -35.0, 70.0, -70.0}) {
+            double rad = turn * Mth.DEG_TO_RAD;
+            Vec3 dir = new Vec3(away.x * Math.cos(rad) - away.z * Math.sin(rad), 0, away.x * Math.sin(rad) + away.z * Math.cos(rad));
+            Vec3 point = position().add(dir.scale(distance));
+            if (mover.clearWay(point)) {
+                return point;
+            }
+        }
+        return null;
+    }
+
+    /** When its claw last struck (tests). */
+    private long lastClaw = Long.MIN_VALUE;
+
+    public long lastClaw() {
+        return lastClaw;
+    }
+
+    /**
+     * The fight with tactics. Both: the target by priority, a call to its group, falling back when badly hurt (firing), a step
+     * aside when one of its own is on the line of fire, never past the area of its order. A small robot circles its target at
+     * its distance (fanned out from the other robots), backs away from an enemy up close with a look behind it, takes cover when
+     * hurt, and strikes with its claw only when it is pinned. A mech stands between a big enemy and its androids or work machines,
+     * stomps and steps back when surrounded, fires rockets only at a group or a big target, never near its own.
+     */
+    private void fightWithTactics(LivingEntity target) {
+        getLookControl().setLookAt(target, 30.0f, 30.0f);
+        long now = level().getGameTime();
+        double distance = Math.sqrt(distanceToSqr(target));
+        boolean sees = getSensing().hasLineOfSight(target);
+        double range = stats().range().get();
+        boolean robot = !canStomp();
+        if (now >= tactics.nextCall) {
+            tactics.nextCall = now + 60;
+            com.projectrebirth.garrison.tactics.Tactics.callForHelp(this, this, target);
+        }
+        Vec3 anchor = com.projectrebirth.garrison.tactics.Tactics.anchor(this, machineCore().task(), holdPoint);
+        Vec3 move = null;
+        boolean pinned = false;
+        Vec3 aside = tactics.aside();
+        if (jetpack.flying()) {
+            // in the air the jetpack carries it; the guns go on firing
+        } else if (tactics.retreating) {
+            if (tactics.retreatTo == null || now - tactics.retreatAt > 40) {
+                tactics.retreatTo = com.projectrebirth.garrison.tactics.Tactics.retreatPoint(this, this, target);
+                tactics.retreatAt = now;
+            }
+            move = tactics.retreatTo;
+        } else if (tactics.backOff > 0) {
+            tactics.backOff--;
+            move = tactics.backTo;
+        } else if (aside != null) {
+            move = aside;
+        } else if (robot) {
+            java.util.Optional<LivingEntity> close = com.projectrebirth.garrison.tactics.Tactics.meleeWithin(this, this, RebirthConfig.ROBOT_BACK_OFF.get());
+            if (close.isPresent()) {
+                move = awayFrom(close.get(), 3.0);
+                pinned = move == null && close.get().distanceTo(this) < 1.6 + getBbWidth() * 0.5;
+                if (move == null) {
+                    move = circlePoint(target, range);
+                }
+            } else {
+                move = robotMove(target, distance, sees, range);
+            }
+        } else {
+            move = mechMove(target, distance, sees, range, now);
+        }
+        if (move != null && !tactics.retreating && com.projectrebirth.garrison.tactics.Tactics.leashed(anchor, orderRadius(), move)) {
+            Vec3 back = move.subtract(anchor).multiply(1, 0, 1);
+            move = back.lengthSqr() < 1.0e-4 ? null : anchor.add(back.normalize().scale(orderRadius())).add(0, move.y - anchor.y, 0);
+        }
+        if (move != null) {
+            walkTo(move);
+        } else if (!jetpack.flying()) {
+            mover.stop();
+        }
+        if (robot && pinned && now - lastClaw >= RebirthConfig.ROBOT_CLAW_COOLDOWN.get()) {
+            // pinned against something with an enemy on it: the claw
+            LivingEntity close = com.projectrebirth.garrison.tactics.Tactics.meleeWithin(this, this, 2.0).orElse(null);
+            if (close != null && close.hurt(damageSources().mobAttack(this), RebirthConfig.ROBOT_CLAW_DAMAGE.get().floatValue())) {
+                lastClaw = now;
+                swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                playSound(SoundEvents.IRON_GOLEM_ATTACK, 0.8f, 1.4f);
+            }
+        }
+        if (!robot) {
+            mechCloseFight(target, distance, sees, now);
+        }
+        if (target != lastTarget) {
+            lastTarget = target;
+            lockTicks = 0;
+            playSound(com.projectrebirth.core.ModSounds.GARRISON_TARGET_LOCK.get(), 1.0f, 1.0f);
+        }
+        if (!sees || distance > range) {
+            // no shot without a line of sight or out of range: no rounds thrown away
+            return;
+        }
+        if (lockTicks < 12) {
+            lockTicks++;
+            return;
+        }
+        if (!aimedAt(target, 20.0)) {
+            return;
+        }
+        if (!lineClear(target)) {
+            Vec3 step = com.projectrebirth.garrison.tactics.Tactics.sideStep(this, this, mover, target, getEyeHeight());
+            if (step != null) {
+                tactics.stepAside(step, 20);
+            }
+            return;
+        }
+        for (int side = 0; side < 2; side++) {
+            if (node(side) == Node.ROCKET && !rocketWorthy(target)) {
+                continue;
+            }
+            fireSide(side, target);
+        }
+    }
+
+    private boolean lineClear(LivingEntity target) {
+        long now = level().getGameTime();
+        if (now != tactics.lineAt) {
+            tactics.lineAt = now;
+            tactics.lineClear = com.projectrebirth.garrison.tactics.Tactics.clearLine(this, this, muzzle(RIGHT), target);
+        }
+        return tactics.lineClear;
+    }
+
+    /** A rocket is for a big target or a group (mechRocketGroup enemies round it); never near its own (fireSide checks that). */
+    public boolean rocketWorthy(LivingEntity target) {
+        if (com.projectrebirth.garrison.tactics.Tactics.big(target)) {
+            return true;
+        }
+        int group = level().getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(3.0),
+                e -> e.isAlive() && TargetRules.mayAttack(this, e)).size();
+        return group >= RebirthConfig.MECH_ROCKET_GROUP.get();
+    }
+
+    /** A small robot: closes in until it sees the target in range, then circles it at its distance. */
+    @Nullable
+    private Vec3 robotMove(LivingEntity target, double distance, boolean sees, double range) {
+        if (!sees || distance > range) {
+            return target.position();
+        }
+        boolean hurt = machineCore().structural() < machineCore().maxStructural() * RebirthConfig.TACTICS_COVER_BELOW.get();
+        if (hurt && !com.projectrebirth.garrison.tactics.Tactics.melee(target)) {
+            long now = level().getGameTime();
+            if (now - tactics.coverAt > 40) {
+                tactics.coverAt = now;
+                tactics.cover = com.projectrebirth.garrison.tactics.Tactics.cover(this, mover, target);
+            }
+            if (tactics.cover != null) {
+                // between bursts behind the cover, out to the spot next to it to fire
+                return cooldown[RIGHT] > 10 ? tactics.cover.hide() : tactics.cover.peek();
+            }
+        }
+        return circlePoint(target, range);
+    }
+
+    /**
+     * The next point on its circle round the target, a fifth of a turn on; it turns the other way now and then, when the way is
+     * not free, and when another small robot of its own is near the point (they fan out).
+     */
+    @Nullable
+    private Vec3 circlePoint(LivingEntity target, double range) {
+        long now = level().getGameTime();
+        Vec3 cached = tactics.cached(2, now);
+        if (cached != null && cached.distanceToSqr(position()) > 1.0) {
+            return cached;
+        }
+        return tactics.cache(2, now, circlePointNow(target, range, now));
+    }
+
+    @Nullable
+    private Vec3 circlePointNow(LivingEntity target, double range, long now) {
+        if (now >= tactics.strafeTurnAt) {
+            tactics.strafeTurnAt = now + 100 + random.nextInt(100);
+            tactics.strafeSign = random.nextBoolean() ? 1 : -1;
+        }
+        double radius = Math.max(3.0, range * RebirthConfig.ROBOT_CIRCLE_SHARE.get());
+        double angle = com.projectrebirth.garrison.tactics.Tactics.angleFrom(target, position());
+        double spacing = RebirthConfig.ROBOT_FAN_SPACING.get();
+        for (int attempt = 0; attempt < 4; attempt++) {
+            int sign = attempt % 2 == 0 ? tactics.strafeSign : -tactics.strafeSign;
+            double step = (attempt < 2 ? 0.35 : 0.7) * sign;
+            Vec3 point = com.projectrebirth.garrison.tactics.Tactics.onCircle(target, radius, angle + step);
+            boolean crowded = spacing > 0.0 && !level().getEntitiesOfClass(GuardMechEntity.class, new AABB(point, point).inflate(spacing),
+                    e -> e != this && e.isAlive() && !e.canStomp() && TargetRules.friendly(this, e)).isEmpty();
+            if (!crowded && mover.clearWay(point)) {
+                if (attempt % 2 == 1) {
+                    tactics.strafeSign = -tactics.strafeSign;
+                }
+                return point;
+            }
+        }
+        return null;
+    }
+
+    /** A mech: between a big enemy and its own; else in range, at six tenths of it. */
+    @Nullable
+    private Vec3 mechMove(LivingEntity target, double distance, boolean sees, double range, long now) {
+        if (com.projectrebirth.garrison.tactics.Tactics.big(target) || target.getType().is(com.projectrebirth.garrison.tactics.Tactics.DANGEROUS)) {
+            double radius = RebirthConfig.MECH_SHIELD_RADIUS.get();
+            for (LivingEntity friend : level().getEntitiesOfClass(LivingEntity.class, target.getBoundingBox().inflate(radius),
+                    e -> e != this && e.isAlive() && (e instanceof AndroidEntity || e instanceof GarrisonMachine m && m.consoleWorker())
+                            && TargetRules.friendly(this, e))) {
+                Vec3 between = target.position().subtract(friend.position()).multiply(1, 0, 1);
+                if (between.lengthSqr() > 16.0 && distanceToSqr(friend) < 32.0 * 32.0) {
+                    // a few blocks out from the friend toward the threat: it takes the blows
+                    return friend.position().add(between.normalize().scale(3.0 + getBbWidth()));
+                }
+            }
+        }
+        if (!sees || distance > range * 0.6) {
+            return target.position();
+        }
+        // rockets only: out of its own blast (friendRadius round the target and its half width), else they never go
+        boolean gun = node(RIGHT) == Node.GUN && hasAmmo(RIGHT) || node(LEFT) == Node.GUN && hasAmmo(LEFT);
+        boolean inBlast = getBoundingBox().intersects(target.getBoundingBox().inflate(RebirthConfig.ROCKET_TURRET_FRIEND_RADIUS.get() + 1.0));
+        if (!gun && (hasAmmo(RIGHT) || hasAmmo(LEFT)) && (distance < 7.0 || inBlast)) {
+            return awayFrom(target, 3.0);
+        }
+        return null;
+    }
+
+    /** A mech up close: surrounded, it stomps and steps back; out of its reach on foot, it flies. */
+    private void mechCloseFight(LivingEntity target, double distance, boolean sees, long now) {
+        boolean inReach = distance <= RebirthConfig.GUARD_MECH_STOMP_RADIUS.get() + getBbWidth() * 0.5;
+        int around = level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(4.0),
+                e -> e != this && e.isAlive() && TargetRules.mayAttack(this, e)).size();
+        boolean surrounded = around >= RebirthConfig.MECH_SURROUNDED.get();
+        if (!jetpack.flying() && (inReach || surrounded) && onGround() && stompWindup < 0 && stompCooldown <= 0) {
+            stompWindup = STOMP_WINDUP;
+            stompCooldown = RebirthConfig.GUARD_MECH_STOMP_COOLDOWN.get();
+            triggerAnim("main", "stomp");
+            // then a step back, to fire
+            Vec3 back = awayFrom(target, 3.0);
+            if (back != null) {
+                tactics.backOff = 20;
+                tactics.backTo = back;
+            }
+            return;
+        }
+        if (!jetpack.flying() && jetpack.ready()) {
+            boolean outOfReach = target.getY() - getY() > 2.5 || mover.stuck();
+            if (outOfReach && com.projectrebirth.garrison.tactics.Tactics.big(target)) {
+                // behind a big target it cannot walk up to
+                Vec3 behind = target.position().subtract(position()).multiply(1, 0, 1);
+                if (behind.lengthSqr() > 1.0e-4 && jetpack.hop(target.position().add(behind.normalize().scale(target.getBbWidth() + 3.0)))) {
+                    return;
+                }
+            }
+            int chance = RebirthConfig.GUARD_MECH_COMBAT_FLIGHT_CHANCE.get();
+            if (outOfReach || sees && !inReach && chance > 0 && random.nextInt(chance) == 0) {
+                jetpack.overFight(target);
             }
         }
     }
@@ -722,6 +1044,10 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
                 energy -= stats().energyShot().get();
                 Vec3 from = muzzle(side);
                 Vec3 to = target.position();
+                if (com.projectrebirth.garrison.tactics.Tactics.on()) {
+                    // 1.8.0: where a moving target will be when the rocket comes down
+                    to = com.projectrebirth.garrison.tactics.Tactics.leadGround(target, 14 + (int) (from.distanceTo(to) * 0.6));
+                }
                 level().addFreshEntity(new MechRocketEntity(level(), this, from, to, 14 + (int) (from.distanceTo(to) * 0.6),
                         RebirthConfig.ROCKET_TURRET_POWER.get().floatValue(), RebirthConfig.ROCKET_TURRET_BREAKS.get()));
                 playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 1.4f, 0.7f);
@@ -814,7 +1140,9 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             }
             wait = 10;
             boolean low = lowEnergy();
-            forAmmo = needsAmmo() && level().getGameTime() >= ammoRetry;
+            forAmmo = needsAmmo() && level().getGameTime() >= ammoRetry
+                    // 1.8.0: not in the middle of a fight while it has rounds left: it loads in a pause
+                    && !(com.projectrebirth.garrison.tactics.Tactics.on() && getTarget() != null && (hasAmmo(RIGHT) || hasAmmo(LEFT)));
             if (!low && !forAmmo) {
                 reportNoPost(false);
                 return false;
@@ -946,6 +1274,13 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
         @Nullable
         private Vec3 goal() {
             MachineTask task = machineCore().task();
+            if (tactics.retreating && level() instanceof net.minecraft.server.level.ServerLevel server) {
+                // 1.8.0: to a service post to be repaired; with none, it follows its order
+                Vec3 post = ServicePostBlockEntity.nearest(server, blockPosition());
+                if (post != null) {
+                    return post;
+                }
+            }
             return switch (task.type()) {
                 case GUARD -> task.point().map(Vec3::atBottomCenterOf).orElse(null);
                 case HOLD -> holdPoint == null ? null : Vec3.atBottomCenterOf(holdPoint);

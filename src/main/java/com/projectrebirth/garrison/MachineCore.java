@@ -98,6 +98,13 @@ public class MachineCore {
     private int registryCountdown;
     /** Not saved: whom this machine fights back, with the game time until when it remembers them. */
     private final Map<UUID, Long> attackers = new HashMap<>();
+    /** 1.8.0, block I (not saved): who hit the machine itself, and who hit one of its people (owner, faction, their machines). */
+    private final Map<UUID, Long> hitMe = new HashMap<>();
+    private final Map<UUID, Long> hitOurs = new HashMap<>();
+    /** 1.8.0: the target a machine of its group called it to (focus fire), and until when. */
+    @javax.annotation.Nullable
+    private UUID called;
+    private long calledUntil;
     /** Not saved: what the environment did to it this second (an EMI storm disturbs it, dust blinds it). */
     private boolean emiFault;
     private boolean dusty;
@@ -205,7 +212,7 @@ public class MachineCore {
     }
 
     public void setRules(int rules) {
-        this.rules = rules & OrderRules.DEFAULT_RULES;
+        this.rules = rules & OrderRules.ALL_BITS;
     }
 
     public void setIntruderMode(boolean intruderMode) {
@@ -252,6 +259,7 @@ public class MachineCore {
         }
         if (source.getEntity() != null) {
             remember(source.getEntity(), self.level().getGameTime());
+            hitMe.put(source.getEntity().getUUID(), self.level().getGameTime() + RebirthConfig.SELF_DEFENCE_SECONDS.get() * 20L);
             hitByAttacker = true;
         }
         float criticalLoss;
@@ -299,6 +307,41 @@ public class MachineCore {
         if (behind != null) {
             attackers.put(behind, until);
         }
+    }
+
+    /** 1.8.0: one of its people (not the machine itself) was hit by this attacker: it comes first among the targets. */
+    public void rememberHitOnOurs(Entity attacker, long gameTime) {
+        remember(attacker, gameTime);
+        hitOurs.put(attacker.getUUID(), gameTime + RebirthConfig.SELF_DEFENCE_SECONDS.get() * 20L);
+    }
+
+    /** 1.8.0: whether this entity hit one of its people a short while ago. */
+    public boolean hitOurs(Entity target, long gameTime) {
+        Long until = hitOurs.get(target.getUUID());
+        return until != null && until >= gameTime;
+    }
+
+    /** 1.8.0: whether this entity hit the machine itself a short while ago. */
+    public boolean hitMe(Entity target, long gameTime) {
+        Long until = hitMe.get(target.getUUID());
+        return until != null && until >= gameTime;
+    }
+
+    /** 1.8.0: a machine of its group calls it to this target (focus fire) for that many ticks. */
+    public void call(Entity target, long gameTime, int ticks) {
+        called = target.getUUID();
+        calledUntil = gameTime + ticks;
+    }
+
+    /** 1.8.0: whether it was called to this target and the call holds. */
+    public boolean calledTo(Entity target, long gameTime) {
+        return called != null && calledUntil >= gameTime && called.equals(target.getUUID());
+    }
+
+    /** 1.8.0: the target it was called to, while the call holds. */
+    @javax.annotation.Nullable
+    public UUID called(long gameTime) {
+        return calledUntil >= gameTime ? called : null;
     }
 
     /** Whether this entity (or the player behind it) attacked the machine or its people a short while ago. */
@@ -466,7 +509,7 @@ public class MachineCore {
         wear = core.getFloat("wear");
         state = State.byId(core.getInt("state"));
         intruderMode = core.getBoolean("intruders");
-        rules = core.contains("rules") ? core.getInt("rules") & OrderRules.DEFAULT_RULES : OrderRules.DEFAULT_RULES;
+        rules = core.contains("rules") ? core.getInt("rules") & OrderRules.ALL_BITS : OrderRules.DEFAULT_RULES;
         console = core.contains("console") ? net.minecraft.core.GlobalPos.of(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
                 net.minecraft.resources.ResourceLocation.parse(core.getString("console_dimension"))), net.minecraft.core.BlockPos.of(core.getLong("console"))) : null;
         task = core.contains("task") ? MachineTask.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, core.get("task")).result().orElse(MachineTask.STAND_DOWN)

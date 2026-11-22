@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "#projectrebirth:ranged_attackers",
+    "projectrebirth:brute",
+    "minecraft:ravager",
+    "minecraft:vindicator",
+    "minecraft:evoker",
+    "minecraft:piglin_brute",
+    "minecraft:wither_skeleton",
+    "minecraft:warden",
+    "minecraft:creeper"
+  ]
+}

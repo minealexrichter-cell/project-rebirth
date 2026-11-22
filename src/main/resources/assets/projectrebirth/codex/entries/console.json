@@ -31,6 +31,10 @@
     {
       "type": "text",
       "text": "codex.projectrebirth.console.p6"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.console.p7"
     }
   ]
 }

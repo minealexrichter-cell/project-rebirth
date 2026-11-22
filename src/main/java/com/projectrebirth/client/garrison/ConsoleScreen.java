@@ -73,7 +73,7 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
     private static final int MAP_H = 152;
     private static final int RIGHT_X = 303;
     private static final int RIGHT_W = W - 7 - RIGHT_X;
-    private static final int ALARMS_Y = 118;
+    private static final int ALARMS_Y = 129;
     private static final int ALARM_H = 29;
     private static final int ORDERS_Y = 220;
     /** The orders of the panel, in the mock-up's order; WORK takes the kind of work chosen below. */
@@ -213,7 +213,10 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
         }
         addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 33, RIGHT_W, () -> rule(OrderRules.RETALIATE), on -> setRule(OrderRules.RETALIATE, on),
                 on -> tr(on ? "rule.retaliate_on" : "rule.retaliate_off")));
-        addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 44, RIGHT_W, () -> menu.view() != null && menu.view().weatherLink(),
+        // 1.8.0, block I: focus fire (a bit set to switch it off, see OrderRules.NO_FOCUS)
+        addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 44, RIGHT_W, () -> !rule(OrderRules.NO_FOCUS), on -> setRule(OrderRules.NO_FOCUS, !on),
+                on -> tr(on ? "rule.focus_on" : "rule.focus_off")));
+        addRenderableWidget(new UiToggle(leftPos + RIGHT_X, ry + 55, RIGHT_W, () -> menu.view() != null && menu.view().weatherLink(),
                 on -> send(ConsoleNetwork.WEATHER, null, -1, on ? 1 : 0), on -> tr(on ? "rule.weather_on" : "rule.weather_off")));
         // the orders
         int bw = (W - 14 - 8 * 2) / ORDERS.size();
@@ -995,9 +998,11 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
         }
         // right: rules, alarms
         Component whose = groupTab >= 0 ? tr("rules_group", groupTab + 1) : tr("rules_all");
-        UiPanels.label(graphics, whose, x + RIGHT_X, y + 40, RIGHT_W);
         if (view != null && view.sheltering()) {
-            text(graphics, tr("sheltering"), x + RIGHT_X, y + ALARMS_Y - 21, RIGHT_W, UiColors.ENERGY_TEXT);
+            // 1.8.0: in place of the label (the six switches fill the room under it)
+            text(graphics, tr("sheltering"), x + RIGHT_X, y + 40, RIGHT_W, UiColors.ENERGY_TEXT);
+        } else {
+            UiPanels.label(graphics, whose, x + RIGHT_X, y + 40, RIGHT_W);
         }
         drawAlarms(graphics, x, y, mouseX, mouseY);
         // bottom: whom the orders are for, the state of the order buttons
@@ -1170,8 +1175,8 @@ public class ConsoleScreen extends UiMachineScreen<ConsoleMenu> {
             case 0 -> new int[] {LEFT_X, CARDS_Y - 16, LEFT_W, CARDS * CARD_H + 17};
             case 1 -> new int[] {MAP_X, MAP_Y, MAP_W, MAP_H + 12};
             case 2 -> new int[] {7, 22, W - 14, 16};
-            case 3 -> new int[] {RIGHT_X - 1, 38, RIGHT_W + 2, 67};
-            // (the rules: their label and five switches)
+            case 3 -> new int[] {RIGHT_X - 1, 38, RIGHT_W + 2, 78};
+            // (the rules: their label and six switches)
             default -> new int[] {RIGHT_X - 1, ALARMS_Y - 12, RIGHT_W + 2, 3 * ALARM_H + 13};
         };
     }

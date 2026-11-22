@@ -52,6 +52,10 @@
     {
       "type": "text",
       "text": "codex.projectrebirth.defence_turrets.p11"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.defence_turrets.p12"
     }
   ]
 }

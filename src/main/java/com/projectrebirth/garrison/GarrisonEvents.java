@@ -55,7 +55,7 @@ public final class GarrisonEvents {
             }
             boolean ours = owner.equals(victimOwner) || faction.isPresent() && faction.get().members().containsKey(owner);
             if (ours) {
-                core.remember(attacker, now);
+                core.rememberHitOnOurs(attacker, now);
             }
         }
     }

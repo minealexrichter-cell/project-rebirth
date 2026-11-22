@@ -100,6 +100,8 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     private final AreaPatrol areaPatrol = new AreaPatrol(this, mover);
 
     private boolean stuckReported;
+    /** 1.8.0, block I: its tactics between ticks. */
+    private final com.projectrebirth.garrison.tactics.TacticsState tactics = new com.projectrebirth.garrison.tactics.TacticsState();
     private boolean noPostReported;
     /** 1.7.2: where it was when it set out to charge; with no order it walks back there after it was charged. */
     @Nullable
@@ -616,6 +618,8 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
                 playSound(com.projectrebirth.core.ModSounds.GARRISON_MACHINE_SHUTDOWN.get(), 1.0f, 0.9f);
             }
         }
+        // 1.8.0: below retreatBelow it falls back until it is repaired to returnAbove
+        tactics.retreating = !isWorker() && com.projectrebirth.garrison.tactics.Tactics.retreating(machine, tactics.retreating);
         boolean stuckNow = machine.active() && mover.stuck();
         if (stuckNow != stuckReported) {
             stuckReported = stuckNow;
@@ -638,6 +642,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
     protected void registerGoals() {
         goalSelector.addGoal(0, new FloatGoal(this));
         goalSelector.addGoal(1, new MachineDoorGoal(this));
+        goalSelector.addGoal(1, new com.projectrebirth.garrison.tactics.FleeGoal(this, this, () -> working() && !isWorker()));
         goalSelector.addGoal(1, new ChargeGoal());
         goalSelector.addGoal(2, new FightGoal());
         goalSelector.addGoal(2, work().new WorkGoal());
@@ -668,6 +673,10 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             return false;
         }
         double sight = stats().sight().get();
+        if (core().calledTo(target, level().getGameTime())) {
+            // 1.8.0: a machine of its group called it to this one: it comes from farther
+            sight += RebirthConfig.TACTICS_HELP_RADIUS.get();
+        }
         return distanceToSqr(target) <= sight * sight * 1.5 && TargetRules.mayAttack(this, target) && withinOrder(target);
     }
 
@@ -685,6 +694,24 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
                 return false;
             }
             wait = RebirthConfig.ANDROID_THINK_TICKS.get();
+            if (com.projectrebirth.garrison.tactics.Tactics.on()) {
+                // 1.8.0: by priority (whoever hits its people, then it, then the one it was called to, then the dangerous ones)
+                LivingEntity current = validTarget(getTarget()) ? getTarget() : null;
+                LivingEntity best = com.projectrebirth.garrison.tactics.Tactics.choose(AndroidEntity.this, AndroidEntity.this,
+                        stats().sight().get(), current, AndroidEntity.this::validTarget);
+                if (best == null) {
+                    LivingEntity called = com.projectrebirth.garrison.tactics.Tactics.calledTarget(AndroidEntity.this, core());
+                    best = called != null && validTarget(called) ? called : null;
+                }
+                if (best != getTarget()) {
+                    setTarget(best);
+                    if (best != null) {
+                        targetSince = level().getGameTime();
+                        playSound(com.projectrebirth.core.ModSounds.GARRISON_TARGET_LOCK.get(), 0.8f, 1.1f);
+                    }
+                }
+                return false;
+            }
             if (validTarget(getTarget())) {
                 return false;
             }
@@ -726,6 +753,7 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         public void stop() {
             mover.stop();
             stopUsingItem();
+            setSprinting(false);
         }
 
         @Override
@@ -737,6 +765,10 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         public void tick() {
             LivingEntity target = getTarget();
             if (target == null) {
+                return;
+            }
+            if (com.projectrebirth.garrison.tactics.Tactics.on()) {
+                fightWithTactics(target);
                 return;
             }
             getLookControl().setLookAt(target, 30.0f, 30.0f);
@@ -780,6 +812,278 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         }
     }
 
+    // ------------------------------------------------------------------ 1.8.0, block I: the tactics of a combat android
+
+    /** The radius of the area its order keeps it in (guard, area patrol, patrol, hold). */
+    private double orderRadius() {
+        return switch (core().task().type()) {
+            case AREA_PATROL -> RebirthConfig.AREA_PATROL_RADIUS.get() + 8.0;
+            case HOLD -> RebirthConfig.ANDROID_HOLD_RADIUS.get() + 2.0;
+            default -> RebirthConfig.ANDROID_GUARD_RADIUS.get();
+        };
+    }
+
+    /** A point that far straight away from the enemy that it gets to on foot (no wall, pit or lava behind it), or null. */
+    @Nullable
+    private Vec3 awayFrom(LivingEntity enemy, double distance) {
+        long now = level().getGameTime();
+        Vec3 cached = tactics.cached(1, now);
+        if (cached != null && cached.distanceToSqr(position()) > 1.0) {
+            return cached;
+        }
+        return tactics.cache(1, now, awayFromNow(enemy, distance));
+    }
+
+    @Nullable
+    private Vec3 awayFromNow(LivingEntity enemy, double distance) {
+        Vec3 away = position().subtract(enemy.position()).multiply(1, 0, 1);
+        if (away.lengthSqr() < 1.0e-4) {
+            return null;
+        }
+        away = away.normalize();
+        for (double turn : new double[] {0.0, 35.0, -35.0, 70.0, -70.0}) {
+            double rad = turn * Mth.DEG_TO_RAD;
+            Vec3 dir = new Vec3(away.x * Math.cos(rad) - away.z * Math.sin(rad), 0, away.x * Math.sin(rad) + away.z * Math.cos(rad));
+            Vec3 point = position().add(dir.scale(distance));
+            if (mover.clearWay(point)) {
+                return point;
+            }
+        }
+        return null;
+    }
+
+    /** How quick it is for its class: 1 for the best, less for worse (by its reaction time). */
+    private double quickness() {
+        return Mth.clamp(4.0 / Math.max(4, stats().reaction().get()), 0.2, 1.0);
+    }
+
+    /**
+     * The fight with tactics: the target by priority (ChooseTargetGoal), falling back when it is badly hurt, a call to its group,
+     * a bow at its best distance (stepping back from an enemy that comes up close, cover when hurt or reloading against a
+     * shooter, aim ahead), a blade with a shield raised against blows and shots, coming in from the side, a critical blow from a
+     * jump and a step back after it; never past the area of its order, never through one of its own.
+     */
+    private void fightWithTactics(LivingEntity target) {
+        getLookControl().setLookAt(target, 30.0f, 30.0f);
+        long now = level().getGameTime();
+        double distance = Math.sqrt(distanceToSqr(target));
+        boolean seen = getSensing().hasLineOfSight(target);
+        boolean ready = now - targetSince >= stats().reaction().get() && attackCooldown <= 0;
+        Vec3 anchor = com.projectrebirth.garrison.tactics.Tactics.anchor(this, core().task(), holdPoint);
+        double radius = orderRadius();
+        if (now >= tactics.nextCall) {
+            tactics.nextCall = now + 60;
+            com.projectrebirth.garrison.tactics.Tactics.callForHelp(this, this, target);
+        }
+        Vec3 move = null;
+        double speed = 1.0;
+        boolean ranged = hasRangedWeapon();
+        boolean mayStrike = true;
+        Vec3 aside = tactics.aside();
+        if (tactics.retreating) {
+            if (tactics.retreatTo == null || now - tactics.retreatAt > 40) {
+                tactics.retreatTo = com.projectrebirth.garrison.tactics.Tactics.retreatPoint(this, this, target);
+                tactics.retreatAt = now;
+            }
+            move = tactics.retreatTo;
+            speed = 1.2;
+            mayStrike = ranged || distance < 2.0;
+        } else if (aside != null) {
+            move = aside;
+        } else if (ranged) {
+            move = rangedMove(target, distance, seen);
+        } else {
+            move = meleeMove(target, distance, ready);
+            speed = distance < 5.0 ? 1.3 : 1.15;
+        }
+        if (move != null && !tactics.retreating && com.projectrebirth.garrison.tactics.Tactics.leashed(anchor, radius, move)) {
+            // not past the area of its order: it waits at the edge (and walks back when the target is gone)
+            Vec3 back = move.subtract(anchor).multiply(1, 0, 1);
+            move = back.lengthSqr() < 1.0e-4 ? null : anchor.add(back.normalize().scale(radius)).add(0, move.y - anchor.y, 0);
+        }
+        setSprinting(!ranged && move != null && speed > 1.2);
+        if (move != null) {
+            mover.walk(move, speed);
+        } else {
+            mover.stop();
+        }
+        if (ranged) {
+            stopUsingItem();
+            if (seen && distance <= 20.0 && ready && mayStrike) {
+                if (!lineClear(target)) {
+                    // one of its own on the line: a step aside, and it fires from there
+                    Vec3 step = com.projectrebirth.garrison.tactics.Tactics.sideStep(this, this, mover, target, getEyeHeight());
+                    if (step != null) {
+                        tactics.stepAside(step, 20);
+                    }
+                    return;
+                }
+                performRangedAttack(target, 1.0f);
+                attackCooldown = getMainHandItem().getItem() instanceof CrossbowItem ? 35 : 25;
+            }
+            return;
+        }
+        meleeStrike(target, distance, ready && mayStrike);
+    }
+
+    /** Whether no one of its own is on the line to the target (asked once a tick at most, only when it is about to fire). */
+    private boolean lineClear(LivingEntity target) {
+        long now = level().getGameTime();
+        if (now != tactics.lineAt) {
+            tactics.lineAt = now;
+            tactics.lineClear = com.projectrebirth.garrison.tactics.Tactics.clearLine(this, this, getEyePosition(), target);
+        }
+        return tactics.lineClear;
+    }
+
+    /** Where an android with a bow goes: off an enemy up close, into cover, to its best distance. */
+    @Nullable
+    private Vec3 rangedMove(LivingEntity target, double distance, boolean seen) {
+        java.util.Optional<LivingEntity> close = com.projectrebirth.garrison.tactics.Tactics.meleeWithin(this, this, RebirthConfig.ANDROID_KITE_DISTANCE.get());
+        if (close.isPresent()) {
+            return awayFrom(close.get(), 4.0);
+        }
+        boolean hurt = core().structural() < core().maxStructural() * RebirthConfig.TACTICS_COVER_BELOW.get();
+        boolean reloading = attackCooldown > 15 && !com.projectrebirth.garrison.tactics.Tactics.melee(target);
+        if ((hurt || reloading) && seen) {
+            long now = level().getGameTime();
+            if (now - tactics.coverAt > 40) {
+                tactics.coverAt = now;
+                tactics.cover = com.projectrebirth.garrison.tactics.Tactics.cover(this, mover, target);
+            }
+            if (tactics.cover != null) {
+                // hidden while it reloads, out to the spot next to it to fire
+                return attackCooldown > 4 ? tactics.cover.hide() : tactics.cover.peek();
+            }
+        }
+        double min = RebirthConfig.ANDROID_RANGED_MIN.get(), max = RebirthConfig.ANDROID_RANGED_MAX.get();
+        if (!seen || distance > max) {
+            return target.position();
+        }
+        if (distance < min && com.projectrebirth.garrison.tactics.Tactics.melee(target)) {
+            return awayFrom(target, 3.0);
+        }
+        return null;
+    }
+
+    /** Where an android with a blade goes: from the side toward the target, off an axe until it strikes, back after a blow. */
+    @Nullable
+    private Vec3 meleeMove(LivingEntity target, double distance, boolean ready) {
+        if (tactics.backOff > 0) {
+            tactics.backOff--;
+            return tactics.backTo;
+        }
+        boolean shield = getOffhandItem().getItem() instanceof ShieldItem;
+        if (shield && com.projectrebirth.garrison.tactics.Tactics.axe(target) && !ready) {
+            // an axe breaks shields: it keeps off until its blow is ready
+            return distance < RebirthConfig.ANDROID_AXE_DISTANCE.get() ? awayFrom(target, 2.0) : null;
+        }
+        double offset = RebirthConfig.ANDROID_SIDE_OFFSET.get();
+        if (distance > 4.0 && offset > 0.0) {
+            // not head-on: toward a point off to its side (each android keeps to its own side)
+            Vec3 to = target.position().subtract(position()).multiply(1, 0, 1).normalize();
+            Vec3 side = new Vec3(-to.z, 0, to.x).scale((getUUID().getLeastSignificantBits() & 1) == 0 ? offset : -offset);
+            return target.position().add(side.scale(Math.min(1.0, (distance - 4.0) / 4.0)));
+        }
+        return target.position();
+    }
+
+    /** The shield and the blow: up against a blow or a shot coming (after its reaction), down to strike; a jump for a critical. */
+    private void meleeStrike(LivingEntity target, double distance, boolean ready) {
+        boolean shield = getOffhandItem().getItem() instanceof ShieldItem;
+        boolean threat = target.swinging && distance < 4.0 || com.projectrebirth.garrison.tactics.Tactics.incoming(this)
+                || !com.projectrebirth.garrison.tactics.Tactics.melee(target) && target.isUsingItem();
+        tactics.threatTicks = threat ? tactics.threatTicks + 1 : 0;
+        boolean reach = isWithinMeleeAttackRange(target);
+        boolean react = tactics.threatTicks >= Math.max(1, stats().reaction().get() / 3);
+        if (shield) {
+            if (react && !(ready && reach) && !isUsingItem()) {
+                startUsingItem(InteractionHand.OFF_HAND);
+            } else if (isUsingItem() && (ready && reach || tactics.threatTicks == 0 && attackCooldown <= 2)) {
+                stopUsingItem();
+            }
+        } else if (react && tactics.asideTicks <= 0 && getRandom().nextDouble() < quickness() * 0.5) {
+            // no shield: a quick step to the side
+            Vec3 to = target.position().subtract(position()).multiply(1, 0, 1);
+            if (to.lengthSqr() > 1.0e-4) {
+                Vec3 side = new Vec3(-to.z, 0, to.x).normalize().scale(getRandom().nextBoolean() ? 1.6 : -1.6);
+                Vec3 point = position().add(side);
+                if (mover.clearWay(point)) {
+                    tactics.stepAside(point, 8);
+                }
+            }
+        }
+        if (!ready) {
+            return;
+        }
+        // a jump just before the blow, to strike falling: a critical, as a player's
+        if (tactics.critWait <= 0 && onGround() && distance < 2.8 && distance > 1.0 && getRandom().nextDouble() < quickness() * 0.6) {
+            getJumpControl().jump();
+            tactics.critWait = 14;
+            return;
+        }
+        boolean falling = !onGround() && getDeltaMovement().y < 0.0;
+        if (tactics.critWait > 0) {
+            tactics.critWait--;
+            if (!falling && !onGround() && tactics.critWait > 0) {
+                return;
+            }
+        }
+        if (!reach) {
+            return;
+        }
+        stopUsingItem();
+        swing(InteractionHand.MAIN_HAND);
+        triggerAnim(MAIN_CONTROLLER, INTERACT_ANIMATION);
+        if (falling) {
+            strikeCritical(target);
+        } else {
+            doHurtTarget(target);
+        }
+        tactics.critWait = 0;
+        setCharge(charge() - (float) (RebirthConfig.BODY_ENERGY_ATTACK.get() * BodyPower.useMultiplier(getBodyClass())));
+        attackCooldown = stats().meleeCooldown().get();
+        // a step back after the blow
+        Vec3 back = awayFrom(target, 2.0);
+        if (back != null) {
+            tactics.backOff = 8;
+            tactics.backTo = back;
+        }
+    }
+
+    private static final net.minecraft.resources.ResourceLocation CRIT = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+            com.projectrebirth.ProjectRebirth.MOD_ID, "android_critical");
+
+    /** A blow struck falling: its damage times androidCritMultiplier, with the sparks and the sound of a player's critical. */
+    private void strikeCritical(LivingEntity target) {
+        var damage = getAttribute(Attributes.ATTACK_DAMAGE);
+        if (damage != null) {
+            damage.addOrReplacePermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(CRIT,
+                    RebirthConfig.ANDROID_CRIT_MULTIPLIER.get() - 1.0, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        }
+        boolean hit = doHurtTarget(target);
+        if (damage != null) {
+            damage.removeModifier(CRIT);
+        }
+        if (hit && level() instanceof ServerLevel server) {
+            server.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY(0.5), target.getZ(), 12, 0.3, 0.4, 0.3, 0.2);
+            playSound(SoundEvents.PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
+        }
+        lastCritical = hit ? level().getGameTime() : lastCritical;
+    }
+
+    /** 1.8.0: when it last struck a critical blow (tests). */
+    private long lastCritical = Long.MIN_VALUE;
+
+    public long lastCritical() {
+        return lastCritical;
+    }
+
+    /** 1.8.0: its tactics (tests). */
+    public com.projectrebirth.garrison.tactics.TacticsState tactics() {
+        return tactics;
+    }
+
     @Override
     public void performRangedAttack(LivingEntity target, float power) {
         ItemStack weapon = getMainHandItem();
@@ -788,11 +1092,16 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
             return;
         }
         AbstractArrow arrow = arrowItem.createArrow(level(), ammo.copyWithCount(1), this, weapon);
-        double dx = target.getX() - getX();
-        double dy = target.getY(0.33) - arrow.getY();
-        double dz = target.getZ() - getZ();
-        double flat = Math.sqrt(dx * dx + dz * dz);
         boolean crossbow = weapon.getItem() instanceof CrossbowItem;
+        // 1.8.0: ahead of a moving target, by the arrow's speed
+        Vec3 aim = com.projectrebirth.garrison.tactics.Tactics.on()
+                ? com.projectrebirth.garrison.tactics.Tactics.lead(arrow.position(), target, crossbow ? 3.0 : 1.6)
+                        .add(0, target.getY(0.33) - target.getBoundingBox().getCenter().y, 0)
+                : new Vec3(target.getX(), target.getY(0.33), target.getZ());
+        double dx = aim.x - getX();
+        double dy = aim.y - arrow.getY();
+        double dz = aim.z - getZ();
+        double flat = Math.sqrt(dx * dx + dz * dz);
         arrow.shoot(dx, dy + flat * (crossbow ? 0.1 : 0.2), dz, crossbow ? 3.0f : 1.6f, stats().inaccuracy().get().floatValue());
         level().addFreshEntity(arrow);
         playSound(crossbow ? SoundEvents.CROSSBOW_SHOOT : SoundEvents.SKELETON_SHOOT, 1.0f, 1.0f / (getRandom().nextFloat() * 0.4f + 0.8f));
@@ -945,6 +1254,13 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         @Nullable
         private Vec3 goal() {
             MachineTask task = core().task();
+            if (tactics.retreating) {
+                // 1.8.0: to a service post to be repaired; with none, it follows its order
+                Vec3 post = level() instanceof ServerLevel server ? ServicePostBlockEntity.nearest(server, blockPosition()) : null;
+                if (post != null) {
+                    return post;
+                }
+            }
             return switch (task.type()) {
                 case GUARD -> task.point().map(Vec3::atBottomCenterOf).orElse(null);
                 case HOLD -> holdPoint == null ? null : Vec3.atBottomCenterOf(holdPoint);

@@ -56,6 +56,17 @@ public class MechRocketEntity extends Entity implements software.bernie.geckolib
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
     }
 
+    /** 1.8.0: where it comes down (machines run from there). */
+    public Vec3 end() {
+        return end;
+    }
+
+    /** 1.8.0: who fired it, or null. */
+    @javax.annotation.Nullable
+    public UUID owner() {
+        return owner;
+    }
+
     /** Where it is at the given tick of its flight: on the line from the pod to the mark, lifted by an arc. */
     private Vec3 at(double tick) {
         double t = Mth.clamp(tick / flight, 0.0, 1.0);

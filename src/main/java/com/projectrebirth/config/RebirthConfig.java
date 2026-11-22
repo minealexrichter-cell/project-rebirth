@@ -416,6 +416,31 @@ public final class RebirthConfig {
     }
     public static final ModConfigSpec.IntValue SELF_DEFENCE_SECONDS;
     public static final ModConfigSpec.IntValue SELF_DEFENCE_RADIUS;
+    // 1.8.0, block I: the tactics of the combat machines
+    public static final ModConfigSpec.BooleanValue TACTICS_ENABLED;
+    public static final ModConfigSpec.DoubleValue TACTICS_RETREAT_BELOW;
+    public static final ModConfigSpec.DoubleValue TACTICS_RETURN_ABOVE;
+    public static final ModConfigSpec.DoubleValue TACTICS_COVER_BELOW;
+    public static final ModConfigSpec.IntValue TACTICS_COVER_RADIUS;
+    public static final ModConfigSpec.IntValue TACTICS_HELP_RADIUS;
+    public static final ModConfigSpec.DoubleValue TACTICS_FLEE_RADIUS;
+    public static final ModConfigSpec.DoubleValue TACTICS_BIG_WIDTH;
+    public static final ModConfigSpec.DoubleValue ANDROID_RANGED_MIN;
+    public static final ModConfigSpec.DoubleValue ANDROID_RANGED_MAX;
+    public static final ModConfigSpec.DoubleValue ANDROID_KITE_DISTANCE;
+    public static final ModConfigSpec.DoubleValue ANDROID_SIDE_OFFSET;
+    public static final ModConfigSpec.DoubleValue ANDROID_CRIT_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue ANDROID_AXE_DISTANCE;
+    public static final ModConfigSpec.DoubleValue ROBOT_CIRCLE_SHARE;
+    public static final ModConfigSpec.DoubleValue ROBOT_BACK_OFF;
+    public static final ModConfigSpec.DoubleValue ROBOT_CLAW_DAMAGE;
+    public static final ModConfigSpec.IntValue ROBOT_CLAW_COOLDOWN;
+    public static final ModConfigSpec.DoubleValue ROBOT_FAN_SPACING;
+    public static final ModConfigSpec.IntValue MECH_ROCKET_GROUP;
+    public static final ModConfigSpec.IntValue MECH_SURROUNDED;
+    public static final ModConfigSpec.DoubleValue MECH_SHIELD_RADIUS;
+    public static final ModConfigSpec.BooleanValue TURRET_LEAD;
+    public static final ModConfigSpec.IntValue TURRET_TURN_SECONDS;
     public static final ModConfigSpec.BooleanValue SCOUTING_ENABLED;
     public static final ModConfigSpec.IntValue SCOUTING_UPDATE_SECONDS;
     public static final ModConfigSpec.IntValue ANALYZER_RADIUS;
@@ -1213,6 +1238,48 @@ public final class RebirthConfig {
         ALLOW_INTRUDER_MODE = builder.comment("Whether a console may turn on the intruder mode: attack any outsider on the faction's own land, in peace too").define("allowIntruderMode", true);
         SELF_DEFENCE_SECONDS = builder.comment("Seconds a machine remembers who attacked it, its owner or a member of its faction nearby").defineInRange("selfDefenceSeconds", 30, 1, 3600);
         SELF_DEFENCE_RADIUS = builder.comment("Blocks around an attacked member within which machines of the faction take note").defineInRange("selfDefenceRadius", 24, 1, 128);
+        builder.pop();
+        builder.comment("1.8.0: how the combat machines fight: whom first, at what distance, when they fall back, take cover, call for help",
+                "and run from a blast. Off: they walk at the target and fire as in 1.7.3.").push("tactics");
+        TACTICS_ENABLED = builder.comment("Whether the combat machines use these tactics").define("enabled", true);
+        TACTICS_RETREAT_BELOW = builder.comment("Below this share of its structural integrity a machine falls back (to a service post, or behind its own), firing")
+                .defineInRange("retreatBelow", 0.3, 0.0, 1.0);
+        TACTICS_RETURN_ABOVE = builder.comment("From this share of its structural integrity (after repair) it goes back to the fight")
+                .defineInRange("returnAbove", 0.8, 0.0, 1.0);
+        TACTICS_COVER_BELOW = builder.comment("Below this share of its structural integrity a shooter takes cover behind a solid block between shots")
+                .defineInRange("coverBelow", 0.5, 0.0, 1.0);
+        TACTICS_COVER_RADIUS = builder.comment("Blocks round it in which a shooter looks for cover").defineInRange("coverRadius", 6, 1, 16);
+        TACTICS_HELP_RADIUS = builder.comment("Blocks in which a machine in a fight calls the machines of its group (the switch «Focus fire» of the console)")
+                .defineInRange("helpRadius", 24, 0, 128);
+        TACTICS_FLEE_RADIUS = builder.comment("Blocks from a hissing creeper or from where an enemy rocket comes down that a machine runs out of")
+                .defineInRange("fleeRadius", 5.0, 0.0, 16.0);
+        TACTICS_BIG_WIDTH = builder.comment("A target at least this wide is big (rockets of a mech; the mech stands between it and its own)")
+                .defineInRange("bigWidth", 1.2, 0.1, 10.0);
+        ANDROID_RANGED_MIN = builder.comment("Combat android with a bow or a crossbow: the nearest it likes to be to its target").defineInRange("androidRangedMin", 8.0, 1.0, 32.0);
+        ANDROID_RANGED_MAX = builder.comment("... and the farthest").defineInRange("androidRangedMax", 14.0, 2.0, 48.0);
+        ANDROID_KITE_DISTANCE = builder.comment("A combat android with a bow steps back from an enemy that fights up close and is nearer than this")
+                .defineInRange("androidKiteDistance", 6.0, 1.0, 32.0);
+        ANDROID_SIDE_OFFSET = builder.comment("A combat android in melee comes at its target this many blocks off to the side, not head-on")
+                .defineInRange("androidSideOffset", 2.0, 0.0, 8.0);
+        ANDROID_CRIT_MULTIPLIER = builder.comment("Damage of a combat android's blow struck falling from a jump (a critical hit, as a player's)")
+                .defineInRange("androidCritMultiplier", 1.5, 1.0, 5.0);
+        ANDROID_AXE_DISTANCE = builder.comment("A combat android with a shield keeps this far from an enemy with an axe until it strikes")
+                .defineInRange("androidAxeDistance", 3.5, 1.0, 16.0);
+        ROBOT_CIRCLE_SHARE = builder.comment("A small robot circles its target at this share of its range").defineInRange("robotCircleShare", 0.55, 0.1, 1.0);
+        ROBOT_BACK_OFF = builder.comment("A small robot backs away, firing, from an enemy that fights up close and is nearer than this")
+                .defineInRange("robotBackOff", 5.0, 1.0, 32.0);
+        ROBOT_CLAW_DAMAGE = builder.comment("Damage of the small robot's claw (only when an enemy has it pinned)").defineInRange("robotClawDamage", 4.0, 0.0, 100.0);
+        ROBOT_CLAW_COOLDOWN = builder.comment("Ticks between two blows of the claw").defineInRange("robotClawCooldown", 20, 1, 200);
+        ROBOT_FAN_SPACING = builder.comment("Small robots on one target keep at least this many blocks apart on their circle (they fan out)")
+                .defineInRange("robotFanSpacing", 3.0, 0.0, 16.0);
+        MECH_ROCKET_GROUP = builder.comment("A mech fires a rocket at a small target only with at least this many enemies round it (a big one always)")
+                .defineInRange("mechRocketGroup", 2, 1, 16);
+        MECH_SURROUNDED = builder.comment("With this many enemies within 4 blocks a mech stomps and steps back before it fires").defineInRange("mechSurrounded", 3, 1, 16);
+        MECH_SHIELD_RADIUS = builder.comment("A mech steps between a big enemy and an android or a work machine of its own this close to it")
+                .defineInRange("mechShieldRadius", 12.0, 0.0, 48.0);
+        TURRET_LEAD = builder.comment("Whether defence turrets aim ahead of a moving target").define("turretLead", true);
+        TURRET_TURN_SECONDS = builder.comment("Seconds a defence turret keeps facing where a hit came from when it cannot see who fired")
+                .defineInRange("turretTurnSeconds", 4, 0, 60);
         builder.pop();
         builder.comment("The console and the tactical tablet (block D): linking machines, orders, groups, alarms.").push("console");
         CONSOLE_ENABLED = builder.comment("Whether consoles work").define("enabled", true);

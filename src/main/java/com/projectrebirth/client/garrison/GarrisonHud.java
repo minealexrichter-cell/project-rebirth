@@ -34,6 +34,8 @@ public final class GarrisonHud {
     private static ConsoleAlarm alarm;
     private static BlockPos alarmAt = BlockPos.ZERO;
     private static long alarmTime = -1000;
+    /** The world the mark came in: a mark never follows the player into another dimension. */
+    private static Object alarmLevel;
 
     private GarrisonHud() {
     }
@@ -45,6 +47,7 @@ public final class GarrisonHud {
                 alarm = ConsoleAlarm.byId(payload.alarm());
                 alarmAt = payload.console();
                 alarmTime = Minecraft.getInstance().level.getGameTime();
+                alarmLevel = Minecraft.getInstance().level;
             }
         });
     }
@@ -60,7 +63,8 @@ public final class GarrisonHud {
             return;
         }
         Font font = minecraft.font;
-        if (RebirthClientConfig.HUD_CONSOLE_ALARM.get() && alarm != null && minecraft.level.getGameTime() - alarmTime <= MARK_TICKS) {
+        if (RebirthClientConfig.HUD_CONSOLE_ALARM.get() && alarm != null && alarmLevel == minecraft.level
+                && minecraft.level.getGameTime() - alarmTime <= MARK_TICKS) {
             Component text = Component.translatable("hud.projectrebirth.console_alarm", Component.translatable("console_alarm.projectrebirth." + alarm.id()),
                     alarmAt.getX(), alarmAt.getY(), alarmAt.getZ());
             int w = font.width(text) + 18;

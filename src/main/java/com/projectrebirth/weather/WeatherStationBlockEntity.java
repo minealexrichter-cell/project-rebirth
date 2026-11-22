@@ -8,8 +8,6 @@ import com.projectrebirth.config.RebirthConfig;
 import com.projectrebirth.environment.Environment;
 import com.projectrebirth.environment.EnvironmentState;
 import com.projectrebirth.environment.EventPhase;
-import com.projectrebirth.factions.Faction;
-import com.projectrebirth.factions.FactionData;
 import com.projectrebirth.technology.TechSounds;
 import com.projectrebirth.technology.energy.EnergyUtil;
 import com.projectrebirth.technology.energy.ModEnergyStorage;
@@ -260,23 +258,16 @@ public class WeatherStationBlockEntity extends BlockEntity implements MenuProvid
         }
     }
 
-    /** Whom a forecast reaches: the players around the station, its owner and the owner's faction in this dimension. Public for tests. */
+    /**
+     * Whom a forecast reaches: the players around the station in its dimension (owner and faction too, only while near: a
+     * forecast is local, it no longer follows them over the whole dimension). Public for tests.
+     */
     public boolean reaches(ServerPlayer player) {
         if (player.level() != level) {
             return false;
         }
         int radius = RebirthConfig.WEATHER_STATION_RADIUS.get();
-        if (player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= (double) radius * radius) {
-            return true;
-        }
-        if (owner == null) {
-            return false;
-        }
-        if (owner.equals(player.getUUID())) {
-            return true;
-        }
-        Faction faction = FactionData.get(player.server).of(owner).orElse(null);
-        return faction != null && faction.isMember(player.getUUID());
+        return player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= (double) radius * radius;
     }
 
     private void send(ServerLevel serverLevel, ForecastPayload payload) {

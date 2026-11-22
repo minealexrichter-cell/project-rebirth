@@ -44,6 +44,11 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
     private static final String LEFT_ARM = "left_arm";
     private static final String RIGHT_FOREARM = "right_forearm";
     private static final String LEFT_FOREARM = "left_forearm";
+    /** The vanilla riding pose (HumanoidModel): legs forward and apart, arms a little raised; in bone signs. */
+    private static final float SIT_LEG_X = (float) Math.PI * 0.45f;
+    private static final float SIT_LEG_Y = (float) Math.PI / 10.0f;
+    private static final float SIT_LEG_Z = (float) Math.PI / 40.0f;
+    private static final float SIT_ARM_X = (float) Math.PI / 5.0f;
 
     public PossessedPlayerRenderer(EntityRendererProvider.Context context, BodyClass bodyClass) {
         this(context, new PosedModel(bodyClass));
@@ -126,10 +131,40 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
                 PilotArmPose.apply(player, state.getPartialTick(), rightArm, leftArm,
                         getAnimationProcessor().getBone(RIGHT_FOREARM), getAnimationProcessor().getBone(LEFT_FOREARM), torso);
             }
+            if (player != null && player.getVehicle() != null && player.getVehicle().shouldRiderSit()) {
+                sit(rightArm, leftArm);
+            }
             // The head looks where the player looks, however the walk leans and turns the body under it.
             if (head != null && torso != null && root != null) {
                 head.setRotX(head.getRotX() - torso.getRotX());
                 head.setRotY(head.getRotY() - torso.getRotY() - root.getRotY());
+            }
+        }
+
+        /**
+         * A riding player sits: the vanilla riding pose (HumanoidModel.setupAnim, riding) in bone angles, so a body sits
+         * in a seat, a boat or the worker armor's cab exactly like a normal player.
+         */
+        private void sit(GeoBone rightArm, GeoBone leftArm) {
+            GeoBone rightLeg = getAnimationProcessor().getBone("right_leg");
+            GeoBone leftLeg = getAnimationProcessor().getBone("left_leg");
+            if (rightLeg != null && leftLeg != null) {
+                rightLeg.setRotX(SIT_LEG_X);
+                rightLeg.setRotY(-SIT_LEG_Y);
+                rightLeg.setRotZ(SIT_LEG_Z);
+                leftLeg.setRotX(SIT_LEG_X);
+                leftLeg.setRotY(SIT_LEG_Y);
+                leftLeg.setRotZ(-SIT_LEG_Z);
+            }
+            for (String shin : new String[] {"right_shin", "left_shin"}) {
+                GeoBone bone = getAnimationProcessor().getBone(shin);
+                if (bone != null) {
+                    bone.setRotX(0.0f);
+                }
+            }
+            if (rightArm != null && leftArm != null) {
+                rightArm.setRotX(rightArm.getRotX() + SIT_ARM_X);
+                leftArm.setRotX(leftArm.getRotX() + SIT_ARM_X);
             }
         }
     }
@@ -181,7 +216,8 @@ public class PossessedPlayerRenderer extends GeoReplacedEntityRenderer<Player, P
         protected ItemStack getStackForBone(GeoBone bone, BodyAnimatable animatable) {
             Player player = renderer.getCurrentEntity();
             boolean right = bone.getName().equals(RIGHT_FOREARM);
-            if (player == null || !right && !bone.getName().equals(LEFT_FOREARM)) {
+            if (player == null || !right && !bone.getName().equals(LEFT_FOREARM)
+                    || com.projectrebirth.client.PowerArmorClient.armorHoldsItems(player)) {
                 return null;
             }
             boolean mainHandIsRight = player.getMainArm() == HumanoidArm.RIGHT;

@@ -130,7 +130,7 @@ public class WeatherGameTests {
             player.moveTo(at.getX() + 0.5, at.getY() + 1, at.getZ() + RebirthConfig.WEATHER_STATION_RADIUS.get() + 20.0);
             helper.assertFalse(station.reaches(player), "Far away a stranger does not");
             station.setOwner(player.getUUID());
-            helper.assertTrue(station.reaches(player), "Its owner does, anywhere in the dimension");
+            helper.assertFalse(station.reaches(player), "Nor its owner: a forecast is only near the station");
             state.startActive(Environment.TOXIC_STORM, 0.5f, 300);
             station.update(level);
             helper.assertTrue(station.state() == WeatherStationBlockEntity.STATE_ACTIVE && station.signal() == 15 && station.comparator() == 15,

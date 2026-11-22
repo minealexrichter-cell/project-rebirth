@@ -28,6 +28,8 @@ public final class ForecastClient {
     static void register() {
         ForecastPayload.clientHandler = payload -> Minecraft.getInstance().execute(() -> accept(payload));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> last = null);
+        // a forecast belongs to the dimension of its station: forgotten on the way to another one
+        NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.Clone event) -> last = null);
     }
 
     private static long now() {

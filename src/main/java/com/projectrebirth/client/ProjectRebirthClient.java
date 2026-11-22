@@ -231,8 +231,13 @@ public class ProjectRebirthClient {
             PossessedPlayerRenderer renderer = possessedRenderers.get(bodyClass);
             if (renderer != null) {
                 event.setCanceled(true);
+                // a pilot in a power armor is placed in it like a normal player (PowerArmorClient.shrinkCabPilot)
+                boolean pushed = PowerArmorClient.pushPilotPose(player, event.getPoseStack());
                 renderer.render(player, player.getViewYRot(event.getPartialTick()), event.getPartialTick(),
                         event.getPoseStack(), event.getMultiBufferSource(), event.getPackedLight());
+                if (pushed) {
+                    event.getPoseStack().popPose();
+                }
             }
         });
     }

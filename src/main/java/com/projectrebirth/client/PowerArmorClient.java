@@ -223,12 +223,28 @@ public final class PowerArmorClient {
 
     /** Runs last, so that a cancelled render (which gets no Post event) never leaves the pose pushed. */
     private static void shrinkCabPilot(RenderPlayerEvent.Pre event) {
-        PilotPose pose = pilotPose(event);
-        if (pose != null) {
-            event.getPoseStack().pushPose();
-            event.getPoseStack().translate(0.0f, pose.lift() / 16.0f, 0.0f);
-            event.getPoseStack().scale(pose.scale(), pose.scale(), pose.scale());
+        pushPilotPose(event.getEntity(), event.getPoseStack());
+    }
+
+    /**
+     * Pushes the pilot's place in the armor onto the pose stack; false (and nothing pushed) when the player is not in an
+     * armor. Shared by the vanilla player and the artificial bodies (their renderer cancels the event before
+     * shrinkCabPilot would run), so that a pilot in any body sits in the armor the same way.
+     */
+    public static boolean pushPilotPose(Player player, com.mojang.blaze3d.vertex.PoseStack poseStack) {
+        if (!(player.getVehicle() instanceof PowerArmorEntity armor)) {
+            return false;
         }
+        PilotPose pose = pilotPose(armor.getVariant());
+        poseStack.pushPose();
+        poseStack.translate(0.0f, pose.lift() / 16.0f, 0.0f);
+        poseStack.scale(pose.scale(), pose.scale(), pose.scale());
+        return true;
+    }
+
+    /** While a pilot is in a working armor, the armor's fists hold the items: the pilot's own hands are drawn empty. */
+    public static boolean armorHoldsItems(net.minecraft.world.entity.Entity entity) {
+        return entity.getVehicle() instanceof PowerArmorEntity armor && !armor.isWrecked();
     }
 
     private static void restoreCabPilot(RenderPlayerEvent.Post event) {

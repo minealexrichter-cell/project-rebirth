@@ -53,6 +53,13 @@ public final class ShelterAlerts {
         return players;
     }
 
+    /** Who hears about something owned by this player that stands in this dimension: only those in it (1.8.0). */
+    public static Set<ServerPlayer> recipients(net.minecraft.server.level.ServerLevel level, @Nullable UUID owner) {
+        Set<ServerPlayer> players = recipients(level.getServer(), owner);
+        players.removeIf(player -> player.level() != level);
+        return players;
+    }
+
     /** Sends one warning about the shelter at a place; returns how many heard it. */
     public static int tell(MinecraftServer server, @Nullable UUID owner, BlockPos where, String key, boolean bad, Object... args) {
         Object[] all = new Object[args.length + 3];

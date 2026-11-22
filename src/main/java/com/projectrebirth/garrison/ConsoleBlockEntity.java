@@ -425,7 +425,7 @@ public class ConsoleBlockEntity extends BlockEntity {
         if (level instanceof ServerLevel server && alarm.told()) {
             Component message = Component.translatable("message.projectrebirth.console_alarm." + alarm.id() + (on ? "" : "_ended"),
                     display(link.name), link.pos.getX(), link.pos.getY(), link.pos.getZ()).withStyle(on ? ChatFormatting.RED : ChatFormatting.GREEN);
-            for (ServerPlayer player : ShelterAlerts.recipients(server.getServer(), owner)) {
+            for (ServerPlayer player : ShelterAlerts.recipients(server, owner)) {
                 player.sendSystemMessage(message);
                 if (on) {
                     player.playNotifySound(com.projectrebirth.core.ModSounds.GARRISON_CONSOLE_ALARM.get(), net.minecraft.sounds.SoundSource.BLOCKS, 0.6f, 1.0f);
@@ -496,7 +496,7 @@ public class ConsoleBlockEntity extends BlockEntity {
         }
         if (worst != null) {
             ConsoleNetwork.AlarmPayload payload = new ConsoleNetwork.AlarmPayload(worldPosition, worst.ordinal());
-            for (ServerPlayer player : ShelterAlerts.recipients(server.getServer(), owner)) {
+            for (ServerPlayer player : ShelterAlerts.recipients(server, owner)) {
                 net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, payload);
             }
         }

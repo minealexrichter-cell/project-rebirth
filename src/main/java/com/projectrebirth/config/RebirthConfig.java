@@ -1295,7 +1295,7 @@ public final class RebirthConfig {
         WEATHER_STATION_FORECAST_MINUTES = builder.comment("How many minutes ahead a station foresees the kind of the next catastrophe (its time only roughly)").defineInRange("forecastMinutes", 10, 1, 600);
         WEATHER_STATION_ROUND_MINUTES = builder.comment("How rough the time of a forecast without the long range module is: a span of this many minutes").defineInRange("roughMinutes", 5, 1, 60);
         WEATHER_STATION_LONG_FORECAST_MINUTES = builder.comment("How many minutes ahead a station with the long range forecast module foresees the catastrophe, with its exact time, intensity and length").defineInRange("longForecastMinutes", 30, 1, 600);
-        WEATHER_STATION_RADIUS = builder.comment("Players this many blocks around a station see its forecast in the HUD (its owner and the owner's faction anywhere in the dimension)").defineInRange("radius", 64, 0, 4096);
+        WEATHER_STATION_RADIUS = builder.comment("Players this many blocks around a station see its forecast in the HUD").defineInRange("radius", 64, 0, 4096);
         WEATHER_STATION_SIGNAL_MINUTES = builder.comment("A station gives a full redstone signal this many minutes before a catastrophe it foresees, and during it").defineInRange("signalMinutes", 5, 0, 600);
         WEATHER_STATION_ENERGY_PER_TICK = builder.comment("Energy a weather station takes per tick").defineInRange("energyPerTick", 10, 0, 1_000_000);
         WEATHER_STATION_MODULE_ENERGY_PER_TICK = builder.comment("Energy the long range forecast module takes on top, per tick").defineInRange("moduleEnergyPerTick", 20, 0, 1_000_000);

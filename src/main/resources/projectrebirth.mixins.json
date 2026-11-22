@@ -12,6 +12,7 @@
   },
   "client": [
     "MinecraftGlowMixin",
-    "EntityOutlineColorMixin"
+    "EntityOutlineColorMixin",
+    "ItemInHandLayerMixin"
   ]
 }

@@ -222,10 +222,10 @@ public final class Tactics {
 
     /**
      * Where to fall back to: the nearest service post (it repairs there), else behind the nearest of its own from the threat,
-     * else straight away from the threat; null when there is nowhere to go.
+     * else straight away from the threat to three quarters of its range (it keeps firing); null when there is nowhere to go.
      */
     @Nullable
-    public static Vec3 retreatPoint(Mob self, GarrisonMachine machine, @Nullable LivingEntity threat) {
+    public static Vec3 retreatPoint(Mob self, GarrisonMachine machine, @Nullable LivingEntity threat, double range) {
         if (self.level() instanceof ServerLevel server) {
             Vec3 post = ServicePostBlockEntity.nearest(server, self.blockPosition());
             if (post != null) {
@@ -250,8 +250,16 @@ public final class Tactics {
             Vec3 away = friend.position().subtract(from).multiply(1, 0, 1);
             return away.lengthSqr() < 1.0e-4 ? friend.position() : friend.position().add(away.normalize().scale(4.0));
         }
+        // straight away, but no farther than three quarters of its range: it keeps firing as it falls back, and keeps its target
         Vec3 away = self.position().subtract(from).multiply(1, 0, 1);
-        return away.lengthSqr() < 1.0e-4 ? null : self.position().add(away.normalize().scale(12.0));
+        double keep = range * 0.75;
+        if (away.lengthSqr() < 1.0e-4) {
+            return null;
+        }
+        if (away.length() >= keep) {
+            return self.position();
+        }
+        return from.multiply(1, 0, 1).add(0, self.getY(), 0).add(away.normalize().scale(keep));
     }
 
     // ------------------------------------------------------------------ cover

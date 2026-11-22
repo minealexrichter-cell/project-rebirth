@@ -2383,6 +2383,17 @@
         }
         return p;
     });
+    // The hall of the whole storage: corrugated steel sheet (vertical ribs), a teal band and rivets along it.
+    block('storage_wall', () => {
+        const p = new Painter(254);
+        p.rect(0, 0, 16, 16, '#5f6873');
+        for (let x = 0; x < 16; x += 4) p.rect(x, 0, 1, 16, '#77818c').rect(x + 2, 0, 1, 16, '#4d555e');
+        p.noise(0, 0, 16, 16, '#5f6873', 0.03);
+        p.rect(0, 10, 16, 2, STORE_TEAL).rect(0, 12, 16, 1, '#23727f');
+        p.px('#a6b0ba', [1, 11], [5, 11], [9, 11], [13, 11]);
+        p.rect(0, 0, 16, 1, '#3d444b').rect(0, 15, 16, 1, '#3d444b');
+        return p;
+    });
     block('storage_rack_top', () => {
         const p = new Painter(253);
         p.bevel(0, 0, 16, 16, '#59626c', 0.04);

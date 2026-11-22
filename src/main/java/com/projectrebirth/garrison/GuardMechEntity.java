@@ -781,7 +781,7 @@ public class GuardMechEntity extends MachineEntity implements GeoEntity {
             // in the air the jetpack carries it; the guns go on firing
         } else if (tactics.retreating) {
             if (tactics.retreatTo == null || now - tactics.retreatAt > 40) {
-                tactics.retreatTo = com.projectrebirth.garrison.tactics.Tactics.retreatPoint(this, this, target);
+                tactics.retreatTo = com.projectrebirth.garrison.tactics.Tactics.retreatPoint(this, this, target, stats().range().get());
                 tactics.retreatAt = now;
             }
             move = tactics.retreatTo;

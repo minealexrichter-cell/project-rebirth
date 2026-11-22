@@ -44,8 +44,9 @@ public final class LogisticsRegistry {
 
     public static final DeferredBlock<StorageControllerBlock> STORAGE_CONTROLLER = BLOCKS.register("storage_controller",
             () -> new StorageControllerBlock(machine()));
-    /** The racks of the storage: shelves of crates in a steel frame. */
-    public static final DeferredBlock<Block> STORAGE_RACK = BLOCKS.registerSimpleBlock("storage_rack", machine());
+    /** The racks of the storage: shelves of crates in a steel frame; hidden under the hall of a whole storage (a frame of it). */
+    public static final DeferredBlock<com.projectrebirth.multiblock.FrameBlock> STORAGE_RACK = BLOCKS.register("storage_rack",
+            () -> new com.projectrebirth.multiblock.FrameBlock(machine().noOcclusion()));
     public static final DeferredItem<BlockItem> STORAGE_CONTROLLER_ITEM = ITEMS.registerSimpleBlockItem(STORAGE_CONTROLLER);
     public static final DeferredItem<BlockItem> STORAGE_RACK_ITEM = ITEMS.registerSimpleBlockItem(STORAGE_RACK);
 

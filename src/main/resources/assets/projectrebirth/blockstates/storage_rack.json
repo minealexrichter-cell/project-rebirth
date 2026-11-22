@@ -1,6 +1,9 @@
 {
   "variants": {
-    "": {
+    "formed=false": {
+      "model": "projectrebirth:block/storage_rack"
+    },
+    "formed=true": {
       "model": "projectrebirth:block/storage_rack"
     }
   }

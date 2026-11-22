@@ -86,6 +86,10 @@ neoForge {
             if (project.hasProperty('quickPlayServer')) {
                 programArguments.addAll '--quickPlayMultiplayer', project.property('quickPlayServer').toString()
             }
+            // Optional (1.8.0): ./gradlew runClient -PquickPlayWorld="New World" opens that single-player world right after startup
+            if (project.hasProperty('quickPlayWorld')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlayWorld').toString()
+            }
         }
 
         // Second test client (player "Observer", separate game folder) for multiplayer checks on the dev server

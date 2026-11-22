@@ -882,7 +882,8 @@ public class AndroidEntity extends ArtificialBodyEntity implements GarrisonMachi
         Vec3 aside = tactics.aside();
         if (tactics.retreating) {
             if (tactics.retreatTo == null || now - tactics.retreatAt > 40) {
-                tactics.retreatTo = com.projectrebirth.garrison.tactics.Tactics.retreatPoint(this, this, target);
+                tactics.retreatTo = com.projectrebirth.garrison.tactics.Tactics.retreatPoint(this, this, target,
+                        hasRangedWeapon() ? RebirthConfig.ANDROID_RANGED_MAX.get() : stats().sight().get());
                 tactics.retreatAt = now;
             }
             move = tactics.retreatTo;

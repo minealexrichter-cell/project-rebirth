@@ -48,6 +48,9 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
     @Nullable
     private MultiblockSchema.Check check;
     private final List<BlockPos> linked = new ArrayList<>();
+    /** The hall over a whole storage: whether it stands (the client draws it), and the racks and frames hidden under it. */
+    private boolean formed;
+    private final List<BlockPos> hidden = new ArrayList<>();
 
     public StorageControllerBlockEntity(BlockPos pos, BlockState state) {
         super(LogisticsRegistry.STORAGE_ENTITY.get(), pos, state);
@@ -192,6 +195,7 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
                 port.link(worldPosition);
             }
         }
+        formShell(schema);
         if (was != whole) {
             level.invalidateCapabilities(worldPosition);
             setChanged();
@@ -204,6 +208,85 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
             }
         }
         return check;
+    }
+
+    /**
+     * The hall (as the body workshop and the heavy dock): over a whole storage its racks and frames turn invisible and the clients
+     * draw thin walls of corrugated steel round them (HallShell); the plates stay as the roof, the controller and the ports in front.
+     */
+    private void formShell(@Nullable MultiblockSchema schema) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        boolean now = whole && schema != null && schema.shell().isPresent();
+        List<BlockPos> cells = new ArrayList<>();
+        if (now) {
+            String hide = schema.shell().get().hide();
+            for (int y = 0; y < schema.height(); y++) {
+                for (int r = 0; r < schema.depth(); r++) {
+                    for (int c = 0; c < schema.width(); c++) {
+                        if (hide.indexOf(schema.letter(y, r, c)) >= 0) {
+                            cells.add(schema.worldPos(worldPosition, facing(), c, y, r).immutable());
+                        }
+                    }
+                }
+            }
+        }
+        for (BlockPos pos : hidden) {
+            if (!cells.contains(pos)) {
+                setFormed(pos, false);
+            }
+        }
+        for (BlockPos pos : cells) {
+            setFormed(pos, true);
+        }
+        hidden.clear();
+        hidden.addAll(cells);
+        if (formed != now) {
+            formed = now;
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private void setFormed(BlockPos pos, boolean value) {
+        BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof com.projectrebirth.multiblock.FrameBlock && state.getValue(com.projectrebirth.multiblock.FrameBlock.FORMED) != value) {
+            level.setBlock(pos, state.setValue(com.projectrebirth.multiblock.FrameBlock.FORMED, value), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+        }
+    }
+
+    /** Whether the hall stands (the client draws it). */
+    public boolean formed() {
+        return formed;
+    }
+
+    /** Where the hall is drawn (round the controller, as far as the plan reaches). */
+    public net.minecraft.world.phys.AABB renderBounds() {
+        return new net.minecraft.world.phys.AABB(worldPosition).inflate(5);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        tag.putBoolean("formed", formed);
+        return tag;
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag, HolderLookup.Provider registries) {
+        formed = tag.getBoolean("formed");
+    }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.Connection connection, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket packet,
+                             HolderLookup.Provider registries) {
+        handleUpdateTag(packet.getTag(), registries);
+    }
+
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
@@ -239,6 +322,11 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
             }
         }
         linked.clear();
+        // the hall falls apart: the racks and frames show again
+        for (BlockPos pos : hidden) {
+            setFormed(pos, false);
+        }
+        hidden.clear();
     }
 
     // ------------------------------------------------------------------ the window
@@ -259,6 +347,8 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.put("store", store.serializeNBT(registries));
+        tag.putBoolean("formed", formed);
+        tag.putLongArray("hidden", hidden.stream().mapToLong(BlockPos::asLong).toArray());
         if (owner != null) {
             tag.putUUID("owner", owner);
         }
@@ -282,5 +372,10 @@ public class StorageControllerBlockEntity extends BlockEntity implements MenuPro
             }
         }
         owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
+        formed = tag.getBoolean("formed");
+        hidden.clear();
+        for (long pos : tag.getLongArray("hidden")) {
+            hidden.add(BlockPos.of(pos));
+        }
     }
 }

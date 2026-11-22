@@ -257,6 +257,9 @@ public class TacticsGameTests {
     public static void aBadlyHurtRobotFallsBackAndComesBackRepaired(GameTestHelper helper) {
         ServerPlayer owner = player(helper);
         Zombie target = zombie(helper, 18, 12, true);
+        // a tough target: the robot must not kill it before it falls back (then there is nothing to fight again)
+        target.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(500.0);
+        target.setHealth(500.0f);
         SmallRobotEntity robot = robot(helper, owner, 10, 12);
         var core = robot.machineCore();
         core.setIntegrity(core.maxStructural() * 0.2f, core.maxCritical());
@@ -272,7 +275,9 @@ public class TacticsGameTests {
         helper.runAfterDelay(141, () -> roundsAt[0] = robot.rounds());
         helper.runAfterDelay(160, () -> helper.succeedWhen(() -> {
             helper.assertFalse(robot.tactics().retreating, "Repaired, it stops falling back");
-            helper.assertTrue(robot.rounds() < roundsAt[0], "And fights again");
+            helper.assertTrue(robot.rounds() < roundsAt[0], "And fights again: target " + robot.getTarget() + ", distance " + robot.distanceTo(target)
+                    + ", sees " + robot.hasLineOfSight(target) + ", rounds " + robot.rounds() + "/" + roundsAt[0] + ", energy " + robot.energy() + ", task " + robot.machineCore().task().type() + ", working " + robot.working() + ", state " + robot.machineCore().state()
+                    + ", retreating " + robot.tactics().retreating + ", structural " + robot.machineCore().structural() + "/" + robot.machineCore().maxStructural() + ", valid " + com.projectrebirth.garrison.TargetRules.mayAttack(robot, target));
             robot.discard();
             target.discard();
         }));

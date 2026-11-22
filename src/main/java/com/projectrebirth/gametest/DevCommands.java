@@ -95,6 +95,10 @@ public final class DevCommands {
                 .then(Commands.argument("corner", BlockPosArgument.blockPos())
                         .then(Commands.argument("recipe", StringArgumentType.word())
                                 .executes(ctx -> workshop(ctx, false)))));
+        // 1.8.0, block J: a whole storage at that corner (its controller facing south), owned by the player
+        root.then(Commands.literal("storage")
+                .then(Commands.argument("corner", BlockPosArgument.blockPos())
+                        .executes(DevCommands::storage)));
         root.then(Commands.literal("dock")
                 .then(Commands.argument("corner", BlockPosArgument.blockPos())
                         .then(Commands.argument("recipe", StringArgumentType.word())
@@ -461,6 +465,46 @@ public final class DevCommands {
     private static int path(CommandContext<CommandSourceStack> ctx, int seconds) throws CommandSyntaxException {
         DevPathView.watch(ctx.getSource().getPlayerOrException(), seconds);
         ctx.getSource().sendSuccess(() -> Component.literal(seconds > 0 ? "paths of machines shown for " + seconds + " s" : "paths hidden"), false);
+        return 1;
+    }
+
+    private static int storage(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        ServerLevel level = ctx.getSource().getLevel();
+        BlockPos corner = BlockPosArgument.getLoadedBlockPos(ctx, "corner");
+        com.projectrebirth.multiblock.MultiblockSchema schema = com.projectrebirth.multiblock.MultiblockRegistry.schema(level.registryAccess(),
+                com.projectrebirth.logistics.LogisticsRegistry.SCHEMA);
+        net.minecraft.core.Direction facing = net.minecraft.core.Direction.SOUTH;
+        int[] c = schema.controllerCell();
+        int minX = Integer.MAX_VALUE, minZ = Integer.MAX_VALUE;
+        for (int y = 0; y < schema.height(); y++) {
+            for (int r = 0; r < schema.depth(); r++) {
+                for (int x = 0; x < schema.width(); x++) {
+                    BlockPos at = schema.worldPos(BlockPos.ZERO, facing, x, y, r);
+                    minX = Math.min(minX, at.getX());
+                    minZ = Math.min(minZ, at.getZ());
+                }
+            }
+        }
+        BlockPos controller = corner.offset(-minX, c[1], -minZ);
+        for (int y = 0; y < schema.height(); y++) {
+            for (int r = 0; r < schema.depth(); r++) {
+                for (int x = 0; x < schema.width(); x++) {
+                    com.projectrebirth.multiblock.MultiblockSchema.Cell cell = schema.cell(y, r, x);
+                    if (cell == null || cell.zone()) {
+                        continue;
+                    }
+                    net.minecraft.world.level.block.state.BlockState state = cell.display();
+                    if (cell.controller()) {
+                        state = state.setValue(net.minecraft.world.level.block.HorizontalDirectionalBlock.FACING, facing);
+                    }
+                    level.setBlock(schema.worldPos(controller, facing, x, y, r), state, 3);
+                }
+            }
+        }
+        var storage = (com.projectrebirth.logistics.StorageControllerBlockEntity) level.getBlockEntity(controller);
+        storage.setOwner(player(ctx).getUUID());
+        var check = storage.revalidate();
+        ctx.getSource().sendSuccess(() -> Component.literal("storage at " + controller.toShortString() + ", whole " + (check != null && check.complete())), false);
         return 1;
     }
 }

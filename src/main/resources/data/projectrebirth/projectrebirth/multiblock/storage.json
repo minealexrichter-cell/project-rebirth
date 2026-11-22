@@ -44,5 +44,13 @@
     "G": {
       "port": "cargo"
     }
+  },
+  "shell": {
+    "hide": "RF",
+    "walls": "RF",
+    "wall": "projectrebirth:block/storage_wall",
+    "glass": "projectrebirth:block/workshop_glass",
+    "post": "projectrebirth:block/workshop_post",
+    "front": "wall"
   }
 }

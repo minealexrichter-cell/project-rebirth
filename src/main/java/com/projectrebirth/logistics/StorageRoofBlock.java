@@ -21,9 +21,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * 1.8.0: a roof panel of the storage (carbon). Loose, or while the storage is not whole: a full flat block. Over a whole storage
- * the controller ({@link StorageControllerBlockEntity}) sets its part and facing and it becomes the hip roof: an edge slopes down
- * toward its facing, a corner down toward its facing and the side left of it (its corner cut), the middle stays flat. Its shape
- * follows the slope in four steps, so one walks up the roof as up stairs.
+ * the controller ({@link StorageControllerBlockEntity}) sets its part and facing; the panel itself is then not drawn — the
+ * storage's renderer draws one smooth hip roof over all of them (StorageRenderer) — and its shape follows the slope in four steps
+ * (an edge down toward its facing, a corner down toward its facing and the side left of it), so one walks up the roof as up
+ * stairs.
  */
 public class StorageRoofBlock extends Block {
     public enum Part implements StringRepresentable {
@@ -94,6 +95,11 @@ public class StorageRoofBlock extends Block {
             case CORNER -> CORNERS.get(state.getValue(FACING));
             default -> Shapes.block();
         };
+    }
+
+    @Override
+    protected net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
+        return state.getValue(FrameBlock.FORMED) ? net.minecraft.world.level.block.RenderShape.INVISIBLE : net.minecraft.world.level.block.RenderShape.MODEL;
     }
 
     @Override

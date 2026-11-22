@@ -32,7 +32,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 1.8.0: the look of a whole storage. Client only.
  * <ul>
- * <li>its hall (HallShell): corrugated walls with windows, a glass front, the plates as the roof;</li>
+ * <li>its hall (HallShell): corrugated walls with windows, a glass front; over it a smooth hip roof of carbon (its panels are
+ * invisible while the storage is whole);</li>
  * <li>on the racks (3D shelves) a few of what lies in each one's share of the store, standing on the shelves facing the aisle;</li>
  * <li>a gantry manipulator under the roof over the aisle: a carriage runs along a rail, lowers its arm, reaches into a rack,
  * takes something, carries it to another rack and puts it there. Only a show: the store does not change; the moves come from the
@@ -66,6 +67,7 @@ public class StorageRenderer implements BlockEntityRenderer<StorageControllerBlo
         BlockPos at = storage.getBlockPos();
         Direction facing = storage.facing();
         HallShell.render(schema, at, facing, pose, buffers);
+        roof(schema, at, facing, pose, buffers, level);
         List<Rack> racks = racks(schema);
         List<ItemStack> shelves = storage.shelves();
         for (int k = 0; k < racks.size(); k++) {
@@ -227,6 +229,99 @@ public class StorageRenderer implements BlockEntityRenderer<StorageControllerBlo
                 drawItem(schema, at, facing, pose, buffers, level, shown, x, armY - 0.14, end, side.toAisle(), 0.28f);
             }
         }
+    }
+
+    // ------------------------------------------------------------------ the roof
+
+    private static final net.minecraft.resources.ResourceLocation ROOF = ProjectRebirth.id("block/storage_roof");
+
+    /** The height of the hip roof over a point of the plan (0 at the eaves, 1 over the flat middle), in cells. */
+    private static double roofHeight(double x, double z, int w, int d) {
+        return Math.min(1.0, Math.min(Math.min(x, w - x), Math.min(z, d - z)));
+    }
+
+    /**
+     * The smooth hip roof over the top layer of the plan (its panels are invisible while the storage is whole): each cell two
+     * triangles split along the diagonal from its lowest to its highest corner — the corners hips, the sides slopes of 45 degrees,
+     * the middle flat — one texture tile a cell; under it a flat ceiling seen from inside.
+     */
+    private static void roof(MultiblockSchema schema, BlockPos at, Direction facing, PoseStack pose, MultiBufferSource buffers, Level level) {
+        int w = schema.width(), d = schema.depth(), top = schema.height() - 1;
+        TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(InventoryMenu.BLOCK_ATLAS).apply(ROOF);
+        VertexConsumer out = buffers.getBuffer(Sheets.solidBlockSheet());
+        PoseStack.Pose last = pose.last();
+        for (int r = 0; r < d; r++) {
+            for (int c = 0; c < w; c++) {
+                BlockPos cell = BlockPos.containing(schema.worldPoint(at, facing, c + 0.5, top + 0.5, r + 0.5));
+                int light = LevelRenderer.getLightColor(level, cell.above());
+                double[][] corners = {{c, r}, {c + 1, r}, {c + 1, r + 1}, {c, r + 1}};
+                double[] h = new double[4];
+                int low = 0, high = 0;
+                for (int i = 0; i < 4; i++) {
+                    h[i] = roofHeight(corners[i][0], corners[i][1], w, d);
+                    if (h[i] < h[low]) {
+                        low = i;
+                    }
+                    if (h[i] > h[high]) {
+                        high = i;
+                    }
+                }
+                // the diagonal from the lowest corner to the highest (opposite corners, or any when the cell is flat or plain)
+                int a = (high - low + 4) % 4 == 2 ? low : 0;
+                int b = (a + 2) % 4;
+                for (int side : new int[] {1, 3}) {
+                    int m = (a + side) % 4;
+                    triangle(schema, at, facing, out, last, sprite, light, top, c, r, corners, h, a, m, b);
+                }
+                // the ceiling under it, seen from inside the hall
+                BlockPos below = BlockPos.containing(schema.worldPoint(at, facing, c + 0.5, top - 0.5, r + 0.5));
+                int inside = LevelRenderer.getLightColor(level, below);
+                Vec3 p0 = point(schema, at, facing, c, top, r), p1 = point(schema, at, facing, c + 1, top, r),
+                        p2 = point(schema, at, facing, c + 1, top, r + 1), p3 = point(schema, at, facing, c, top, r + 1);
+                quad(out, last, sprite, inside, p0, 0, 0, p1, 1, 0, p2, 1, 1, p3, 0, 1, 0, -1, 0);
+            }
+        }
+    }
+
+    private static Vec3 point(MultiblockSchema schema, BlockPos at, Direction facing, double x, double y, double z) {
+        return schema.worldPoint(at, facing, x, y, z).subtract(at.getX(), at.getY(), at.getZ());
+    }
+
+    /** One triangle of a roof cell, wound so that it faces up (as the up faces of blocks), drawn as a quad with a vertex twice. */
+    private static void triangle(MultiblockSchema schema, BlockPos at, Direction facing, VertexConsumer out, PoseStack.Pose last,
+                                 TextureAtlasSprite sprite, int light, int top, int c, int r, double[][] corners, double[] h, int i0, int i1, int i2) {
+        // seen from above, the up face of a block runs (x0, z1), (x1, z1), (x1, z0): a negative turn in (x, z)
+        double turn = (corners[i1][0] - corners[i0][0]) * (corners[i2][1] - corners[i0][1])
+                - (corners[i1][1] - corners[i0][1]) * (corners[i2][0] - corners[i0][0]);
+        if (turn > 0) {
+            int swap = i1;
+            i1 = i2;
+            i2 = swap;
+        }
+        Vec3 p0 = point(schema, at, facing, corners[i0][0], top + h[i0], corners[i0][1]);
+        Vec3 p1 = point(schema, at, facing, corners[i1][0], top + h[i1], corners[i1][1]);
+        Vec3 p2 = point(schema, at, facing, corners[i2][0], top + h[i2], corners[i2][1]);
+        Vec3 normal = p1.subtract(p0).cross(p2.subtract(p0)).normalize();
+        if (normal.y < 0) {
+            normal = normal.scale(-1);
+        }
+        quad(out, last, sprite, light, p0, (float) (corners[i0][0] - c), (float) (corners[i0][1] - r), p1, (float) (corners[i1][0] - c),
+                (float) (corners[i1][1] - r), p2, (float) (corners[i2][0] - c), (float) (corners[i2][1] - r), p2, (float) (corners[i2][0] - c),
+                (float) (corners[i2][1] - r), (float) normal.x, (float) normal.y, (float) normal.z);
+    }
+
+    private static void quad(VertexConsumer out, PoseStack.Pose last, TextureAtlasSprite sprite, int light, Vec3 a, float au, float av, Vec3 b,
+                             float bu, float bv, Vec3 c, float cu, float cv, Vec3 d, float du, float dv, float nx, float ny, float nz) {
+        vertex(out, last, sprite, light, a, au, av, nx, ny, nz);
+        vertex(out, last, sprite, light, b, bu, bv, nx, ny, nz);
+        vertex(out, last, sprite, light, c, cu, cv, nx, ny, nz);
+        vertex(out, last, sprite, light, d, du, dv, nx, ny, nz);
+    }
+
+    private static void vertex(VertexConsumer out, PoseStack.Pose last, TextureAtlasSprite sprite, int light, Vec3 p, float u, float v,
+                               float nx, float ny, float nz) {
+        out.addVertex(last.pose(), (float) p.x, (float) p.y, (float) p.z).setColor(255, 255, 255, 255)
+                .setUv(sprite.getU(u), sprite.getV(v)).setOverlay(OverlayTexture.NO_OVERLAY).setLight(light).setNormal(last, nx, ny, nz);
     }
 
     @Override

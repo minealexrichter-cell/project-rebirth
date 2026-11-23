@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "projectrebirth:block/mind_floodlight",
+    "top": "projectrebirth:block/mind_plating",
+    "bottom": "projectrebirth:block/mind_plating"
+  }
+}

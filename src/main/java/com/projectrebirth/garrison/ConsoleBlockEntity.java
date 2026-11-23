@@ -637,6 +637,10 @@ public class ConsoleBlockEntity extends BlockEntity {
                 out.add(new ConsoleView.Site(2, pos.getX(), pos.getY(), pos.getZ()));
             }
         }
+        // 1.9.0, block F: the nodes of the machine mind (6 + stage - 1)
+        for (var node : com.projectrebirth.machinemind.MindNodes.get(server.getServer()).near(server, worldPosition.getX(), worldPosition.getZ(), range)) {
+            out.add(new ConsoleView.Site(5 + node.stage(), node.pos().getX(), node.pos().getY(), node.pos().getZ()));
+        }
         WorkSites work = WorkSites.get(server.getServer());
         for (UUID machine : machines.keySet()) {
             WorkSites.Site site = work.of(machine);

@@ -244,6 +244,20 @@ root
 | `drowner` | `idle`, `walk`, `swim`, `attack` | 1.9.0: в воде — `swim` (`root` повёрнут на 80°), `weed_1..2` |
 | `mutated_chicken` | `idle`, `walk`, `attack` | 1.9.0: `body` > `neck` > `head`, `second_head`; крылья, ноги, `tumor_1`; 64×64 |
 
+## Машинный разум (1.9.0, блок F)
+
+GeckoLib-блоки (`geo/block`, `textures/block`, свечение `_glowmask`, проверка «красное или белое»), анимации `animation.mind.idle` и `animation.mind.work`; начало координат — середина низа.
+
+| Модель | Размер, px | Кости |
+|---|---|---|
+| `mind_computer_1` (стадии I–II) | 16×32 | `core`, `shell`, `cable_1..2` |
+| `mind_computer_2` (III–IV) | 48×48 | `core`, `ring_1..2`, `mast` |
+| `mind_computer_3` (V) | 48×64 | `brain`, `blade_1..4`, `eye_1..3` |
+| `mind_factory_line` | 48×32 | `belt`, `part`, `press`, `arm_l` > `_2` > `_3`, `arm_r` так же |
+| `mind_foundry` | 48×48 | `melt`, `hoist` |
+| `mind_hangar` | 80×64 | `door_l`, `door_r`, `crane` |
+| `mind_drone` (сущность) | 64×64 текстура | `body`, `rotor_1..4`, `arm` > `finger_l/r`; `fly`, `work` |
+
 ## Странники (1.9.0, блок E)
 
 | Сущность | Модель | Примечания |

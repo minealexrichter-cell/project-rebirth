@@ -4449,5 +4449,168 @@
         };
     })();
 
+    // ------------------------------------------------------------------ the machine mind (1.9.0, block F)
+    // Alien to the rest of the mod: near-black metal in slabs and blades, no hazard stripes, no yellow; thin lines of red light and
+    // white points (they glow: glowmask by derive_textures.js). The modules are GeckoLib blocks larger than a block: the computer in
+    // three looks (a rack 16x32, a server hall 48x48, the brain 48x64), the assembly line 48x32, the foundry 48x48, the hangar 80x64.
+    (() => {
+        const R2 = v => Math.round(v * 100) / 100;
+        const loopOf = (length, fn) => looped(length, STEP_TIME, fn);
+        const sin = t => Math.sin(2 * Math.PI * t);
+        const DK = '#24272c', MD = '#383d45', LT = '#565d67', BK = '#14161a', RED = '#ff2a1f', WHT = '#eaf4ff', HOT = '#ff5a2a';
+        const M = (c, more) => Object.assign({c, n: 0.07}, more || {});
+        /** A slab with seams along its sides. */
+        const seams = (len, h, step) => Array.from({length: Math.floor(h / step)}, (_, i) => [0, (i + 1) * step, len, 1, BK]);
+        /** A line of red light with white points at its ends. */
+        const line = (x, y, w, h) => [[x, y, w, h, RED], [x, y, 1, 1, WHT]];
+        const glow = c => ({c, n: 0.02, edge: false});
+        const spin = length => ({r: loopOf(length, t => [0, R2(360 * t), 0])});
+        const turn = length => ({r: {'0.000': [0, 0, 0], [length.toFixed(3)]: [0, 360, 0]}});
+        const block = (seed, res, bones, idle, work) => ({res, seed, block: true, noCoplanarFaces: true, separateFaces: true, bones, animations: {
+            'animation.mind.idle': idle, 'animation.mind.work': work || idle}});
+        const root = cubes => ({name: 'root', pivot: [0, 0, 0], cubes});
+
+        // ---------------- I and II: a rack with its core in the open
+        SPECS.mind_computer_1 = block(2001, 128, [
+            root([
+                C([-8, 0, -8], [16, 3, 16], M(DK, {sd: [[1, 1, 14, 1, BK]], tp: [[1, 1, 14, 14, MD]]})),
+                C([-6, 3, -6], [12, 11, 12], M(MD, {f: [...seams(12, 11, 3), ...line(2, 1, 8, 1), ...line(2, 7, 5, 1), [9, 7, 1, 1, WHT], [9, 10, 1, 1, RED]],
+                    sd: [...seams(12, 11, 2), ...line(1, 5, 1, 4)], k: [[2, 2, 8, 7, BK], [3, 3, 1, 5, LT], [6, 3, 1, 5, LT], [8, 3, 1, 5, LT]]})),
+                C([-7, 14, -7], [14, 2, 14], M(DK, {sd: [[0, 1, 14, 1, RED]], tp: [[4, 4, 6, 6, BK]]})),
+                ...[[-7, -7], [5, -7], [-7, 5], [5, 5]].map(([x, z]) => C([x, 16, z], [2, 11, 2], M(DK, {sd: [[0, 2, 2, 1, LT]]}))),
+                C([-8, 27, -8], [16, 3, 16], M(MD, {sd: [...line(3, 1, 10, 1)], bt: [[5, 5, 6, 6, BK]]})),
+                C([-5, 30, -5], [10, 2, 10], M(DK, {tp: [[2, 2, 6, 6, BK], [4, 4, 2, 2, RED]]}))]),
+            {name: 'core', parent: 'root', pivot: [0, 21.5, 0], cubes: [C([-2.5, 19, -2.5], [5, 5, 5], M(RED, {n: 0.1, edge: false, f: [[2, 2, 1, 1, WHT]], sd: [[2, 2, 1, 1, WHT]], k: [[2, 2, 1, 1, WHT]]}))]},
+            {name: 'shell', parent: 'root', pivot: [0, 21.5, 0], cubes: [
+                C([-4.5, 18, -0.5], [1, 7, 1], M(LT, {edge: false})), C([3.5, 18, -0.5], [1, 7, 1], M(LT, {edge: false})),
+                C([-0.5, 18, -4.5], [1, 7, 1], M(LT, {edge: false})), C([-0.5, 18, 3.5], [1, 7, 1], M(LT, {edge: false}))]},
+            {name: 'cable_1', parent: 'root', pivot: [6, 14, 6.5], cubes: [C([6.5, 1, 5.5], [1, 14, 1], M(BK, {edge: false}))]},
+            {name: 'cable_2', parent: 'root', pivot: [-6, 14, 6.5], cubes: [C([-7.5, 1, 4.5], [1, 14, 1], M(BK, {edge: false}))]}
+        ], {length: 4, loop: 'loop', bones: {core: {r: {'0.000': [0, 0, 0], '4.000': [0, 360, 0]}, p: loopOf(4, t => [0, R2(0.6 * sin(t)), 0])},
+            shell: {r: {'0.000': [0, 0, 0], '4.000': [0, -360, 0]}}}});
+
+        // ---------------- III and IV: a hall of racks about a column
+        const rack = (x, z) => C([x, 4, z], [12, 30, 12], M(MD, {f: [...seams(12, 30, 5), ...line(2, 2, 8, 1), ...line(2, 12, 8, 1), ...line(2, 22, 4, 1), [9, 22, 1, 1, WHT]],
+            sd: [...seams(12, 30, 3), ...line(5, 6, 1, 16)], k: [...seams(12, 30, 5), ...line(2, 7, 8, 1), ...line(2, 17, 8, 1)], tp: [[3, 3, 6, 6, BK]]}));
+        SPECS.mind_computer_2 = block(2002, 256, [
+            root([
+                C([-24, 0, -24], [48, 4, 48], M(DK, {sd: [...line(6, 2, 36, 1)], tp: [[4, 4, 40, 40, MD], [22, 4, 4, 40, BK], [4, 22, 40, 4, BK]]})),
+                rack(-22, -22), rack(10, -22), rack(-22, 10), rack(10, 10),
+                C([-7, 4, -7], [14, 8, 14], M(DK, {sd: [...line(2, 4, 10, 1)], tp: [[3, 3, 8, 8, BK]]})),
+                C([-7, 34, -7], [14, 5, 14], M(DK, {sd: [...line(2, 2, 10, 1)], bt: [[3, 3, 8, 8, BK]]})),
+                ...[[-6, -6], [4, -6], [-6, 4], [4, 4]].map(([x, z]) => C([x, 12, z], [2, 22, 2], M(LT, {sd: [[0, 6, 2, 1, BK], [0, 15, 2, 1, BK]]}))),
+                C([-20, 36, -3], [40, 3, 6], M(MD, {sd: seams(40, 3, 2)})), C([-3, 39, -20], [6, 3, 40], M(MD, {sd: seams(40, 3, 2)})),
+                ...[[-18, -18], [14, -18], [-18, 14], [14, 14]].map(([x, z]) => C([x, 34, z], [4, 3, 4], M(DK, {tp: [[1, 1, 2, 2, RED]]})))]),
+            {name: 'core', parent: 'root', pivot: [0, 23, 0], cubes: [C([-3.5, 14, -3.5], [7, 18, 7], M(RED, {n: 0.12, edge: false, sd: [[3, 2, 1, 14, WHT]], f: [[3, 2, 1, 14, WHT]], k: [[3, 2, 1, 14, WHT]]}))]},
+            {name: 'ring_1', parent: 'root', pivot: [0, 18, 0], cubes: [C([-9, 17, -9], [18, 2, 2], M(LT)), C([-9, 17, 7], [18, 2, 2], M(LT)), C([-9, 17, -7], [2, 2, 14], M(LT)), C([7, 17, -7], [2, 2, 14], M(LT))]},
+            {name: 'ring_2', parent: 'root', pivot: [0, 28, 0], cubes: [C([-9, 27, -9], [18, 2, 2], M(LT)), C([-9, 27, 7], [18, 2, 2], M(LT)), C([-9, 27, -7], [2, 2, 14], M(LT)), C([7, 27, -7], [2, 2, 14], M(LT))]},
+            {name: 'mast', parent: 'root', pivot: [0, 42, 0], cubes: [C([-1, 42, -1], [2, 5, 2], M(DK)), C([-5, 45, -0.5], [10, 1, 1], M(LT, {edge: false}))]}
+        ], {length: 6, loop: 'loop', bones: {core: {r: {'0.000': [0, 0, 0], '6.000': [0, 360, 0]}}, ring_1: {r: {'0.000': [0, 0, 0], '6.000': [0, 360, 0]}, p: loopOf(6, t => [0, R2(1.5 * sin(t)), 0])},
+            ring_2: {r: {'0.000': [0, 0, 0], '6.000': [0, -360, 0]}, p: loopOf(6, t => [0, R2(1.5 * sin(t + 0.5)), 0])}, mast: {r: {'0.000': [0, 0, 0], '6.000': [0, 360, 0]}}}});
+
+        // ---------------- V: the brain, hung in a cradle of blades over its cables
+        const lobe = (o, s) => C(o, s, M('#4a3a40', {n: 0.12, f: [[2, 2, s[0] - 4, 1, BK], [1, 5, s[0] - 3, 1, BK], [3, 4, 1, 1, RED], [s[0] - 4, 7, 1, 1, RED]], k: [[2, 3, s[0] - 4, 1, BK], [4, 6, 1, 1, RED]],
+            sd: [[2, 2, s[2] - 4, 1, BK], [1, 6, s[2] - 3, 1, BK], [5, 4, 1, 1, RED]], tp: [[2, 2, 1, s[2] - 4, BK], [s[0] - 4, 3, 1, s[2] - 6, BK], [5, 5, 2, 2, RED]]}));
+        const blade = (name, x, z, dx, dz) => ({name, parent: 'root', pivot: [x, 4, z], cubes: [
+            C([x - (dx ? 1 : 4), 4, z - (dx ? 4 : 1)], dx ? [3, 38, 8] : [8, 38, 3], M(DK, {sd: [[1, 4, 1, 28, RED], ...seams(8, 38, 6)], f: [[1, 4, 1, 28, RED]], k: [[1, 4, 1, 28, RED]]})),
+            C([dx ? x - dx * 7 - 2 : x - 3, 40, dz ? z - dz * 7 - 2 : z - 3], dx ? [12, 4, 6] : [6, 4, 12], M(MD, {sd: [[1, 1, 4, 1, RED]]}))]});
+        SPECS.mind_computer_3 = block(2003, 256, [
+            root([
+                C([-24, 0, -24], [48, 4, 48], M(BK, {sd: [...line(4, 1, 40, 1)], tp: [[6, 6, 36, 36, DK], [10, 10, 28, 28, MD], [23, 4, 2, 40, RED], [4, 23, 40, 2, RED]]})),
+                C([-8, 4, -8], [16, 6, 16], M(DK, {sd: [...line(2, 2, 12, 1)]})),
+                ...[[-12, -3], [9, -3], [-3, -12], [-3, 9]].map(([x, z]) => C([x, 4, z], [3, 3, 3], M(LT))),
+                ...[[-5, -5], [2, -5], [-5, 2], [2, 2]].map(([x, z]) => C([x, 10, z], [3, 14, 3], M(BK, {sd: [[1, 3, 1, 8, RED]]})))]),
+            {name: 'brain', parent: 'root', pivot: [0, 32, 0], cubes: [
+                lobe([-13, 24, -14], [12, 17, 28]), lobe([1, 24, -14], [12, 17, 28]), lobe([-9, 41, -11], [8, 4, 22]), lobe([1, 41, -11], [8, 4, 22]),
+                C([-1, 26, -12], [2, 17, 24], M(RED, {n: 0.1, edge: false})), lobe([-10, 20, -10], [20, 4, 20])]},
+            blade('blade_1', -21, 0, -1, 0), blade('blade_2', 20, 0, 1, 0), blade('blade_3', 0, -21, 0, -1), blade('blade_4', 0, 20, 0, 1),
+            {name: 'eye_1', parent: 'root', pivot: [-6, 46, 0], cubes: [C([-7, 45, -1], [2, 12, 2], M(DK)), C([-8.5, 57, -2.5], [5, 5, 5], M(MD, {f: [[1, 1, 3, 3, RED], [2, 2, 1, 1, WHT]]}))]},
+            {name: 'eye_2', parent: 'root', pivot: [6, 46, 3], cubes: [C([5, 45, 2], [2, 9, 2], M(DK)), C([3.5, 54, 0.5], [5, 5, 5], M(MD, {f: [[1, 1, 3, 3, RED], [2, 2, 1, 1, WHT]]}))]},
+            {name: 'eye_3', parent: 'root', pivot: [0, 46, -6], cubes: [C([-1, 45, -7], [2, 14, 2], M(DK)), C([-2.5, 59, -8.5], [5, 5, 5], M(MD, {f: [[1, 1, 3, 3, RED], [2, 2, 1, 1, WHT]]}))]}
+        ], {length: 5, loop: 'loop', bones: {brain: {p: loopOf(5, t => [0, R2(0.8 * sin(t)), 0]), r: loopOf(5, t => [R2(1.2 * sin(t)), R2(2 * sin(t + 0.25)), 0])},
+            eye_1: {r: loopOf(5, t => [R2(6 * sin(t)), R2(60 * sin(t + 0.1)), 0])}, eye_2: {r: loopOf(5, t => [0, R2(-80 * sin(t)), R2(5 * sin(t))])},
+            eye_3: {r: loopOf(5, t => [R2(4 * sin(t + 0.3)), R2(90 * sin(t + 0.6)), 0])}}});
+
+        // ---------------- the assembly line: a belt through a portal, two arms over it
+        const arm = (name, x) => [
+            {name: name, parent: 'root', pivot: [x, 12, 0], cubes: [C([x - 3, 10, -3], [6, 6, 6], M(MD, {sd: [[2, 2, 2, 2, RED]]})), C([x - 1.5, 15, -1.5], [3, 12, 3], M(DK, {sd: [[1, 2, 1, 8, LT]]}))]},
+            {name: name + '_2', parent: name, pivot: [x, 27, 0], cubes: [C([x - 2, 25, -2], [4, 4, 4], M(LT)), C([x + (x < 0 ? 1 : -11), 26, -1], [10, 2, 2], M(DK))]},
+            {name: name + '_3', parent: name + '_2', pivot: [x + (x < 0 ? 11 : -11), 27, 0], cubes: [C([x + (x < 0 ? 10 : -12), 18, -1], [2, 8, 2], M(LT)), C([x + (x < 0 ? 10.5 : -11.5), 16.5, -0.5], [1, 1, 1], glow(RED))]}];
+        SPECS.mind_factory_line = block(2004, 256, [
+            root([
+                C([-24, 0, -24], [48, 4, 48], M(DK, {sd: [...line(4, 2, 40, 1)], tp: [[2, 2, 44, 44, MD], [0, 22, 48, 1, BK]]})),
+                C([-9, 4, -23], [3, 6, 46], M(MD, {sd: seams(46, 6, 3)})), C([6, 4, -23], [3, 6, 46], M(MD, {sd: seams(46, 6, 3)})),
+                C([-20, 4, 12], [6, 26, 6], M(MD, {f: [[2, 4, 1, 18, RED]], sd: seams(6, 26, 4)})), C([14, 4, 12], [6, 26, 6], M(MD, {f: [[2, 4, 1, 18, RED]], sd: seams(6, 26, 4)})),
+                C([-21, 28, 11], [42, 4, 8], M(DK, {f: [...line(6, 1, 30, 1)], sd: [[2, 1, 4, 1, RED]]})),
+                C([-23, 4, -22], [8, 14, 10], M(DK, {f: [[1, 2, 6, 1, RED], [1, 6, 6, 1, LT], [1, 9, 6, 1, LT]], sd: seams(10, 14, 4), tp: [[2, 2, 4, 6, BK]]})),
+                C([15, 4, -22], [8, 14, 10], M(DK, {f: [[1, 2, 6, 1, RED], [1, 6, 6, 1, LT], [1, 9, 6, 1, LT]], sd: seams(10, 14, 4), tp: [[2, 2, 4, 6, BK]]}))]),
+            {name: 'belt', parent: 'root', pivot: [0, 8, 0], cubes: [C([-6, 6, -22], [12, 2, 44], M(BK, {tp: Array.from({length: 11}, (_, i) => [0, i * 4, 12, 1, LT])}))]},
+            {name: 'part', parent: 'root', pivot: [0, 8, -12], cubes: [C([-4, 8, -16], [8, 5, 8], M(LT, {tp: [[2, 2, 4, 4, DK]], sd: [[2, 2, 3, 1, RED]]}))]},
+            {name: 'press', parent: 'root', pivot: [0, 28, 15], cubes: [C([-2, 20, 13], [4, 8, 4], M(LT)), C([-5, 17, 10.5], [10, 3, 9], M(MD, {sd: [[1, 1, 7, 1, RED]]}))]},
+            ...arm('arm_l', -15), ...arm('arm_r', 15)
+        ], {length: 4, loop: 'loop', bones: {arm_l_3: {r: loopOf(4, t => [0, 0, R2(3 * sin(t))])}, arm_r_3: {r: loopOf(4, t => [0, 0, R2(3 * sin(t + 0.5))])}}},
+        {length: 2.4, loop: 'loop', bones: {
+            part: {p: loopOf(2.4, t => [0, 0, R2(-4 + 30 * t)])},
+            press: {p: loopOf(2.4, t => [0, R2(t > 0.7 && t < 0.85 ? -4 : 0), 0])},
+            arm_l: {r: loopOf(2.4, t => [0, R2(25 * sin(t)), 0])}, arm_r: {r: loopOf(2.4, t => [0, R2(-25 * sin(t + 0.2)), 0])},
+            arm_l_2: {r: loopOf(2.4, t => [0, 0, R2(8 * sin(2 * t))])}, arm_r_2: {r: loopOf(2.4, t => [0, 0, R2(-8 * sin(2 * t + 0.3))])},
+            arm_l_3: {r: loopOf(2.4, t => [R2(12 * sin(4 * t)), 0, 0])}, arm_r_3: {r: loopOf(2.4, t => [R2(12 * sin(4 * t + 0.4)), 0, 0])}}});
+
+        // ---------------- the foundry: a crucible between two stacks
+        SPECS.mind_foundry = block(2005, 256, [
+            root([
+                C([-24, 0, -24], [48, 4, 48], M(DK, {sd: [...line(4, 2, 40, 1)], tp: [[2, 2, 44, 44, MD]]})),
+                C([-13, 4, -13], [26, 4, 26], M(BK, {sd: [[2, 1, 22, 1, RED]]})),
+                C([-14, 8, -14], [3, 16, 28], M(MD, {sd: [...seams(28, 16, 4), [6, 6, 16, 1, RED]]})), C([11, 8, -14], [3, 16, 28], M(MD, {sd: [...seams(28, 16, 4), [6, 6, 16, 1, RED]]})),
+                C([-11, 8, -14], [22, 16, 3], M(MD, {f: [...seams(22, 16, 4), [4, 6, 14, 1, RED], [10, 11, 2, 4, HOT]]})), C([-11, 8, 11], [22, 16, 3], M(MD, {k: [...seams(22, 16, 4), [4, 6, 14, 1, RED]]})),
+                C([-22, 4, 14], [8, 38, 8], M(DK, {sd: seams(8, 38, 6), f: [[3, 6, 2, 24, RED]], tp: [[2, 2, 4, 4, HOT]]})),
+                C([14, 4, 14], [8, 32, 8], M(DK, {sd: seams(8, 32, 6), f: [[3, 6, 2, 20, RED]], tp: [[2, 2, 4, 4, HOT]]})),
+                C([-23, 42, 13], [10, 3, 10], M(MD, {tp: [[2, 2, 6, 6, HOT]]})), C([13, 36, 13], [10, 3, 10], M(MD, {tp: [[2, 2, 6, 6, HOT]]})),
+                C([-14, 12, 17], [28, 4, 4], M(LT, {sd: [[2, 1, 2, 2, DK], [12, 1, 2, 2, DK], [24, 1, 2, 2, DK]]})), C([-14, 22, 16.5], [28, 3, 3], M(LT)),
+                C([-22, 4, -20], [6, 10, 12], M(DK, {f: [[1, 2, 4, 1, RED]], sd: seams(12, 10, 3)})), C([16, 4, -20], [6, 10, 12], M(DK, {f: [[1, 2, 4, 1, RED]], sd: seams(12, 10, 3)})),
+                C([-2, 4, -21], [4, 5, 7], M(BK, {tp: [[1, 0, 2, 7, HOT]]}))]),
+            {name: 'melt', parent: 'root', pivot: [0, 18, 0], cubes: [C([-11, 17, -11], [22, 2, 22], M(HOT, {n: 0.25, edge: false, tp: [[3, 4, 5, 2, '#ffd0a0'], [12, 9, 6, 2, '#ffd0a0'], [6, 15, 4, 2, RED], [15, 3, 3, 3, RED]]}))]},
+            {name: 'hoist', parent: 'root', pivot: [0, 40, 0], cubes: [C([-12, 38, -2], [24, 3, 4], M(MD, {sd: seams(24, 3, 2)})), C([-1, 30, -1], [2, 8, 2], M(LT)), C([-3, 26, -3], [6, 4, 6], M(DK, {sd: [[2, 1, 2, 1, RED]]}))]}
+        ], {length: 4, loop: 'loop', bones: {melt: {p: loopOf(4, t => [0, R2(0.4 * sin(t)), 0])}}},
+        {length: 4, loop: 'loop', bones: {melt: {p: loopOf(4, t => [0, R2(0.8 * sin(2 * t)), 0])}, hoist: {p: loopOf(4, t => [0, R2(-2 + 2 * sin(t)), R2(6 * sin(t + 0.25))])}}});
+
+        // ---------------- the hangar of the heavy machines
+        SPECS.mind_hangar = block(2006, 512, [
+            root([
+                C([-40, 0, -40], [80, 3, 80], M(DK, {sd: [...line(8, 1, 64, 1)], tp: [[4, 4, 72, 72, MD], [38, 4, 4, 72, BK], [20, 8, 1, 64, RED], [59, 8, 1, 64, RED]]})),
+                C([-38, 3, -36], [5, 46, 74], M(MD, {sd: [...seams(74, 46, 8), ...line(8, 12, 58, 1), ...line(8, 30, 30, 1)]})), C([33, 3, -36], [5, 46, 74], M(MD, {sd: [...seams(74, 46, 8), ...line(8, 12, 58, 1), ...line(36, 30, 30, 1)]})),
+                C([-33, 3, 33], [66, 46, 5], M(MD, {k: [...seams(66, 46, 8), ...line(8, 20, 50, 1)], f: seams(66, 46, 8)})),
+                C([-33, 37, -36], [66, 12, 5], M(DK, {f: [...line(6, 3, 54, 1), [30, 6, 6, 3, RED], [32, 7, 2, 1, WHT]]})),
+                C([-36, 49, -38], [72, 4, 76], M(DK, {sd: seams(76, 4, 2), tp: [[8, 8, 56, 60, MD], [35, 4, 2, 68, BK], [12, 14, 48, 1, RED], [12, 60, 48, 1, RED]], bt: [[10, 10, 52, 1, LT]]})),
+                C([-22, 53, -26], [44, 6, 52], M(MD, {sd: [...seams(52, 6, 3)], tp: [[4, 6, 36, 2, BK], [4, 14, 36, 2, BK], [4, 22, 36, 2, BK], [4, 30, 36, 2, BK], [4, 38, 36, 2, BK]]})),
+                C([-30, 53, 12], [6, 11, 6], M(DK, {tp: [[1, 1, 4, 4, HOT]], sd: seams(6, 11, 4)})), C([24, 53, 12], [6, 9, 6], M(DK, {tp: [[1, 1, 4, 4, HOT]], sd: seams(6, 9, 4)}))]),
+            {name: 'door_l', parent: 'root', pivot: [-16, 3, -35], cubes: [C([-33, 3, -35], [33, 34, 3], M(LT, {f: [...seams(33, 34, 5), ...line(4, 8, 24, 1), ...line(10, 22, 18, 1), [32, 0, 1, 34, BK]]}))]},
+            {name: 'door_r', parent: 'root', pivot: [16, 3, -35], cubes: [C([0, 3, -35], [33, 34, 3], M(LT, {f: [...seams(33, 34, 5), ...line(4, 8, 24, 1), ...line(4, 22, 18, 1), [0, 0, 1, 34, BK]]}))]},
+            {name: 'crane', parent: 'root', pivot: [0, 46, 0], cubes: [C([-33, 43, -3], [66, 4, 6], M(LT, {sd: seams(66, 4, 2)})), C([-2, 30, -2], [4, 13, 4], M(DK)), C([-5, 26, -5], [10, 4, 10], M(MD, {sd: [[3, 1, 4, 1, RED]]}))]}
+        ], {length: 6, loop: 'loop', bones: {crane: {p: loopOf(6, t => [0, 0, R2(8 * sin(t))])}}},
+        {length: 6, loop: 'loop', bones: {crane: {p: loopOf(6, t => [0, 0, R2(22 * sin(t))])}, door_l: {p: loopOf(6, t => [R2(-14 * Math.max(0, sin(t))), 0, 0])}, door_r: {p: loopOf(6, t => [R2(14 * Math.max(0, sin(t))), 0, 0])}}});
+
+        // ---------------- the work drone
+        const rotor = (name, x, z) => ({name, parent: 'body', pivot: [x, 8.5, z], cubes: [C([x - 3, 8, z - 0.5], [6, 1, 1], M(LT, {edge: false}))]});
+        SPECS.mind_drone = {res: 64, seed: 2007, noCoplanarFaces: true, separateFaces: true, bones: [
+            root([]),
+            {name: 'body', parent: 'root', pivot: [0, 5, 0], cubes: [
+                C([-3, 3, -4], [6, 4, 8], M(DK, {f: [[1, 1, 4, 1, BK]], sd: [[1, 1, 5, 1, RED], [6, 1, 1, 1, WHT]], tp: [[1, 1, 4, 6, MD], [2, 3, 2, 1, RED]], k: [[1, 1, 4, 2, BK], [2, 2, 2, 1, RED]]})),
+                C([-2, 3.5, -5.5], [4, 3, 2], M(MD, {f: [[1, 1, 2, 1, RED]]})),
+                C([-7, 5, -3.5], [4, 1, 1], M(MD, {edge: false})), C([3, 5, -3.5], [4, 1, 1], M(MD, {edge: false})), C([-7, 5, 2.5], [4, 1, 1], M(MD, {edge: false})), C([3, 5, 2.5], [4, 1, 1], M(MD, {edge: false})),
+                ...[[-7, -4], [5, -4], [-7, 2], [5, 2]].map(([x, z]) => C([x, 5.5, z], [2, 2, 2], M(DK, {edge: false})))]},
+            rotor('rotor_1', -6, -3), rotor('rotor_2', 6, -3), rotor('rotor_3', -6, 3), rotor('rotor_4', 6, 3),
+            {name: 'arm', parent: 'body', pivot: [0, 3, -1], cubes: [C([-0.5, 0, -1.5], [1, 3, 1], M(LT, {edge: false}))]},
+            {name: 'finger_l', parent: 'arm', pivot: [-0.5, 0, -1], cubes: [C([-1.5, -2, -1.5], [1, 2, 1], M(MD, {edge: false}))]},
+            {name: 'finger_r', parent: 'arm', pivot: [0.5, 0, -1], cubes: [C([0.5, -2, -1.5], [1, 2, 1], M(MD, {edge: false}))]}
+        ], animations: (() => {
+            const rotors = Object.fromEntries([1, 2, 3, 4].map(i => ['rotor_' + i, {r: {'0.000': [0, 0, 0], '1.000': [0, i % 2 ? 1440 : -1440, 0]}}]));
+            return {
+                'animation.mind_drone.fly': {length: 1, loop: 'loop', bones: Object.assign({}, rotors, {body: {p: loopOf(1, t => [0, R2(0.5 * sin(t)), 0]), r: loopOf(1, t => [R2(4 + 2 * sin(t)), 0, R2(2 * sin(t + 0.25))])}})},
+                'animation.mind_drone.work': {length: 1, loop: 'loop', bones: Object.assign({}, rotors, {body: {r: loopOf(1, t => [R2(12 + 2 * sin(2 * t)), 0, 0])},
+                    arm: {r: loopOf(1, t => [R2(-20 + 12 * sin(2 * t)), R2(10 * sin(3 * t)), 0])}, finger_l: {r: loopOf(1, t => [0, 0, R2(-15 + 15 * sin(4 * t))])}, finger_r: {r: loopOf(1, t => [0, 0, R2(15 - 15 * sin(4 * t))])}})}};
+        })()};
+    })();
+
     window.RebirthModels = {build, save, SPECS, coplanarFaces, checkAll};
 })();

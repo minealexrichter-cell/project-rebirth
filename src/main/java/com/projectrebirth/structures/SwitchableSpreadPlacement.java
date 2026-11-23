@@ -47,7 +47,7 @@ public class SwitchableSpreadPlacement extends RandomSpreadStructurePlacement {
 
     @Override
     protected boolean isPlacementChunk(ChunkGeneratorStructureState state, int x, int z) {
-        return StructureSwitches.enabled(switchKey) && StructureSwitches.outsideSafeArea(x, z) && super.isPlacementChunk(state, x, z);
+        return StructureSwitches.enabled(switchKey) && StructureSwitches.outsideSafeArea(switchKey, x, z) && super.isPlacementChunk(state, x, z);
     }
 
     @Override

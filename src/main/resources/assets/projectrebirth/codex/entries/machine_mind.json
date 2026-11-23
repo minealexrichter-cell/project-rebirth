@@ -1,0 +1,31 @@
+{
+  "icon": "projectrebirth:mind_chip",
+  "x": -1,
+  "y": 4,
+  "parents": [
+    "wasteland_stages"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.machine_mind.p1"
+    },
+    {
+      "type": "entity",
+      "value": "projectrebirth:mind_drone",
+      "text": "codex.projectrebirth.machine_mind.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.machine_mind.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.machine_mind.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.machine_mind.p5"
+    }
+  ]
+}

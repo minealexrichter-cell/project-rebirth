@@ -1,0 +1,36 @@
+{
+  "icon": "projectrebirth:mind_computer",
+  "x": 1,
+  "y": 4,
+  "parents": [
+    "machine_mind"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mind_node.p1"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:mind_computer",
+      "text": "codex.projectrebirth.mind_node.p2"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:mind_factory_line",
+      "text": "codex.projectrebirth.mind_node.p3"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.mind_node.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mind_node.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mind_node.p6"
+    }
+  ]
+}

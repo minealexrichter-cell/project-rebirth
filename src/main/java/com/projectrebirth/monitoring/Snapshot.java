@@ -34,6 +34,8 @@ public record Snapshot(int centerX, int centerZ, int radius, byte[] radiation, b
     /** 1.6.0, block F: a radiation or toxin source block, and a ruin of the mod (the sensors mark them). */
     public static final int SOURCE = 3;
     public static final int STRUCTURE = 4;
+    /** 1.9.0, block F: a node of the machine mind; its name is the stage, 1 to 5. */
+    public static final int MIND = 5;
 
     /** A mark on the map: its kind, block coordinates, a name for a player. */
     public record Marker(int kind, int x, int z, String name) {
@@ -148,6 +150,15 @@ public record Snapshot(int centerX, int centerZ, int radius, byte[] radiation, b
             tox = Math.max(tox, (toxin[i] & 0xFF) / 10.0f);
         }
         return new float[] {rad, tox};
+    }
+
+    /** The living nodes of the machine mind in a square of chunks. */
+    public static List<Marker> mindNodes(ServerLevel level, int centerX, int centerZ, int radius) {
+        List<Marker> out = new ArrayList<>();
+        for (var node : com.projectrebirth.machinemind.MindNodes.get(level.getServer()).near(level, centerX * 16 + 8, centerZ * 16 + 8, radius * 16 + 8)) {
+            out.add(new Marker(MIND, node.pos().getX(), node.pos().getZ(), Integer.toString(node.stage())));
+        }
+        return out;
     }
 
     /** Without the players: what a printed map keeps. */

@@ -178,6 +178,9 @@ public class ProjectRebirthClient {
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.TOXIC_SPIT.get(), net.minecraft.client.renderer.entity.NoopRenderer::new);
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.BRUTE.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "brute", 0.9f, false));
         // 1.7.0, block B: the machine under assembly and the manipulators
+        event.registerBlockEntityRenderer(com.projectrebirth.machinemind.MindRegistry.MODULE_ENTITY.get(), c -> new com.projectrebirth.client.render.MindRenderers.Module<>(c));
+        event.registerBlockEntityRenderer(com.projectrebirth.machinemind.MindRegistry.COMPUTER_ENTITY.get(), c -> new com.projectrebirth.client.render.MindRenderers.Module<>(c));
+        event.registerEntityRenderer(com.projectrebirth.machinemind.MindRegistry.DRONE.get(), com.projectrebirth.client.render.MindRenderers.Drone::new);
         event.registerBlockEntityRenderer(com.projectrebirth.logistics.LogisticsRegistry.STORAGE_ENTITY.get(),
                 com.projectrebirth.client.logistics.StorageRenderer::new);
         event.registerBlockEntityRenderer(com.projectrebirth.multiblock.MultiblockRegistry.CONTROLLER_ENTITY.get(),

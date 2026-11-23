@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "projectrebirth:block/mind_computer_wreck"
+    },
+    "facing=east": {
+      "model": "projectrebirth:block/mind_computer_wreck",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "projectrebirth:block/mind_computer_wreck",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "projectrebirth:block/mind_computer_wreck",
+      "y": 270
+    }
+  }
+}

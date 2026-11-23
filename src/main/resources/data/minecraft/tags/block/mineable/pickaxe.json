@@ -83,6 +83,18 @@
     "projectrebirth:service_post_plate",
     "projectrebirth:storage_controller",
     "projectrebirth:storage_rack",
-    "projectrebirth:storage_roof"
+    "projectrebirth:storage_roof",
+    "projectrebirth:mind_computer",
+    "projectrebirth:mind_factory_line",
+    "projectrebirth:mind_foundry",
+    "projectrebirth:mind_hangar",
+    "projectrebirth:mind_part",
+    "projectrebirth:mind_computer_wreck",
+    "projectrebirth:mind_plating",
+    "projectrebirth:mind_cable",
+    "projectrebirth:mind_floodlight",
+    "projectrebirth:mind_generator",
+    "projectrebirth:mind_fence",
+    "projectrebirth:mind_gate"
   ]
 }

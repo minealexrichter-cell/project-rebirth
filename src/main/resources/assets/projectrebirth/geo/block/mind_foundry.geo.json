@@ -1,0 +1,56 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.mind_foundry",
+				"texture_width": 256,
+				"texture_height": 256,
+				"visible_bounds_width": 4,
+				"visible_bounds_height": 4,
+				"visible_bounds_offset": [0, 2, 0]
+			},
+			"bones": [
+				{
+					"name": "root",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-24, 0, -24], "size": [48, 4, 48], "uv": [0, 0]},
+						{"origin": [-13, 4, -13], "size": [26, 4, 26], "inflate": 0.1, "uv": [0, 52]},
+						{"origin": [-14, 8, -14], "size": [3, 16, 28], "uv": [192, 0]},
+						{"origin": [11, 8, -14], "size": [3, 16, 28], "uv": [192, 44]},
+						{"origin": [-11, 8, -14], "size": [22, 16, 3], "inflate": 0.1, "uv": [0, 82]},
+						{"origin": [-11, 8, 11], "size": [22, 16, 3], "inflate": 0.1, "uv": [50, 82]},
+						{"origin": [-22, 4, 14], "size": [8, 38, 8], "inflate": 0.1, "uv": [104, 76]},
+						{"origin": [14, 4, 14], "size": [8, 32, 8], "inflate": 0.1, "uv": [136, 76]},
+						{"origin": [-23, 42, 13], "size": [10, 3, 10], "uv": [0, 101]},
+						{"origin": [13, 36, 13], "size": [10, 3, 10], "uv": [40, 101]},
+						{"origin": [-14, 12, 17], "size": [28, 4, 4], "uv": [168, 110]},
+						{"origin": [-14, 22, 16.5], "size": [28, 3, 3], "uv": [136, 118]},
+						{"origin": [-22, 4, -20], "size": [6, 10, 12], "inflate": 0.1, "uv": [168, 88]},
+						{"origin": [16, 4, -20], "size": [6, 10, 12], "inflate": 0.1, "uv": [204, 88]},
+						{"origin": [-2, 4, -21], "size": [4, 5, 7], "inflate": 0.1, "uv": [168, 76]}
+					]
+				},
+				{
+					"name": "melt",
+					"parent": "root",
+					"pivot": [0, 18, 0],
+					"cubes": [
+						{"origin": [-11, 17, -11], "size": [22, 2, 22], "inflate": 0.2, "uv": [104, 52]}
+					]
+				},
+				{
+					"name": "hoist",
+					"parent": "root",
+					"pivot": [0, 40, 0],
+					"cubes": [
+						{"origin": [-12, 38, -2], "size": [24, 3, 4], "uv": [0, 114]},
+						{"origin": [-1, 30, -1], "size": [2, 8, 2], "inflate": 0.1, "uv": [240, 88]},
+						{"origin": [-3, 26, -3], "size": [6, 4, 6], "uv": [80, 101]}
+					]
+				}
+			]
+		}
+	]
+}

@@ -416,6 +416,34 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         text('REFERENCE\n\nRight-click a wanderer of a group that is not hostile to you: the trade of its head opens, 4 to 8 offers (filters, medicine, rounds, parts, materials; they buy iron, mutagen, chitin, glands, food). A click on an offer trades it, if you have the cost. Each new group has its own offers. What is offered is in the data (projectrebirth/wanderer_trades).',
             'СПРАВКА\n\nПКМ по страннику группы, которая не враждебна к вам: откроется торговля её главы, 4–8 предложений (фильтры, лекарства, патроны, детали, материалы; покупают железо, мутаген, хитин, железы, еду). Щелчок по предложению — обмен, если у вас есть нужное. У каждой новой группы свои предложения. Что предлагают — в данных (projectrebirth/wanderer_trades).')
     ]),
+    // 1.9.0, block F: the machine mind
+    entry('machine_mind', P + 'mind_chip', -1, 4, ['wasteland_stages'], 'The Machine Mind', 'Машинный разум', [
+        text('ARCHIVIST · THE MACHINE MIND\n\nThe nodes of CIRCUIT, the battle network of the Union, that came through the Silence. For forty years they slept and saved energy. Now they wake. CIRCUIT has no malice and one aim: to go on with the war. Everything that is not it is the enemy.',
+            'АРХИВАРИУС · МАШИННЫЙ РАЗУМ\n\nУцелевшие узлы «Контура», боевой сети Союза. Сорок лет они спали и берегли энергию. Теперь они просыпаются. У «Контура» нет злобы, и цель одна: продолжить войну. Противник — всё, что не он.'),
+        entity(P + 'mind_drone', 'A work drone: it builds, and flies from a fight.', 'Рабочий дрон: строит, а от боя улетает.'),
+        note('L.: Dark metal, red lines, no marking. If you see that, the node already sees you.', 'Л.: Тёмный металл, красные линии, никакой маркировки. Если ты это видишь — узел уже видит тебя.'),
+        text('REFERENCE\n\nA node may lie in new land no nearer than 1500 blocks from the middle of the world; up to 3 wake in a world. Drones fell natural trees and take stone and ore about the node, never on the land of a faction; they build over nothing a player put. The monitoring station, the sensors and the console show a node and its stage.',
+            'СПРАВКА\n\nУзел бывает в новых землях не ближе 1500 блоков от центра мира; в мире просыпается до 3. Дроны рубят естественные деревья и берут камень и руду вокруг узла, но не на территории фракций; поверх построек игрока не строят. Узел и его стадию показывают станция мониторинга, сенсоры и пульт.'),
+        text('Game rules: rebirthMachineMind (nodes wake and work), rebirthMachineMindMaxStage (the highest stage).', 'Правила игры: rebirthMachineMind (узлы просыпаются и работают), rebirthMachineMindMaxStage (высшая стадия).')
+    ]),
+    entry('mind_node', P + 'mind_computer', 1, 4, ['machine_mind'], 'Node and Factory', 'Узел и завод', [
+        text('ARCHIVIST · NODE AND FACTORY\n\nThe node is a central computer with a factory. The assembly line makes drones and light machines, the foundry and the hangar come with later stages. Without its computer a node is scrap.',
+            'АРХИВАРИУС · УЗЕЛ И ЗАВОД\n\nУзел — центральный компьютер с заводом. Сборочная линия делает дронов и лёгкие машины; литейный цех и ангар появляются на поздних стадиях. Без компьютера узел — лом.'),
+        item(P + 'mind_computer', 'The computer of a young node.', 'Компьютер молодого узла.'),
+        item(P + 'mind_factory_line', 'The assembly line.', 'Сборочная линия.'),
+        note('L.: Cut the generators and the line first. It buys time.', 'Л.: Сначала генераторы и линия. Это время.'),
+        text('REFERENCE\n\nThe computer has two scales: the structure, then the core. Bullets, explosions and tools (iron or better) hurt it and the modules; none breaks at once. Without damage for 30 seconds they mend. A destroyed module puts the next stage off by 20 minutes, a broken generator by 10, a drone by 3; drones build all of it again while they have resources.',
+            'СПРАВКА\n\nУ компьютера две шкалы: корпус, затем ядро. Пули, взрывы и инструменты (от железных) ранят его и модули; сразу ничего не ломается. Без урона 30 секунд они чинятся. Разрушенный модуль откладывает стадию на 20 минут, сломанный генератор — на 10, дрон — на 3; дроны отстраивают всё, пока есть ресурсы.'),
+        text('When the core is gone the machines of the node go dead and the base is a ruin to take apart. The computer leaves mind chips, processors and a damaged AI core by chance, more at later stages.',
+            'Когда ядро разрушено, машины узла отключаются, а база становится руинами для разборки. Из компьютера выпадают чипы разума, процессоры и иногда повреждённое ядро ИИ — чем позже стадия, тем больше.')
+    ]),
+    entry('mind_stages', P + 'mind_plating', 3, 4, ['mind_node'], 'Stages of the Mind', 'Стадии разума', [
+        text('ARCHIVIST · STAGES OF THE MIND\n\nI Awakening: the computer and one line. II Fortification: fence, floodlights, generators. III Expansion: foundry, walls, a second line. IV War: the hangar of heavy machines, towers. V Calamity: the brain and the whole base.',
+            'АРХИВАРИУС · СТАДИИ РАЗУМА\n\nI «Пробуждение»: компьютер и одна линия. II «Укрепление»: ограда, прожекторы, генераторы. III «Экспансия»: литейный цех, стены, вторая линия. IV «Война»: ангар тяжёлой техники, башни. V «Бедствие»: «мозг» и полная база.'),
+        note('L.: Every day you wait, it builds. Even when nobody is near.', 'Л.: Каждый день, что ты ждёшь, он строит. Даже когда рядом никого.'),
+        text('REFERENCE\n\nA stage takes 2.5 days of the world while the base stands and nobody hurts it, and is at most one above the stage of the Wasteland. Time without players counts: it is made up for when the place is loaded again.',
+            'СПРАВКА\n\nСтадия занимает 2,5 дня мира, пока база цела и её не трогают, и не выше стадии Пустоши больше чем на одну. Время без игроков идёт: оно навёрстывается, когда место снова загружено.')
+    ]),
     entry('contaminated_food', 'minecraft:carrot', -5, 2, ['human_body'], 'Contaminated Food', 'Заражённая еда', [
         text('ARCHIVIST · CONTAMINATED FOOD\n\nA harvest under the open sky takes in what falls with precipitation. The tissue of animals from contaminated zones holds remains of the agent. Eating such food raises the toxic load.',
             'АРХИВАРИУС · ЗАРАЖЁННАЯ ПИЩА\n\nУрожай под открытым небом впитывает то, что выпадает с осадками. Ткани животных из заражённых зон содержат остатки агента. Употребление такой пищи повышает токсическую нагрузку.'),

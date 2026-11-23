@@ -87,6 +87,7 @@ public class ProjectRebirth {
         com.projectrebirth.shelter.ShelterRegistry.register(modEventBus);
         com.projectrebirth.codex.CodexRegistry.register(modEventBus);
         com.projectrebirth.wanderers.WandererRegistry.register(modEventBus);
+        com.projectrebirth.machinemind.MindRegistry.register(modEventBus);
         Jetpack.register(modEventBus);
         ModSounds.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

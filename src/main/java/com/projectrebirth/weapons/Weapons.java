@@ -317,6 +317,9 @@ public final class Weapons {
             end = entryPoint(hit.getEntity(), start, end);
             ending = WeaponShotPayload.Ending.ENTITY;
             damageByTarget.merge(hit.getEntity(), damageAt(stats, start.distanceTo(end)), Float::sum);
+        } else if (block.getType() != HitResult.Type.MISS) {
+            // 1.9.0, block F: a module of the machine mind is hurt by bullets
+            com.projectrebirth.machinemind.MindDamage.hit(level, block.getBlockPos(), damageAt(stats, start.distanceTo(end)));
         }
         return new WeaponShotPayload.Pellet((float) end.x, (float) end.y, (float) end.z, ending);
     }

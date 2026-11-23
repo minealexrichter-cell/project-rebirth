@@ -102,6 +102,10 @@ public final class SnapshotMapSource implements UiMap.Source {
                     color = ContaminationMapView.SOURCE;
                     label = Component.translatable("screen.projectrebirth.contamination.legend.source");
                 }
+                case Snapshot.MIND -> {
+                    color = ContaminationMapView.MIND;
+                    label = ContaminationMapView.mindLabel(marker);
+                }
                 case Snapshot.STRUCTURE -> {
                     color = ContaminationMapView.RUIN;
                     label = Component.translatable("screen.projectrebirth.contamination.legend.ruin");

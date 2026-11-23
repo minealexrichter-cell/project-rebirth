@@ -48,7 +48,7 @@ public record ConsoleView(int energy, int capacity, boolean powered, boolean int
 
     /**
      * 1.8.0: a place on the map near the console: a service post (kind 0), a charging pad (1); block J: a storage (2), the mine of a
-     * work android (3), the forest (4) and the fields (5) it found.
+     * work android (3), the forest (4) and the fields (5) it found; 1.9.0: a node of the machine mind of stage I to V (6 to 10).
      */
     public record Site(int kind, int x, int y, int z) {
         public static final Codec<Site> CODEC = RecordCodecBuilder.create(i -> i.group(

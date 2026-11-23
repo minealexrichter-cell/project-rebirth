@@ -1,0 +1,15 @@
+{
+  "structures": [
+    {
+      "structure": "projectrebirth:mind_node",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "projectrebirth:switchable_spread",
+    "spacing": 100,
+    "separation": 60,
+    "salt": 190619,
+    "switch": "mind_node"
+  }
+}

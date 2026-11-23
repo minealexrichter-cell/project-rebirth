@@ -28,6 +28,14 @@ public final class ContaminationMapView {
     public static final int YOU = 0xFFFFAA00;
     public static final int SOURCE = 0xFFB04CFF;
     public static final int RUIN = 0xFFB8875A;
+    /** 1.9.0, block F: a node of the machine mind. */
+    public static final int MIND = 0xFFFF2A1F;
+
+    public static Component mindLabel(Snapshot.Marker marker) {
+        int stage = marker.name().matches("[1-5]") ? Integer.parseInt(marker.name()) : 1;
+        return Component.translatable("screen.projectrebirth.contamination.legend.mind", com.projectrebirth.machinemind.MindComputerBlockEntity.roman(stage),
+                com.projectrebirth.machinemind.MindComputerBlockEntity.stageName(stage));
+    }
     private static final int GROUND = 0xFF20262B;
     private static final int GAP = 0xFF101316;
     /** At this much the colour is full. */
@@ -84,6 +92,14 @@ public final class ContaminationMapView {
                 case Snapshot.STRUCTURE -> {
                     graphics.fill(mx - 2, my - 2, mx + 3, my + 3, 0xFF000000);
                     graphics.fill(mx - 1, my - 1, mx + 2, my + 2, RUIN);
+                }
+                case Snapshot.MIND -> {
+                    graphics.fill(mx - 3, my - 3, mx + 4, my + 4, 0xFF000000);
+                    graphics.fill(mx - 2, my - 2, mx + 3, my + 3, MIND);
+                    graphics.fill(mx, my, mx + 1, my + 1, 0xFFFFFFFF);
+                    if (Math.abs(mouseX - mx) <= 3 && Math.abs(mouseY - my) <= 3) {
+                        hover = mindLabel(marker);
+                    }
                 }
                 case Snapshot.SHELTER -> {
                     graphics.fill(mx - 2, my - 2, mx + 2, my + 2, 0xFF000000);

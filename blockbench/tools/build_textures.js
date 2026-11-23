@@ -4029,5 +4029,68 @@
         return 'logo written';
     }
 
+    // ---------------------------------------------------------------- the machine mind (1.9.0, block F): near-black metal, red light
+    {
+        const DK = '#24272c', MD = '#383d45', LT = '#565d67', BK = '#14161a', RED = '#ff2a1f', WHT = '#eaf4ff';
+        block('mind_plating', () => {
+            const p = new Painter(1901);
+            p.bevel(0, 0, 16, 16, MD, 0.06).inset(2, 2, 12, 5, DK, 0.05).inset(2, 9, 12, 5, DK, 0.05);
+            return p.rect(0, 7, 16, 1, BK).px(LT, [1, 1], [14, 1], [1, 14], [14, 14]);
+        });
+        block('mind_cable', () => {
+            const p = new Painter(1902);
+            p.noise(0, 0, 16, 16, BK, 0.1);
+            [1, 5, 9, 13].forEach((x, i) => { p.noise(x, 0, 2, 16, i % 2 ? DK : MD, 0.06).rect(x, 0, 1, 16, LT); for (let y = i * 2 + 1; y < 16; y += 8) p.rect(x, y, 2, 1, BK); });
+            return p.rect(6, 2, 1, 3, RED).rect(14, 9, 1, 4, RED).px(WHT, [6, 2]);
+        });
+        block('mind_floodlight', () => {
+            const p = new Painter(1903);
+            p.bevel(0, 0, 16, 16, DK, 0.06).inset(2, 2, 12, 12, MD).noise(3, 3, 10, 10, '#dfeaf6', 0.06);
+            [5, 8, 11].forEach(y => p.rect(3, y, 10, 1, '#9fb0c2'));
+            return p.rect(2, 1, 12, 1, RED);
+        });
+        block('mind_generator', () => {
+            const p = new Painter(1904);
+            p.bevel(0, 0, 16, 16, DK, 0.06).inset(3, 3, 10, 10, BK).noise(5, 4, 6, 8, '#a01810', 0.15).rect(7, 4, 2, 8, RED).px(WHT, [7, 6], [8, 9]);
+            [4, 7, 10].forEach(y => p.rect(3, y, 10, 1, LT));
+            return p.px(RED, [1, 1], [14, 1]).px(LT, [1, 14], [14, 14]);
+        });
+        block('mind_generator_top', () => {
+            const p = new Painter(1905);
+            p.bevel(0, 0, 16, 16, DK, 0.06).inset(3, 3, 10, 10, BK);
+            for (let i = 4; i < 12; i += 2) p.rect(4, i, 8, 1, MD);
+            return p.rect(6, 6, 4, 4, DK).rect(7, 7, 2, 2, RED);
+        });
+        CLEAR_BLOCKS.add('mind_fence');
+        block('mind_fence', () => {
+            const p = new Painter(1906);
+            [1, 5, 9, 13].forEach(x => p.rect(x, 0, 1, 16, LT).rect(x + 1, 0, 1, 16, DK));
+            [2, 12].forEach(y => p.rect(0, y, 16, 1, MD).rect(0, y + 1, 16, 1, BK));
+            return p.px(RED, [1, 7], [5, 7], [9, 7], [13, 7]).rect(7, 0, 2, 16, MD);
+        });
+        block('mind_wreck', () => {
+            const p = new Painter(1907);
+            p.noise(0, 0, 16, 16, '#1b1a1a', 0.18).noise(2, 3, 9, 1, '#3a2a22', 0.2).noise(5, 8, 10, 1, '#4a3020', 0.2).noise(1, 12, 7, 1, '#2e2624', 0.2);
+            return p.px('#5a2a1a', [4, 5], [11, 10], [8, 14]).px(BK, [7, 1], [7, 2], [8, 3], [8, 4], [9, 5], [3, 9], [4, 10]);
+        });
+        item('mind_chip', () => icon([
+            '................', '....l..l..l.....', '....l..l..l.....', '..kkkkkkkkkkk...', '..kmmmmmmmmmk...', 'llkmdddddddmkll.', '..kmdrrrrrdmk...', '..kmdrwwwrdmk...',
+            'llkmdrwRwrdmkll.', '..kmdrwwwrdmk...', '..kmdrrrrrdmk...', 'llkmdddddddmkll.', '..kmmmmmmmmmk...', '..kkkkkkkkkkk...', '....l..l..l.....', '....l..l..l.....'],
+            {k: BK, m: MD, d: DK, l: '#c8ced6', r: '#a01810', w: RED, R: WHT}));
+        const part = (rows) => () => icon(rows, {k: BK, d: DK, m: MD, l: LT, r: RED, w: WHT, o: '#ff8a3a'});
+        item('mind_computer', part([
+            '................', '....kkkkkkkk....', '....kmmmmmmk....', '....kdrrrrdk....', '.....kk..kk.....', '.....kd..dk.....', '.....kdrrdk.....', '.....kdrwdk.....',
+            '.....kd..dk.....', '....kkkkkkkk....', '....kmrrrrmk....', '....kmddddmk....', '....kmwrrdmk....', '....kmddddmk....', '...kkkkkkkkkk...', '...kddddddddk...']));
+        item('mind_factory_line', part([
+            '................', '...kkkkkkkkkk...', '...kdrrrrrrdk...', '...kkkkkkkkkk...', '...kmk....kmk...', '...krk....krk...', '...krk.ll.krk...', '...kmk.kk.kmk...',
+            '..kkkkkkkkkkkk..', '..kldldldldldk..', '..kkkkkkkkkkkk..', '.kmmmmmmmmmmmmk.', '.kdrrrrrrrrrrdk.', '.kkkkkkkkkkkkkk.', '................', '................']));
+        item('mind_foundry', part([
+            '................', '.kkk........kkk.', '.kok........kok.', '.kdk.kkkkkk.kdk.', '.krk.....l..krk.', '.krk.....l..krk.', '.kdkkkkkkkkkkdk.', '.kdkmooooooomdk.',
+            '.kdkmmmmmmmmkdk.', '.kdkdrrrrrrdkdk.', '.kdkmmmoommmkdk.', '.kdkddddoddkkdk.', 'kkkkkkkkkkkkkkkk', 'kddrrrrrrrrrrddk', 'kkkkkkkkkkkkkkkk', '................']));
+        item('mind_hangar', part([
+            '................', '...k........k...', '...kkkkkkkkkk...', '..kmmmmmmmmmmk..', '.kkkkkkkkkkkkkk.', '.kdrrrrrrrrrrdk.', '.kddddrwwrddddk.', '.kkkkkkkkkkkkkk.',
+            '.klrrrlkklrrrlk.', '.kllllldkllllk..', '.kddddddkddddddk', '.klrrlllkllrrlk.', '.kdddddkkdddddk.', '.kllllllkllllk..', 'kkkkkkkkkkkkkkkk', '................'].map(r => r.slice(0, 16).padEnd(16, '.'))));
+    }
+
     window.RebirthTextures = {TEXTURES, saveAll, sheet, showcase, clearPixels, logo};
 })();

@@ -109,6 +109,7 @@ public final class Scouting {
                 markers.add(new Snapshot.Marker(Snapshot.SOURCE, source.getX(), source.getZ(), ""));
             }
             markers.addAll(ruinsNear(level, cx, cz, range));
+            markers.addAll(Snapshot.mindNodes(level, cx, cz, range));
         }
         Snapshot snapshot = Snapshot.scan(level, cx, cz, radius, markers);
         ContaminationMap.Reading sources = Environment.isEnabled() ? RadiationSources.readingAt(level, player.blockPosition()) : ContaminationMap.Reading.NONE;

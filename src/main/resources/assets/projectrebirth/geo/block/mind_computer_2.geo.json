@@ -1,0 +1,79 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.mind_computer_2",
+				"texture_width": 256,
+				"texture_height": 256,
+				"visible_bounds_width": 4,
+				"visible_bounds_height": 4,
+				"visible_bounds_offset": [0, 2, 0]
+			},
+			"bones": [
+				{
+					"name": "root",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{"origin": [-24, 0, -24], "size": [48, 4, 48], "uv": [0, 0]},
+						{"origin": [-22, 4, -22], "size": [12, 30, 12], "inflate": 0.1, "uv": [192, 0]},
+						{"origin": [10, 4, -22], "size": [12, 30, 12], "inflate": 0.1, "uv": [192, 42]},
+						{"origin": [-22, 4, 10], "size": [12, 30, 12], "inflate": 0.1, "uv": [92, 52]},
+						{"origin": [10, 4, 10], "size": [12, 30, 12], "inflate": 0.1, "uv": [140, 52]},
+						{"origin": [-7, 4, -7], "size": [14, 8, 14], "inflate": 0.1, "uv": [188, 84]},
+						{"origin": [-7, 34, -7], "size": [14, 5, 14], "uv": [92, 94]},
+						{"origin": [-6, 12, -6], "size": [2, 22, 2], "inflate": 0.1, "uv": [240, 0]},
+						{"origin": [4, 12, -6], "size": [2, 22, 2], "inflate": 0.1, "uv": [248, 0]},
+						{"origin": [-6, 12, 4], "size": [2, 22, 2], "inflate": 0.1, "uv": [240, 24]},
+						{"origin": [4, 12, 4], "size": [2, 22, 2], "inflate": 0.1, "uv": [248, 24]},
+						{"origin": [-20, 36, -3], "size": [40, 3, 6], "inflate": 0.1, "uv": [0, 95]},
+						{"origin": [-3, 39, -20], "size": [6, 3, 40], "inflate": 0.1, "uv": [0, 52]},
+						{"origin": [-18, 34, -18], "size": [4, 3, 4], "uv": [240, 48]},
+						{"origin": [14, 34, -18], "size": [4, 3, 4], "uv": [240, 55]},
+						{"origin": [-18, 34, 14], "size": [4, 3, 4], "uv": [240, 62]},
+						{"origin": [14, 34, 14], "size": [4, 3, 4], "uv": [240, 69]}
+					]
+				},
+				{
+					"name": "core",
+					"parent": "root",
+					"pivot": [0, 23, 0],
+					"cubes": [
+						{"origin": [-3.5, 14, -3.5], "size": [7, 18, 7], "uv": [148, 94]}
+					]
+				},
+				{
+					"name": "ring_1",
+					"parent": "root",
+					"pivot": [0, 18, 0],
+					"cubes": [
+						{"origin": [-9, 17, -9], "size": [18, 2, 2], "uv": [64, 113]},
+						{"origin": [-9, 17, 7], "size": [18, 2, 2], "uv": [104, 113]},
+						{"origin": [-9, 17, -7], "size": [2, 2, 14], "inflate": 0.1, "uv": [0, 104]},
+						{"origin": [7, 17, -7], "size": [2, 2, 14], "inflate": 0.1, "uv": [32, 104]}
+					]
+				},
+				{
+					"name": "ring_2",
+					"parent": "root",
+					"pivot": [0, 28, 0],
+					"cubes": [
+						{"origin": [-9, 27, -9], "size": [18, 2, 2], "uv": [64, 117]},
+						{"origin": [-9, 27, 7], "size": [18, 2, 2], "uv": [104, 117]},
+						{"origin": [-9, 27, -7], "size": [2, 2, 14], "inflate": 0.1, "uv": [176, 106]},
+						{"origin": [7, 27, -7], "size": [2, 2, 14], "inflate": 0.1, "uv": [208, 106]}
+					]
+				},
+				{
+					"name": "mast",
+					"parent": "root",
+					"pivot": [0, 42, 0],
+					"cubes": [
+						{"origin": [-1, 42, -1], "size": [2, 5, 2], "uv": [240, 76]},
+						{"origin": [-5, 45, -0.5], "size": [10, 1, 1], "uv": [64, 104]}
+					]
+				}
+			]
+		}
+	]
+}

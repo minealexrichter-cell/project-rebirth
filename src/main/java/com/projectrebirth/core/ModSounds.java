@@ -81,6 +81,15 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> HUNTER_GROWL = register("mutant.hunter_growl");
     public static final DeferredHolder<SoundEvent, SoundEvent> DROWNER_GURGLE = register("mutant.drowner_gurgle");
 
+    /** 1.9.0, block F: the machine mind (synthesized, assets_src/sounds/mind). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> MIND_HUM = register("mind.hum");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MIND_FACTORY = register("mind.factory");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MIND_HURT = register("mind.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MIND_STAGE = register("mind.stage");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MIND_DEATH = register("mind.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MIND_DRONE = register("mind.drone");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MIND_DRONE_WORK = register("mind.drone_work");
+
     private ModSounds() {
     }
 

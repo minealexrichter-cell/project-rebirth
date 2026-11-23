@@ -1,0 +1,23 @@
+{
+  "values": [
+    "#minecraft:dirt",
+    "#minecraft:leaves",
+    "#minecraft:logs",
+    "#minecraft:sand",
+    "#minecraft:snow",
+    "#minecraft:terracotta",
+    "#c:gravels",
+    "#c:sandstone/blocks",
+    "#minecraft:base_stone_overworld",
+    "#minecraft:flowers",
+    "minecraft:snow_block",
+    "minecraft:powder_snow",
+    "minecraft:clay",
+    "minecraft:moss_block",
+    "minecraft:pumpkin",
+    "minecraft:melon",
+    "minecraft:bee_nest",
+    "minecraft:cactus",
+    "minecraft:mossy_cobblestone"
+  ]
+}

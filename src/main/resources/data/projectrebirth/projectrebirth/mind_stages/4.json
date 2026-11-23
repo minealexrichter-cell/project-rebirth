@@ -1,0 +1,13 @@
+{
+  "stage": 4,
+  "template": "projectrebirth:mind/stage_4",
+  "robots": [
+    {
+      "entity": "projectrebirth:mind_drone",
+      "cap": 5,
+      "seconds": 50,
+      "cost": 8,
+      "module": "projectrebirth:mind_factory_line"
+    }
+  ]
+}

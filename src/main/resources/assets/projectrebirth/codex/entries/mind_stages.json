@@ -1,0 +1,22 @@
+{
+  "icon": "projectrebirth:mind_plating",
+  "x": 3,
+  "y": 4,
+  "parents": [
+    "mind_node"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mind_stages.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.mind_stages.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mind_stages.p3"
+    }
+  ]
+}

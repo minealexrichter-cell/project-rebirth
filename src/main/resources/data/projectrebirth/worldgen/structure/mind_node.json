@@ -1,0 +1,23 @@
+{
+  "type": "projectrebirth:compound",
+  "biomes": "#projectrebirth:has_structure/mind_node",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "beard_thin",
+  "check_radius": 14,
+  "max_slope": 5,
+  "size_x": 33,
+  "size_z": 33,
+  "processors": "minecraft:empty",
+  "foundation": {
+    "Name": "projectrebirth:mind_plating"
+  },
+  "parts": [
+    {
+      "template": "projectrebirth:mind/start",
+      "x": 0,
+      "z": 0,
+      "floor": 0
+    }
+  ]
+}

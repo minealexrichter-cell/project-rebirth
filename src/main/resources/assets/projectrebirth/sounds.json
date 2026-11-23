@@ -639,5 +639,68 @@
         "volume": 0.8
       }
     ]
+  },
+  "mind.hum": {
+    "subtitle": "subtitles.projectrebirth.mind.hum",
+    "sounds": [
+      {
+        "name": "projectrebirth:mind/hum",
+        "volume": 0.8
+      }
+    ]
+  },
+  "mind.factory": {
+    "subtitle": "subtitles.projectrebirth.mind.factory",
+    "sounds": [
+      {
+        "name": "projectrebirth:mind/factory",
+        "volume": 0.8
+      }
+    ]
+  },
+  "mind.hurt": {
+    "subtitle": "subtitles.projectrebirth.mind.hurt",
+    "sounds": [
+      {
+        "name": "projectrebirth:mind/hurt",
+        "volume": 0.8
+      }
+    ]
+  },
+  "mind.stage": {
+    "subtitle": "subtitles.projectrebirth.mind.stage",
+    "sounds": [
+      {
+        "name": "projectrebirth:mind/stage",
+        "volume": 0.8
+      }
+    ]
+  },
+  "mind.death": {
+    "subtitle": "subtitles.projectrebirth.mind.death",
+    "sounds": [
+      {
+        "name": "projectrebirth:mind/death",
+        "volume": 0.8
+      }
+    ]
+  },
+  "mind.drone": {
+    "subtitle": "subtitles.projectrebirth.mind.drone",
+    "sounds": [
+      {
+        "name": "projectrebirth:mind/drone",
+        "volume": 0.5
+      }
+    ]
+  },
+  "mind.drone_work": {
+    "subtitle": "subtitles.projectrebirth.mind.drone_work",
+    "sounds": [
+      {
+        "name": "projectrebirth:mind/drone_work",
+        "volume": 0.8
+      }
+    ]
   }
 }

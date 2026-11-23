@@ -200,6 +200,7 @@ public class MonitoringStationBlockEntity extends BlockEntity implements MenuPro
                 }
             }
         }
+        out.addAll(Snapshot.mindNodes(serverLevel, cx, cz, radius));
         for (ServerPlayer player : serverLevel.players()) {
             if (!player.isSpectator() && Math.abs(player.chunkPosition().x - cx) <= radius && Math.abs(player.chunkPosition().z - cz) <= radius) {
                 out.add(new Snapshot.Marker(Snapshot.PLAYER, player.getBlockX(), player.getBlockZ(), player.getGameProfile().getName()));

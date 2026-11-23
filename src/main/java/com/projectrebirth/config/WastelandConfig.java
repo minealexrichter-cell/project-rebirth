@@ -89,6 +89,12 @@ public final class WastelandConfig {
     public static ModConfigSpec.BooleanValue WANDERERS_CAMPFIRE;
     public static ModConfigSpec.IntValue WANDERERS_CAMPFIRE_MINUTES;
 
+    /** 1.9.0, block F: the machine mind. */
+    public static ModConfigSpec.BooleanValue MIND_ENABLED;
+    public static ModConfigSpec.IntValue MIND_MAX_NODES, MIND_MIN_DISTANCE, MIND_AHEAD, MIND_START_RESOURCES, MIND_MAX_RESOURCES, MIND_BLOCK_COST, MIND_BLOCK_WORTH, MIND_INCOME,
+            MIND_BUILD_TICKS, MIND_GATHER_RANGE, MIND_MODULE_DELAY, MIND_GENERATOR_DELAY, MIND_DRONE_DELAY;
+    public static ModConfigSpec.DoubleValue MIND_STAGE_DAYS, MIND_STRUCTURE, MIND_CORE, MIND_MODULE_STRENGTH, MIND_REPAIR, MIND_BREAK_DAMAGE, MIND_EXPLOSION_DAMAGE;
+
     public static ModConfigSpec.IntValue ANTITOXIN_SECONDS;
     public static ModConfigSpec.DoubleValue ANTITOXIN_SHARE;
     public static ModConfigSpec.DoubleValue BIOFILTER_LIFE;
@@ -218,6 +224,34 @@ public final class WastelandConfig {
         WANDERERS_CAMPFIRE = builder.comment("A camp at evening lights a campfire (taken away after the camp, not before campfireMinutes)").define("campfire", true);
         WANDERERS_CAMPFIRE_MINUTES = builder.comment("The shortest time a campfire of wanderers stays, in minutes, whatever becomes of the group")
                 .defineInRange("campfireMinutes", 5, 0, 1440);
+        builder.pop();
+
+        builder.comment("The machine mind (block F): nodes that wake in new land, grow through stages I to V and build a base with their drones. What is",
+                "built and made in each stage is in the data (projectrebirth/mind_stages, structure/mind); the game rules rebirthMachineMind and",
+                "rebirthMachineMindMaxStage apply per world").push("mind");
+        MIND_ENABLED = builder.comment("The whole system: off, no node is generated and those there are sleep").define("enabled", true);
+        MIND_MAX_NODES = builder.comment("Nodes that wake in one world (destroyed ones count)").defineInRange("maxNodes", 3, 0, 1000);
+        MIND_MIN_DISTANCE = builder.comment("No node is generated closer to the middle of the world, blocks").defineInRange("minDistance", 1500, 0, 1_000_000);
+        MIND_STAGE_DAYS = builder.comment("Days of the world a stage takes, undamaged").defineInRange("stageDays", 2.5, 0.01, 1000.0);
+        MIND_AHEAD = builder.comment("The stage of the mind is at most this much above the stage of the Wasteland").defineInRange("stagesAhead", 1, 0, 5);
+        MIND_START_RESOURCES = builder.comment("Resources of a node that wakes (a block of the base takes blockCost)").defineInRange("startResources", 60, 0, 100_000);
+        MIND_MAX_RESOURCES = builder.comment("Resources a node can store").defineInRange("maxResources", 400, 1, 100_000);
+        MIND_BLOCK_COST = builder.comment("Price of a block of the base").defineInRange("blockCost", 1, 0, 1000);
+        MIND_BLOCK_WORTH = builder.comment("Worth of a block a drone takes from the land (ore three times that)").defineInRange("blockWorth", 3, 0, 1000);
+        MIND_INCOME = builder.comment("Resources a minute the node draws from the ground by itself, so that it grows on bare land too (slowly)")
+                .defineInRange("ownIncome", 4, 0, 10_000);
+        MIND_BUILD_TICKS = builder.comment("Ticks a drone works at one block").defineInRange("buildTicks", 30, 1, 1200);
+        MIND_GATHER_RANGE = builder.comment("Drones gather within this many blocks of the computer (not inside the base; needs the game rule mobGriefing)")
+                .defineInRange("gatherRange", 40, 19, 96);
+        MIND_STRUCTURE = builder.comment("Structure of the computer at stage I (half as much more each stage)").defineInRange("structure", 300.0, 1.0, 1_000_000.0);
+        MIND_CORE = builder.comment("Core of the computer at stage I, hurt when the structure is gone (half as much more each stage)").defineInRange("core", 150.0, 1.0, 1_000_000.0);
+        MIND_MODULE_STRENGTH = builder.comment("Strength of a module of the factory").defineInRange("moduleStrength", 160.0, 1.0, 1_000_000.0);
+        MIND_REPAIR = builder.comment("Structure the computer mends per second after 30 s without damage (the core a quarter of it)").defineInRange("repairPerSecond", 1.0, 0.0, 10_000.0);
+        MIND_BREAK_DAMAGE = builder.comment("Damage of breaking a piece off with a tool").defineInRange("breakDamage", 10.0, 0.0, 10_000.0);
+        MIND_EXPLOSION_DAMAGE = builder.comment("Damage of one explosion").defineInRange("explosionDamage", 60.0, 0.0, 10_000.0);
+        MIND_MODULE_DELAY = builder.comment("Minutes the next stage is put off by a destroyed module of the factory").defineInRange("moduleDelayMinutes", 20, 0, 10_000);
+        MIND_GENERATOR_DELAY = builder.comment("Minutes, by a broken generator").defineInRange("generatorDelayMinutes", 10, 0, 10_000);
+        MIND_DRONE_DELAY = builder.comment("Minutes, by a destroyed drone").defineInRange("droneDelayMinutes", 3, 0, 10_000);
         builder.pop();
 
         builder.comment("The numbers of the presets").push("presets");

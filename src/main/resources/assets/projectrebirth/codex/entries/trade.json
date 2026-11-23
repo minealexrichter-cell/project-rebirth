@@ -1,0 +1,22 @@
+{
+  "icon": "minecraft:emerald",
+  "x": -5,
+  "y": 4,
+  "parents": [
+    "wanderers"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.trade.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.trade.p2"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.trade.p3"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "weight": 15,
+  "min_stage": 2,
+  "members": [
+    {
+      "kind": "armored",
+      "leader": true,
+      "variants": [
+        "combat"
+      ],
+      "weapons": [
+        "projectrebirth:assault_rifle",
+        "projectrebirth:battle_rifle"
+      ]
+    },
+    {
+      "kind": "android",
+      "variants": [
+        "advanced_synthetic_body",
+        "hightech_synthetic_body",
+        "premium_synthetic_body"
+      ],
+      "weapons": [
+        "minecraft:iron_sword",
+        "minecraft:iron_axe"
+      ],
+      "offhand": [
+        "minecraft:shield"
+      ]
+    }
+  ]
+}

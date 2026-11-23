@@ -55,7 +55,8 @@ public final class TargetRules {
             if (target instanceof Enemy) {
                 return (core.rules() & OrderRules.MONSTERS) != 0 || (core.rules() & OrderRules.RETALIATE) != 0 && core.attackedBy(target, now);
             }
-            return target instanceof NeutralMob && (core.rules() & OrderRules.RETALIATE) != 0 && core.attackedBy(target, now);
+            // wanderers are neutral too: answered only when they attacked
+            return (target instanceof NeutralMob || target instanceof com.projectrebirth.wanderers.WandererEntity) && (core.rules() & OrderRules.RETALIATE) != 0 && core.attackedBy(target, now);
         }
         if (mine == null) {
             // a machine nobody owns (only in tests) defends itself and fights monsters only

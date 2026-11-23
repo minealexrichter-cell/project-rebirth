@@ -244,4 +244,13 @@ root
 | `drowner` | `idle`, `walk`, `swim`, `attack` | 1.9.0: в воде — `swim` (`root` повёрнут на 80°), `weed_1..2` |
 | `mutated_chicken` | `idle`, `walk`, `attack` | 1.9.0: `body` > `neck` > `head`, `second_head`; крылья, ноги, `tumor_1`; 64×64 |
 
+## Странники (1.9.0, блок E)
+
+| Сущность | Модель | Примечания |
+|---|---|---|
+| `wanderer_armored` | модель варианта брони (`power_armor`, `mobile_power_armor`, `worker_power_armor`) | оружие в кости `right_hand`, щит в `left_hand` (`WandererRenderer.HeldItemLayer`) |
+| `wanderer_android` | модель класса тела (`<класс>_body`) | оружие в `right_forearm`, второй предмет в `left_forearm` |
+| `wanderer_survivor` | ванильный гуманоид (слои зомби), снаряжение как у игрока | скины `wanderer_survivor_a/b/c.png` (64×64, `survivorSkin` в `build_textures.js`) |
+| `wanderer_robot` | `wanderer_robot`, 64×64: `root` > `hips` > ноги `right_leg` > `right_shin`, `left_leg` > `left_shin`; `torso` > `pack`, `head` > `antenna`, `right_arm` (карабин), `left_arm` > `gripper` | анимации `idle`, `walk`, `attack`, `dead`; остов — `RemainsEntity.Kind.WANDERER_ROBOT`, текстура `wanderer_robot_wreck.png` |
+
 Анимация остова (`dead` у врагов руин, `wrecked` у тел) выбирается по виду остова в `RemainsEntity.Kind`.

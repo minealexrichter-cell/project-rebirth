@@ -588,6 +588,11 @@ public class PowerArmorEntity extends PathfinderMob implements GeoEntity, Player
         }
     }
 
+    /** 1.9.0, block E: the wreck of a fallen wanderer's armor (an empty armor, taken apart by the wrench). */
+    public void makeWreck() {
+        becomeWreck();
+    }
+
     private void becomeWreck() {
         if (isWrecked()) {
             return;

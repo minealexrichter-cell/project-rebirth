@@ -1,0 +1,42 @@
+{
+  "weight": 25,
+  "members": [
+    {
+      "kind": "survivor",
+      "leader": true,
+      "variants": [
+        "a",
+        "b",
+        "c"
+      ],
+      "weapons": [
+        "minecraft:bow",
+        "minecraft:crossbow"
+      ],
+      "kits": [
+        "respirator",
+        "hazmat"
+      ]
+    },
+    {
+      "kind": "survivor",
+      "variants": [
+        "a",
+        "b",
+        "c"
+      ],
+      "weapons": [
+        "minecraft:iron_sword",
+        "minecraft:iron_axe",
+        "minecraft:stone_sword",
+        "minecraft:bow",
+        "minecraft:crossbow"
+      ],
+      "kits": [
+        "respirator",
+        "hazmat",
+        "heavy_suit"
+      ]
+    }
+  ]
+}

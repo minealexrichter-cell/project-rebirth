@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:emerald",
+      "count": 4
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:circuit_board",
+    "count": 2
+  },
+  "weight": 10
+}

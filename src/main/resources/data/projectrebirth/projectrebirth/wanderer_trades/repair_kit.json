@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:emerald",
+      "count": 5
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:repair_kit",
+    "count": 1
+  },
+  "weight": 8
+}

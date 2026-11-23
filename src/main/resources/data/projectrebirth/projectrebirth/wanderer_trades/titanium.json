@@ -1,0 +1,14 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:emerald",
+      "count": 10
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:titanium_ingot",
+    "count": 4
+  },
+  "weight": 6,
+  "min_stage": 2
+}

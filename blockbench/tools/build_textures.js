@@ -2029,6 +2029,52 @@
 
     // The skins of the mutated animals are painted with their models (build_models.js, SPECS.mutated_*).
 
+    /**
+     * 1.9.0, block E: the skins of the wanderers in protective gear (a 64x64 humanoid, the zombie layout: head, body, right arm
+     * and right leg; the left ones mirror them). Worn, patched clothes of the Wasteland; the face shows under a respirator.
+     */
+    function survivorSkin(seed, p) {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        const r = random(seed);
+        const fill = (x, y, w, h, c, n) => {
+            for (let j = y; j < y + h; j++) {
+                for (let i = x; i < x + w; i++) {
+                    ctx.fillStyle = shade(c, 1 + (r() - 0.5) * 2 * (n === undefined ? 0.07 : n));
+                    ctx.fillRect(i, j, 1, 1);
+                }
+            }
+        };
+        const box = (u, v, w, h, d, c) => {
+            fill(u + d, v, w, d, shade(c, 1.08)); fill(u + d + w, v, w, d, shade(c, 0.85));
+            fill(u, v + d, d, h, c); fill(u + d, v + d, w, h, c); fill(u + d + w, v + d, d, h, c); fill(u + 2 * d + w, v + d, w, h, shade(c, 0.95));
+        };
+        const px = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); };
+        // head: skin, hair on top and back, eyes, a scar
+        box(0, 0, 8, 8, 8, p.skin);
+        fill(8, 0, 8, 8, p.hair); fill(0, 8, 8, 3, p.hair); fill(16, 8, 8, 3, p.hair); fill(24, 8, 8, 8, p.hair); fill(8, 8, 8, 2, p.hair);
+        px(10, 12, '#f0ece4'); px(11, 12, p.eyes); px(13, 12, p.eyes); px(14, 12, '#f0ece4');
+        px(12, 14, shade(p.skin, 0.8)); fill(10, 15, 4, 1, shade(p.skin, 0.7), 0.02);
+        if (p.scar) { px(9, 11, '#8a4a40'); px(9, 12, '#8a4a40'); px(10, 13, '#8a4a40'); }
+        // body: a jacket with a belt and patches
+        box(16, 16, 8, 12, 4, p.shirt);
+        fill(20, 30, 8, 1, '#3a2e22', 0.02); px(23, 30, '#a8a090');
+        fill(21, 22, 2, 2, shade(p.shirt, 0.75)); fill(25, 25, 2, 2, p.patch || shade(p.shirt, 1.25));
+        // arm: the sleeve, a bare or gloved hand
+        box(40, 16, 4, 12, 4, p.shirt);
+        fill(40, 29, 16, 3, p.gloves || p.skin);
+        fill(44, 16, 4, 4, p.gloves || p.skin);
+        // leg: trousers and boots
+        box(0, 16, 4, 12, 4, p.pants);
+        fill(0, 28, 16, 4, p.boots); fill(4, 16, 4, 4, p.pants); fill(8, 16, 4, 4, p.boots);
+        fill(5, 23, 2, 2, shade(p.pants, 0.75));
+        return {canvas};
+    }
+    TEXTURES['entity/wanderer_survivor_a'] = () => survivorSkin(931, {skin: '#c89a7c', hair: '#3a2a1e', eyes: '#3a5a6a', shirt: '#5a6450', pants: '#4a4238', boots: '#2e2620', patch: '#8a6a3e', scar: true});
+    TEXTURES['entity/wanderer_survivor_b'] = () => survivorSkin(932, {skin: '#a87458', hair: '#1e1a18', eyes: '#3a2a1e', shirt: '#6a4a36', pants: '#3e4450', boots: '#2a2420', gloves: '#3a3632'});
+    TEXTURES['entity/wanderer_survivor_c'] = () => survivorSkin(933, {skin: '#d8b49a', hair: '#8a6a3a', eyes: '#4a6a3a', shirt: '#7a7458', pants: '#5a5040', boots: '#3a3028', patch: '#5a6a3a'});
+
     // Worn gear (respirator and suits) is painted with its 3D model by blockbench/tools/build_gear.js since 1.5.1.
 
     TEXTURES['gui/widgets'] = () => {

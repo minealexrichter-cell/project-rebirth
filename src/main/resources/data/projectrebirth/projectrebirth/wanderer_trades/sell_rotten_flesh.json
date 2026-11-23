@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:rotten_flesh",
+      "count": 16
+    }
+  ],
+  "result": {
+    "id": "minecraft:emerald",
+    "count": 1
+  },
+  "weight": 8
+}

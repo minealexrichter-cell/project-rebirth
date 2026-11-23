@@ -1,0 +1,44 @@
+{
+  "weight": 30,
+  "members": [
+    {
+      "kind": "armored",
+      "leader": true,
+      "variants": [
+        "combat",
+        "mobile"
+      ],
+      "weapons": [
+        "projectrebirth:assault_rifle",
+        "projectrebirth:battle_rifle"
+      ]
+    },
+    {
+      "kind": "survivor",
+      "count": {
+        "min": 1,
+        "max": 2
+      },
+      "variants": [
+        "a",
+        "b",
+        "c"
+      ],
+      "weapons": [
+        "minecraft:iron_sword",
+        "minecraft:iron_axe",
+        "minecraft:stone_sword",
+        "minecraft:bow",
+        "minecraft:crossbow"
+      ],
+      "kits": [
+        "respirator",
+        "hazmat",
+        "heavy_suit"
+      ]
+    },
+    {
+      "kind": "robot"
+    }
+  ]
+}

@@ -70,6 +70,24 @@ public final class WastelandConfig {
 
     public static ModConfigSpec.DoubleValue SLEEP_SHELTER_TOXIN_SHARE;
 
+    public static ModConfigSpec.BooleanValue WANDERERS_ENABLED;
+    public static ModConfigSpec.IntValue WANDERERS_INTERVAL;
+    public static ModConfigSpec.DoubleValue WANDERERS_CHANCE;
+    public static ModConfigSpec.IntValue WANDERERS_NEAR_RADIUS;
+    public static ModConfigSpec.IntValue WANDERERS_MAX_NEAR;
+    public static ModConfigSpec.IntValue WANDERERS_WORLD_CAP;
+    public static ModConfigSpec.IntValue WANDERERS_DESPAWN_SECONDS;
+    public static ModConfigSpec.IntValue WANDERERS_HOSTILE_MINUTES;
+    public static ModConfigSpec.DoubleValue WANDERERS_HEALTH_PER_STAGE;
+    public static ModConfigSpec.DoubleValue WANDERERS_DAMAGE_PER_STAGE;
+    public static ModConfigSpec.DoubleValue WANDERERS_GUN_DAMAGE;
+    public static ModConfigSpec.IntValue WANDERERS_GUN_INTERVAL;
+    public static ModConfigSpec.IntValue WANDERERS_GUN_RANGE;
+    public static ModConfigSpec.IntValue WANDERERS_OFFERS_MIN;
+    public static ModConfigSpec.IntValue WANDERERS_OFFERS_MAX;
+    public static ModConfigSpec.DoubleValue WANDERERS_DROP_CHANCE;
+    public static ModConfigSpec.BooleanValue WANDERERS_CAMPFIRE;
+
     public static ModConfigSpec.IntValue ANTITOXIN_SECONDS;
     public static ModConfigSpec.DoubleValue ANTITOXIN_SHARE;
     public static ModConfigSpec.DoubleValue BIOFILTER_LIFE;
@@ -174,6 +192,29 @@ public final class WastelandConfig {
         ANTITOXIN_SECONDS = builder.comment("Seconds of toxin resistance an antitoxin gives (it also stops a wound infection)").defineInRange("antitoxinSeconds", 300, 1, 36000);
         ANTITOXIN_SHARE = builder.comment("Share of the toxins gained that still reach the body under toxin resistance").defineInRange("antitoxinShare", 0.5, 0.0, 1.0);
         BIOFILTER_LIFE = builder.comment("A biofilter lasts this many times as long as an ordinary filter").defineInRange("biofilterLife", 2.0, 0.1, 100.0);
+        builder.pop();
+
+        builder.comment("Wanderers (block E): neutral groups of people, androids and robots that walk the world, fight mutants and trade.",
+                "Which groups and what they trade is in the data (projectrebirth/wanderer_groups, projectrebirth/wanderer_trades); the game rule",
+                "rebirthWanderers switches them per world").push("wanderers");
+        WANDERERS_ENABLED = builder.comment("The whole system").define("enabled", true);
+        WANDERERS_INTERVAL = builder.comment("Ticks between tries to bring a group near each player").defineInRange("spawnInterval", 1200, 20, 1_000_000);
+        WANDERERS_CHANCE = builder.comment("Chance of one try").defineInRange("spawnChance", 0.25, 0.0, 1.0);
+        WANDERERS_NEAR_RADIUS = builder.comment("Blocks around a player counted for the limit of groups near him, and beyond which a group with nobody near goes away")
+                .defineInRange("nearRadius", 160, 32, 1024);
+        WANDERERS_MAX_NEAR = builder.comment("No new group while this many are near a player").defineInRange("maxNear", 1, 0, 16);
+        WANDERERS_WORLD_CAP = builder.comment("No new group while this many are loaded in the dimension").defineInRange("worldCap", 6, 0, 256);
+        WANDERERS_DESPAWN_SECONDS = builder.comment("A group with no player within nearRadius for this long goes away (as the wandering trader)").defineInRange("despawnSeconds", 60, 1, 36000);
+        WANDERERS_HOSTILE_MINUTES = builder.comment("Minutes a group stays hostile to a player who hit one of them (other groups do not care)").defineInRange("hostileMinutes", 10, 0, 1440);
+        WANDERERS_HEALTH_PER_STAGE = builder.comment("Health added per stage of the Wasteland above I (a share: 0.15 = +15%)").defineInRange("healthPerStage", 0.15, 0.0, 10.0);
+        WANDERERS_DAMAGE_PER_STAGE = builder.comment("Damage added per stage above I").defineInRange("damagePerStage", 0.1, 0.0, 10.0);
+        WANDERERS_GUN_DAMAGE = builder.comment("Damage of a shot of an armor's or a robot's gun").defineInRange("gunDamage", 5.0, 0.0, 1000.0);
+        WANDERERS_GUN_INTERVAL = builder.comment("Ticks between shots").defineInRange("gunInterval", 16, 1, 1200);
+        WANDERERS_GUN_RANGE = builder.comment("Range of the gun, blocks").defineInRange("gunRange", 24, 4, 128);
+        WANDERERS_OFFERS_MIN = builder.comment("Fewest offers of a group").defineInRange("offersMin", 4, 0, 16);
+        WANDERERS_OFFERS_MAX = builder.comment("Most offers of a group").defineInRange("offersMax", 8, 0, 16);
+        WANDERERS_DROP_CHANCE = builder.comment("Chance of each piece of gear of a fallen wanderer to drop").defineInRange("gearDropChance", 0.3, 0.0, 1.0);
+        WANDERERS_CAMPFIRE = builder.comment("A camp at evening lights a campfire (taken away when the group leaves)").define("campfire", true);
         builder.pop();
 
         builder.comment("The numbers of the presets").push("presets");

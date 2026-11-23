@@ -92,6 +92,11 @@ public final class DevUiShots {
                     org.lwjgl.glfw.GLFW.glfwSetCursorPos(minecraft.getWindow().getWindow(), Double.parseDouble(at[1]) * scale, Double.parseDouble(at[2]) * scale);
                     return;
                 }
+                // 1.9.0, block E: a right click on the creature under the crosshair (a wanderer's trade)
+                if (text.equals("use") && minecraft.player != null && minecraft.gameMode != null && minecraft.crosshairPickEntity != null) {
+                    minecraft.gameMode.interact(minecraft.player, minecraft.crosshairPickEntity, net.minecraft.world.InteractionHand.MAIN_HAND);
+                    return;
+                }
                 if (text.equals("respawn")) {
                     if (minecraft.player != null && minecraft.player.isDeadOrDying()) {
                         minecraft.player.respawn();

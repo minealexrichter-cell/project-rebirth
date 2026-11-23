@@ -122,6 +122,7 @@ public class ProjectRebirthClient {
         event.register(com.projectrebirth.garrison.GarrisonRegistry.TURRET_MOUNT_MENU.get(), com.projectrebirth.client.garrison.TurretMountScreen::new);
         event.register(com.projectrebirth.garrison.GarrisonRegistry.SERVICE_POST_MENU.get(), com.projectrebirth.client.garrison.ServicePostScreen::new);
         event.register(TechMenus.GENERATOR.get(), GeneratorScreen::new);
+        event.register(com.projectrebirth.wanderers.WandererRegistry.TRADE_MENU.get(), com.projectrebirth.client.screen.WandererTradeScreen::new);
         event.register(TechMenus.ENERGY_PANEL.get(), com.projectrebirth.client.screen.EnergyPanelScreen::new);
         event.register(com.projectrebirth.shelter.ShelterRegistry.AIR_FILTRATION_MENU.get(), com.projectrebirth.client.screen.AirFiltrationScreen::new);
         event.register(com.projectrebirth.water.WaterRegistry.WATER_PURIFIER_MENU.get(), com.projectrebirth.client.screen.WaterPurifierScreen::new);
@@ -138,6 +139,11 @@ public class ProjectRebirthClient {
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        // 1.9.0, block E: the wanderers
+        event.registerEntityRenderer(com.projectrebirth.wanderers.WandererRegistry.ARMORED.get(), c -> new com.projectrebirth.client.render.WandererRenderer.Geo(c, 0.8f));
+        event.registerEntityRenderer(com.projectrebirth.wanderers.WandererRegistry.ANDROID.get(), c -> new com.projectrebirth.client.render.WandererRenderer.Geo(c, 0.4f));
+        event.registerEntityRenderer(com.projectrebirth.wanderers.WandererRegistry.ROBOT.get(), c -> new com.projectrebirth.client.render.WandererRenderer.Geo(c, 0.6f));
+        event.registerEntityRenderer(com.projectrebirth.wanderers.WandererRegistry.SURVIVOR.get(), com.projectrebirth.client.render.WandererRenderer.Survivor::new);
         // 1.9.0, block D: the new mutants; the hunter is drawn almost clear when hidden
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.CRAWLER.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "crawler", 0.6f, false));
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.SCREAMER.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "screamer", 0.45f, false));

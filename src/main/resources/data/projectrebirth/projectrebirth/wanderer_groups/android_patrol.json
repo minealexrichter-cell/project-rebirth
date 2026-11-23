@@ -1,0 +1,46 @@
+{
+  "weight": 25,
+  "members": [
+    {
+      "kind": "android",
+      "leader": true,
+      "variants": [
+        "basic_robot_body",
+        "improved_robot_body",
+        "advanced_synthetic_body",
+        "hightech_synthetic_body",
+        "premium_synthetic_body"
+      ],
+      "weapons": [
+        "minecraft:iron_sword",
+        "minecraft:iron_axe",
+        "minecraft:crossbow"
+      ],
+      "offhand": [
+        "minecraft:shield"
+      ]
+    },
+    {
+      "kind": "android",
+      "count": {
+        "min": 1,
+        "max": 2
+      },
+      "variants": [
+        "basic_robot_body",
+        "improved_robot_body",
+        "advanced_synthetic_body",
+        "hightech_synthetic_body",
+        "premium_synthetic_body"
+      ],
+      "weapons": [
+        "minecraft:iron_sword",
+        "minecraft:bow",
+        "minecraft:crossbow"
+      ],
+      "offhand": [
+        "minecraft:shield"
+      ]
+    }
+  ]
+}

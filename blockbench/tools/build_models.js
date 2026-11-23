@@ -4118,6 +4118,72 @@
                     jaw: {r: K([0, [10, 0, 0]], [0.25, [50, 0, 0]], [0.6, [10, 0, 0]])}})
             }
         };
+
+        // ------------------------------------------------------------ 1.9.0, block E: the wandering robot of the wanderers
+        // An old work robot made over into a porter and a guard: olive and sand paint worn down to metal at the edges, no hazard
+        // stripes (it is nobody's machine), one round lens, a carbine on the right forearm, a gripper on the left, a pack frame
+        // with crates and a bedroll on its back.
+        const OLIVE = {c: '#6e7a54', n: 0.07}, OLIVE_D = {c: '#4e5640', n: 0.07}, SAND = {c: '#b8a478', n: 0.06};
+        const FRAME = {c: '#3a3e3a', n: 0.05}, GUNMETAL = {c: '#4a4e52', n: 0.05}, CRATE = {c: '#8a6a3e', n: 0.1}, CLOTH = {c: '#5a6a3a', n: 0.1, edge: false};
+        const WORN = '#9aa090', LENS = '#7fc8d8';
+        const paintOf = (base, extra) => Object.assign({}, base, extra || {});
+        SPECS.wanderer_robot = {
+            res: 64, seed: 1921, noCoplanarFaces: true, separateFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'hips', parent: 'root', pivot: [0, 11, 0], cubes: [C([-3.5, 10, -2.5], [7, 3, 5], paintOf(OLIVE_D))]},
+                {name: 'right_leg', parent: 'hips', pivot: [-2.5, 10.5, 0], cubes: [C([-4, 5.5, -1.5], [3, 6, 3], paintOf(OLIVE, {f: [[0, 0, 3, 1, WORN]]}))]},
+                {name: 'right_shin', parent: 'right_leg', pivot: [-2.5, 6, 0], cubes: [C([-4, 0, -2.5], [3, 6, 4], paintOf(OLIVE_D, {f: [[0, 4, 3, 2, '#2a2c2a']]}))]},
+                {name: 'left_leg', parent: 'hips', pivot: [2.5, 10.5, 0], cubes: [C([1, 5.5, -1.5], [3, 6, 3], paintOf(OLIVE, {f: [[0, 0, 3, 1, WORN]]}))]},
+                {name: 'left_shin', parent: 'left_leg', pivot: [2.5, 6, 0], cubes: [C([1, 0, -2.5], [3, 6, 4], paintOf(OLIVE_D, {f: [[0, 4, 3, 2, '#2a2c2a']]}))]},
+                {name: 'torso', parent: 'hips', pivot: [0, 13, 0], cubes: [
+                    C([-5, 12.5, -3.5], [10, 8, 7], paintOf(OLIVE, {f: [[1, 1, 8, 1, WORN], [1, 6, 8, 1, '#3a3e3a']], sd: [[1, 2, 5, 1, '#3a3e3a'], [1, 4, 5, 1, '#3a3e3a']]})),
+                    C([-4, 14, -4.25], [8, 5, 1], paintOf(SAND, {f: [[0, 1, 8, 1, '#8a7a58'], [0, 3, 8, 1, '#8a7a58'], [6, 0, 2, 1, WORN]]}))]},
+                {name: 'pack', parent: 'torso', pivot: [0, 16, 3.5], cubes: [
+                    C([-4, 12.5, 3.25], [8, 9, 1], paintOf(FRAME)),
+                    C([-4.5, 13, 4.5], [4, 4, 4], paintOf(CRATE, {f: [[0, 1, 4, 1, '#5a4428']], k: [[0, 1, 4, 1, '#5a4428']]})),
+                    C([0.5, 13, 4.5], [4, 5, 4], paintOf(CRATE, {f: [[0, 2, 4, 1, '#5a4428']], k: [[0, 2, 4, 1, '#5a4428']]})),
+                    C([-4, 18.5, 4.75], [8, 2, 3], CLOTH)]},
+                {name: 'head', parent: 'torso', pivot: [0, 20.5, 0], cubes: [
+                    C([-1, 20, -1], [2, 2, 2], paintOf(FRAME)),
+                    C([-3, 21.5, -3.5], [6, 4, 6], paintOf(SAND, {f: [[2, 1, 2, 2, LENS], [0, 0, 6, 1, WORN]], tp: [[1, 1, 4, 4, '#a89468']]})),
+                    C([-0.5, 22.25, -4.25], [1, 1, 1], {c: '#e8f4f8', n: 0.02, edge: false}, {inflate: 0.1})]},
+                {name: 'antenna', parent: 'head', pivot: [2, 25.5, 1], cubes: [C([1.5, 25.5, 0.5], [1, 4, 1], paintOf(FRAME, {edge: false}))]},
+                {name: 'right_arm', parent: 'torso', pivot: [-5.5, 19, 0], cubes: [
+                    C([-8, 16.5, -2], [3, 3, 4], paintOf(OLIVE, {tp: [[0, 0, 3, 1, WORN]]})),
+                    C([-7.5, 10.5, -1.5], [2, 7, 3], paintOf(FRAME)),
+                    C([-8, 10, -7], [3, 3, 8], paintOf(GUNMETAL, {sd: [[1, 1, 6, 1, '#2a2c2e']]})),
+                    C([-7, 11, -9], [1, 1, 2], {c: '#2a2c2e', n: 0.02, edge: false})]},
+                {name: 'left_arm', parent: 'torso', pivot: [5.5, 19, 0], cubes: [
+                    C([5, 16.5, -2], [3, 3, 4], paintOf(OLIVE, {tp: [[0, 0, 3, 1, WORN]]})),
+                    C([5.5, 10.5, -1.5], [2, 7, 3], paintOf(FRAME))]},
+                {name: 'gripper', parent: 'left_arm', pivot: [6.5, 10.5, 0], cubes: [
+                    C([5.25, 8, -1.5], [1, 3, 1], paintOf(GUNMETAL, {edge: false})), C([6.75, 8, -1.5], [1, 3, 1], paintOf(GUNMETAL, {edge: false})),
+                    C([6, 8, 0.5], [1, 3, 1], paintOf(GUNMETAL, {edge: false}))]}
+            ],
+            animations: {
+                'animation.wanderer_robot.idle': {length: 4, loop: 'loop', bones: {
+                    head: {r: K([0, [0, 0, 0]], [1.2, [0, 25, 0]], [2.0, [0, 25, 0]], [2.8, [0, -20, 0]], [3.4, [0, -20, 0]], [4, [0, 0, 0]])},
+                    antenna: {r: swayOf(4, 0, 5, 4)},
+                    torso: {p: loopOf(4, t => [0, R2(0.2 * Math.sin(2 * Math.PI * t)), 0])},
+                    gripper: {r: loopOf(4, t => [R2(6 * Math.sin(4 * Math.PI * t)), 0, 0])}}},
+                'animation.wanderer_robot.walk': {length: 0.8, loop: 'loop', bones: {
+                    right_leg: {r: legSwing(0.8, 28, 0)}, left_leg: {r: legSwing(0.8, 28, 0.5)},
+                    right_shin: {r: loopOf(0.8, t => [R2(Math.max(0, 25 * Math.sin(2 * Math.PI * t))), 0, 0])},
+                    left_shin: {r: loopOf(0.8, t => [R2(Math.max(0, 25 * Math.sin(2 * Math.PI * (t + 0.5)))), 0, 0])},
+                    torso: {r: loopOf(0.8, t => [0, 0, R2(3 * Math.sin(2 * Math.PI * t))]), p: loopOf(0.8, t => [0, R2(0.5 * Math.abs(Math.sin(2 * Math.PI * t))), 0])},
+                    pack: {r: loopOf(0.8, t => [R2(2 * Math.sin(4 * Math.PI * t)), 0, 0])},
+                    left_arm: {r: legSwing(0.8, 15, 0)}, antenna: {r: swayOf(0.8, 0, 10, 6)}}},
+                // a short burst: the carbine kicks up twice
+                'animation.wanderer_robot.attack': move(0.3, {
+                    right_arm: {r: K([0, [0, 0, 0]], [0.05, [-8, 0, 0]], [0.12, [0, 0, 0]], [0.17, [-8, 0, 0]], [0.3, [0, 0, 0]])},
+                    torso: {r: K([0, [0, 0, 0]], [0.05, [-2, 0, 0]], [0.3, [0, 0, 0]])}}),
+                // its wreck: it sags to its knees and falls forward
+                'animation.wanderer_robot.dead': move(1.2, {
+                    root: {r: K([0, [0, 0, 0]], [0.5, [10, 0, 4]], [1.0, [80, 0, 6]], [1.2, [76, 0, 6]]), p: K([0, [0, 0, 0]], [0.5, [0, -2, 0]], [1.0, [0, 1.5, 9]], [1.2, [0, 1.5, 9]])},
+                    head: {r: K([0, [0, 0, 0]], [1.2, [-20, 30, 0]])}}, true)
+            }
+        };
     })();
 
     // ------------------------------------------------------------------ pilot weapons, second version (1.6.0, part B3f)

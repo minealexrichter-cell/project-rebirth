@@ -57,7 +57,9 @@ public class RemainsEntity extends Entity implements GeoEntity {
         IMPROVED_ROBOT_BODY("improved_robot_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
         ADVANCED_SYNTHETIC_BODY("advanced_synthetic_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
         HIGHTECH_SYNTHETIC_BODY("hightech_synthetic_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
-        PREMIUM_SYNTHETIC_BODY("premium_synthetic_body", 1.2f, 0.5f, true, "animation.body.wrecked");
+        PREMIUM_SYNTHETIC_BODY("premium_synthetic_body", 1.2f, 0.5f, true, "animation.body.wrecked"),
+        // 1.9.0, block E: a wandering robot of the wanderers
+        WANDERER_ROBOT("wanderer_robot", 1.0f, 0.6f, true);
 
         public final String id;
         public final float width, height;
@@ -84,7 +86,7 @@ public class RemainsEntity extends Entity implements GeoEntity {
 
         /** The wreck of an artificial body (it shows no upgrades). */
         public boolean body() {
-            return ordinal() >= BASIC_ROBOT_BODY.ordinal();
+            return ordinal() >= BASIC_ROBOT_BODY.ordinal() && ordinal() <= PREMIUM_SYNTHETIC_BODY.ordinal();
         }
 
         static Kind of(int index) {

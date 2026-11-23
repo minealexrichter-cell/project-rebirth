@@ -1,0 +1,35 @@
+{
+  "icon": "projectrebirth:wanderer_survivor_spawn_egg",
+  "x": -3,
+  "y": 4,
+  "parents": [
+    "wasteland_stages"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wanderers.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wanderers.p2"
+    },
+    {
+      "type": "entity",
+      "value": "projectrebirth:wanderer_armored",
+      "text": "codex.projectrebirth.wanderers.p3"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.wanderers.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wanderers.p5"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.wanderers.p6"
+    }
+  ]
+}

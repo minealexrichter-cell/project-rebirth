@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:emerald",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:assault_rifle_ammo",
+    "count": 16
+  },
+  "weight": 12
+}

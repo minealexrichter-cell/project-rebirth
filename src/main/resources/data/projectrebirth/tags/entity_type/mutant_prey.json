@@ -1,4 +1,9 @@
 {
   "replace": false,
-  "values": []
+  "values": [
+    "projectrebirth:wanderer_armored",
+    "projectrebirth:wanderer_android",
+    "projectrebirth:wanderer_survivor",
+    "projectrebirth:wanderer_robot"
+  ]
 }

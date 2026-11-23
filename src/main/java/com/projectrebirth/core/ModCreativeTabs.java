@@ -278,6 +278,10 @@ public final class ModCreativeTabs {
         out.accept(HostileRegistry.CHITIN_PLATE.get());
         out.accept(HostileRegistry.RADIOACTIVE_BONE.get());
         out.accept(HostileRegistry.MUTATED_HOUND_SPAWN_EGG.get());
+        out.accept(com.projectrebirth.wanderers.WandererRegistry.ARMORED_SPAWN_EGG.get());
+        out.accept(com.projectrebirth.wanderers.WandererRegistry.ANDROID_SPAWN_EGG.get());
+        out.accept(com.projectrebirth.wanderers.WandererRegistry.SURVIVOR_SPAWN_EGG.get());
+        out.accept(com.projectrebirth.wanderers.WandererRegistry.ROBOT_SPAWN_EGG.get());
         out.accept(HostileRegistry.CRAWLER_SPAWN_EGG.get());
         out.accept(HostileRegistry.SCREAMER_SPAWN_EGG.get());
         out.accept(HostileRegistry.RAT_SPAWN_EGG.get());

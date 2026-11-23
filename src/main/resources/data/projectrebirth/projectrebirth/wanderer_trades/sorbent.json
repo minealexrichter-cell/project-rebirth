@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:emerald",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:sorbent",
+    "count": 1
+  },
+  "weight": 15
+}

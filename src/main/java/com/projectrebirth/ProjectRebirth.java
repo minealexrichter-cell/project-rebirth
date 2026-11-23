@@ -86,6 +86,7 @@ public class ProjectRebirth {
         com.projectrebirth.garrison.GarrisonEvents.register();
         com.projectrebirth.shelter.ShelterRegistry.register(modEventBus);
         com.projectrebirth.codex.CodexRegistry.register(modEventBus);
+        com.projectrebirth.wanderers.WandererRegistry.register(modEventBus);
         Jetpack.register(modEventBus);
         ModSounds.register(modEventBus);
         ModCreativeTabs.register(modEventBus);

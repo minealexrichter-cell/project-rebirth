@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:emerald",
+      "count": 3
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:biofilter",
+    "count": 2
+  },
+  "weight": 8
+}

@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "projectrebirth:chitin_plate",
+      "count": 2
+    }
+  ],
+  "result": {
+    "id": "minecraft:emerald",
+    "count": 1
+  },
+  "weight": 10
+}

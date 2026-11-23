@@ -1,0 +1,13 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:bread",
+      "count": 6
+    }
+  ],
+  "result": {
+    "id": "minecraft:emerald",
+    "count": 1
+  },
+  "weight": 10
+}

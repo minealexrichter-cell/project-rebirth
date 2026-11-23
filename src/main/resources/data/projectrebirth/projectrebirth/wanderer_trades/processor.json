@@ -1,0 +1,14 @@
+{
+  "cost": [
+    {
+      "id": "minecraft:emerald",
+      "count": 8
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:processor",
+    "count": 1
+  },
+  "weight": 6,
+  "min_stage": 2
+}

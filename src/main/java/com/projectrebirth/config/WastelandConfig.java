@@ -87,6 +87,7 @@ public final class WastelandConfig {
     public static ModConfigSpec.IntValue WANDERERS_OFFERS_MAX;
     public static ModConfigSpec.DoubleValue WANDERERS_DROP_CHANCE;
     public static ModConfigSpec.BooleanValue WANDERERS_CAMPFIRE;
+    public static ModConfigSpec.IntValue WANDERERS_CAMPFIRE_MINUTES;
 
     public static ModConfigSpec.IntValue ANTITOXIN_SECONDS;
     public static ModConfigSpec.DoubleValue ANTITOXIN_SHARE;
@@ -214,7 +215,9 @@ public final class WastelandConfig {
         WANDERERS_OFFERS_MIN = builder.comment("Fewest offers of a group").defineInRange("offersMin", 4, 0, 16);
         WANDERERS_OFFERS_MAX = builder.comment("Most offers of a group").defineInRange("offersMax", 8, 0, 16);
         WANDERERS_DROP_CHANCE = builder.comment("Chance of each piece of gear of a fallen wanderer to drop").defineInRange("gearDropChance", 0.3, 0.0, 1.0);
-        WANDERERS_CAMPFIRE = builder.comment("A camp at evening lights a campfire (taken away when the group leaves)").define("campfire", true);
+        WANDERERS_CAMPFIRE = builder.comment("A camp at evening lights a campfire (taken away after the camp, not before campfireMinutes)").define("campfire", true);
+        WANDERERS_CAMPFIRE_MINUTES = builder.comment("The shortest time a campfire of wanderers stays, in minutes, whatever becomes of the group")
+                .defineInRange("campfireMinutes", 5, 0, 1440);
         builder.pop();
 
         builder.comment("The numbers of the presets").push("presets");

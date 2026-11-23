@@ -58,7 +58,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -123,6 +122,7 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
     public WandererEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
         moveControl = new StepBackControl();
+        setPathfindingMalus(net.minecraft.world.level.pathfinder.PathType.DAMAGE_FIRE, -1.0f);
         setPersistenceRequired();
     }
 
@@ -336,17 +336,20 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
 
     /** Once a second for the head: the camp, and going away with no player near. */
     private void leaderSecond(ServerLevel server) {
-        boolean camp = campTime() && getTarget() == null;
-        if (camp && campfire == null && WastelandConfig.WANDERERS_CAMPFIRE.get() && onGround()) {
-            BlockPos at = blockPosition();
-            if (server.isEmptyBlock(at) && server.getBlockState(at.below()).isFaceSturdy(server, at.below(), net.minecraft.core.Direction.UP)
-                    && com.projectrebirth.factions.FactionService.territoryAt(server.getServer(), server, at).isEmpty()) {
-                server.setBlockAndUpdate(at, Blocks.CAMPFIRE.defaultBlockState());
-                campfire = at;
-                getNavigation().stop();
+        if (!campTime()) {
+            leaveCampfire();
+        } else if (campfire == null) {
+            if (getTarget() == null && onGround()) {
+                lightCampfire(server);
             }
-        } else if (!camp && campfire != null) {
-            putOutCampfire();
+        } else if (campfire.distSqr(blockPosition()) > 32.0 * 32.0) {
+            // a fight or a flight took the group far from it: another camp
+            leaveCampfire();
+        } else {
+            WandererCampfires.get(server).keep(server, campfire, server.getGameTime());
+            if (getTarget() == null && campfire.distSqr(blockPosition()) > 64.0 && getNavigation().isDone()) {
+                getNavigation().moveTo(campfire.getX() + 0.5, campfire.getY(), campfire.getZ() + 0.5, 2, 0.9);
+            }
         }
         double radius = WastelandConfig.WANDERERS_NEAR_RADIUS.get();
         if (server.getNearestPlayer(this, radius) == null) {
@@ -359,12 +362,40 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
         }
     }
 
-    /** The campfire is taken away (only if it is still the one it lit). */
-    public void putOutCampfire() {
-        if (campfire != null && level().getBlockState(campfire).getBlock() instanceof CampfireBlock) {
-            level().removeBlock(campfire, false);
+    /** Lights the fire of the camp beside the group, never where somebody stands. Public for tests. */
+    public boolean lightCampfire(ServerLevel server) {
+        if (!WastelandConfig.WANDERERS_CAMPFIRE.get()) {
+            return false;
         }
+        for (int attempt = 0; attempt < 16; attempt++) {
+            double angle = getRandom().nextDouble() * Math.PI * 2.0, distance = 2.5 + getRandom().nextDouble();
+            BlockPos column = BlockPos.containing(getX() + Math.cos(angle) * distance, getY(), getZ() + Math.sin(angle) * distance);
+            for (int up = 1; up >= -1; up--) {
+                BlockPos at = column.above(up);
+                if (server.isLoaded(at) && server.isEmptyBlock(at) && server.isEmptyBlock(at.above())
+                        && server.getBlockState(at.below()).isFaceSturdy(server, at.below(), net.minecraft.core.Direction.UP)
+                        && server.getEntitiesOfClass(LivingEntity.class, new AABB(at).inflate(0.7), LivingEntity::isAlive).isEmpty()
+                        && com.projectrebirth.factions.FactionService.territoryAt(server.getServer(), server, at).isEmpty()) {
+                    server.setBlockAndUpdate(at, Blocks.CAMPFIRE.defaultBlockState());
+                    WandererCampfires.get(server).lit(at, server.getGameTime());
+                    campfire = at;
+                    getNavigation().stop();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The camp is over: the fire burns on for its shortest time (see WandererCampfires). */
+    public void leaveCampfire() {
         campfire = null;
+    }
+
+    /** Wanderers know their way about a fire. */
+    @Override
+    public boolean isInvulnerableTo(DamageSource source) {
+        return source.is(net.minecraft.world.damagesource.DamageTypes.CAMPFIRE) || super.isInvulnerableTo(source);
     }
 
     @Nullable
@@ -372,9 +403,9 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
         return campfire;
     }
 
-    /** The whole group leaves the world (as the wandering trader does), its campfire with it. */
+    /** The whole group leaves the world (as the wandering trader does). */
     public void goAway() {
-        putOutCampfire();
+        leaveCampfire();
         for (WandererEntity member : group()) {
             member.discard();
         }
@@ -517,9 +548,9 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
             WandererGroups.leaveRemains(this);
             unloadCrossbow();
             if (isLeader()) {
-                putOutCampfire();
                 setLeader(false);
-                group().stream().filter(member -> member != this).findFirst().ifPresent(WandererEntity::leader);
+                group().stream().filter(member -> member != this).findFirst().ifPresent(member -> member.leader().campfire = campfire);
+                leaveCampfire();
             }
         }
         super.die(source);

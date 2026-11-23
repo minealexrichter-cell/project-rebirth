@@ -11,6 +11,7 @@ import com.projectrebirth.garrison.TestMachineEntity;
 import com.projectrebirth.hostile.HostileRegistry;
 import com.projectrebirth.hostile.RemainsEntity;
 import com.projectrebirth.powerarmor.PowerArmorEntity;
+import com.projectrebirth.wanderers.WandererCampfires;
 import com.projectrebirth.wanderers.WandererData;
 import com.projectrebirth.wanderers.WandererEntity;
 import com.projectrebirth.wanderers.WandererGroups;
@@ -331,6 +332,48 @@ public class WandererGameTests {
             helper.getLevel().getEntitiesOfClass(RemainsEntity.class, box).forEach(RemainsEntity::discard);
             helper.succeed();
         });
+    }
+
+    @GameTest(template = TEMPLATE, batch = "wanderers_campfire")
+    public static void aCampfireStandsBesideTheGroupAndStaysItsTime(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        WandererCampfires fires = WandererCampfires.get(level);
+        long stay = WastelandConfig.WANDERERS_CAMPFIRE_MINUTES.get() * 60L * 20L, now = level.getGameTime();
+        for (int i = 0; i < 10; i++) {
+            WandererEntity head = spawn(helper, "caravan", new BlockPos(4, 2, 4));
+            List<WandererEntity> members = head.group();
+            helper.assertTrue(head.lightCampfire(level), "A fire is lit");
+            BlockPos fire = head.campfire();
+            helper.assertTrue(level.getBlockState(fire).is(net.minecraft.world.level.block.Blocks.CAMPFIRE), "A campfire block");
+            helper.assertTrue(members.stream().noneMatch(m -> m.getBoundingBox().intersects(new AABB(fire))), "Nobody stands in it");
+            float health = head.getHealth();
+            head.hurt(level.damageSources().campfire(), 1.0f);
+            helper.assertTrue(head.getHealth() == health, "It does not burn them");
+            // the head falls: the next one takes the fire over; then they leave
+            head.hurt(level.damageSources().generic(), 1000.0f);
+            WandererEntity next = members.stream().filter(m -> m != head && m.isLeader()).findFirst().orElseThrow();
+            helper.assertTrue(fire.equals(next.campfire()), "The next head keeps the fire");
+            next.goAway();
+            fires.update(level, now + stay - 40L);
+            helper.assertTrue(level.getBlockState(fire).is(net.minecraft.world.level.block.Blocks.CAMPFIRE), "It stays its shortest time");
+            fires.update(level, now + stay + 40L);
+            helper.assertTrue(level.isEmptyBlock(fire) && !fires.has(fire), "Then it is taken away");
+        }
+        // kept by a camp beyond that time; saved with the world
+        BlockPos fire = helper.absolutePos(new BlockPos(4, 2, 4));
+        level.setBlockAndUpdate(fire, net.minecraft.world.level.block.Blocks.CAMPFIRE.defaultBlockState());
+        fires.lit(fire, now);
+        fires.keep(level, fire, now + stay);
+        fires.update(level, now + stay + 40L);
+        helper.assertTrue(fires.has(fire), "A camp keeps its fire");
+        helper.assertTrue(fires.save(new CompoundTag(), level.registryAccess()).getLongArray("positions").length >= 1, "Saved with the world");
+        fires.update(level, now + stay + 200L);
+        helper.assertFalse(fires.has(fire), "And lets it go");
+        AABB box = new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(16);
+        level.getEntitiesOfClass(RemainsEntity.class, box).forEach(RemainsEntity::discard);
+        level.getEntitiesOfClass(PowerArmorEntity.class, box).forEach(PowerArmorEntity::discard);
+        clear(helper);
+        helper.succeed();
     }
 
     @GameTest(template = TEMPLATE)

@@ -535,7 +535,14 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
         }
 
         @Override
+        public void start() {
+            // synced to clients: an armor raises its weapon to aim
+            setAggressive(true);
+        }
+
+        @Override
         public void stop() {
+            setAggressive(false);
             getNavigation().stop();
         }
 

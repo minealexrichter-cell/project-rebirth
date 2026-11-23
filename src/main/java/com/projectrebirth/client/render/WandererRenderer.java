@@ -80,6 +80,15 @@ public final class WandererRenderer {
                 head.setRotY(Mth.clamp(data.netHeadYaw(), -60.0f, 60.0f) * Mth.DEG_TO_RAD);
                 head.setRotX(data.headPitch() * Mth.DEG_TO_RAD);
             }
+            // an armor holds its weapon as an armor with a pilot does: at the hip, raised to aim in a fight
+            if (wanderer.kind() == WandererEntity.Kind.ARMORED && wanderer.getMainHandItem().getItem() instanceof com.projectrebirth.weapons.WeaponItem) {
+                GeoBone rightArm = getAnimationProcessor().getBone("right_arm");
+                GeoBone leftArm = getAnimationProcessor().getBone("left_arm");
+                if (rightArm != null && leftArm != null) {
+                    ArmorWeaponPose.applyWanderer(wanderer, wanderer.isAggressive() ? 1.0f : 0.0f, state.getPartialTick(), rightArm, leftArm,
+                            getAnimationProcessor().getBone("right_forearm"), getAnimationProcessor().getBone("left_forearm"));
+                }
+            }
         }
     }
 
@@ -139,6 +148,7 @@ public final class WandererRenderer {
             if (armored && stack.getItem() instanceof com.projectrebirth.weapons.WeaponItem) {
                 // the weapon from the fist, pointing ahead, as an armor holds it for its pilot
                 poseStack.pushPose();
+                poseStack.mulPose(Axis.XP.rotation(-ArmorWeaponPose.weaponCorrection()));
                 poseStack.translate(0.0f, WEAPON_IN_FIST, 0.0f);
                 WeaponView view = WeaponView.of(wanderer, stack.getItem());
                 view.update(wanderer, partialTick);

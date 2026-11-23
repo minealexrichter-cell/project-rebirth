@@ -44,16 +44,28 @@ final class ArmorWeaponPose {
                       @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm) {
         WeaponView view = WeaponView.of(pilot, pilot.getMainHandItem().getItem());
         view.update(pilot, partialTick);
-        boolean right = pilot.getMainArm() == HumanoidArm.RIGHT;
+        pose(pilot.getMainArm() == HumanoidArm.RIGHT, pilot.getViewXRot(partialTick) * Mth.DEG_TO_RAD, view.aimAmount(), view.kick(),
+                RELOAD_DIP * reloadDip(armor, pilot), rightArm, leftArm, rightForearm, leftForearm);
+    }
+
+    /**
+     * 1.9.0, block E: the same hold for a wanderer in power armor (no pilot): the weapon in the right fist, the look's
+     * pitch from the wanderer itself, raised to aim while it fights.
+     */
+    static void applyWanderer(net.minecraft.world.entity.LivingEntity wanderer, float aim, float partialTick, GeoBone rightArm, GeoBone leftArm,
+                              @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm) {
+        pose(true, wanderer.getViewXRot(partialTick) * Mth.DEG_TO_RAD, aim, 0.0f, 0.0f, rightArm, leftArm, rightForearm, leftForearm);
+    }
+
+    private static void pose(boolean right, float pitch, float aim, float kick, float dip, GeoBone rightArm, GeoBone leftArm,
+                             @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm) {
         GeoBone mainArm = right ? rightArm : leftArm;
         GeoBone mainForearm = right ? rightForearm : leftForearm;
         GeoBone otherArm = right ? leftArm : rightArm;
         GeoBone otherForearm = right ? leftForearm : rightForearm;
         float side = right ? 1.0f : -1.0f;
 
-        float pitch = pilot.getViewXRot(partialTick) * Mth.DEG_TO_RAD;
-        float aim = view.aimAmount();
-        float arm = HOLD_ARM + AIM_ARM * aim - pitch * LOOK_FOLLOW + view.kick() * KICK;
+        float arm = HOLD_ARM + AIM_ARM * aim - pitch * LOOK_FOLLOW + kick * KICK;
         float forearm = HOLD_FOREARM + AIM_FOREARM * aim;
         mainArm.setRotX(arm);
         mainArm.setRotY(side * MAIN_INWARD);
@@ -63,7 +75,6 @@ final class ArmorWeaponPose {
         }
         weaponCorrection = arm + forearm + pitch;
 
-        float dip = RELOAD_DIP * reloadDip(armor, pilot);
         otherArm.setRotX(SUPPORT_ARM + SUPPORT_AIM * aim - pitch * LOOK_FOLLOW - dip);
         otherArm.setRotY(-side * SUPPORT_INWARD);
         otherArm.setRotZ(0.0f);

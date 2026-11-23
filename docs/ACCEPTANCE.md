@@ -139,3 +139,4 @@
 |---|---|---|---|
 | `mutated_cow`, `mutated_pig`, `mutated_chicken` (первая версия, модели в коде) | `docs/screenshots/1.9/c_textures.png` | «никуда не годятся»; переделать в Blockbench, референс — Scape and Run: Parasites, стиль старых мутантов | переделаны |
 | `mutated_cow`, `mutated_pig`, `mutated_chicken` (GeckoLib) | `docs/screenshots/1.9/bb_mutated_*.png`, `c_mutated_*_v2.png` | — | **принято** 2026-11-23 |
+| `crawler`, `screamer`, `rat`, `hunter`, `drowner` (GeckoLib) | `docs/screenshots/1.9/bb_*.png`, `d_new_mutants_day.png`, `d_new_mutants_night.png` | — | **принято** 2026-11-23 |

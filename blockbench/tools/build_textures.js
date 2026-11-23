@@ -1716,6 +1716,24 @@
         '....kkkkkkkk....',
         '................',
         '................'], SYMPTOM_PALETTE);
+    // 1.9.0: wound infection — a red gash with green drops of the agent
+    TEXTURES['mob_effect/wound_infection'] = () => icon([
+        '................',
+        '..........kk....',
+        '.........krrk...',
+        '........krRrk...',
+        '.......krRrk....',
+        '......krRrk.....',
+        '.....krRrk......',
+        '....krRrk.......',
+        '...krRrk...kk...',
+        '...krrk...kgGk..',
+        '....kk...kggGk..',
+        '..kk.....kgggk..',
+        '.kgGk.....kkk...',
+        '.kggk...........',
+        '..kk............',
+        '................'], Object.assign({r: '#a02a22', R: '#e0584a'}, SYMPTOM_PALETTE));
 
     item('upgrade_mounting_tool', () => icon([
         '................',

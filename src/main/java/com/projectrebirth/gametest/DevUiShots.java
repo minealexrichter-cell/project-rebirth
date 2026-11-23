@@ -72,6 +72,26 @@ public final class DevUiShots {
                             minecraft.getWindow().getGuiScaledHeight(), minecraft.getWindow().getGuiScale());
                     return;
                 }
+                // 1.9.0: the player's inventory, and the mouse put at GUI coordinates (x y) for a tooltip
+                if (text.equals("inventory") && minecraft.player != null) {
+                    minecraft.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(minecraft.player));
+                    return;
+                }
+                // 1.9.0: the Codex on an entry, and a key pressed in the open window (262 = right arrow, to turn a page)
+                if (text.startsWith("codex ")) {
+                    minecraft.setScreen(com.projectrebirth.client.codex.CodexScreen.openFrom(null, text.substring(6).trim()));
+                    return;
+                }
+                if (text.startsWith("key ") && minecraft.screen != null) {
+                    minecraft.screen.keyPressed(Integer.parseInt(text.substring(4).trim()), 0, 0);
+                    return;
+                }
+                if (text.startsWith("mouse ")) {
+                    String[] at = text.split(" ");
+                    double scale = minecraft.getWindow().getGuiScale();
+                    org.lwjgl.glfw.GLFW.glfwSetCursorPos(minecraft.getWindow().getWindow(), Double.parseDouble(at[1]) * scale, Double.parseDouble(at[2]) * scale);
+                    return;
+                }
                 if (text.equals("respawn")) {
                     if (minecraft.player != null && minecraft.player.isDeadOrDying()) {
                         minecraft.player.respawn();

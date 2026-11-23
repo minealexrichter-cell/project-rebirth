@@ -109,11 +109,14 @@ public final class EnvironmentClient {
         renderForecast(graphics, font, y);
         y += ROW;
         if (last.healthPenalty() >= 1.0f) {
-            graphics.drawString(font, Component.translatable("hud.projectrebirth.human.health"), 0, y, 0xFFFFFFFF);
-            String hearts = number(last.healthPenalty() / 2.0f);
+            Component label = Component.translatable("hud.projectrebirth.human.health");
+            graphics.drawString(font, label, 0, y, 0xFFFFFFFF);
+            // whole and half hearts, as the maximum health is lowered
+            float half = Math.round(last.healthPenalty()) / 2.0f;
+            String hearts = half == Math.floor(half) ? String.valueOf((int) half) : String.format(Locale.ROOT, "%.1f", half);
             Component text = carriesDosimeter(player) ? Component.translatable("hud.projectrebirth.human.health_dose", hearts, number(last.residual()))
                     : Component.translatable("hud.projectrebirth.human.health_lost", hearts);
-            graphics.drawString(font, text, LABEL_WIDTH, y, 0xFFFF8A65);
+            graphics.drawString(font, text, Math.max(LABEL_WIDTH, font.width(label) + 4), y, 0xFFFF8A65);
             y += ROW;
         }
         if (!Float.isNaN(last.temperature())) {

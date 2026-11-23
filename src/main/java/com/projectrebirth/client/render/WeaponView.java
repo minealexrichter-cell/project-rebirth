@@ -82,6 +82,9 @@ public final class WeaponView implements GeoAnimatable {
         now = holder.level().getGameTime();
         boolean armored = holder.getVehicle() instanceof PowerArmorEntity;
         aiming = armored && ((PowerArmorEntity) holder.getVehicle()).isAimingWeapon();
+        if (holder instanceof com.projectrebirth.wanderers.WandererEntity wanderer) {
+            aiming = wanderer.isAggressive();
+        }
         reloading = armored && ((PowerArmorEntity) holder.getVehicle()).weaponReloadEnd() > 0L;
         RebirthConfig.WeaponStats stats = Weapons.statsOf(item);
         if (stats != null) {

@@ -74,6 +74,29 @@ public class NewMutantsGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = TEMPLATE, timeoutTicks = 140, batch = "drowner_swim")
+    public static void theDrownerSwimsWithoutJumping(GameTestHelper helper) {
+        for (int x = 1; x <= 7; x++) {
+            for (int z = 1; z <= 7; z++) {
+                for (int y = 2; y <= 5; y++) {
+                    boolean wall = x == 1 || x == 7 || z == 1 || z == 7;
+                    helper.setBlock(new BlockPos(x, y, z), wall ? Blocks.GLASS : Blocks.WATER);
+                }
+            }
+        }
+        DrownerEntity drowner = helper.spawn(HostileRegistry.DROWNER.get(), new BlockPos(4, 3, 4));
+        boolean[] jumped = {false}, left = {false};
+        helper.onEachTick(() -> {
+            jumped[0] |= drowner.getDeltaMovement().y > 0.15;
+            left[0] |= drowner.tickCount > 5 && !drowner.isInWater();
+        });
+        helper.runAfterDelay(120, () -> {
+            helper.assertFalse(jumped[0] || left[0], "It neither jumps nor leaves the water: jumped " + jumped[0] + ", left " + left[0]);
+            drowner.discard();
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = TEMPLATE)
     public static void theCrawlerBurstsOutWithAStrongerBlowAndIsWeakInTheOpen(GameTestHelper helper) {
         // a villager: a fresh player is invulnerable for its first three seconds

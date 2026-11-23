@@ -45,6 +45,51 @@ public final class WandererRenderer {
             this.shadowRadius = shadow;
             addRenderLayer(new HeldItemLayer(this));
         }
+
+        private java.util.Map<String, Integer> armorPlating = java.util.Map.of();
+        private int bodyPlating = UpgradeVisuals.NO_TINT;
+        @javax.annotation.Nullable
+        private PoseStack.Pose robotMuzzle;
+
+        /** Only the parts of its own upgrades show (the models hold the parts of them all). */
+        @Override
+        public void preRender(PoseStack poseStack, WandererEntity wanderer, software.bernie.geckolib.cache.object.BakedGeoModel model, MultiBufferSource bufferSource,
+                              VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+            armorPlating = java.util.Map.of();
+            bodyPlating = UpgradeVisuals.NO_TINT;
+            if (wanderer.kind() == WandererEntity.Kind.ARMORED) {
+                armorPlating = UpgradeVisuals.applyToArmor(getGeoModel(), wanderer.registryAccess(), wanderer.upgrades());
+            } else if (wanderer.kind() == WandererEntity.Kind.ANDROID) {
+                bodyPlating = UpgradeVisuals.applyToBody(getGeoModel(), wanderer.registryAccess(), wanderer.upgrades());
+            }
+            super.preRender(poseStack, wanderer, model, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, colour);
+        }
+
+        @Override
+        public void renderRecursively(PoseStack poseStack, WandererEntity wanderer, GeoBone bone, RenderType renderType, MultiBufferSource bufferSource,
+                                      VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, int colour) {
+            if (!isReRender && wanderer.kind() == WandererEntity.Kind.ROBOT && bone.getName().equals("right_arm")
+                    && MuzzleFlash.age(wanderer.getId(), partialTick) < 1.0f) {
+                robotMuzzle = MuzzleFlash.capture(poseStack, bone);
+            }
+            int tint = bone.getName().startsWith(UpgradeVisuals.BODY_PLATING_PREFIX) ? bodyPlating : armorPlating.getOrDefault(bone.getName(), colour);
+            super.renderRecursively(poseStack, wanderer, bone, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, tint);
+        }
+
+        @Override
+        public void render(WandererEntity wanderer, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
+            robotMuzzle = null;
+            super.render(wanderer, entityYaw, partialTick, poseStack, buffers, light);
+            if (robotMuzzle != null) {
+                // the end of the carbine's barrel, from the shoulder the arm turns at
+                PoseStack at = new PoseStack();
+                at.last().pose().set(robotMuzzle.pose());
+                at.last().normal().set(robotMuzzle.normal());
+                at.translate(1.0f / 16.0f, -7.5f / 16.0f, -9.0f / 16.0f);
+                MuzzleFlash.draw(at, buffers, MuzzleFlash.age(wanderer.getId(), partialTick), MuzzleFlash.seed(wanderer.getId()), 0.7f);
+                robotMuzzle = null;
+            }
+        }
     }
 
     private static String id(WandererEntity wanderer) {
@@ -84,8 +129,17 @@ public final class WandererRenderer {
                 GeoBone rightArm = getAnimationProcessor().getBone("right_arm");
                 GeoBone leftArm = getAnimationProcessor().getBone("left_arm");
                 if (rightArm != null && leftArm != null) {
-                    ArmorWeaponPose.applyWanderer(wanderer, wanderer.isAggressive() ? 1.0f : 0.0f, state.getPartialTick(), rightArm, leftArm,
+                    ArmorWeaponPose.applyWanderer(wanderer, state.getPartialTick(), rightArm, leftArm,
                             getAnimationProcessor().getBone("right_forearm"), getAnimationProcessor().getBone("left_forearm"));
+                }
+            }
+            // an android moves its arms as a player's body does: the swing, the bow drawn, the crossbow charged and held
+            if (wanderer.kind() == WandererEntity.Kind.ANDROID) {
+                GeoBone rightArm = getAnimationProcessor().getBone("right_arm");
+                GeoBone leftArm = getAnimationProcessor().getBone("left_arm");
+                if (rightArm != null && leftArm != null) {
+                    PilotArmPose.apply(wanderer, state.getPartialTick(), rightArm, leftArm, getAnimationProcessor().getBone("right_forearm"),
+                            getAnimationProcessor().getBone("left_forearm"), getAnimationProcessor().getBone("torso"));
                 }
             }
         }
@@ -150,8 +204,7 @@ public final class WandererRenderer {
                 poseStack.mulPose(Axis.XP.rotation(-ArmorWeaponPose.weaponCorrection()));
                 poseStack.translate(0.0f, WEAPON_IN_FIST, 0.0f);
                 WeaponView view = WeaponView.of(wanderer, stack.getItem());
-                view.update(wanderer, partialTick);
-                WeaponRenderer.INSTANCE.draw(poseStack, view, bufferSource, packedLight, partialTick, WeaponRenderer.Space.NONE);
+                WeaponRenderer.INSTANCE.draw(poseStack, view, bufferSource, packedLight, partialTick, WindowPose.isDrawing() ? WeaponRenderer.Space.NONE : WeaponRenderer.Space.WORLD);
                 poseStack.popPose();
                 return;
             }
@@ -174,6 +227,14 @@ public final class WandererRenderer {
             super(context, new HumanoidModel<>(context.bakeLayer(ModelLayers.ZOMBIE)), 0.5f);
             addLayer(new HumanoidArmorLayer<>(this, new HumanoidArmorModel<>(context.bakeLayer(ModelLayers.ZOMBIE_INNER_ARMOR)),
                     new HumanoidArmorModel<>(context.bakeLayer(ModelLayers.ZOMBIE_OUTER_ARMOR)), context.getModelManager()));
+        }
+
+        /** The arms as a player's: a drawn bow, a crossbow charged and held. */
+        @Override
+        public void render(WandererEntity wanderer, float yaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light) {
+            model.rightArmPose = PilotArmPose.sidePose(wanderer, net.minecraft.world.entity.HumanoidArm.RIGHT);
+            model.leftArmPose = PilotArmPose.sidePose(wanderer, net.minecraft.world.entity.HumanoidArm.LEFT);
+            super.render(wanderer, yaw, partialTick, poseStack, buffers, light);
         }
 
         @Override

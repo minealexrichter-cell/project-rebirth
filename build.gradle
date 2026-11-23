@@ -97,6 +97,10 @@ neoForge {
             client()
             gameDirectory = project.file('run-client2')
             programArguments.addAll '--username', 'Observer'
+            // a test world of its own (checks must not touch the game open in run/)
+            if (project.hasProperty('quickPlayWorld')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlayWorld').toString()
+            }
             if (project.hasProperty('quickPlayServer')) {
                 programArguments.addAll '--quickPlayMultiplayer', project.property('quickPlayServer').toString()
             }

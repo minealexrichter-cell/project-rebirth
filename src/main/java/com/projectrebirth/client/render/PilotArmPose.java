@@ -60,7 +60,7 @@ final class PilotArmPose {
     }
 
     /** Arms of an artificial body: item poses, plus the vanilla swing when the player hits or uses something. */
-    static void apply(Player player, float partialTick, GeoBone rightArm, GeoBone leftArm,
+    static void apply(LivingEntity player, float partialTick, GeoBone rightArm, GeoBone leftArm,
                       @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm, @Nullable GeoBone torso) {
         float bodyYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
         applyPoses(player, bodyYaw, partialTick, rightArm, leftArm, false);
@@ -96,7 +96,7 @@ final class PilotArmPose {
      * The swing is added to the arm's current angles as the difference it makes on the vanilla model, so the arm
      * starts and ends the swing where the animation or the pose has it.
      */
-    private static void applySwing(Player player, float bodyYaw, float partialTick, GeoBone rightArm, GeoBone leftArm) {
+    private static void applySwing(LivingEntity player, float bodyYaw, float partialTick, GeoBone rightArm, GeoBone leftArm) {
         float swing = player.getAttackAnim(partialTick);
         if (swing <= 0.0f) {
             return;
@@ -112,7 +112,7 @@ final class PilotArmPose {
         add(leftArm, vanilla.leftArm.xRot - leftX, vanilla.leftArm.yRot - leftY, vanilla.leftArm.zRot - leftZ);
     }
 
-    private static void applyPoses(Player pilot, float bodyYaw, float partialTick, GeoBone rightArm, GeoBone leftArm, boolean punching) {
+    private static void applyPoses(LivingEntity pilot, float bodyYaw, float partialTick, GeoBone rightArm, GeoBone leftArm, boolean punching) {
         HumanoidModel.ArmPose rightPose = sidePose(pilot, HumanoidArm.RIGHT);
         HumanoidModel.ArmPose leftPose = sidePose(pilot, HumanoidArm.LEFT);
         boolean poseRight = isPosed(rightPose, leftPose);
@@ -143,7 +143,7 @@ final class PilotArmPose {
         return model;
     }
 
-    private static void setup(HumanoidModel<LivingEntity> vanilla, Player player, float bodyYaw, float partialTick, float attackTime) {
+    private static void setup(HumanoidModel<LivingEntity> vanilla, LivingEntity player, float bodyYaw, float partialTick, float attackTime) {
         vanilla.attackTime = attackTime;
         vanilla.riding = false;
         vanilla.crouching = false;
@@ -165,7 +165,7 @@ final class PilotArmPose {
     }
 
     /** Only a plain held item lifts the arm, not the vanilla item poses. */
-    private static boolean holdsPlainItem(Player pilot, HumanoidArm side) {
+    private static boolean holdsPlainItem(LivingEntity pilot, HumanoidArm side) {
         HumanoidModel.ArmPose pose = sidePose(pilot, side);
         return pose == HumanoidModel.ArmPose.ITEM && !isPosed(pose, sidePose(pilot, side.getOpposite()));
     }
@@ -177,7 +177,7 @@ final class PilotArmPose {
     }
 
     /** Pose of the arm on the given side, with the vanilla rule that a two-handed item frees the other hand. */
-    private static HumanoidModel.ArmPose sidePose(Player pilot, HumanoidArm side) {
+    static HumanoidModel.ArmPose sidePose(LivingEntity pilot, HumanoidArm side) {
         HumanoidModel.ArmPose mainPose = armPose(pilot, InteractionHand.MAIN_HAND);
         if (side == pilot.getMainArm()) {
             return mainPose;
@@ -193,7 +193,7 @@ final class PilotArmPose {
     }
 
     /** Same choice as the vanilla player renderer. */
-    private static HumanoidModel.ArmPose armPose(Player player, InteractionHand hand) {
+    private static HumanoidModel.ArmPose armPose(LivingEntity player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (ArmorAbility.isBareHand(stack)) {
             return HumanoidModel.ArmPose.EMPTY;

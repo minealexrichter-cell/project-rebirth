@@ -204,6 +204,7 @@ public final class WandererGroups {
             case SURVIVOR -> wanderer.setVariant(one(spec.variants(), random, "a"));
             default -> wanderer.setVariant("");
         }
+        rollUpgrades(wanderer, random);
         Item weapon = spec.weapons().isEmpty() ? null : item(one(spec.weapons(), random, ""));
         if (weapon != null) {
             wanderer.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(weapon));
@@ -232,6 +233,33 @@ public final class WandererGroups {
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             wanderer.setDropChance(slot, kind == WandererEntity.Kind.SURVIVOR || slot.getType() == EquipmentSlot.Type.HAND ? drop : 0.0f);
         }
+    }
+
+    /** What it shows: an armor plates of one random material on random parts (one at least), an android random plates and by chance the sealing module. */
+    static void rollUpgrades(WandererEntity wanderer, RandomSource random) {
+        var upgrades = com.projectrebirth.upgrades.InstalledUpgrades.EMPTY;
+        if (wanderer.kind() == WandererEntity.Kind.ARMORED) {
+            Item plate = net.minecraft.Util.getRandom(List.<Item>of(com.projectrebirth.upgrades.UpgradeRegistry.ARMOR_COPPER_PLATING.get(),
+                    com.projectrebirth.upgrades.UpgradeRegistry.ARMOR_IRON_PLATING.get(), com.projectrebirth.upgrades.UpgradeRegistry.ARMOR_TITANIUM_PLATING.get()), random);
+            var parts = List.of(com.projectrebirth.upgrades.ArmorSlot.CHEST_FRONT, com.projectrebirth.upgrades.ArmorSlot.RIGHT_ARM,
+                    com.projectrebirth.upgrades.ArmorSlot.LEFT_ARM, com.projectrebirth.upgrades.ArmorSlot.RIGHT_LEG, com.projectrebirth.upgrades.ArmorSlot.LEFT_LEG);
+            int sure = random.nextInt(parts.size());
+            for (int i = 0; i < parts.size(); i++) {
+                if (i == sure || random.nextFloat() < 0.6f) {
+                    upgrades = upgrades.with(new com.projectrebirth.upgrades.InstalledUpgrades.Installed(java.util.Optional.of(parts.get(i)), new ItemStack(plate)));
+                }
+            }
+        } else if (wanderer.kind() == WandererEntity.Kind.ANDROID) {
+            Item plate = net.minecraft.Util.getRandom(List.<Item>of(com.projectrebirth.upgrades.UpgradeRegistry.COPPER_PLATING.get(),
+                    com.projectrebirth.upgrades.UpgradeRegistry.IRON_PLATING.get(), com.projectrebirth.upgrades.UpgradeRegistry.TITANIUM_PLATING.get(),
+                    com.projectrebirth.upgrades.UpgradeRegistry.CHITIN_PLATING.get()), random);
+            upgrades = upgrades.with(new com.projectrebirth.upgrades.InstalledUpgrades.Installed(java.util.Optional.empty(), new ItemStack(plate)));
+            if (random.nextBoolean()) {
+                upgrades = upgrades.with(new com.projectrebirth.upgrades.InstalledUpgrades.Installed(java.util.Optional.empty(),
+                        new ItemStack(com.projectrebirth.upgrades.UpgradeRegistry.SEALING_MODULE.get())));
+            }
+        }
+        wanderer.setUpgrades(upgrades);
     }
 
     private static void wear(WandererEntity wanderer, Item head, Item chest, Item legs, Item feet) {

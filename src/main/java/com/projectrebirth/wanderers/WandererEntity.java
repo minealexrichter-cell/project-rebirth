@@ -101,6 +101,8 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
 
     private static final EntityDataAccessor<String> VARIANT = SynchedEntityData.defineId(WandererEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Boolean> LEADER = SynchedEntityData.defineId(WandererEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<com.projectrebirth.upgrades.InstalledUpgrades> UPGRADES =
+            SynchedEntityData.defineId(WandererEntity.class, com.projectrebirth.upgrades.InstalledUpgrades.ENTITY_DATA);
     private static final double GROUP_RANGE = 64.0;
     private static final long DAY = 24000L;
 
@@ -120,6 +122,7 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
 
     public WandererEntity(EntityType<? extends PathfinderMob> type, Level level) {
         super(type, level);
+        moveControl = new StepBackControl();
         setPersistenceRequired();
     }
 
@@ -139,11 +142,21 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
         super.defineSynchedData(builder);
         builder.define(VARIANT, "");
         builder.define(LEADER, false);
+        builder.define(UPGRADES, com.projectrebirth.upgrades.InstalledUpgrades.EMPTY);
     }
 
     /** Armored: the armor variant; android: the body class; survivor: the skin; robot: nothing. */
     public String variant() {
         return entityData.get(VARIANT);
+    }
+
+    /** The upgrades it shows: plating on an armor; plates and perhaps the sealing module on an android. */
+    public com.projectrebirth.upgrades.InstalledUpgrades upgrades() {
+        return entityData.get(UPGRADES);
+    }
+
+    public void setUpgrades(com.projectrebirth.upgrades.InstalledUpgrades upgrades) {
+        entityData.set(UPGRADES, upgrades);
     }
 
     /** The body class of an android; a variant that is unknown or not set (a summon with its own data) is the basic robot. */
@@ -370,6 +383,67 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
 
     // ------------------------------------------------------------------ fighting
 
+    /** Swings of the arm run here (only monsters and players do it by themselves). */
+    @Override
+    public void aiStep() {
+        updateSwingTime();
+        super.aiStep();
+    }
+
+    /** In a shooting fight the body turns to where it aims (its yaw, see RangedGoal), so it never shoots over its back. */
+    @Override
+    protected net.minecraft.world.entity.ai.control.BodyRotationControl createBodyControl() {
+        return new net.minecraft.world.entity.ai.control.BodyRotationControl(this) {
+            @Override
+            public void clientTick() {
+                if (isAggressive() && (hasGun() || hasBow())) {
+                    yBodyRot = Mth.approachDegrees(yBodyRot, getYRot(), 25.0f);
+                } else {
+                    super.clientTick();
+                }
+            }
+        };
+    }
+
+    /** Walks backwards, the face to the enemy. */
+    private class StepBackControl extends net.minecraft.world.entity.ai.control.MoveControl {
+        StepBackControl() {
+            super(WandererEntity.this);
+        }
+
+        void back(double speed) {
+            strafe(-1.0f, 0.0f);
+            speedModifier = speed;
+        }
+    }
+
+    /** Whether there is ground to step back onto: no wall, no drop of more than a block, no fluid. */
+    private boolean canStepBack(Vec3 away) {
+        BlockPos at = BlockPos.containing(getX() + away.x * (getBbWidth() * 0.5 + 0.6), getY() + 0.1, getZ() + away.z * (getBbWidth() * 0.5 + 0.6));
+        if (!level().noCollision(this, getBoundingBox().move(away.x * 0.6, 0.1, away.z * 0.6)) || !level().getFluidState(at).isEmpty()) {
+            return false;
+        }
+        for (int down = 1; down <= 2; down++) {
+            BlockPos below = at.below(down);
+            if (!level().getFluidState(below).isEmpty()) {
+                return false;
+            }
+            if (!level().getBlockState(below).getCollisionShape(level(), below).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private float yawTo(LivingEntity target) {
+        return (float) (Mth.atan2(target.getZ() - getZ(), target.getX() - getX()) * Mth.RAD_TO_DEG) - 90.0f;
+    }
+
+    /** Whether its body faces the target, so that it may shoot. Public for tests. */
+    public boolean faces(LivingEntity target) {
+        return Mth.degreesDifferenceAbs(yBodyRot, yawTo(target)) < 40.0f;
+    }
+
     @Override
     public void performRangedAttack(LivingEntity target, float power) {
         ItemStack bow = getMainHandItem();
@@ -385,7 +459,10 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
     /** A shot of the gun of an armor or a robot. Public for tests. */
     public boolean shootGun(LivingEntity target) {
         gunCooldown = WastelandConfig.WANDERERS_GUN_INTERVAL.get();
-        triggerAnim("action", "attack");
+        if (kind() == Kind.ROBOT) {
+            // the recoil of its carbine; an armor's weapon kicks by itself (its "attack" is a punch)
+            triggerAnim("action", "attack");
+        }
         return Gunnery.fire(this, getEyePosition().subtract(0.0, 0.2, 0.0), target, 2.5, (float) (WastelandConfig.WANDERERS_GUN_DAMAGE.get() * damageScale()),
                 WastelandConfig.WANDERERS_GUN_RANGE.get(), 1.0f, e -> !(e instanceof WandererEntity), net.minecraft.sounds.SoundSource.NEUTRAL);
     }
@@ -401,7 +478,9 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
 
     @Override
     public boolean doHurtTarget(Entity target) {
-        triggerAnim("action", "attack");
+        if (kind() == Kind.ROBOT || kind() == Kind.ARMORED) {
+            triggerAnim("action", "attack");
+        }
         return super.doHurtTarget(target);
     }
 
@@ -436,6 +515,7 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
     public void die(DamageSource source) {
         if (!level().isClientSide && !isRemoved()) {
             WandererGroups.leaveRemains(this);
+            unloadCrossbow();
             if (isLeader()) {
                 putOutCampfire();
                 setLeader(false);
@@ -447,11 +527,20 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
 
     // ------------------------------------------------------------------ saving
 
+    /** The arrow it loaded by itself is not a drop. */
+    private void unloadCrossbow() {
+        if (getMainHandItem().getItem() instanceof CrossbowItem) {
+            getMainHandItem().remove(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES);
+        }
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putString("variant", variant());
         tag.putBoolean("leader", isLeader());
+        com.projectrebirth.upgrades.InstalledUpgrades.CODEC.encodeStart(registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), upgrades())
+                .result().ifPresent(saved -> tag.put("upgrades", saved));
         if (groupId != null) {
             tag.putUUID("group", groupId);
         }
@@ -479,6 +568,12 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
         super.readAdditionalSaveData(tag);
         setVariant(tag.getString("variant"));
         setLeader(tag.getBoolean("leader"));
+        if (tag.contains("upgrades")) {
+            com.projectrebirth.upgrades.InstalledUpgrades.CODEC.parse(registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), tag.get("upgrades"))
+                    .result().ifPresent(this::setUpgrades);
+        } else {
+            WandererGroups.rollUpgrades(this, getRandom());
+        }
         groupId = tag.hasUUID("group") ? tag.getUUID("group") : null;
         campfire = tag.contains("campfire") ? BlockPos.of(tag.getLong("campfire")) : null;
         hostile.clear();
@@ -542,6 +637,7 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
     /** A bow, a crossbow or the gun of an armor or a robot: keeps its distance and shoots. */
     private class RangedGoal extends Goal {
         private int attackTime;
+        private boolean backing;
 
         RangedGoal() {
             setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
@@ -563,6 +659,9 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
         public void stop() {
             setAggressive(false);
             getNavigation().stop();
+            stopUsingItem();
+            unloadCrossbow();
+            stopBacking();
         }
 
         @Override
@@ -581,25 +680,76 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
             getLookControl().setLookAt(target, 30.0f, 30.0f);
             double range = hasGun() ? WastelandConfig.WANDERERS_GUN_RANGE.get() * 0.8 : 14.0;
             if (distance > range || !sees) {
+                stopBacking();
                 getNavigation().moveTo(target, 1.0);
-            } else if (distance < 5.0) {
-                Vec3 away = net.minecraft.world.entity.ai.util.DefaultRandomPos.getPosAway(WandererEntity.this, 6, 3, target.position());
-                if (away != null) {
-                    getNavigation().moveTo(away.x, away.y, away.z, 1.2);
-                }
             } else {
+                // in range it stands; when the enemy comes close it walks backwards, always facing it
                 getNavigation().stop();
+                setYRot(Mth.approachDegrees(getYRot(), yawTo(target), 30.0f));
+                Vec3 away = position().subtract(target.position()).multiply(1.0, 0.0, 1.0).normalize();
+                if (distance < (backing ? 8.0 : 6.0) && faces(target) && canStepBack(away) && getMoveControl() instanceof StepBackControl control) {
+                    backing = true;
+                    control.back(0.7);
+                } else {
+                    stopBacking();
+                }
             }
             if (!sees || distance > range * 1.2) {
+                stopUsingItem();
                 return;
             }
             if (hasGun()) {
-                if (gunCooldown <= 0) {
+                if (gunCooldown <= 0 && faces(target)) {
                     shootGun(target);
                 }
+            } else if (getMainHandItem().getItem() instanceof CrossbowItem) {
+                crossbow(target);
+            } else {
+                bow(target);
+            }
+        }
+
+        private void stopBacking() {
+            if (backing) {
+                backing = false;
+                getMoveControl().strafe(0.0f, 0.0f);
+                setZza(0.0f);
+                setXxa(0.0f);
+                setSpeed(0.0f);
+            }
+        }
+
+        /** Draws the bow, as a player does, and lets go. */
+        private void bow(LivingEntity target) {
+            if (isUsingItem()) {
+                if (getTicksUsingItem() >= 20 && faces(target)) {
+                    stopUsingItem();
+                    performRangedAttack(target, 1.0f);
+                    attackTime = 12;
+                }
             } else if (--attackTime <= 0) {
-                performRangedAttack(target, 1.0f);
-                attackTime = 30;
+                startUsingItem(InteractionHand.MAIN_HAND);
+            }
+        }
+
+        /** Charges the crossbow, holds it up for a moment and shoots. */
+        private void crossbow(LivingEntity target) {
+            ItemStack stack = getMainHandItem();
+            if (CrossbowItem.isCharged(stack)) {
+                if (--attackTime <= 0 && faces(target)) {
+                    unloadCrossbow();
+                    performRangedAttack(target, 1.0f);
+                    attackTime = 10;
+                }
+            } else if (isUsingItem()) {
+                if (getTicksUsingItem() >= CrossbowItem.getChargeDuration(stack, WandererEntity.this)) {
+                    stopUsingItem();
+                    stack.set(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES,
+                            net.minecraft.world.item.component.ChargedProjectiles.of(new ItemStack(Items.ARROW)));
+                    attackTime = 10;
+                }
+            } else if (--attackTime <= 0) {
+                startUsingItem(InteractionHand.MAIN_HAND);
             }
         }
     }

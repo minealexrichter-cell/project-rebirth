@@ -49,6 +49,21 @@ public class DrownerEntity extends MutantEntity {
         return new AmphibiousPathNavigation(this, level);
     }
 
+    /** It lives in water: no swimming up by jumps (FloatGoal); it wanders under water, on land as the others. */
+    @Override
+    protected void registerGoals() {
+        super.registerGoals();
+        goalSelector.removeAllGoals(goal -> goal instanceof net.minecraft.world.entity.ai.goal.FloatGoal
+                || goal instanceof net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal);
+        goalSelector.addGoal(5, new net.minecraft.world.entity.ai.goal.RandomSwimmingGoal(this, 1.0, 40));
+        goalSelector.addGoal(5, new net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal(this, 0.8) {
+            @Override
+            public boolean canUse() {
+                return !isInWater() && super.canUse();
+            }
+        });
+    }
+
     @Override
     public boolean canDrownInFluidType(net.neoforged.neoforge.fluids.FluidType type) {
         return false;
@@ -76,6 +91,14 @@ public class DrownerEntity extends MutantEntity {
             moveRelative(0.02f, input);
             move(MoverType.SELF, getDeltaMovement());
             setDeltaMovement(getDeltaMovement().scale(0.9));
+            Vec3 motion = getDeltaMovement();
+            if (horizontalCollision && getTarget() != null && isFree(motion.x, motion.y + 0.6, motion.z)) {
+                // out onto a bank after its prey, as every swimmer climbs
+                setDeltaMovement(motion.x, 0.3, motion.z);
+            } else if (!isUnderWater() && motion.y > 0.0) {
+                // at the surface it does not leap out
+                setDeltaMovement(motion.x, 0.0, motion.z);
+            }
         } else {
             super.travel(input);
         }

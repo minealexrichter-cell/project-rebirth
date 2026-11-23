@@ -241,6 +241,99 @@ public class WandererGameTests {
     }
 
     @GameTest(template = TEMPLATE)
+    public static void wanderersShowOnlyPlatingAndSealing(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        var access = level.registryAccess();
+        boolean sealed = false, open = false;
+        for (int i = 0; i < 24; i++) {
+            WandererEntity android = WandererRegistry.ANDROID.get().spawn(level, helper.absolutePos(new BlockPos(4, 2, 4)), net.minecraft.world.entity.MobSpawnType.SPAWN_EGG);
+            WandererEntity armor = WandererRegistry.ARMORED.get().spawn(level, helper.absolutePos(new BlockPos(4, 2, 4)), net.minecraft.world.entity.MobSpawnType.SPAWN_EGG);
+            boolean seal = com.projectrebirth.bodies.BodyGadgets.has(access, android.upgrades(), com.projectrebirth.bodies.BodyGadgets.SEALING);
+            sealed |= seal;
+            open |= !seal;
+            helper.assertTrue(com.projectrebirth.bodies.BodyGadgets.has(access, android.upgrades(), com.projectrebirth.bodies.BodyGadgets.PLATING)
+                    && android.upgrades().entries().size() == (seal ? 2 : 1), "Plates and perhaps the sealing module, nothing else");
+            helper.assertTrue(!armor.upgrades().isEmpty() && armor.upgrades().entries().stream().allMatch(e -> e.slot().isPresent()
+                    && e.stack().is(armor.upgrades().entries().get(0).stack().getItem())), "An armor has plates of one material");
+            CompoundTag tag = new CompoundTag();
+            android.saveWithoutId(tag);
+            WandererEntity copy = WandererRegistry.ANDROID.get().create(level);
+            copy.load(tag);
+            helper.assertTrue(copy.upgrades().equals(android.upgrades()), "Kept over a save");
+            android.discard();
+            armor.discard();
+        }
+        helper.assertTrue(sealed && open, "The sealing module by chance");
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 100, batch = "wanderers_back")
+    public static void aShooterStepsBackFacingTheEnemy(GameTestHelper helper) {
+        WandererEntity robot = helper.spawn(WandererRegistry.ROBOT.get(), new BlockPos(4, 2, 4));
+        var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(4, 2, 1));
+        zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000.0);
+        zombie.setHealth(1000.0f);
+        // it must not burn in the sun
+        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(net.minecraft.world.item.Items.DIAMOND_HELMET));
+        robot.setTarget(zombie);
+        double before = robot.distanceTo(zombie);
+        float[] last = {1000.0f};
+        boolean[] back = {false};
+        helper.onEachTick(() -> {
+            if (zombie.getHealth() < last[0]) {
+                last[0] = zombie.getHealth();
+                helper.assertTrue(robot.faces(zombie), "It shoots only facing the enemy: body " + robot.yBodyRot + ", yaw " + robot.getYRot() + ", head " + robot.yHeadRot + ", at " + robot.position() + " zombie " + zombie.position() + " by " + zombie.getLastHurtByMob());
+            }
+            back[0] |= robot.distanceTo(zombie) > before + 0.8;
+        });
+        helper.runAfterDelay(70, () -> {
+            helper.assertTrue(last[0] < 1000.0f, "It shot");
+            helper.assertTrue(back[0] && robot.faces(zombie), "It stepped back with its face to the enemy");
+            robot.discard();
+            zombie.discard();
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE, timeoutTicks = 160, batch = "wanderers_arms")
+    public static void bowsAreDrawnCrossbowsChargedAndArmsSwing(GameTestHelper helper) {
+        var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
+        zombie.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000.0);
+        zombie.setHealth(1000.0f);
+        // it must not burn in the sun
+        zombie.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(net.minecraft.world.item.Items.DIAMOND_HELMET));
+        WandererEntity bow = helper.spawn(WandererRegistry.SURVIVOR.get(), new BlockPos(7, 2, 2));
+        WandererEntity crossbow = helper.spawn(WandererRegistry.ANDROID.get(), new BlockPos(2, 2, 7));
+        WandererEntity sword = helper.spawn(WandererRegistry.SURVIVOR.get(), new BlockPos(3, 2, 3));
+        bow.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.BOW));
+        crossbow.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.CROSSBOW));
+        sword.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(net.minecraft.world.item.Items.IRON_SWORD));
+        for (WandererEntity w : List.of(bow, crossbow, sword)) {
+            w.setTarget(zombie);
+        }
+        boolean[] seen = new boolean[5];
+        helper.onEachTick(() -> {
+            seen[0] |= bow.isUsingItem();
+            seen[1] |= crossbow.isUsingItem();
+            seen[2] |= net.minecraft.world.item.CrossbowItem.isCharged(crossbow.getMainHandItem());
+            seen[3] |= sword.getAttackAnim(1.0f) > 0.0f;
+            seen[4] |= seen[3] && !sword.swinging;
+        });
+        helper.runAfterDelay(120, () -> {
+            helper.assertTrue(seen[0], "The bow is drawn");
+            helper.assertTrue(seen[1] && seen[2], "The crossbow is charged and held: " + seen[1] + seen[2] + " target " + crossbow.getTarget() + " item " + crossbow.getMainHandItem() + " using " + crossbow.getTicksUsingItem() + " alive " + crossbow.isAlive() + " at " + crossbow.position());
+            helper.assertTrue(seen[3] && seen[4], "The arm swings and the swing ends");
+            crossbow.hurt(helper.getLevel().damageSources().generic(), 1000.0f);
+            helper.assertFalse(net.minecraft.world.item.CrossbowItem.isCharged(crossbow.getMainHandItem()), "No free arrow in a dropped crossbow");
+            clear(helper);
+            zombie.discard();
+            AABB box = new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(16);
+            helper.getLevel().getEntitiesOfClass(RemainsEntity.class, box).forEach(RemainsEntity::discard);
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = TEMPLATE)
     public static void aGroupGoesAwayAsAWhole(GameTestHelper helper) {
         WandererEntity head = spawn(helper, "caravan", new BlockPos(4, 2, 4));
         List<WandererEntity> members = head.group();

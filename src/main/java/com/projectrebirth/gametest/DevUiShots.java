@@ -27,7 +27,11 @@ public final class DevUiShots {
     @SubscribeEvent
     static void tick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || minecraft.level.getGameTime() % 10 != 0) {
+        if (minecraft.level == null || minecraft.level.getGameTime() % 7 != 0) {
+            return;
+        }
+        // only in the game folder of the second test client: the owner plays in run/, and a command meant for a check must not reach that world
+        if (!minecraft.gameDirectory.toPath().toAbsolutePath().normalize().endsWith("run-client2")) {
             return;
         }
         Path command = minecraft.gameDirectory.toPath().resolve("ui_cmd.txt");

@@ -52,9 +52,11 @@ final class ArmorWeaponPose {
      * 1.9.0, block E: the same hold for a wanderer in power armor (no pilot): the weapon in the right fist, the look's
      * pitch from the wanderer itself, raised to aim while it fights.
      */
-    static void applyWanderer(net.minecraft.world.entity.LivingEntity wanderer, float aim, float partialTick, GeoBone rightArm, GeoBone leftArm,
+    static void applyWanderer(net.minecraft.world.entity.LivingEntity wanderer, float partialTick, GeoBone rightArm, GeoBone leftArm,
                               @Nullable GeoBone rightForearm, @Nullable GeoBone leftForearm) {
-        pose(true, wanderer.getViewXRot(partialTick) * Mth.DEG_TO_RAD, aim, 0.0f, 0.0f, rightArm, leftArm, rightForearm, leftForearm);
+        WeaponView view = WeaponView.of(wanderer, wanderer.getMainHandItem().getItem());
+        view.update(wanderer, partialTick);
+        pose(true, wanderer.getViewXRot(partialTick) * Mth.DEG_TO_RAD, view.aimAmount(), view.kick(), 0.0f, rightArm, leftArm, rightForearm, leftForearm);
     }
 
     private static void pose(boolean right, float pitch, float aim, float kick, float dip, GeoBone rightArm, GeoBone leftArm,

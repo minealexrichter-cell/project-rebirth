@@ -80,7 +80,9 @@ public final class Emi {
 
     /** One second of a player, from the exposure where they are. Public for tests. */
     public static void second(ServerPlayer player, Exposure exposure) {
-        float level = Environment.isEnabled() && player.isAlive() ? felt(player, exposure.get(Hazard.EMI)) : 0.0f;
+        // 1.9.0, block D: the scream of a screamer disturbs the electronics for a few seconds, as a storm does
+        float around = exposure.get(Hazard.EMI) + com.projectrebirth.hostile.ScreamerEntity.interference(player);
+        float level = Environment.isEnabled() && player.isAlive() ? felt(player, around) : 0.0f;
         if (player.getData(TemperatureRegistry.EMI_LEVEL) != level) {
             player.setData(TemperatureRegistry.EMI_LEVEL, level);
         }

@@ -70,6 +70,18 @@ public final class HostileRegistry {
             () -> EntityType.Builder.<MutatedAnimalEntity>of((type, level) -> new MutatedAnimalEntity(type, level, MutatedAnimalEntity.Kind.CHICKEN), MobCategory.MONSTER)
                     .sized(0.6f, 1.05f).eyeHeight(0.9f).clientTrackingRange(10).build("mutated_chicken"));
 
+    /** 1.9.0, block D: the new mutants. */
+    public static final DeferredHolder<EntityType<?>, EntityType<CrawlerEntity>> CRAWLER = ENTITY_TYPES.register("crawler",
+            () -> EntityType.Builder.of(CrawlerEntity::new, MobCategory.MONSTER).sized(1.1f, 0.7f).eyeHeight(0.5f).clientTrackingRange(10).build("crawler"));
+    public static final DeferredHolder<EntityType<?>, EntityType<ScreamerEntity>> SCREAMER = ENTITY_TYPES.register("screamer",
+            () -> EntityType.Builder.of(ScreamerEntity::new, MobCategory.MONSTER).sized(0.6f, 1.9f).eyeHeight(1.7f).clientTrackingRange(10).build("screamer"));
+    public static final DeferredHolder<EntityType<?>, EntityType<RatEntity>> RAT = ENTITY_TYPES.register("rat",
+            () -> EntityType.Builder.of(RatEntity::new, MobCategory.MONSTER).sized(0.45f, 0.35f).eyeHeight(0.25f).clientTrackingRange(10).build("rat"));
+    public static final DeferredHolder<EntityType<?>, EntityType<HunterEntity>> HUNTER = ENTITY_TYPES.register("hunter",
+            () -> EntityType.Builder.of(HunterEntity::new, MobCategory.MONSTER).sized(0.8f, 1.9f).eyeHeight(1.6f).clientTrackingRange(10).build("hunter"));
+    public static final DeferredHolder<EntityType<?>, EntityType<DrownerEntity>> DROWNER = ENTITY_TYPES.register("drowner",
+            () -> EntityType.Builder.of(DrownerEntity::new, MobCategory.MONSTER).sized(0.7f, 1.9f).eyeHeight(1.7f).clientTrackingRange(10).build("drowner"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<RemainsEntity>> REMAINS = ENTITY_TYPES.register("remains",
             () -> EntityType.Builder.<RemainsEntity>of(RemainsEntity::new, MobCategory.MISC).sized(1.5f, 0.8f).clientTrackingRange(10).build("remains"));
 
@@ -102,6 +114,17 @@ public final class HostileRegistry {
     public static final DeferredItem<Item> MUTATED_CHICKEN_SPAWN_EGG = ITEMS.register("mutated_chicken_spawn_egg",
             () -> new DeferredSpawnEggItem(MUTATED_CHICKEN, 0xB8B4A6, 0x8A3A2A, new Item.Properties()));
 
+    public static final DeferredItem<Item> CRAWLER_SPAWN_EGG = ITEMS.register("crawler_spawn_egg",
+            () -> new DeferredSpawnEggItem(CRAWLER, 0xC8BCA8, 0x6E2C26, new Item.Properties()));
+    public static final DeferredItem<Item> SCREAMER_SPAWN_EGG = ITEMS.register("screamer_spawn_egg",
+            () -> new DeferredSpawnEggItem(SCREAMER, 0x8A9A7C, 0x4A1214, new Item.Properties()));
+    public static final DeferredItem<Item> RAT_SPAWN_EGG = ITEMS.register("rat_spawn_egg",
+            () -> new DeferredSpawnEggItem(RAT, 0x5A4A40, 0xB86A58, new Item.Properties()));
+    public static final DeferredItem<Item> HUNTER_SPAWN_EGG = ITEMS.register("hunter_spawn_egg",
+            () -> new DeferredSpawnEggItem(HUNTER, 0x2E3438, 0xE8D050, new Item.Properties()));
+    public static final DeferredItem<Item> DROWNER_SPAWN_EGG = ITEMS.register("drowner_spawn_egg",
+            () -> new DeferredSpawnEggItem(DROWNER, 0x4E6058, 0x2A3A30, new Item.Properties()));
+
     /** 1.9.0, block C: what mutants leave behind. */
     public static final DeferredItem<Item> MUTAGEN = ITEMS.registerSimpleItem("mutagen");
     public static final DeferredItem<Item> TOXIC_GLAND = ITEMS.registerSimpleItem("toxic_gland");
@@ -127,6 +150,11 @@ public final class HostileRegistry {
         event.put(MUTATED_HOUND.get(), MutatedHoundEntity.createAttributes().build());
         event.put(GLOWING_GHOUL.get(), GlowingGhoulEntity.createAttributes().build());
         event.put(BRUTE.get(), BruteEntity.createAttributes().build());
+        event.put(CRAWLER.get(), CrawlerEntity.createAttributes().build());
+        event.put(SCREAMER.get(), ScreamerEntity.createAttributes().build());
+        event.put(RAT.get(), RatEntity.createAttributes().build());
+        event.put(HUNTER.get(), HunterEntity.createAttributes().build());
+        event.put(DROWNER.get(), DrownerEntity.createAttributes().build());
         event.put(MUTATED_COW.get(), MutatedAnimalEntity.createAttributes(18.0, 4.0, 0.25).build());
         event.put(MUTATED_PIG.get(), MutatedAnimalEntity.createAttributes(14.0, 3.0, 0.28).build());
         event.put(MUTATED_CHICKEN.get(), MutatedAnimalEntity.createAttributes(6.0, 0.0, 0.3).build());

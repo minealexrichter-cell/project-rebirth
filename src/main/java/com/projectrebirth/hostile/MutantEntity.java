@@ -41,9 +41,34 @@ public abstract class MutantEntity extends Monster implements GeoEntity {
         this.attack = RawAnimation.begin().thenPlay("animation." + name + ".attack");
     }
 
+    /** The looping animation now (1.9.0: a kind may have its own, burrowed or swimming). */
+    protected RawAnimation mainAnimation(boolean moving) {
+        return moving ? walk : idle;
+    }
+
+    /** The species config of a mutant of block D (null for the older ones). */
+    protected RebirthConfig.MutantStats species() {
+        return RebirthConfig.MUTANT_SPECIES.get(name);
+    }
+
+    /** Health, damage and speed of a mutant of block D from its config. */
+    protected void applySpeciesConfig() {
+        RebirthConfig.MutantStats stats = species();
+        if (stats != null) {
+            getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(stats.health().get());
+            getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).setBaseValue(stats.damage().get());
+            getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED).setBaseValue(stats.speed().get());
+        }
+    }
+
     /** The kind's own one-shot animations besides "attack", played with triggerAnim("action", name). */
     protected java.util.List<String> extraAnimations() {
         return java.util.List.of();
+    }
+
+    /** How much it counts for the limits of mutants: 1, a rat of a swarm a part (1.9.0, block D). */
+    public float populationWeight() {
+        return 1.0f;
     }
 
     /** Health, damage and speed from the config. */
@@ -114,7 +139,7 @@ public abstract class MutantEntity extends Monster implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "main", 4, state -> state.setAndContinue(state.isMoving() ? walk : idle)));
+        controllers.add(new AnimationController<>(this, "main", 4, state -> state.setAndContinue(mainAnimation(state.isMoving()))));
         AnimationController<MutantEntity> action = new AnimationController<>(this, "action", 0, state -> PlayState.STOP);
         action.triggerableAnim("attack", attack);
         for (String extra : extraAnimations()) {

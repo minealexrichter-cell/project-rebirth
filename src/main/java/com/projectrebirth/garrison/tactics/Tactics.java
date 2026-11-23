@@ -62,6 +62,9 @@ public final class Tactics {
     /** Enemies that come first after those that hit (brutes, mechs, shooters). */
     public static final TagKey<EntityType<?>> DANGEROUS = TagKey.create(Registries.ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(ProjectRebirth.MOD_ID, "dangerous_targets"));
+    /** 1.9.0, block D: enemies taken down before all others that have not hit (the screamer, which calls the rest). */
+    public static final TagKey<EntityType<?>> FIRST = TagKey.create(Registries.ENTITY_TYPE,
+            ResourceLocation.fromNamespaceAndPath(ProjectRebirth.MOD_ID, "first_targets"));
     /** How long a call for help holds, in ticks. */
     public static final int CALL_TICKS = 200;
 
@@ -75,7 +78,7 @@ public final class Tactics {
 
     // ------------------------------------------------------------------ whom
 
-    /** The priority of a target, lower first: 0 hits its people, 1 hits it, 2 called to, 3 dangerous, 4 any other. */
+    /** The priority of a target, lower first: 0 hits its people, 1 hits it, 2 called to, 3 first targets (1.9.0), 4 dangerous, 5 any other. */
     public static int priority(GarrisonMachine machine, LivingEntity target) {
         MachineCore core = machine.machineCore();
         long now = machine.asEntity().level().getGameTime();
@@ -88,7 +91,7 @@ public final class Tactics {
         if (core.calledTo(target, now)) {
             return 2;
         }
-        return target.getType().is(DANGEROUS) ? 3 : 4;
+        return target.getType().is(FIRST) ? 3 : target.getType().is(DANGEROUS) ? 4 : 5;
     }
 
     /**

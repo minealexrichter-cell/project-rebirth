@@ -369,7 +369,8 @@ public class DefenceTurretEntity extends MachineEntity implements GeoEntity {
             for (LivingEntity found : level().getEntitiesOfClass(LivingEntity.class, new AABB(blockPosition()).inflate(range),
                     found -> found != this && found.isAlive())) {
                 int priority = com.projectrebirth.garrison.tactics.Tactics.priority(this, found);
-                double score = Math.min(priority, 3) * 1.0e6 + found.distanceToSqr(defended);
+                // 1.9.0: the first targets (the screamer) before the rest; dangerous and other ones as near as they are
+                double score = Math.min(priority, 4) * 1.0e6 + found.distanceToSqr(defended);
                 if (score < bestScore && fair(found)) {
                     best = found;
                     bestScore = score;

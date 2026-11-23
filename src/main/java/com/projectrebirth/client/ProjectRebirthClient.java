@@ -138,6 +138,12 @@ public class ProjectRebirthClient {
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        // 1.9.0, block D: the new mutants; the hunter is drawn almost clear when hidden
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.CRAWLER.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "crawler", 0.6f, false));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.SCREAMER.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "screamer", 0.45f, false));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.RAT.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "rat", 0.2f, false));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.HUNTER.get(), com.projectrebirth.client.render.HunterRenderer::new);
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.DROWNER.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "drowner", 0.5f, false));
         // 1.9.0, block C: the mutated animals, GeckoLib models of blockbench/tools/build_models.js like the other mutants
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_COW.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "mutated_cow", 0.7f, false));
         event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_PIG.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "mutated_pig", 0.6f, false));

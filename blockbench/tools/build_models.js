@@ -3882,6 +3882,242 @@
                     neck: {r: K([0, [0, 0, 0]], [0.12, [-25, 0, 0]], [0.2, [40, 0, 0]], [0.35, [0, 0, 0]])}})
             }
         };
+
+        // ------------------------------------------------------------ 1.9.0, block D: the new mutants
+        const legSwing = (length, amp, phase) => loopOf(length, t => [R2(amp * Math.cos(2 * Math.PI * (t + phase))), 0, 0]);
+
+        // the crawler: a pale blind thing of the deep caves, a centipede the size of a dog; three segments on six thin legs,
+        // a cluster of small eyes, two bone mandibles, a row of spines on its back that is all that shows above the ground when
+        // it moves under it
+        const CAVE = {base: '#c8bca8', dark: '#a89a84', light: '#ddd2c0', vein: '#8a3a3a', spots: ['#6e2c26', '#efe8d4'], spotChance: 0.35};
+        const PLATE = {base: '#9a8a6e', dark: '#7a6a52', light: '#b0a084', vein: '#5a4a36', spots: ['#6e2c26'], spotChance: 0.2};
+        // a spider's leg: the thigh out and up from the side of the body, the shin down to the ground at its end
+        const crawlerLeg = (x, z, side) => {
+            // the thigh tilted up; the shin hangs from its end down to the ground
+            const thigh = O([side > 0 ? x : x - 4, 4.5, z], [4, 1, 1], CAVE, {}, {rot: [0, 0, side * 25], pivot: [x, 5, z + 0.5]});
+            const tipX = x + side * 4 * Math.cos(25 * Math.PI / 180), tipY = 5 + 4 * Math.sin(25 * Math.PI / 180);
+            const shin = C([R2(tipX - 0.5), 0, z], [1, Math.round(tipY), 1], {c: '#d8cfb5', n: 0.08, edge: false});
+            return [thigh, shin];
+        };
+        SPECS.crawler = {
+            res: 64, seed: 1911, noCoplanarFaces: true, separateFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'body', parent: 'root', pivot: [0, 4, 0], cubes: [
+                    O([-3.5, 2, -5], [7, 4, 8], CAVE, {tp: [[1, 1, 2, 2, '#8a2c28']]}),
+                    O([-4, 5.75, -4.5], [8, 1, 3], PLATE), O([-4, 5.75, -1.25], [8, 1, 3], PLATE),
+                    bone([-0.5, 5.5, -4], [1, 2, 1]), bone([-0.5, 5.5, -1.5], [1, 3, 1]), bone([-0.5, 5.5, 1], [1, 2, 1])]},
+                {name: 'leg_fr', parent: 'body', pivot: [-3.5, 5, -3], cubes: crawlerLeg(-3.25, -3.5, -1)},
+                {name: 'leg_fl', parent: 'body', pivot: [3.5, 5, -3], cubes: crawlerLeg(3.25, -3.5, 1)},
+                {name: 'leg_mr', parent: 'body', pivot: [-3.5, 5, 1], cubes: crawlerLeg(-3.25, 0.5, -1)},
+                {name: 'leg_ml', parent: 'body', pivot: [3.5, 5, 1], cubes: crawlerLeg(3.25, 0.5, 1)},
+                {name: 'segment_2', parent: 'body', pivot: [0, 4, 3], cubes: [O([-3, 2.25, 2.5], [6, 3, 6], CAVE), O([-3.5, 5, 3.25], [7, 1, 2], PLATE), O([-3.5, 5, 6], [7, 1, 2], PLATE),
+                    bone([-0.5, 4.75, 4], [1, 2, 1]), bone([-0.5, 4.75, 6.5], [1, 2, 1])]},
+                {name: 'leg_br', parent: 'segment_2', pivot: [-3, 5, 5.5], cubes: crawlerLeg(-2.75, 5, -1)},
+                {name: 'leg_bl', parent: 'segment_2', pivot: [3, 5, 5.5], cubes: crawlerLeg(2.75, 5, 1)},
+                {name: 'segment_3', parent: 'segment_2', pivot: [0, 4, 8], cubes: [O([-2.5, 2.5, 8], [5, 2, 5], CAVE), O([-3, 4.25, 9], [6, 1, 2], PLATE),
+                    bone([-0.5, 3, 12.5], [1, 1, 3])]},
+                {name: 'head', parent: 'body', pivot: [0, 4, -5], cubes: [
+                    O([-3, 1.5, -9.5], [6, 4, 5], CAVE, {f: [[1, 1, 1, 1, EYE], [4, 1, 1, 1, EYE], [2, 0, 1, 1, EYE], [3, 2, 1, 1, EYE], [1, 2, 1, 1, '#4a1214'], [4, 2, 1, 1, '#4a1214']], bt: [[1, 1, 4, 3, MAW]]}),
+                    fang(-1.4, 1.75, 1, -9.0), fang(0, 1.75, 1.5, -9.0), fang(1.4, 1.75, 1, -9.0)]},
+                {name: 'mandible_right', parent: 'head', pivot: [-2.5, 2.5, -9], cubes: [bone([-3.3, 1.2, -12], [1, 1, 3]), bone([-2.6, 1.2, -12.6], [1, 1, 1])]},
+                {name: 'mandible_left', parent: 'head', pivot: [2.5, 2.5, -9], cubes: [bone([2.3, 1.2, -12], [1, 1, 3]), bone([1.6, 1.2, -12.6], [1, 1, 1])]}
+            ],
+            animations: (() => {
+                const wiggle = (length, amount) => ({segment_2: {r: loopOf(length, t => [0, R2(amount * Math.sin(2 * Math.PI * t)), 0])},
+                    segment_3: {r: loopOf(length, t => [0, R2(amount * Math.sin(2 * Math.PI * (t - 0.25))), 0])}});
+                const snap = length => ({mandible_right: {r: loopOf(length, t => [0, R2(10 + 12 * Math.sin(4 * Math.PI * t)), 0])},
+                    mandible_left: {r: loopOf(length, t => [0, R2(-10 - 12 * Math.sin(4 * Math.PI * t)), 0])}});
+                const legs = length => ({leg_fr: {r: legSwing(length, 30, 0)}, leg_fl: {r: legSwing(length, 30, 0.5)}, leg_mr: {r: legSwing(length, 30, 0.5)},
+                    leg_ml: {r: legSwing(length, 30, 0)}, leg_br: {r: legSwing(length, 30, 0)}, leg_bl: {r: legSwing(length, 30, 0.5)}});
+                return {
+                    'animation.crawler.idle': {length: 2, loop: 'loop', bones: Object.assign(wiggle(2, 6), snap(2))},
+                    'animation.crawler.walk': {length: 0.4, loop: 'loop', bones: Object.assign(wiggle(0.4, 12), legs(0.4), snap(0.4))},
+                    // under the ground: only the spines of its back above it, moving
+                    'animation.crawler.burrowed': {length: 0.6, loop: 'loop', bones: Object.assign({root: {p: loopOf(0.6, t => [0, R2(-5.5 + 0.3 * Math.sin(2 * Math.PI * t)), 0])}}, wiggle(0.6, 10))},
+                    'animation.crawler.burrow': move(0.5, {root: {p: K([0, [0, 0, 0]], [0.15, [0, 1, 0]], [0.5, [0, -5.5, 0]])},
+                        body: {r: K([0, [0, 0, 0]], [0.15, [-20, 0, 0]], [0.5, [10, 0, 0]])}}, true),
+                    'animation.crawler.emerge': move(0.5, {root: {p: K([0, [0, -5.5, 0]], [0.15, [0, 3, 0]], [0.5, [0, 0, 0]])},
+                        body: {r: K([0, [0, 0, 0]], [0.15, [-35, 0, 0]], [0.5, [0, 0, 0]])},
+                        mandible_right: {r: K([0, [0, 40, 0]], [0.2, [0, -10, 0]], [0.5, [0, 10, 0]])},
+                        mandible_left: {r: K([0, [0, -40, 0]], [0.2, [0, 10, 0]], [0.5, [0, -10, 0]])}}),
+                    'animation.crawler.attack': move(0.35, {head: {r: K([0, [0, 0, 0]], [0.12, [-20, 0, 0]], [0.22, [15, 0, 0]], [0.35, [0, 0, 0]])},
+                        mandible_right: {r: K([0, [0, 10, 0]], [0.12, [0, 45, 0]], [0.2, [0, -15, 0]], [0.35, [0, 10, 0]])},
+                        mandible_left: {r: K([0, [0, -10, 0]], [0.12, [0, -45, 0]], [0.2, [0, 15, 0]], [0.35, [0, -10, 0]])}})
+                };
+            })()
+        };
+
+        // the screamer: a ghoul of the late stage, starved to bones; ribs through the skin of its chest, a swollen throat sac
+        // that fills before a scream, a jaw that drops far open on long teeth, thin arms with claws
+        SPECS.screamer = {
+            res: 64, seed: 1912, noCoplanarFaces: true, separateFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'right_leg', parent: 'root', pivot: [-1.5, 12, 0], cubes: [O([-2.5, 0, -1], [2, 12.5, 2], SICK, {f: [[0, 10, 2, 2, '#3a3020']]})]},
+                {name: 'left_leg', parent: 'root', pivot: [1.5, 12, 0], cubes: [O([0.5, 0, -1], [2, 12.5, 2], SICK)]},
+                {name: 'body', parent: 'root', pivot: [0, 12, 0], cubes: [
+                    O([-3, 12, -2], [6, 9, 4], SICK, {k: [[1, 2, 4, 1, '#4e5a42']]}),
+                    bone([-2.4, 14, -2.6], [1, 1, 1]), bone([-2.4, 16, -2.6], [1, 1, 1]), bone([1.4, 14, -2.6], [1, 1, 1]), bone([1.4, 16, -2.6], [1, 1, 1]),
+                    O([-1.5, 13, -2.8], [3, 4, 1.5], RAW)]},
+                {name: 'throat', parent: 'body', pivot: [0, 19.5, -2], cubes: [O([-2, 18, -4], [4, 3, 3], TUMOR)]},
+                {name: 'head', parent: 'body', pivot: [0, 21, -1], cubes: [
+                    O([-3, 21.5, -4], [6, 5, 6], SICK, {f: [[1, 1, 1, 1, '#c8d050'], [4, 1, 1, 1, '#c8d050'], [1, 3, 4, 2, MAW]], tp: [[2, 1, 2, 3, '#8a2c28']]}),
+                    O([-2.5, 26, -2.5], [5, 3, 5], TUMOR), O([0.5, 27.5, -3], [2, 2, 2], TUMOR),
+                    ...[[-1.8, 1.5], [-0.6, 2.0], [0.6, 2.0], [1.8, 1.5]].map(([x, h]) => fang(x, 21.75 - h, h, -3.6))]},
+                {name: 'jaw', parent: 'head', pivot: [0, 21.5, -1], cubes: [O([-2.5, 18.5, -4.5], [5, 2.5, 4], RAW, {tp: [[0, 0, 5, 3, MAW]]}),
+                    ...[[-1.6, 1.5], [-0.4, 2.0], [0.8, 2.0], [1.9, 1.5]].map(([x, h]) => fang(x, 20.75, h, -4.1))]},
+                {name: 'right_arm', parent: 'body', pivot: [-4.5, 20, 0], cubes: [O([-5.75, 7, -1], [2, 13.5, 2], SICK),
+                    bone([-6, 5, -1.4], [1, 2.5, 1]), bone([-4.6, 5, -1.4], [1, 2.5, 1])]},
+                {name: 'left_arm', parent: 'body', pivot: [4.5, 20, 0], cubes: [O([3.75, 7, -1], [2, 13.5, 2], SICK),
+                    bone([3.6, 5, -1.4], [1, 2.5, 1]), bone([5, 5, -1.4], [1, 2.5, 1])]}
+            ],
+            animations: {
+                'animation.screamer.idle': {length: 2.5, loop: 'loop', bones: {
+                    body: {r: loopOf(2.5, t => [R2(18 + 3 * Math.sin(2 * Math.PI * t)), 0, R2(3 * Math.sin(2 * Math.PI * (t + 0.3)))])},
+                    throat: {s: pulseOf(2.5, 0, 0.12)}, jaw: {r: loopOf(2.5, t => [R2(10 + 6 * Math.sin(4 * Math.PI * t)), 0, 0])},
+                    right_arm: {r: loopOf(2.5, t => [R2(-8 + 4 * Math.sin(2 * Math.PI * t)), 0, 3])}, left_arm: {r: loopOf(2.5, t => [R2(-8 + 4 * Math.sin(2 * Math.PI * (t + 0.5))), 0, -3])}}},
+                'animation.screamer.walk': {length: 1.2, loop: 'loop', bones: {
+                    right_leg: {r: legSwing(1.2, 28, 0)}, left_leg: {r: legSwing(1.2, 28, 0.5)},
+                    body: {r: loopOf(1.2, t => [R2(20 + 3 * Math.sin(4 * Math.PI * t)), R2(5 * Math.cos(2 * Math.PI * t)), R2(-5 * Math.cos(2 * Math.PI * t))])},
+                    right_arm: {r: legSwing(1.2, 20, 0.5)}, left_arm: {r: legSwing(1.2, 20, 0)},
+                    throat: {s: pulseOf(1.2, 0, 0.08)}, jaw: {r: loopOf(1.2, t => [R2(12 + 6 * Math.sin(2 * Math.PI * t)), 0, 0])}}},
+                'animation.screamer.attack': move(0.5, {
+                    right_arm: {r: K([0, [0, 0, 0]], [0.2, [-110, 0, 20]], [0.32, [-20, 0, -10]], [0.5, [0, 0, 0]])},
+                    jaw: {r: K([0, [10, 0, 0]], [0.2, [40, 0, 0]], [0.5, [10, 0, 0]])}}),
+                // it throws its head back, the throat swells, the jaw drops wide, the arms spread
+                'animation.screamer.scream': move(1.6, {
+                    body: {r: K([0, [18, 0, 0]], [0.3, [-15, 0, 0]], [1.3, [-18, 0, 0]], [1.6, [18, 0, 0]])},
+                    head: {r: K([0, [0, 0, 0]], [0.3, [-35, 0, 0]], [0.8, [-30, 6, 4]], [1.3, [-35, -6, -4]], [1.6, [0, 0, 0]])},
+                    jaw: {r: K([0, [10, 0, 0]], [0.3, [75, 0, 0]], [1.3, [75, 0, 0]], [1.6, [10, 0, 0]])},
+                    throat: {s: K([0, [1, 1, 1]], [0.3, [1.6, 1.6, 1.6]], [1.3, [1.5, 1.5, 1.5]], [1.6, [1, 1, 1]])},
+                    right_arm: {r: K([0, [0, 0, 0]], [0.3, [-30, 0, 70]], [1.3, [-30, 0, 70]], [1.6, [0, 0, 0]])},
+                    left_arm: {r: K([0, [0, 0, 0]], [0.3, [-30, 0, -70]], [1.3, [-30, 0, -70]], [1.6, [0, 0, 0]])}})
+            }
+        };
+
+        // the rat: a big mutated rat of the ruins, mangy, with raw patches, teeth out and a naked fleshy tail
+        const FUR = {base: '#4e4440', dark: '#3a322e', light: '#665a54', vein: '#6a2420', spots: ['#8a2c28', '#b86a58'], spotChance: 0.4};
+        SPECS.rat = {
+            res: 64, seed: 1913, noCoplanarFaces: true, separateFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'body', parent: 'root', pivot: [0, 2, 0], cubes: [O([-1.5, 1, -3], [3, 3, 5], FUR, {tp: [[1, 1, 1, 2, '#8a2c28']]}),
+                    bone([-0.5, 3.5, -2], [1, 1, 1]), bone([-0.5, 3.5, 0], [1, 1, 1])]},
+                {name: 'head', parent: 'body', pivot: [0, 2.5, -3], cubes: [O([-1, 1.5, -5.5], [2, 2, 3], FUR, {sd: [[0, 0, 1, 1, '#c8302a']], f: [[0, 1, 2, 1, '#3a322e']]}),
+                    C([-0.5, 2, -6], [1, 1, 1], {c: '#c8908a', n: 0.06, edge: false}),
+                    O([-1.5, 3.25, -4], [1, 1, 1], RAW), O([0.5, 3.25, -4], [1, 1, 1], RAW),
+                    fang(-0.4, 1.75, 0.5, -5.6), fang(0.4, 1.75, 0.5, -5.6)]},
+                {name: 'tail', parent: 'body', pivot: [0, 2.5, 2], cubes: [O([-0.5, 2, 1.5], [1, 1, 5], RAW, {}, {rot: [-10, 0, 0], pivot: [0, 2.5, 2]})]},
+                {name: 'leg_fr', parent: 'body', pivot: [-1, 1.5, -2], cubes: [O([-1.75, 0, -2.5], [1, 2, 1], FUR)]},
+                {name: 'leg_fl', parent: 'body', pivot: [1, 1.5, -2], cubes: [O([0.75, 0, -2.5], [1, 2, 1], FUR)]},
+                {name: 'leg_br', parent: 'body', pivot: [-1, 1.5, 1], cubes: [O([-1.75, 0, 0.5], [1, 2, 1], FUR)]},
+                {name: 'leg_bl', parent: 'body', pivot: [1, 1.5, 1], cubes: [O([0.75, 0, 0.5], [1, 2, 1], FUR)]}
+            ],
+            animations: {
+                'animation.rat.idle': {length: 1, loop: 'loop', bones: {head: {r: loopOf(1, t => [R2(6 * Math.sin(4 * Math.PI * t)), R2(10 * Math.sin(2 * Math.PI * t)), 0])},
+                    tail: {r: swayOf(1, 0, 10, 20)}}},
+                'animation.rat.walk': {length: 0.25, loop: 'loop', bones: {leg_fr: {r: legSwing(0.25, 45, 0)}, leg_bl: {r: legSwing(0.25, 45, 0)},
+                    leg_fl: {r: legSwing(0.25, 45, 0.5)}, leg_br: {r: legSwing(0.25, 45, 0.5)}, tail: {r: swayOf(0.25, 0, 5, 25)},
+                    body: {p: loopOf(0.25, t => [0, R2(0.3 * Math.abs(Math.sin(2 * Math.PI * t))), 0])}}},
+                'animation.rat.attack': move(0.25, {head: {r: K([0, [0, 0, 0]], [0.08, [-25, 0, 0]], [0.15, [20, 0, 0]], [0.25, [0, 0, 0]])},
+                    body: {p: K([0, [0, 0, 0]], [0.08, [0, 0, 0.5]], [0.15, [0, 0, -1]], [0.25, [0, 0, 0]])}})
+            }
+        };
+
+        // the hunter: lean and dark, eyeless, crouched on long digitigrade legs, arms down to the ground ending in long claws,
+        // a head that is mostly a ring of teeth, a ridge of bone along the back
+        const DARKSKIN = {base: '#2e3438', dark: '#22272a', light: '#3e464a', vein: '#1a1e20', spots: ['#6c1f1d'], spotChance: 0.12};
+        SPECS.hunter = {
+            res: 64, seed: 1914, noCoplanarFaces: true, separateFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'right_leg', parent: 'root', pivot: [-2, 12, 1], cubes: [O([-3, 0, 0], [2, 12.5, 2], DARKSKIN, {f: [[0, 10, 2, 2, '#14181a']]})]},
+                {name: 'left_leg', parent: 'root', pivot: [2, 12, 1], cubes: [O([1, 0, 0], [2, 12.5, 2], DARKSKIN, {f: [[0, 10, 2, 2, '#14181a']]})]},
+                {name: 'body', parent: 'root', pivot: [0, 12, 1], cubes: [
+                    O([-3.5, 12, -2], [7, 8, 5], DARKSKIN, {f: [[2, 3, 3, 2, '#4a1214']]}),
+                    bone([-0.5, 19.5, 0], [1, 2, 1]), bone([-0.5, 19.5, 2], [1, 2, 1]), bone([-0.5, 17, 2.6], [1, 1, 1]), bone([-0.5, 14.5, 2.6], [1, 1, 1])]},
+                {name: 'head', parent: 'body', pivot: [0, 20, -1], cubes: [
+                    O([-2.5, 19.5, -6.5], [5, 4, 5], DARKSKIN, {f: [[1, 1, 3, 2, MAW]], tp: [[1, 1, 3, 3, '#3e464a']]}),
+                    ...[[-1.6, 1], [-0.5, 1.5], [0.6, 1.5], [1.7, 1]].map(([x, h]) => fang(x, 20.75 - h, h, -6.1))]},
+                {name: 'jaw', parent: 'head', pivot: [0, 20, -2], cubes: [O([-2, 17.5, -6.5], [4, 2, 4], RAW, {tp: [[0, 0, 4, 4, MAW]]}),
+                    ...[[-1.2, 1], [0, 1.5], [1.2, 1]].map(([x, h]) => fang(x, 19.75, h, -5.4))]},
+                {name: 'right_arm', parent: 'body', pivot: [-4.5, 19, -0.5], cubes: [O([-6, 5, -1.5], [2, 14.5, 2], DARKSKIN),
+                    bone([-6.3, 2.5, -2.2], [1, 3, 1]), bone([-5, 2.5, -2.2], [1, 3, 1]), bone([-6.3, 2.5, -0.8], [1, 3, 1])]},
+                {name: 'left_arm', parent: 'body', pivot: [4.5, 19, -0.5], cubes: [O([4, 5, -1.5], [2, 14.5, 2], DARKSKIN),
+                    bone([4.3, 2.5, -2.2], [1, 3, 1]), bone([5.7, 2.5, -2.2], [1, 3, 1]), bone([5.7, 2.5, -0.8], [1, 3, 1])]}
+            ],
+            animations: {
+                'animation.hunter.idle': {length: 3, loop: 'loop', bones: {
+                    body: {r: loopOf(3, t => [R2(32 + 2 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    head: {r: K([0, [-25, 0, 0]], [1.2, [-25, 25, 0]], [1.6, [-25, -20, 0]], [2.4, [-25, 0, 0]], [3, [-25, 0, 0]])},
+                    jaw: {r: loopOf(3, t => [R2(8 + 6 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    right_arm: {r: loopOf(3, t => [R2(-30 + 3 * Math.sin(2 * Math.PI * t)), 0, 5])}, left_arm: {r: loopOf(3, t => [R2(-30 + 3 * Math.sin(2 * Math.PI * (t + 0.5))), 0, -5])}}},
+                // a low stalking run, the long arms reaching ahead
+                'animation.hunter.walk': {length: 0.6, loop: 'loop', bones: {
+                    right_leg: {r: legSwing(0.6, 35, 0)}, left_leg: {r: legSwing(0.6, 35, 0.5)},
+                    body: {r: loopOf(0.6, t => [R2(40 + 4 * Math.sin(4 * Math.PI * t)), 0, 0]), p: loopOf(0.6, t => [0, R2(-1 + 0.6 * Math.abs(Math.sin(2 * Math.PI * t))), 0])},
+                    head: {r: loopOf(0.6, () => [-35, 0, 0])},
+                    right_arm: {r: loopOf(0.6, t => [R2(-40 + 30 * Math.cos(2 * Math.PI * (t + 0.5))), 0, 5])}, left_arm: {r: loopOf(0.6, t => [R2(-40 + 30 * Math.cos(2 * Math.PI * t)), 0, -5])}}},
+                'animation.hunter.attack': move(0.4, {
+                    right_arm: {r: K([0, [-30, 0, 5]], [0.15, [-150, -10, 20]], [0.25, [-20, 10, -10]], [0.4, [-30, 0, 5]])},
+                    left_arm: {r: K([0, [-30, 0, -5]], [0.18, [-150, 10, -20]], [0.3, [-20, -10, 10]], [0.4, [-30, 0, -5]])},
+                    jaw: {r: K([0, [8, 0, 0]], [0.15, [50, 0, 0]], [0.4, [8, 0, 0]])}})
+            }
+        };
+
+        // the drowner: a bloated, water-logged body grown over with slime and weed; gills torn into its neck, a fish-like jaw of
+        // needle teeth, milky eyes, long arms with webbed claws, strands of weed hanging from its shoulders
+        const BLOAT = {base: '#5e6e60', dark: '#4a584c', light: '#748476', vein: '#2a3a30', spots: ['#8a9a5a', '#3a4a3a'], spotChance: 0.45};
+        const WEED = {base: '#3a5a2a', dark: '#2a4220', light: '#4e7036', n: 0.12};
+        const MILK = '#c8d8c0';
+        SPECS.drowner = {
+            res: 64, seed: 1915, noCoplanarFaces: true, separateFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'right_leg', parent: 'root', pivot: [-2, 12, 0], cubes: [O([-4, 0, -1.5], [3, 12.5, 3], BLOAT)]},
+                {name: 'left_leg', parent: 'root', pivot: [2, 12, 0], cubes: [O([1, 0, -1.5], [3, 12.5, 3], BLOAT)]},
+                {name: 'body', parent: 'root', pivot: [0, 12, 0], cubes: [
+                    O([-4.5, 12, -2.5], [9, 10, 6], BLOAT, {f: [[2, 2, 3, 2, '#8a9a5a']], k: [[3, 4, 2, 3, '#2a3a30']]}),
+                    O([-3, 13, -4], [6, 5, 2], TUMOR)]},
+                {name: 'head', parent: 'body', pivot: [0, 22, 0], cubes: [
+                    O([-3, 22, -3.5], [6, 6, 6], BLOAT, {f: [[1, 1, 1, 1, MILK], [4, 1, 1, 1, MILK]], sd: [[1, 1, 1, 3, '#8a2c28'], [3, 1, 1, 3, '#8a2c28']], tp: [[1, 1, 3, 2, '#3a5a2a']]}),
+                    ...[[-2.2, 1.5], [-1.1, 1.0], [0, 1.5], [1.1, 1.0], [2.2, 1.5]].map(([x, h]) => fang(x, 22.25 - h, h, -3.1))]},
+                {name: 'jaw', parent: 'head', pivot: [0, 22, -1], cubes: [O([-2.5, 19.5, -4], [5, 2.5, 4], RAW, {tp: [[0, 0, 5, 4, MAW]]}),
+                    ...[[-1.6, 1.0], [-0.5, 1.5], [0.6, 1.0], [1.7, 1.5]].map(([x, h]) => fang(x, 21.75, h, -3.6))]},
+                {name: 'weed_1', parent: 'body', pivot: [-3.5, 22, 1], cubes: [O([-4, 16, 0.5], [1, 6, 1], WEED)]},
+                {name: 'weed_2', parent: 'body', pivot: [3.5, 22, -1], cubes: [O([3, 17, -1.5], [1, 5, 1], WEED)]},
+                {name: 'right_arm', parent: 'body', pivot: [-5.5, 21, 0], cubes: [O([-7.5, 7, -1.5], [3, 14.5, 3], BLOAT),
+                    bone([-7.8, 5, -2.2], [1, 3, 1]), bone([-6.5, 5, -2.2], [1, 3, 1]), bone([-5.2, 5, -2.2], [1, 3, 1]), C([-7.5, 5.5, -1.9], [3, 2, 1], {c: '#3a5a2a', n: 0.12, edge: false}, {inflate: -0.2})]},
+                {name: 'left_arm', parent: 'body', pivot: [5.5, 21, 0], cubes: [O([4.5, 7, -1.5], [3, 14.5, 3], BLOAT),
+                    bone([4.2, 5, -2.2], [1, 3, 1]), bone([5.5, 5, -2.2], [1, 3, 1]), bone([6.8, 5, -2.2], [1, 3, 1]), C([4.5, 5.5, -1.9], [3, 2, 1], {c: '#3a5a2a', n: 0.12, edge: false}, {inflate: -0.2})]}
+            ],
+            animations: {
+                'animation.drowner.idle': {length: 3, loop: 'loop', bones: {
+                    body: {r: loopOf(3, t => [R2(8 + 3 * Math.sin(2 * Math.PI * t)), 0, R2(3 * Math.sin(2 * Math.PI * (t + 0.2)))])},
+                    jaw: {r: loopOf(3, t => [R2(10 + 8 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    weed_1: {r: swayOf(3, 0, 8, 6)}, weed_2: {r: swayOf(3, 0.4, 8, -6)},
+                    right_arm: {r: loopOf(3, t => [R2(-6 + 4 * Math.sin(2 * Math.PI * t)), 0, 4])}, left_arm: {r: loopOf(3, t => [R2(-6 + 4 * Math.sin(2 * Math.PI * (t + 0.5))), 0, -4])}}},
+                // a heavy lumbering walk on land
+                'animation.drowner.walk': {length: 1.4, loop: 'loop', bones: {
+                    right_leg: {r: legSwing(1.4, 22, 0)}, left_leg: {r: legSwing(1.4, 22, 0.5)},
+                    body: {r: loopOf(1.4, t => [10, R2(6 * Math.cos(2 * Math.PI * t)), R2(-6 * Math.cos(2 * Math.PI * t))])},
+                    right_arm: {r: legSwing(1.4, 15, 0.5)}, left_arm: {r: legSwing(1.4, 15, 0)},
+                    weed_1: {r: swayOf(1.4, 0, 12, 6)}, weed_2: {r: swayOf(1.4, 0.4, 12, -6)}}},
+                // under water: the body flat, the legs kicking, the arms sweeping
+                'animation.drowner.swim': {length: 1, loop: 'loop', bones: {
+                    root: {r: loopOf(1, () => [80, 0, 0]), p: loopOf(1, () => [0, 6, 0])},
+                    right_leg: {r: legSwing(1, 25, 0)}, left_leg: {r: legSwing(1, 25, 0.5)},
+                    right_arm: {r: loopOf(1, t => [R2(-150 + 40 * Math.sin(2 * Math.PI * t)), 0, R2(20 + 20 * Math.sin(2 * Math.PI * t))])},
+                    left_arm: {r: loopOf(1, t => [R2(-150 + 40 * Math.sin(2 * Math.PI * t)), 0, R2(-20 - 20 * Math.sin(2 * Math.PI * t))])},
+                    head: {r: loopOf(1, () => [-60, 0, 0])},
+                    weed_1: {r: swayOf(1, 0, 15, 10)}, weed_2: {r: swayOf(1, 0.4, 15, -10)}}},
+                'animation.drowner.attack': move(0.6, {
+                    right_arm: {r: K([0, [0, 0, 0]], [0.25, [-120, 0, -20]], [0.4, [-40, 0, 10]], [0.6, [0, 0, 0]])},
+                    left_arm: {r: K([0, [0, 0, 0]], [0.25, [-120, 0, 20]], [0.4, [-40, 0, -10]], [0.6, [0, 0, 0]])},
+                    jaw: {r: K([0, [10, 0, 0]], [0.25, [50, 0, 0]], [0.6, [10, 0, 0]])}})
+            }
+        };
     })();
 
     // ------------------------------------------------------------------ pilot weapons, second version (1.6.0, part B3f)

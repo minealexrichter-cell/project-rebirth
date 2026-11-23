@@ -531,6 +531,21 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue MUTATION_RADIUS;
     /** 1.9.0: health, damage and speed of the mutated animals, by id (cow, pig, chicken). */
     public static final Map<String, MutatedAnimalStats> MUTATED_ANIMALS = new java.util.HashMap<>();
+    /** 1.9.0, block D: the new mutants, by id (crawler, screamer, rat, hunter, drowner): each switched on or off, its numbers. */
+    public static final Map<String, MutantStats> MUTANT_SPECIES = new java.util.HashMap<>();
+    public static ModConfigSpec.DoubleValue CRAWLER_AMBUSH;
+    public static ModConfigSpec.IntValue CRAWLER_SURFACE_SECONDS;
+    public static ModConfigSpec.DoubleValue CRAWLER_OPEN_DAMAGE;
+    public static ModConfigSpec.IntValue SCREAMER_RADIUS;
+    public static ModConfigSpec.IntValue SCREAMER_INTERVAL;
+    public static ModConfigSpec.IntValue SCREAMER_NAUSEA;
+    public static ModConfigSpec.DoubleValue SCREAMER_INTERFERENCE;
+    public static ModConfigSpec.IntValue SCREAMER_INTERFERENCE_SECONDS;
+    public static ModConfigSpec.IntValue HUNTER_CLOAK_LIGHT;
+    public static ModConfigSpec.IntValue HUNTER_FLEE_LIGHT;
+    public static ModConfigSpec.IntValue DROWNER_DRAG_SECONDS;
+    public static ModConfigSpec.DoubleValue DROWNER_DRAG;
+    public static ModConfigSpec.DoubleValue DROWNER_BOAT_DAMAGE;
     public static final ModConfigSpec.DoubleValue HOUND_HEALTH;
     public static final ModConfigSpec.DoubleValue HOUND_DAMAGE;
     public static final ModConfigSpec.DoubleValue HOUND_SPEED;
@@ -1491,6 +1506,34 @@ public final class RebirthConfig {
         defineMutatedAnimal(builder, "cow", 18.0, 4.0, 0.25);
         defineMutatedAnimal(builder, "pig", 14.0, 3.0, 0.28);
         defineMutatedAnimal(builder, "chicken", 6.0, 0.0, 0.3);
+        builder.comment("1.9.0, block D: the crawler of deep caves").push("crawler");
+        defineMutant(builder, "crawler", 16.0, 4.0, 0.27);
+        CRAWLER_AMBUSH = builder.comment("Its blow from under the ground is this many times as strong").defineInRange("ambushMultiplier", 1.5, 1.0, 10.0);
+        CRAWLER_SURFACE_SECONDS = builder.comment("Seconds it fights above ground before it burrows again").defineInRange("surfaceSeconds", 6, 1, 600);
+        CRAWLER_OPEN_DAMAGE = builder.comment("Under the open sky it takes this many times the damage (and is slower)").defineInRange("openDamageMultiplier", 1.5, 1.0, 10.0);
+        builder.pop();
+        builder.comment("1.9.0, block D: the screamer").push("screamer");
+        defineMutant(builder, "screamer", 14.0, 2.0, 0.25);
+        SCREAMER_RADIUS = builder.comment("Blocks around within which its scream calls the mutants and is felt").defineInRange("radius", 24, 4, 128);
+        SCREAMER_INTERVAL = builder.comment("Seconds between screams").defineInRange("intervalSeconds", 15, 2, 600);
+        SCREAMER_NAUSEA = builder.comment("Seconds of a reeling head a scream gives a human").defineInRange("nauseaSeconds", 4, 0, 60);
+        SCREAMER_INTERFERENCE = builder.comment("Interference a scream gives to bodies and armor (as of an EMI storm)").defineInRange("interference", 3.0, 0.0, 100.0);
+        SCREAMER_INTERFERENCE_SECONDS = builder.comment("Seconds it lasts").defineInRange("interferenceSeconds", 4, 0, 60);
+        builder.pop();
+        builder.comment("1.9.0, block D: a rat of the swarms of ruins and villages (a rat counts as a fifth of a mutant for the limits)").push("rat");
+        defineMutant(builder, "rat", 4.0, 1.5, 0.34);
+        builder.pop();
+        builder.comment("1.9.0, block D: the hunter").push("hunter");
+        defineMutant(builder, "hunter", 26.0, 6.0, 0.32);
+        HUNTER_CLOAK_LIGHT = builder.comment("It is nearly invisible at night or in a fog or dust storm where the block light is below this").defineInRange("cloakBelowLight", 8, 0, 16);
+        HUNTER_FLEE_LIGHT = builder.comment("It backs away from block light of at least this (a floodlight, lamps)").defineInRange("fleeLight", 12, 0, 16);
+        builder.pop();
+        builder.comment("1.9.0, block D: the drowner of contaminated water").push("drowner");
+        defineMutant(builder, "drowner", 24.0, 5.0, 0.2);
+        DROWNER_DRAG_SECONDS = builder.comment("Seconds it drags a swimmer down after a blow").defineInRange("dragSeconds", 3, 0, 60);
+        DROWNER_DRAG = builder.comment("How hard it drags down, per tick").defineInRange("drag", 0.08, 0.0, 1.0);
+        DROWNER_BOAT_DAMAGE = builder.comment("Damage of its blow to a boat from below (a boat takes ten times this, heals 20 between blows and breaks above 40: 3 breaks it on the third blow)").defineInRange("boatDamage", 3.0, 0.0, 100.0);
+        builder.pop();
         HOUND_HEALTH = builder.comment("Mutated hound: health").defineInRange("houndHealth", 24.0, 1.0, 10000.0);
         HOUND_DAMAGE = builder.comment("Mutated hound: bite damage").defineInRange("houndDamage", 5.0, 0.0, 1000.0);
         HOUND_SPEED = builder.comment("Mutated hound: speed (a wolf has 0.3)").defineInRange("houndSpeed", 0.36, 0.0, 2.0);
@@ -1922,6 +1965,24 @@ public final class RebirthConfig {
                 builder.comment("Damage of a blow (0: it does not attack, it runs)").defineInRange("damage", damage, 0.0, 1000.0),
                 builder.comment("Walking speed").defineInRange("speed", speed, 0.01, 2.0)));
         builder.pop();
+    }
+
+    private static void defineMutant(ModConfigSpec.Builder builder, String id, double health, double damage, double speed) {
+        MUTANT_SPECIES.put(id, new MutantStats(
+                builder.comment("It appears at all").define("enabled", true),
+                builder.comment("Health").defineInRange("health", health, 1.0, 10000.0),
+                builder.comment("Damage of a blow").defineInRange("damage", damage, 0.0, 1000.0),
+                builder.comment("Walking speed").defineInRange("speed", speed, 0.01, 2.0)));
+    }
+
+    /** Whether a kind of mutant of block D is on (others always). */
+    public static boolean mutantEnabled(String id) {
+        MutantStats stats = MUTANT_SPECIES.get(id);
+        return stats == null || stats.enabled().get();
+    }
+
+    public record MutantStats(ModConfigSpec.BooleanValue enabled, ModConfigSpec.DoubleValue health, ModConfigSpec.DoubleValue damage,
+                              ModConfigSpec.DoubleValue speed) {
     }
 
     public record MutatedAnimalStats(ModConfigSpec.DoubleValue health, ModConfigSpec.DoubleValue damage, ModConfigSpec.DoubleValue speed) {

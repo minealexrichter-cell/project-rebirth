@@ -585,5 +585,59 @@
     "sounds": [
       "projectrebirth:ui/alarm"
     ]
+  },
+  "mutant.crawler_chitter": {
+    "subtitle": "subtitles.projectrebirth.mutant.crawler_chitter",
+    "sounds": [
+      {
+        "name": "projectrebirth:mutant/crawler_chitter",
+        "volume": 0.8
+      }
+    ]
+  },
+  "mutant.screamer_scream": {
+    "subtitle": "subtitles.projectrebirth.mutant.screamer_scream",
+    "sounds": [
+      {
+        "name": "projectrebirth:mutant/screamer_scream",
+        "volume": 1
+      }
+    ]
+  },
+  "mutant.screamer_moan": {
+    "subtitle": "subtitles.projectrebirth.mutant.screamer_moan",
+    "sounds": [
+      {
+        "name": "projectrebirth:mutant/screamer_moan",
+        "volume": 0.7
+      }
+    ]
+  },
+  "mutant.rat_squeak": {
+    "subtitle": "subtitles.projectrebirth.mutant.rat_squeak",
+    "sounds": [
+      {
+        "name": "projectrebirth:mutant/rat_squeak",
+        "volume": 0.5
+      }
+    ]
+  },
+  "mutant.hunter_growl": {
+    "subtitle": "subtitles.projectrebirth.mutant.hunter_growl",
+    "sounds": [
+      {
+        "name": "projectrebirth:mutant/hunter_growl",
+        "volume": 0.8
+      }
+    ]
+  },
+  "mutant.drowner_gurgle": {
+    "subtitle": "subtitles.projectrebirth.mutant.drowner_gurgle",
+    "sounds": [
+      {
+        "name": "projectrebirth:mutant/drowner_gurgle",
+        "volume": 0.8
+      }
+    ]
   }
 }

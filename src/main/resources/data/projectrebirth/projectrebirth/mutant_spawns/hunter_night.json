@@ -1,0 +1,9 @@
+{
+  "entity": "projectrebirth:hunter",
+  "time": "night",
+  "max_light": 7,
+  "min_stage": 2,
+  "weight": 8,
+  "chance": 0.25,
+  "max_nearby": 1
+}

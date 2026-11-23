@@ -12,6 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.levelgen.structure.Structure;
 
 /**
  * 1.9.0, block C: when and where a kind of mutant appears, read from
@@ -29,15 +30,33 @@ import net.minecraft.world.level.biome.Biome;
  * @param catastrophes only during one of these catastrophes; empty: any time
  * @param minStage     from this stage of the Wasteland
  * @param maxStage     up to this stage
- * @param groupMin     fewest in a group
- * @param groupMax     most in a group
+ * @param group        how many come together: {"min": .., "max": ..}
  * @param weight       how often among the rules that fit
  * @param chance       how likely a try that picked it brings it, 0 to 1
  * @param maxNearby    no more while this many of it are within 48 blocks; 0: only the common limit
+ * @param structures   1.9.0, block D: only where the player stands inside one of these structures (usually a tag: ruins,
+ *                     villages); absent: anywhere
  */
 public record MutantSpawnRule(EntityType<?> entity, Optional<HolderSet<Biome>> biomes, Optional<Boolean> contaminated, String time,
                               int maxLight, int minY, int maxY, String placement, List<String> catastrophes, int minStage, int maxStage,
-                              int groupMin, int groupMax, int weight, float chance, int maxNearby) {
+                              Group group, int weight, float chance, int maxNearby, Optional<HolderSet<Structure>> structures) {
+    /** How many come together. */
+    public record Group(int min, int max) {
+        public static final Group ONE = new Group(1, 1);
+        public static final Codec<Group> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Codec.INT.optionalFieldOf("min", 1).forGetter(Group::min),
+                Codec.INT.optionalFieldOf("max", 1).forGetter(Group::max)
+        ).apply(instance, Group::new));
+    }
+
+    public int groupMin() {
+        return group.min();
+    }
+
+    public int groupMax() {
+        return group.max();
+    }
+
     public static final Codec<MutantSpawnRule> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("entity").forGetter(MutantSpawnRule::entity),
             RegistryCodecs.homogeneousList(Registries.BIOME).optionalFieldOf("biomes").forGetter(MutantSpawnRule::biomes),
@@ -50,11 +69,11 @@ public record MutantSpawnRule(EntityType<?> entity, Optional<HolderSet<Biome>> b
             Codec.STRING.listOf().optionalFieldOf("catastrophes", List.of()).forGetter(MutantSpawnRule::catastrophes),
             Codec.INT.optionalFieldOf("min_stage", 1).forGetter(MutantSpawnRule::minStage),
             Codec.INT.optionalFieldOf("max_stage", 4).forGetter(MutantSpawnRule::maxStage),
-            Codec.INT.optionalFieldOf("group_min", 1).forGetter(MutantSpawnRule::groupMin),
-            Codec.INT.optionalFieldOf("group_max", 1).forGetter(MutantSpawnRule::groupMax),
+            Group.CODEC.optionalFieldOf("group", Group.ONE).forGetter(MutantSpawnRule::group),
             Codec.INT.optionalFieldOf("weight", 1).forGetter(MutantSpawnRule::weight),
             Codec.FLOAT.optionalFieldOf("chance", 1.0f).forGetter(MutantSpawnRule::chance),
-            Codec.INT.optionalFieldOf("max_nearby", 0).forGetter(MutantSpawnRule::maxNearby)
+            Codec.INT.optionalFieldOf("max_nearby", 0).forGetter(MutantSpawnRule::maxNearby),
+            RegistryCodecs.homogeneousList(Registries.STRUCTURE).optionalFieldOf("structures").forGetter(MutantSpawnRule::structures)
     ).apply(instance, MutantSpawnRule::new));
 
     public static final String GROUND = "ground";

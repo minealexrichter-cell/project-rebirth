@@ -1,0 +1,12 @@
+{
+  "entity": "projectrebirth:screamer",
+  "catastrophes": [
+    "toxic_storm",
+    "radiation_burst",
+    "acid_rain"
+  ],
+  "min_stage": 2,
+  "weight": 15,
+  "chance": 0.3,
+  "max_nearby": 2
+}

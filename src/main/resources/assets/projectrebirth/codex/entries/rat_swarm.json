@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:rat_spawn_egg",
+  "x": -8,
+  "y": -1,
+  "parents": [
+    "crawler"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.rat_swarm.p1"
+    },
+    {
+      "type": "entity",
+      "value": "projectrebirth:rat",
+      "text": "codex.projectrebirth.rat_swarm.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.rat_swarm.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.rat_swarm.p4"
+    }
+  ]
+}

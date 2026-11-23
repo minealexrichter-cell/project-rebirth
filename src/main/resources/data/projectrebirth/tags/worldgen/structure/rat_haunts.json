@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:village",
+    "projectrebirth:industrial_ruins",
+    "projectrebirth:abandoned_factory",
+    "projectrebirth:abandoned_lab",
+    "projectrebirth:military_base",
+    "projectrebirth:comm_station",
+    "projectrebirth:ruined_reactor",
+    "projectrebirth:science_complex",
+    "projectrebirth:defensive_outpost"
+  ]
+}

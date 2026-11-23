@@ -73,6 +73,14 @@ public final class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> UI_WORK_END = register("ui.work_end");
     public static final DeferredHolder<SoundEvent, SoundEvent> UI_ALARM = register("ui.alarm");
 
+    /** 1.9.0, block D: the new mutants (synthesized, assets_src/sounds/mutants). */
+    public static final DeferredHolder<SoundEvent, SoundEvent> CRAWLER_CHITTER = register("mutant.crawler_chitter");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCREAMER_SCREAM = register("mutant.screamer_scream");
+    public static final DeferredHolder<SoundEvent, SoundEvent> SCREAMER_MOAN = register("mutant.screamer_moan");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RAT_SQUEAK = register("mutant.rat_squeak");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HUNTER_GROWL = register("mutant.hunter_growl");
+    public static final DeferredHolder<SoundEvent, SoundEvent> DROWNER_GURGLE = register("mutant.drowner_gurgle");
+
     private ModSounds() {
     }
 

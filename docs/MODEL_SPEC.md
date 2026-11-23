@@ -237,6 +237,11 @@ root
 | `brute` | `idle`, `walk`, `attack`, `charge`, `leap`, `land`, `roar`, `stun`, `dead` | |
 | `mutated_cow` | `idle`, `walk`, `attack` | 1.9.0: кости `body` > `head` > `jaw`, `tumor_1..2`, `tendril_1..3`, ноги `front_right_leg` и т. д.; текстура 128×128 |
 | `mutated_pig` | `idle`, `walk`, `attack` | 1.9.0: `body` > `head` > `jaw`, `tumor_1`, `tail`, четыре ноги; 128×128 |
+| `crawler` | `idle`, `walk`, `burrowed`, `burrow`, `emerge`, `attack` | 1.9.0: `body` > `segment_2` > `segment_3`, `head` > `mandible_right/left`, ноги `leg_fr/fl/mr/ml/br/bl`; в `burrowed` `root` опущен на 5,5 — над землёй только шипы |
+| `screamer` | `idle`, `walk`, `attack`, `scream` | 1.9.0: `body` > `throat` (раздувается в крике), `head` > `jaw` |
+| `rat` | `idle`, `walk`, `attack` | 1.9.0: маленькая, 64×64 |
+| `hunter` | `idle`, `walk`, `attack` | 1.9.0: скрытый рисуется почти прозрачным (`HunterRenderer`) |
+| `drowner` | `idle`, `walk`, `swim`, `attack` | 1.9.0: в воде — `swim` (`root` повёрнут на 80°), `weed_1..2` |
 | `mutated_chicken` | `idle`, `walk`, `attack` | 1.9.0: `body` > `neck` > `head`, `second_head`; крылья, ноги, `tumor_1`; 64×64 |
 
 Анимация остова (`dead` у врагов руин, `wrecked` у тел) выбирается по виду остова в `RemainsEntity.Kind`.

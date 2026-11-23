@@ -116,11 +116,32 @@ public final class MutantSpawner {
         boolean here = contaminated(level, around);
         List<MutantSpawnRule> out = new ArrayList<>();
         for (MutantSpawnRule rule : rules(level)) {
-            if (rule.weight() > 0 && rule.fitsNow(night, stage, catastrophe, here)) {
+            if (rule.weight() > 0 && RebirthConfig.mutantEnabled(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(rule.entity()).getPath())
+                    && rule.fitsNow(night, stage, catastrophe, here)
+                    && rule.structures().map(set -> insideAny(level, around, set)).orElse(true)) {
                 out.add(rule);
             }
         }
         return out;
+    }
+
+    /** Whether a place is inside one of these structures (anywhere in its bounds, also the streets of a village). */
+    public static boolean insideAny(ServerLevel level, BlockPos pos, net.minecraft.core.HolderSet<net.minecraft.world.level.levelgen.structure.Structure> structures) {
+        for (var structure : structures) {
+            if (level.structureManager().getStructureAt(pos, structure.value()).isValid()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** How many mutants count within 48 blocks: a rat of a swarm counts as a part of one (1.9.0, block D). */
+    public static float population(ServerLevel level, AABB near) {
+        float total = 0.0f;
+        for (MutantEntity mutant : level.getEntitiesOfClass(MutantEntity.class, near)) {
+            total += mutant.populationWeight();
+        }
+        return total;
     }
 
     /** One try near a place; returns how many mutants came. Public for tests. */
@@ -128,7 +149,7 @@ public final class MutantSpawner {
         AABB near = new AABB(around).inflate(NEAR);
         int stage = Wasteland.stage(level);
         int nearCap = Math.round(RebirthConfig.MUTANTS_CAP.get() * stageFactor(stage));
-        if (level.getEntitiesOfClass(MutantEntity.class, near).size() >= nearCap || inWorld(level) >= RebirthConfig.MUTANTS_WORLD_CAP.get()) {
+        if (population(level, near) >= nearCap || inWorld(level) >= RebirthConfig.MUTANTS_WORLD_CAP.get()) {
             return 0;
         }
         List<MutantSpawnRule> fitting = fitting(level, around);
@@ -185,7 +206,10 @@ public final class MutantSpawner {
         }
         switch (rule.placement()) {
             case MutantSpawnRule.UNDERGROUND -> {
-                // a cave near the player's height: air over a solid floor, under the sky nowhere
+                // a cave near the player's height: air over a solid floor, under the sky nowhere; not for a player far above its depth
+                if (around.getY() > rule.maxY() + 16 || around.getY() < rule.minY() - 16) {
+                    return null;
+                }
                 int y = Mth.clamp(around.getY() + random.nextInt(17) - 8, rule.minY(), rule.maxY());
                 for (int down = 0; down < 12; down++) {
                     BlockPos at = new BlockPos(x, y - down, z);

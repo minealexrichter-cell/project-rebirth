@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:crawler_spawn_egg",
+  "x": -7,
+  "y": -2,
+  "parents": [
+    "mutant_ecology"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.crawler.p1"
+    },
+    {
+      "type": "entity",
+      "value": "projectrebirth:crawler",
+      "text": "codex.projectrebirth.crawler.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.crawler.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.crawler.p4"
+    }
+  ]
+}

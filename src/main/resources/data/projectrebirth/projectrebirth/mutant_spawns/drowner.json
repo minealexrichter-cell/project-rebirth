@@ -1,0 +1,11 @@
+{
+  "entity": "projectrebirth:drowner",
+  "contaminated": true,
+  "placement": "water",
+  "group": {
+    "min": 1,
+    "max": 2
+  },
+  "weight": 25,
+  "max_nearby": 3
+}

@@ -578,6 +578,47 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         recipe(P + 'chitin_plating', 'Chitin plating of bodies: armor 2.5 and toughness 1 per plate.', 'Хитиновые бронепластины тела: броня 2,5 и прочность 1 на пластину.'),
         recipe(P + 'decontamination_solution_from_mutagen', 'A cheaper decontamination solution.', 'Более дешёвый дезактивационный раствор.')
     ]),
+    // 1.9.0, block D: the new mutants
+    entry('crawler', P + 'crawler_spawn_egg', -7, -2, ['mutant_ecology'], 'Crawler', 'Ползун', [
+        text('ARCHIVIST · CRAWLER\n\nA pale blind arthropod of the deep caves, descended from cave fauna. It moves under the surface of earth and stone; above ground only the spines of its back show, and the rock cracks where it passes. It attacks from below.',
+            'АРХИВАРИУС · ПОЛЗУН\n\nБледное слепое членистоногое глубоких пещер, потомок пещерной фауны. Движется под поверхностью земли и камня; над ней видны только шипы спины, а там, где он проходит, трескается порода. Нападает снизу.'),
+        entity(P + 'crawler', 'The crawler.', 'Ползун.'),
+        note('L.: The floor cracks — step aside. It comes up where you stood.', 'Л.: Пол трещит — шаг в сторону. Он вылезет там, где ты стоял.'),
+        text('REFERENCE\n\nCaves below height 0, in darkness. Out of the ground it strikes one and a half times as hard, fights for 6 seconds and burrows again. Under the ground it takes half the damage; under the open sky one and a half times, and it is slower. It burrows only into earth and stone.',
+            'СПРАВКА\n\nПещеры ниже высоты 0, темнота. Выскакивая из земли, бьёт в полтора раза сильнее, дерётся 6 секунд и снова закапывается. Под землёй получает половину урона, под открытым небом — в полтора раза больше и медленнее ходит. Закапывается только в землю и камень.')
+    ]),
+    entry('screamer', P + 'screamer_spawn_egg', -8, -3, ['crawler'], 'Screamer', 'Крикун', [
+        text('ARCHIVIST · SCREAMER\n\nA late stage of the change of a person left outside. Physically weak; it keeps away from its prey. Its cry carries far: mutants around come to it, the human vestibular apparatus fails, electronics are disturbed.',
+            'АРХИВАРИУС · КРИКУН\n\nПоздняя стадия изменения человека, оставшегося снаружи. Физически слаб, держится в стороне от добычи. Его крик слышен далеко: мутанты вокруг идут на него, у человека отказывает вестибулярный аппарат, электроника сбоит.'),
+        entity(P + 'screamer', 'The screamer.', 'Крикун.'),
+        note('L.: Kill it first. Then the rest.', 'Л.: Сначала его. Потом остальных.'),
+        text('REFERENCE\n\nContaminated places at night; from stage II also during a toxic storm, a radiation burst or acid rain. A scream every 15 seconds: within 24 blocks mutants without prey go for its prey, a human reels for 4 seconds, bodies and armor are disturbed for 4 seconds as in an EMI storm. Garrison machines shoot it first.',
+            'СПРАВКА\n\nЗаражённые места ночью; со стадии II — ещё и в токсичный шторм, радиационный выброс и кислотный дождь. Крик раз в 15 секунд: в 24 блоках мутанты без добычи идут на его добычу, у человека 4 секунды кружится голова, тела и броня 4 секунды сбоят, как в ЭМИ-бурю. Машины гарнизона стреляют в него первым.')
+    ]),
+    entry('rat_swarm', P + 'rat_spawn_egg', -8, -1, ['crawler'], 'Rat Swarm', 'Крысиный рой', [
+        text('ARCHIVIST · RAT SWARM\n\nRats of ruins and settlements, enlarged and aggressive. They move in swarms of many individuals; a bite carries the agent into the wound. They avoid fire.',
+            'АРХИВАРИУС · КРЫСИНЫЙ РОЙ\n\nКрысы руин и поселений, увеличенные и агрессивные. Передвигаются роем из многих особей; укус заносит агент в рану. Огня избегают.'),
+        entity(P + 'rat', 'A rat of the swarm.', 'Крыса роя.'),
+        note('L.: One rat is nothing. Where there is one, there are ten. A torch in hand.', 'Л.: Одна крыса — ерунда. Где одна, там десять. Факел в руку.'),
+        text('REFERENCE\n\nIn ruins and villages from stage III, 6 to 10 at once. Hit one, and the whole swarm goes for you. A rat counts as a fifth of a mutant for the limits.',
+            'СПРАВКА\n\nВ руинах и деревнях со стадии III, по 6–10 сразу. Ударишь одну — бросается весь рой. Для лимитов мутантов крыса считается как пятая часть.')
+    ]),
+    entry('hunter', P + 'hunter_spawn_egg', -9, -2, ['crawler'], 'Hunter', 'Охотник', [
+        text('ARCHIVIST · HUNTER\n\nOrigin unknown. In darkness and in fog or dust it is almost invisible. It stalks its prey and attacks with a leap. Bright light drives it off.',
+            'АРХИВАРИУС · ОХОТНИК\n\nПроисхождение неизвестно. В темноте, в тумане и в пыли почти невидим. Выслеживает добычу и нападает прыжком. Яркий свет его отгоняет.'),
+        entity(P + 'hunter', 'The hunter.', 'Охотник.'),
+        note('L.: If the fog shimmers where there is no wind, turn on the light.', 'Л.: Если туман дрожит там, где нет ветра, — включай свет.'),
+        text('REFERENCE\n\nFrom stage II at night and during a toxic or dust storm. Hidden where the block light is below 8; a blow given or taken shows it for 3 seconds. Block light of 12 and more (a floodlight, lamps) makes it back away.',
+            'СПРАВКА\n\nСо стадии II ночью и в токсичный шторм или пыльную бурю. Скрыт там, где свет от блоков ниже 8; удар, нанесённый им или по нему, показывает его на 3 секунды. От света блоков 12 и выше (прожектор, лампы) отступает.')
+    ]),
+    entry('drowner', P + 'drowner_spawn_egg', -7, 0, ['crawler'], 'Drowner', 'Утопленник', [
+        text('ARCHIVIST · DROWNER\n\nAn organism of contaminated water bodies, swollen and grown over with algae. It moves fast under water and slowly on land. It pulls swimmers to the bottom and attacks boats from below.',
+            'АРХИВАРИУС · УТОПЛЕННИК\n\nОрганизм заражённых водоёмов, раздутый и обросший водорослями. Быстро движется под водой, медленно — на суше. Утаскивает плывущих на дно и нападает на лодки снизу.'),
+        entity(P + 'drowner', 'The drowner.', 'Утопленник.'),
+        note('L.: Do not swim where the water is contaminated. Not even in a boat.', 'Л.: Не плавай там, где заражена вода. Даже на лодке.'),
+        text('REFERENCE\n\nWater in contaminated places: rivers, swamps, lakes in spots. A blow in the water drags the swimmer down for 3 seconds. Under a boat it strikes it from below; a boat breaks after about three blows.',
+            'СПРАВКА\n\nВода в заражённых местах: реки, болота, озёра в пятнах. Удар в воде утаскивает пловца вниз на 3 секунды. Под лодкой бьёт её снизу; лодка ломается примерно с трёх ударов.')
+    ]),
     entry('polluted_water', P + 'polluted_water_bottle', -1, -3, ['contaminated_zones'], 'Polluted Water', 'Загрязнённая вода', [
         text('Water is polluted where the ground is contaminated (a contaminated zone on the HUD), and during a toxic storm or acid rain wherever it lies under the open sky. It looks like any water. Swimming in it gives a person toxins (less in a protective suit) and soils whoever swims, so a decontamination is due afterwards.\n\nA glass bottle or a bucket filled there holds polluted water. Drunk, a bottle of it gives toxins; it is no potion, so neither the brewing stand nor any recipe takes it. Poured from the bucket, it is just water again.',
             'Вода загрязнена там, где заражена земля (в HUD — «заражённая зона»), а во время токсичного шторма и кислотного дождя — везде, где она лежит под открытым небом. На вид это обычная вода. Купание в ней даёт человеку токсины (в защитном костюме меньше) и пачкает того, кто плавает, — после этого нужна дезактивация.\n\nБутылка или ведро, наполненные там, содержат загрязнённую воду. Выпитая бутылка такой воды даёт токсины; это не зелье, поэтому её не принимает ни варочная стойка, ни один рецепт. Вылитая из ведра, она снова просто вода.'),

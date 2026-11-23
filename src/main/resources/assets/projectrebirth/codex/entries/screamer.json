@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:screamer_spawn_egg",
+  "x": -8,
+  "y": -3,
+  "parents": [
+    "crawler"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.screamer.p1"
+    },
+    {
+      "type": "entity",
+      "value": "projectrebirth:screamer",
+      "text": "codex.projectrebirth.screamer.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.screamer.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.screamer.p4"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "entity": "projectrebirth:hunter",
+  "catastrophes": [
+    "toxic_storm",
+    "dust_storm"
+  ],
+  "min_stage": 2,
+  "weight": 10,
+  "chance": 0.3,
+  "max_nearby": 1
+}

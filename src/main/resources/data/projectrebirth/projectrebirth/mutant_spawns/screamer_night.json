@@ -1,0 +1,7 @@
+{
+  "entity": "projectrebirth:screamer",
+  "contaminated": true,
+  "time": "night",
+  "weight": 15,
+  "max_nearby": 2
+}

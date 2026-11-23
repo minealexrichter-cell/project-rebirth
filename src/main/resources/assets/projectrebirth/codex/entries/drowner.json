@@ -1,0 +1,27 @@
+{
+  "icon": "projectrebirth:drowner_spawn_egg",
+  "x": -7,
+  "y": 0,
+  "parents": [
+    "crawler"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.drowner.p1"
+    },
+    {
+      "type": "entity",
+      "value": "projectrebirth:drowner",
+      "text": "codex.projectrebirth.drowner.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.drowner.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.drowner.p4"
+    }
+  ]
+}

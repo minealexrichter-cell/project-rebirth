@@ -62,13 +62,13 @@ public class MutantEcologyGameTests {
     @GameTest(template = TEMPLATE)
     public static void aRuleFitsItsTimeStageCatastropheAndGround(GameTestHelper helper) {
         MutantSpawnRule night = new MutantSpawnRule(HostileRegistry.MUTATED_HOUND.get(), java.util.Optional.empty(), java.util.Optional.of(false),
-                "night", 15, -64, 320, MutantSpawnRule.GROUND, List.of(), 2, 4, 2, 4, 10, 1.0f, 6);
+                "night", 15, -64, 320, MutantSpawnRule.GROUND, List.of(), 2, 4, new MutantSpawnRule.Group(2, 4), 10, 1.0f, 6, java.util.Optional.empty());
         helper.assertTrue(night.fitsNow(true, 2, null, false), "At night, stage II, clean ground");
         helper.assertFalse(night.fitsNow(false, 2, null, false), "Not by day");
         helper.assertFalse(night.fitsNow(true, 1, null, false), "Not at stage I");
         helper.assertFalse(night.fitsNow(true, 2, null, true), "Not on contaminated ground");
         MutantSpawnRule storm = new MutantSpawnRule(HostileRegistry.GLOWING_GHOUL.get(), java.util.Optional.empty(), java.util.Optional.empty(),
-                "any", 15, -64, 320, MutantSpawnRule.GROUND, List.of("toxic_storm"), 1, 4, 1, 1, 1, 1.0f, 0);
+                "any", 15, -64, 320, MutantSpawnRule.GROUND, List.of("toxic_storm"), 1, 4, MutantSpawnRule.Group.ONE, 1, 1.0f, 0, java.util.Optional.empty());
         helper.assertTrue(storm.fitsNow(false, 1, "toxic_storm", false) && !storm.fitsNow(false, 1, null, true), "Only in its catastrophe");
         helper.assertTrue(MutantSpawner.stageFactor(4) > MutantSpawner.stageFactor(1), "More mutants at a later stage");
         helper.succeed();
@@ -81,7 +81,9 @@ public class MutantEcologyGameTests {
         com.projectrebirth.environment.ContaminationMap.get(level).clearAround(centre, 1);
         // by day, or at stage I by night, only the rules of contaminated ground exist
         if (com.projectrebirth.environment.Wasteland.stage(level) == 1) {
-            helper.assertTrue(MutantSpawner.fitting(level, centre).isEmpty(), "No rule fits clean ground at stage I");
+            helper.assertFalse(MutantSpawner.fitting(level, centre).stream().anyMatch(rule -> rule.entity() == HostileRegistry.MUTATED_HOUND.get()
+                    || rule.entity() == HostileRegistry.GLOWING_GHOUL.get() || rule.entity() == HostileRegistry.BRUTE.get()),
+                    "No rule of hounds, ghouls or brutes fits clean ground at stage I (the crawler of deep caves comes anywhere)");
         }
         helper.succeed();
     }

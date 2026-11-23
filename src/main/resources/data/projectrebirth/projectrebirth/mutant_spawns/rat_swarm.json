@@ -1,0 +1,12 @@
+{
+  "entity": "projectrebirth:rat",
+  "structures": "#projectrebirth:rat_haunts",
+  "min_stage": 3,
+  "group": {
+    "min": 6,
+    "max": 10
+  },
+  "weight": 25,
+  "chance": 0.4,
+  "max_nearby": 20
+}

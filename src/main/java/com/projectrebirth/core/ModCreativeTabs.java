@@ -278,6 +278,11 @@ public final class ModCreativeTabs {
         out.accept(HostileRegistry.CHITIN_PLATE.get());
         out.accept(HostileRegistry.RADIOACTIVE_BONE.get());
         out.accept(HostileRegistry.MUTATED_HOUND_SPAWN_EGG.get());
+        out.accept(HostileRegistry.CRAWLER_SPAWN_EGG.get());
+        out.accept(HostileRegistry.SCREAMER_SPAWN_EGG.get());
+        out.accept(HostileRegistry.RAT_SPAWN_EGG.get());
+        out.accept(HostileRegistry.HUNTER_SPAWN_EGG.get());
+        out.accept(HostileRegistry.DROWNER_SPAWN_EGG.get());
         out.accept(HostileRegistry.GLOWING_GHOUL_SPAWN_EGG.get());
         out.accept(HostileRegistry.BRUTE_SPAWN_EGG.get());
         out.accept(HostileRegistry.MUTATED_COW_SPAWN_EGG.get());

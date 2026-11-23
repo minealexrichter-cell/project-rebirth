@@ -211,6 +211,36 @@ public class WandererGameTests {
     }
 
     @GameTest(template = TEMPLATE)
+    public static void aWandererFromAnEggHasALookAndGear(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (WandererEntity.Kind kind : WandererEntity.Kind.values()) {
+            WandererEntity w = WandererRegistry.type(kind).spawn(level, helper.absolutePos(new BlockPos(4, 2, 4)), net.minecraft.world.entity.MobSpawnType.SPAWN_EGG);
+            helper.assertTrue(w != null && (kind == WandererEntity.Kind.ROBOT || !w.variant().isEmpty()), "A look for " + kind);
+            if (kind == WandererEntity.Kind.ANDROID) {
+                helper.assertTrue(com.projectrebirth.bodies.BodyClass.byId(w.variant()) != null, "A real body class: " + w.variant());
+            }
+            helper.assertTrue(kind == WandererEntity.Kind.ROBOT || !w.getMainHandItem().isEmpty(), "A weapon for " + kind);
+            CompoundTag tag = new CompoundTag();
+            w.saveWithoutId(tag);
+            WandererRegistry.type(kind).create(level).load(tag);
+            w.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
+    public static void anAndroidWithNoLookStillFallsSafely(GameTestHelper helper) {
+        WandererEntity android = one(helper, WandererRegistry.ANDROID.get(), "", new BlockPos(4, 2, 4));
+        helper.assertTrue(android.bodyClass() == com.projectrebirth.bodies.BodyClass.BASIC_ROBOT, "Falls back to the basic robot");
+        android.hurt(helper.getLevel().damageSources().generic(), 1000.0f);
+        AABB box = new AABB(helper.absolutePos(new BlockPos(4, 2, 4))).inflate(4);
+        var remains = helper.getLevel().getEntitiesOfClass(RemainsEntity.class, box);
+        helper.assertTrue(remains.size() == 1, "Its remains");
+        remains.forEach(RemainsEntity::discard);
+        helper.succeed();
+    }
+
+    @GameTest(template = TEMPLATE)
     public static void aGroupGoesAwayAsAWhole(GameTestHelper helper) {
         WandererEntity head = spawn(helper, "caravan", new BlockPos(4, 2, 4));
         List<WandererEntity> members = head.group();

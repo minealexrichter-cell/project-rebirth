@@ -183,6 +183,18 @@ public final class WandererGroups {
         return key == null ? null : BuiltInRegistries.ITEM.getOptional(key).orElse(null);
     }
 
+    /** The look, gear and strength of a wanderer that came without a group: a random member of its kind from the groups of this stage. */
+    static void equipAlone(ServerLevel level, WandererEntity wanderer) {
+        int stage = Wasteland.stage(level);
+        List<WandererData.MemberSpec> specs = level.registryAccess().registry(WandererData.GROUPS)
+                .map(registry -> registry.stream().filter(group -> group.minStage() <= stage).flatMap(group -> group.members().stream())
+                        .filter(member -> WandererEntity.Kind.byId(member.kind()) == wanderer.kind()).toList()).orElse(List.of());
+        if (!specs.isEmpty()) {
+            equip(wanderer, specs.get(level.random.nextInt(specs.size())), level.random);
+        }
+        wanderer.scaleByStage(stage);
+    }
+
     /** Its look and gear by the member spec. */
     static void equip(WandererEntity wanderer, WandererData.MemberSpec spec, RandomSource random) {
         WandererEntity.Kind kind = WandererEntity.Kind.byId(spec.kind());
@@ -278,7 +290,7 @@ public final class WandererGroups {
                 armor.makeWreck();
                 wanderer.level().addFreshEntity(armor);
             }
-            case ANDROID -> RemainsEntity.leave(wanderer, RemainsEntity.Kind.forBody(BodyClass.byId(wanderer.variant())));
+            case ANDROID -> RemainsEntity.leave(wanderer, RemainsEntity.Kind.forBody(wanderer.bodyClass()));
             case ROBOT -> RemainsEntity.leave(wanderer, RemainsEntity.Kind.WANDERER_ROBOT);
             default -> {
             }

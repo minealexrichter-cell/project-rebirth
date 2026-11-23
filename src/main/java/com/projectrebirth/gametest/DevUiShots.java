@@ -97,6 +97,12 @@ public final class DevUiShots {
                     minecraft.gameMode.interact(minecraft.player, minecraft.crosshairPickEntity, net.minecraft.world.InteractionHand.MAIN_HAND);
                     return;
                 }
+                // the same on the block under the crosshair with the held item (a spawn egg)
+                if (text.equals("useblock") && minecraft.player != null && minecraft.gameMode != null
+                        && minecraft.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit) {
+                    minecraft.gameMode.useItemOn(minecraft.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+                    return;
+                }
                 if (text.equals("respawn")) {
                     if (minecraft.player != null && minecraft.player.isDeadOrDying()) {
                         minecraft.player.respawn();

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.projectrebirth.ProjectRebirth;
-import com.projectrebirth.bodies.BodyClass;
 import com.projectrebirth.powerarmor.ArmorVariant;
 import com.projectrebirth.wanderers.WandererEntity;
 
@@ -51,7 +50,7 @@ public final class WandererRenderer {
     private static String id(WandererEntity wanderer) {
         return switch (wanderer.kind()) {
             case ARMORED -> ArmorVariant.byId(wanderer.variant()).itemId();
-            case ANDROID -> BodyClass.byId(wanderer.variant()).id();
+            case ANDROID -> wanderer.bodyClass().id();
             default -> "wanderer_robot";
         };
     }

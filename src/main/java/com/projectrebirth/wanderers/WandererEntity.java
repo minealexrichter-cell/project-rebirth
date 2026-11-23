@@ -146,6 +146,25 @@ public class WandererEntity extends PathfinderMob implements GeoEntity, RangedAt
         return entityData.get(VARIANT);
     }
 
+    /** The body class of an android; a variant that is unknown or not set (a summon with its own data) is the basic robot. */
+    public com.projectrebirth.bodies.BodyClass bodyClass() {
+        com.projectrebirth.bodies.BodyClass body = com.projectrebirth.bodies.BodyClass.byId(variant());
+        return body == null ? com.projectrebirth.bodies.BodyClass.BASIC_ROBOT : body;
+    }
+
+    /** A wanderer from an egg or a command: the look and gear of a random member of its kind (a group gives its own). */
+    @Override
+    @Nullable
+    public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(net.minecraft.world.level.ServerLevelAccessor level,
+            net.minecraft.world.DifficultyInstance difficulty, net.minecraft.world.entity.MobSpawnType type,
+            @Nullable net.minecraft.world.entity.SpawnGroupData data) {
+        data = super.finalizeSpawn(level, difficulty, type, data);
+        if (type != net.minecraft.world.entity.MobSpawnType.EVENT) {
+            WandererGroups.equipAlone(level.getLevel(), this);
+        }
+        return data;
+    }
+
     public void setVariant(String variant) {
         entityData.set(VARIANT, variant);
     }

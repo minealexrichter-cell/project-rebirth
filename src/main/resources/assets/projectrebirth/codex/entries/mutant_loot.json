@@ -1,0 +1,62 @@
+{
+  "icon": "projectrebirth:toxic_gland",
+  "x": -6,
+  "y": -1,
+  "parents": [
+    "mutant_ecology"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mutant_loot.p1"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.mutant_loot.p2"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:mutagen",
+      "text": "codex.projectrebirth.mutant_loot.p3"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:toxic_gland",
+      "text": "codex.projectrebirth.mutant_loot.p4"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:chitin_plate",
+      "text": "codex.projectrebirth.mutant_loot.p5"
+    },
+    {
+      "type": "item",
+      "value": "projectrebirth:radioactive_bone",
+      "text": "codex.projectrebirth.mutant_loot.p6"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:antitoxin",
+      "text": "codex.projectrebirth.mutant_loot.p7"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:antiseptic_from_mutagen"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:biofilter",
+      "text": "codex.projectrebirth.mutant_loot.p9"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:chitin_plating",
+      "text": "codex.projectrebirth.mutant_loot.p10"
+    },
+    {
+      "type": "recipe",
+      "value": "projectrebirth:decontamination_solution_from_mutagen",
+      "text": "codex.projectrebirth.mutant_loot.p11"
+    }
+  ]
+}

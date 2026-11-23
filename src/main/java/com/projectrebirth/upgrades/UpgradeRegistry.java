@@ -66,6 +66,8 @@ public final class UpgradeRegistry {
     public static final DeferredItem<Item> COPPER_PLATING = upgradeItem("copper_plating", 16);
     public static final DeferredItem<Item> IRON_PLATING = upgradeItem("iron_plating", 16);
     public static final DeferredItem<Item> TITANIUM_PLATING = upgradeItem("titanium_plating", 16);
+    /** 1.9.0, block C: plates of the chitin of mutants: lighter than titanium, nearly as hard. */
+    public static final DeferredItem<Item> CHITIN_PLATING = upgradeItem("chitin_plating", 16);
     public static final DeferredItem<Item> ARMOR_COPPER_PLATING = upgradeItem("armor_copper_plating", 16);
     public static final DeferredItem<Item> ARMOR_IRON_PLATING = upgradeItem("armor_iron_plating", 16);
     public static final DeferredItem<Item> ARMOR_TITANIUM_PLATING = upgradeItem("armor_titanium_plating", 16);

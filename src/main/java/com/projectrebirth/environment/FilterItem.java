@@ -25,8 +25,23 @@ import net.minecraft.world.level.Level;
  * in a window, right click it onto the head piece. The rest of the old filter comes back.
  */
 public class FilterItem extends Item {
+    private final float lifeMultiplier;
+
     public FilterItem(Properties properties) {
+        this(properties, 1.0f);
+    }
+
+    /** 1.9.0: a filter that lasts this many times as long as the ordinary one (the biofilter). */
+    public FilterItem(Properties properties, float lifeMultiplier) {
         super(properties);
+        this.lifeMultiplier = lifeMultiplier;
+    }
+
+    /** The life of a fresh one, in seconds. */
+    public float freshLife() {
+        // the biofilter's own number is in the config
+        float multiplier = lifeMultiplier != 1.0f ? com.projectrebirth.config.WastelandConfig.BIOFILTER_LIFE.get().floatValue() : 1.0f;
+        return RebirthConfig.PROTECTION_FILTER_LIFE.get().floatValue() * multiplier;
     }
 
     @Override
@@ -69,7 +84,7 @@ public class FilterItem extends Item {
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return Math.round(13.0f * Mth.clamp(Protection.filterLeft(stack) / RebirthConfig.PROTECTION_FILTER_LIFE.get().floatValue(), 0.0f, 1.0f));
+        return Math.round(13.0f * Mth.clamp(Protection.filterLeft(stack) / freshLife(), 0.0f, 1.0f));
     }
 
     @Override

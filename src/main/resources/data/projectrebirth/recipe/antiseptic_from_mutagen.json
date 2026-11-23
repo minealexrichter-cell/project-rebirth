@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 93,
+  "time": 100,
+  "ingredients": [
+    {
+      "item": "minecraft:glass_bottle",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:mutagen",
+      "count": 1
+    },
+    {
+      "item": "minecraft:sugar",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:antiseptic",
+    "count": 2
+  }
+}

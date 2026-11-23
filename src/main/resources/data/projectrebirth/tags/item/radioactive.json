@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "projectrebirth:raw_uranium",
-    "projectrebirth:uranium_ingot"
+    "projectrebirth:uranium_ingot",
+    "projectrebirth:radioactive_bone"
   ]
 }

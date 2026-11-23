@@ -59,6 +59,17 @@ public final class HostileRegistry {
     public static final DeferredHolder<EntityType<?>, EntityType<BruteEntity>> BRUTE = ENTITY_TYPES.register("brute",
             () -> EntityType.Builder.of(BruteEntity::new, MobCategory.MONSTER).sized(1.3f, 2.5f).eyeHeight(2.2f).clientTrackingRange(10).build("brute"));
 
+    /** 1.9.0, block C: farm animals changed by a contaminated place. */
+    public static final DeferredHolder<EntityType<?>, EntityType<MutatedAnimalEntity>> MUTATED_COW = ENTITY_TYPES.register("mutated_cow",
+            () -> EntityType.Builder.<MutatedAnimalEntity>of((type, level) -> new MutatedAnimalEntity(type, level, MutatedAnimalEntity.Kind.COW), MobCategory.MONSTER)
+                    .sized(1.0f, 1.5f).eyeHeight(1.3f).clientTrackingRange(10).build("mutated_cow"));
+    public static final DeferredHolder<EntityType<?>, EntityType<MutatedAnimalEntity>> MUTATED_PIG = ENTITY_TYPES.register("mutated_pig",
+            () -> EntityType.Builder.<MutatedAnimalEntity>of((type, level) -> new MutatedAnimalEntity(type, level, MutatedAnimalEntity.Kind.PIG), MobCategory.MONSTER)
+                    .sized(0.95f, 0.95f).eyeHeight(0.75f).clientTrackingRange(10).build("mutated_pig"));
+    public static final DeferredHolder<EntityType<?>, EntityType<MutatedAnimalEntity>> MUTATED_CHICKEN = ENTITY_TYPES.register("mutated_chicken",
+            () -> EntityType.Builder.<MutatedAnimalEntity>of((type, level) -> new MutatedAnimalEntity(type, level, MutatedAnimalEntity.Kind.CHICKEN), MobCategory.MONSTER)
+                    .sized(0.5f, 0.8f).eyeHeight(0.6f).clientTrackingRange(10).build("mutated_chicken"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<RemainsEntity>> REMAINS = ENTITY_TYPES.register("remains",
             () -> EntityType.Builder.<RemainsEntity>of(RemainsEntity::new, MobCategory.MISC).sized(1.5f, 0.8f).clientTrackingRange(10).build("remains"));
 
@@ -84,6 +95,20 @@ public final class HostileRegistry {
     public static final DeferredItem<Item> BRUTE_SPAWN_EGG = ITEMS.register("brute_spawn_egg",
             () -> new DeferredSpawnEggItem(BRUTE, 0x8A6A5A, 0x5A3A2A, new Item.Properties()));
 
+    public static final DeferredItem<Item> MUTATED_COW_SPAWN_EGG = ITEMS.register("mutated_cow_spawn_egg",
+            () -> new DeferredSpawnEggItem(MUTATED_COW, 0x5A4A3E, 0xB0607A, new Item.Properties()));
+    public static final DeferredItem<Item> MUTATED_PIG_SPAWN_EGG = ITEMS.register("mutated_pig_spawn_egg",
+            () -> new DeferredSpawnEggItem(MUTATED_PIG, 0xC89A8E, 0x6A8A3A, new Item.Properties()));
+    public static final DeferredItem<Item> MUTATED_CHICKEN_SPAWN_EGG = ITEMS.register("mutated_chicken_spawn_egg",
+            () -> new DeferredSpawnEggItem(MUTATED_CHICKEN, 0xB8B4A6, 0x8A3A2A, new Item.Properties()));
+
+    /** 1.9.0, block C: what mutants leave behind. */
+    public static final DeferredItem<Item> MUTAGEN = ITEMS.registerSimpleItem("mutagen");
+    public static final DeferredItem<Item> TOXIC_GLAND = ITEMS.registerSimpleItem("toxic_gland");
+    public static final DeferredItem<Item> CHITIN_PLATE = ITEMS.registerSimpleItem("chitin_plate");
+    /** It radiates in the inventory like uranium (tag projectrebirth:radioactive). */
+    public static final DeferredItem<Item> RADIOACTIVE_BONE = ITEMS.registerSimpleItem("radioactive_bone");
+
     private HostileRegistry() {
     }
 
@@ -92,6 +117,7 @@ public final class HostileRegistry {
         ITEMS.register(modEventBus);
         TurretShotPayload.register(modEventBus);
         modEventBus.addListener(HostileRegistry::registerAttributes);
+        modEventBus.addListener(HostileRegistry::registerDataRegistries);
     }
 
     private static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -101,5 +127,14 @@ public final class HostileRegistry {
         event.put(MUTATED_HOUND.get(), MutatedHoundEntity.createAttributes().build());
         event.put(GLOWING_GHOUL.get(), GlowingGhoulEntity.createAttributes().build());
         event.put(BRUTE.get(), BruteEntity.createAttributes().build());
+        event.put(MUTATED_COW.get(), MutatedAnimalEntity.createAttributes(18.0, 4.0, 0.25).build());
+        event.put(MUTATED_PIG.get(), MutatedAnimalEntity.createAttributes(14.0, 3.0, 0.28).build());
+        event.put(MUTATED_CHICKEN.get(), MutatedAnimalEntity.createAttributes(6.0, 0.0, 0.3).build());
+    }
+
+    /** 1.9.0, block C: the rules of mutant spawning and the animal mutations, from data. */
+    private static void registerDataRegistries(net.neoforged.neoforge.registries.DataPackRegistryEvent.NewRegistry event) {
+        event.dataPackRegistry(MutantSpawner.RULES, MutantSpawnRule.CODEC);
+        event.dataPackRegistry(Mutations.REGISTRY, Mutations.Mutation.CODEC);
     }
 }

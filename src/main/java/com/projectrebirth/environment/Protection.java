@@ -79,7 +79,7 @@ public final class Protection {
         if (left != null) {
             return left;
         }
-        return stack.getItem() instanceof FilterItem ? RebirthConfig.PROTECTION_FILTER_LIFE.get().floatValue() : 0.0f;
+        return stack.getItem() instanceof FilterItem filter ? filter.freshLife() : 0.0f;
     }
 
     /** The share of a hazard the gear of this person keeps off, 0 to 1. */

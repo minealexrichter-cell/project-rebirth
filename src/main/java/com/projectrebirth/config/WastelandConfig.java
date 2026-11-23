@@ -35,6 +35,8 @@ public final class WastelandConfig {
     public static final ModConfigSpec.DoubleValue[] STAGE_BACKGROUND = new ModConfigSpec.DoubleValue[4];
     public static final ModConfigSpec.DoubleValue[] STAGE_CATASTROPHE_FREQUENCY = new ModConfigSpec.DoubleValue[4];
     public static final ModConfigSpec.DoubleValue[] STAGE_CATASTROPHE_STRENGTH = new ModConfigSpec.DoubleValue[4];
+    /** 1.9.0, block C: how many mutants come by stage (the chance of a try and the limit near a player). */
+    public static final ModConfigSpec.DoubleValue[] STAGE_MUTANTS = new ModConfigSpec.DoubleValue[4];
 
     public static ModConfigSpec.BooleanValue AIR_ENABLED;
     public static ModConfigSpec.DoubleValue AIR_TOXIN;
@@ -68,6 +70,10 @@ public final class WastelandConfig {
 
     public static ModConfigSpec.DoubleValue SLEEP_SHELTER_TOXIN_SHARE;
 
+    public static ModConfigSpec.IntValue ANTITOXIN_SECONDS;
+    public static ModConfigSpec.DoubleValue ANTITOXIN_SHARE;
+    public static ModConfigSpec.DoubleValue BIOFILTER_LIFE;
+
     private WastelandConfig() {
     }
 
@@ -97,12 +103,15 @@ public final class WastelandConfig {
         double[] background = {1.0, 1.25, 1.5, 2.0};
         double[] frequency = {1.0, 1.2, 1.4, 1.7};
         double[] strength = {1.0, 1.1, 1.25, 1.4};
+        double[] mutants = {1.0, 1.25, 1.5, 2.0};
         for (int i = 0; i < 4; i++) {
             builder.push("stage" + (i + 1));
             STAGE_BACKGROUND[i] = builder.comment("The background of the air is multiplied by this").defineInRange("background", background[i], 0.0, 100.0);
             STAGE_CATASTROPHE_FREQUENCY[i] = builder.comment("Catastrophes come this many times as often (the calm between them is shorter)")
                     .defineInRange("catastropheFrequency", frequency[i], 0.01, 100.0);
             STAGE_CATASTROPHE_STRENGTH[i] = builder.comment("The strength of a catastrophe is multiplied by this").defineInRange("catastropheStrength", strength[i], 0.0, 100.0);
+            STAGE_MUTANTS[i] = builder.comment("Mutants: the chance of a try to bring them and the limit near a player are multiplied by this (block C)")
+                    .defineInRange("mutants", mutants[i], 0.0, 100.0);
             builder.pop();
         }
         builder.pop();
@@ -159,6 +168,12 @@ public final class WastelandConfig {
         builder.comment("Sleep").push("sleep");
         SLEEP_SHELTER_TOXIN_SHARE = builder.comment("Share of the toxic load a night of sleep in a sealed room takes away (outside it takes none)")
                 .defineInRange("shelterToxinShare", 0.3, 0.0, 1.0);
+        builder.pop();
+
+        builder.comment("What is made of the loot of mutants (block C)").push("mutant_loot");
+        ANTITOXIN_SECONDS = builder.comment("Seconds of toxin resistance an antitoxin gives (it also stops a wound infection)").defineInRange("antitoxinSeconds", 300, 1, 36000);
+        ANTITOXIN_SHARE = builder.comment("Share of the toxins gained that still reach the body under toxin resistance").defineInRange("antitoxinShare", 0.5, 0.0, 1.0);
+        BIOFILTER_LIFE = builder.comment("A biofilter lasts this many times as long as an ordinary filter").defineInRange("biofilterLife", 2.0, 0.1, 100.0);
         builder.pop();
 
         builder.comment("The numbers of the presets").push("presets");

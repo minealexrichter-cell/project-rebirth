@@ -1,0 +1,11 @@
+{
+  "entity": "projectrebirth:mutated_hound",
+  "contaminated": false,
+  "time": "night",
+  "min_stage": 2,
+  "group_min": 2,
+  "group_max": 4,
+  "weight": 10,
+  "chance": 0.15,
+  "max_nearby": 6
+}

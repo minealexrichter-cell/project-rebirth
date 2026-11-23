@@ -539,6 +539,45 @@ category('environment', P + 'respirator', 'Hostile Environment', 'Враждеб
         note('Mutants do not burn in the sun and do not come in peaceful. Settings in the config ([hostile.mutants]).',
             'Мутанты не горят на солнце и не появляются на мирной сложности. Настройки в конфиге ([hostile.mutants]).')
     ]),
+    // 1.9.0, block C: the mutants as the beasts of the Wasteland, in the voice of docs/LORE.md
+    entry('mutant_ecology', P + 'mutagen', -5, -2, ['mutants'], 'Mutants: Ecology', 'Мутанты: экология', [
+        text('ARCHIVIST · MUTANTS: ECOLOGY\n\nThe R-series agents together with radiation change living organisms. The changed species form no organised groups. They are spread over the land as ordinary fauna; each species keeps to its own places and its own time.',
+            'АРХИВАРИУС · МУТАНТЫ: ЭКОЛОГИЯ\n\nАгенты серии «Р» в сочетании с радиацией изменяют живые организмы. Изменённые виды не образуют организованных групп. Они распределены по местности как обычная фауна; каждый вид держится своих мест и своего времени.'),
+        text('Mutants attack not only people: villagers, animals and machines are prey to them too. They avoid open fire.',
+            'Мутанты нападают не только на людей: жители, животные и машины для них такая же добыча. Открытого огня они избегают.'),
+        note('L.: A fire for the night is no luxury. They do not come near it.',
+            'Л.: Костёр на ночь — не роскошь. К огню они не подходят.'),
+        text('REFERENCE\n\nWhere and when each kind comes is in the data (projectrebirth/mutant_spawns): biomes, contamination, time of day, light, depth, water, catastrophe, stage of the Wasteland, group size. Hounds, ghouls and brutes live in contaminated chunks and the contamination zone; from stage II packs of hounds roam at night outside them too.',
+            'СПРАВКА\n\nГде и когда появляется каждый вид — в данных (projectrebirth/mutant_spawns): биомы, заражённость, время суток, свет, глубина, вода, катастрофа, стадия Пустоши, размер группы. Псы, гули и громилы живут в заражённых чанках и «Зоне заражения»; со стадии II ночью стаи псов бродят и вне их.'),
+        text('Limit: 6 mutants within 48 blocks of a player (×1, ×1.25, ×1.5, ×2 by stage) and 80 in a dimension. Far from players they vanish as ordinary monsters do. Fire, a lit campfire and lava within 4 blocks drive them off.',
+            'Лимит: 6 мутантов в 48 блоках от игрока (×1, ×1,25, ×1,5, ×2 по стадиям) и 80 в измерении. Вдали от игроков они исчезают, как обычные монстры. Огонь, горящий костёр и лава ближе 4 блоков их отпугивают.')
+    ]),
+    entry('mutated_animals', P + 'mutated_cow_spawn_egg', -6, -3, ['mutant_ecology'], 'Mutated Animals', 'Мутировавшие животные', [
+        text('ARCHIVIST · MUTATED ANIMALS\n\nAnimals that stay long on contaminated ground change. Growths, extra horns and heads are seen. Behaviour changes: some individuals become aggressive, some extremely timid. The tissue of such animals is contaminated.',
+            'АРХИВАРИУС · МУТИРОВАВШИЕ ЖИВОТНЫЕ\n\nЖивотные, долго находящиеся на заражённой земле, изменяются. Наблюдаются наросты, лишние рога и головы. Поведение меняется: часть особей становится агрессивной, часть — крайне пугливой. Ткани таких животных заражены.'),
+        entity(P + 'mutated_cow', 'The mutated cow: a third horn and growths on the back; it charges.', 'Мутировавшая корова: третий рог и наросты на спине; бросается на людей.'),
+        entity(P + 'mutated_pig', 'The mutated pig: tusks and bumps along the spine; it bites.', 'Мутировавшая свинья: клыки и шишки вдоль хребта; кусается.'),
+        entity(P + 'mutated_chicken', 'The mutated chicken: a second small head; it runs from people.', 'Мутировавшая курица: вторая маленькая голова; убегает от людей.'),
+        note('L.: Keep the herd away from the spots. Five minutes, and it is not your cow any more.',
+            'Л.: Держи скот подальше от пятен. Пять минут — и это уже не твоя корова.'),
+        text('REFERENCE\n\nA cow, a pig and a chicken in a contaminated chunk or the contamination zone mutate after 5 minutes spent there near a player; a wolf becomes a mutated hound. Young, tamed, named and leashed animals do not. Their meat is contaminated (+25 toxins). Which animal becomes what is in the data (projectrebirth/mutation).',
+            'СПРАВКА\n\nКорова, свинья и курица в заражённом чанке или «Зоне заражения» мутируют за 5 минут, проведённых там рядом с игроком; волк становится мутировавшим псом. Детёныши, ручные, названные и привязанные животные не мутируют. Их мясо заражено (+25 токсинов). Кто во что превращается — в данных (projectrebirth/mutation).')
+    ]),
+    entry('mutant_loot', P + 'toxic_gland', -6, -1, ['mutant_ecology'], 'Loot of Mutants', 'Добыча с мутантов', [
+        text('ARCHIVIST · LOOT OF MUTANTS\n\nThe tissue of mutants holds substances fit for processing. The protocol allows their use with protective measures observed.',
+            'АРХИВАРИУС · ДОБЫЧА С МУТАНТОВ\n\nТкани мутантов содержат вещества, пригодные для переработки. Протокол допускает их использование при соблюдении мер защиты.'),
+        note('L.: The bone glows. Do not keep it in your pocket longer than you must.',
+            'Л.: Кость фонит. Не держи её в кармане дольше, чем нужно.'),
+        item(P + 'mutagen', 'Mutagen: hounds, ghouls, brutes and mutated animals.', 'Мутаген: псы, гули, громилы и мутировавшие животные.'),
+        item(P + 'toxic_gland', 'Toxic gland: mostly ghouls.', 'Токсичная железа: чаще всего гули.'),
+        item(P + 'chitin_plate', 'Chitin plate: brutes.', 'Хитиновая пластина: громилы.'),
+        item(P + 'radioactive_bone', 'Radioactive bone: ghouls and brutes. In the inventory it radiates like uranium.', 'Радиоактивная кость: гули и громилы. В инвентаре фонит, как уран.'),
+        recipe(P + 'antitoxin', 'Antitoxin: for 5 minutes only half of new toxins reach the body; it stops a wound infection.', 'Антитоксин: 5 минут внутрь доходит только половина новых токсинов; останавливает заражение раны.'),
+        recipe(P + 'antiseptic_from_mutagen'),
+        recipe(P + 'biofilter', 'The biofilter lasts twice as long as an ordinary filter.', 'Биофильтр служит вдвое дольше обычного фильтра.'),
+        recipe(P + 'chitin_plating', 'Chitin plating of bodies: armor 2.5 and toughness 1 per plate.', 'Хитиновые бронепластины тела: броня 2,5 и прочность 1 на пластину.'),
+        recipe(P + 'decontamination_solution_from_mutagen', 'A cheaper decontamination solution.', 'Более дешёвый дезактивационный раствор.')
+    ]),
     entry('polluted_water', P + 'polluted_water_bottle', -1, -3, ['contaminated_zones'], 'Polluted Water', 'Загрязнённая вода', [
         text('Water is polluted where the ground is contaminated (a contaminated zone on the HUD), and during a toxic storm or acid rain wherever it lies under the open sky. It looks like any water. Swimming in it gives a person toxins (less in a protective suit) and soils whoever swims, so a decontamination is due afterwards.\n\nA glass bottle or a bucket filled there holds polluted water. Drunk, a bottle of it gives toxins; it is no potion, so neither the brewing stand nor any recipe takes it. Poured from the bucket, it is just water again.',
             'Вода загрязнена там, где заражена земля (в HUD — «заражённая зона»), а во время токсичного шторма и кислотного дождя — везде, где она лежит под открытым небом. На вид это обычная вода. Купание в ней даёт человеку токсины (в защитном костюме меньше) и пачкает того, кто плавает, — после этого нужна дезактивация.\n\nБутылка или ведро, наполненные там, содержат загрязнённую воду. Выпитая бутылка такой воды даёт токсины; это не зелье, поэтому её не принимает ни варочная стойка, ни один рецепт. Вылитая из ведра, она снова просто вода.'),

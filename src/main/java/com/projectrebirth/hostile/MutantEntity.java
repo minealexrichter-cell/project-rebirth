@@ -63,6 +63,22 @@ public abstract class MutantEntity extends Monster implements GeoEntity {
         goalSelector.addGoal(7, new RandomLookAroundGoal(this));
         targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
         targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        // 1.9.0, block C: they are beasts of the Wasteland: villagers, animals and machines are prey too, and they keep from fire
+        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, net.minecraft.world.entity.LivingEntity.class, 10, true, false, MutantEntity::isPrey));
+        goalSelector.addGoal(1, new FleeFireGoal(this));
+    }
+
+    /** Tag of further creatures mutants go for (the wanderers and the robots of the machine mind of later blocks). */
+    public static final net.minecraft.tags.TagKey<EntityType<?>> PREY = net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE,
+            com.projectrebirth.ProjectRebirth.id("mutant_prey"));
+
+    /** What mutants hunt besides players: villagers, animals, garrison machines and the tag projectrebirth:mutant_prey. */
+    public static boolean isPrey(net.minecraft.world.entity.LivingEntity target) {
+        if (target instanceof MutantEntity || !target.isAlive() || RebirthConfig.SERVER_SPEC.isLoaded() && !RebirthConfig.MUTANTS_HUNT.get()) {
+            return false;
+        }
+        return target instanceof net.minecraft.world.entity.npc.AbstractVillager || target instanceof net.minecraft.world.entity.animal.Animal
+                || target instanceof com.projectrebirth.garrison.GarrisonMachine || target.getType().is(PREY);
     }
 
     public static boolean enabled() {

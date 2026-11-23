@@ -171,6 +171,7 @@ public final class ModCreativeTabs {
         out.accept(UpgradeRegistry.COPPER_PLATING.get());
         out.accept(UpgradeRegistry.IRON_PLATING.get());
         out.accept(UpgradeRegistry.TITANIUM_PLATING.get());
+        out.accept(UpgradeRegistry.CHITIN_PLATING.get());
         out.accept(UpgradeRegistry.SEALING_MODULE.get());
         out.accept(UpgradeRegistry.JETPACK.get());
         out.accept(UpgradeRegistry.EXTRA_BATTERY.get());
@@ -238,9 +239,11 @@ public final class ModCreativeTabs {
         out.accept(Scouting.FIELD_ANALYZER.get());
         out.accept(EnvironmentRegistry.ANTIRADIN.get());
         out.accept(EnvironmentRegistry.SORBENT.get());
+        out.accept(EnvironmentRegistry.ANTITOXIN.get());
         out.accept(EnvironmentRegistry.ANTISEPTIC.get());
         out.accept(EnvironmentRegistry.RESPIRATOR.get());
         out.accept(EnvironmentRegistry.FILTER.get());
+        out.accept(EnvironmentRegistry.BIOFILTER.get());
         out.accept(EnvironmentRegistry.HAZMAT_HELMET.get());
         out.accept(EnvironmentRegistry.HAZMAT_SUIT.get());
         out.accept(EnvironmentRegistry.HAZMAT_TROUSERS.get());
@@ -270,9 +273,16 @@ public final class ModCreativeTabs {
         out.accept(HostileRegistry.GUARD_TURRET_SPAWN_EGG.get());
         out.accept(HostileRegistry.PATROL_ROBOT_SPAWN_EGG.get());
         out.accept(HostileRegistry.MECH_SPAWN_EGG.get());
+        out.accept(HostileRegistry.MUTAGEN.get());
+        out.accept(HostileRegistry.TOXIC_GLAND.get());
+        out.accept(HostileRegistry.CHITIN_PLATE.get());
+        out.accept(HostileRegistry.RADIOACTIVE_BONE.get());
         out.accept(HostileRegistry.MUTATED_HOUND_SPAWN_EGG.get());
         out.accept(HostileRegistry.GLOWING_GHOUL_SPAWN_EGG.get());
         out.accept(HostileRegistry.BRUTE_SPAWN_EGG.get());
+        out.accept(HostileRegistry.MUTATED_COW_SPAWN_EGG.get());
+        out.accept(HostileRegistry.MUTATED_PIG_SPAWN_EGG.get());
+        out.accept(HostileRegistry.MUTATED_CHICKEN_SPAWN_EGG.get());
         out.accept(SourceRegistry.RADIOACTIVE_DEBRIS_ITEM.get());
         out.accept(SourceRegistry.LEAKING_WASTE_BARREL_ITEM.get());
         out.accept(SourceRegistry.IRRADIATED_SLUDGE_ITEM.get());

@@ -1,0 +1,30 @@
+{
+  "icon": "projectrebirth:mutagen",
+  "x": -5,
+  "y": -2,
+  "parents": [
+    "mutants"
+  ],
+  "pages": [
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mutant_ecology.p1"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mutant_ecology.p2"
+    },
+    {
+      "type": "note",
+      "text": "codex.projectrebirth.mutant_ecology.p3"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mutant_ecology.p4"
+    },
+    {
+      "type": "text",
+      "text": "codex.projectrebirth.mutant_ecology.p5"
+    }
+  ]
+}

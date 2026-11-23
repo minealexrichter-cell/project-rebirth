@@ -1,0 +1,7 @@
+{
+  "entity": "projectrebirth:mutated_hound",
+  "contaminated": true,
+  "group_min": 3,
+  "group_max": 5,
+  "weight": 50
+}

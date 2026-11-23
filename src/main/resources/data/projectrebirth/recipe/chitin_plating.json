@@ -1,0 +1,20 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "implant_fabricator",
+  "sort": 25,
+  "time": 160,
+  "ingredients": [
+    {
+      "item": "projectrebirth:chitin_plate",
+      "count": 4
+    },
+    {
+      "tag": "c:ingots/copper",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:chitin_plating",
+    "count": 1
+  }
+}

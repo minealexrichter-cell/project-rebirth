@@ -35,7 +35,7 @@ public final class UpgradeVisuals {
     private static final List<String> ARMOR_BONES = List.of("slot_head_floodlight", "slot_chest_plating", "slot_chest_floodlight", "slot_back_air",
             "slot_right_arm_plating", "slot_right_arm_floodlight", "slot_left_arm_plating", "slot_left_arm_floodlight",
             "slot_right_leg_plating", "slot_right_leg_air", "slot_left_leg_plating", "slot_left_leg_air", "slot_chest_emi", "slot_back_emi", "slot_head_sensor");
-    private static final Map<String, Integer> MATERIAL_COLORS = Map.of("copper", 0xFFD98A5A, "iron", 0xFFC9CED3, "titanium", 0xFF8FA6C8);
+    private static final Map<String, Integer> MATERIAL_COLORS = Map.of("copper", 0xFFD98A5A, "iron", 0xFFC9CED3, "titanium", 0xFF8FA6C8, "chitin", 0xFF6E5A3C);
     public static final int NO_TINT = 0xFFFFFFFF;
 
     private UpgradeVisuals() {

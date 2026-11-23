@@ -120,8 +120,13 @@ public final class HumanBody {
             }
         }
         float toxinBefore = biology(player).toxin();
-        setBiology(player, afterSecond(biology(player), radiation, pollution, acid, dust,
-                airReaching + WoundInfection.toxinPerSecond(player), deepRock, WastelandAir.clearance(air)));
+        Biology next = afterSecond(biology(player), radiation, pollution, acid, dust,
+                airReaching + WoundInfection.toxinPerSecond(player), deepRock, WastelandAir.clearance(air));
+        // 1.9.0, block C: the antitoxin lets only a share of the new toxins in
+        if (player.hasEffect(EnvironmentRegistry.TOXIN_RESISTANCE) && next.toxin() > toxinBefore) {
+            next = next.withToxin(toxinBefore + (next.toxin() - toxinBefore) * WastelandConfig.ANTITOXIN_SHARE.get().floatValue());
+        }
+        setBiology(player, next);
         applySymptoms(player);
         dustSecond(player, dust);
         hurtBySymptoms(player, acid);

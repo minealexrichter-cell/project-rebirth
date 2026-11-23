@@ -523,11 +523,14 @@ public final class RebirthConfig {
     public static final ModConfigSpec.IntValue MUTANTS_INTERVAL;
     public static final ModConfigSpec.DoubleValue MUTANTS_CHANCE;
     public static final ModConfigSpec.IntValue MUTANTS_CAP;
-    public static final ModConfigSpec.IntValue MUTANTS_HOUND_WEIGHT;
-    public static final ModConfigSpec.IntValue MUTANTS_GHOUL_WEIGHT;
-    public static final ModConfigSpec.IntValue MUTANTS_BRUTE_WEIGHT;
-    public static final ModConfigSpec.IntValue MUTANTS_PACK_MIN;
-    public static final ModConfigSpec.IntValue MUTANTS_PACK_MAX;
+    public static final ModConfigSpec.IntValue MUTANTS_WORLD_CAP;
+    public static final ModConfigSpec.BooleanValue MUTANTS_HUNT;
+    public static final ModConfigSpec.BooleanValue MUTANTS_FLEE_FIRE;
+    public static final ModConfigSpec.BooleanValue MUTATION_ENABLED;
+    public static final ModConfigSpec.IntValue MUTATION_SECONDS;
+    public static final ModConfigSpec.IntValue MUTATION_RADIUS;
+    /** 1.9.0: health, damage and speed of the mutated animals, by id (cow, pig, chicken). */
+    public static final Map<String, MutatedAnimalStats> MUTATED_ANIMALS = new java.util.HashMap<>();
     public static final ModConfigSpec.DoubleValue HOUND_HEALTH;
     public static final ModConfigSpec.DoubleValue HOUND_DAMAGE;
     public static final ModConfigSpec.DoubleValue HOUND_SPEED;
@@ -1477,11 +1480,17 @@ public final class RebirthConfig {
         MUTANTS_INTERVAL = builder.comment("Ticks between tries to bring mutants near each player in a contaminated place").defineInRange("spawnInterval", 200, 20, 24000);
         MUTANTS_CHANCE = builder.comment("Chance of one try to succeed").defineInRange("spawnChance", 0.5, 0.0, 1.0);
         MUTANTS_CAP = builder.comment("No new mutants while this many are within 48 blocks of the player").defineInRange("cap", 6, 0, 64);
-        MUTANTS_HOUND_WEIGHT = builder.comment("How often a try brings a pack of hounds (weight)").defineInRange("houndWeight", 50, 0, 1000);
-        MUTANTS_GHOUL_WEIGHT = builder.comment("How often a try brings a glowing ghoul (weight)").defineInRange("ghoulWeight", 40, 0, 1000);
-        MUTANTS_BRUTE_WEIGHT = builder.comment("How often a try brings a brute (weight)").defineInRange("bruteWeight", 10, 0, 1000);
-        MUTANTS_PACK_MIN = builder.comment("Fewest hounds in a pack").defineInRange("packMin", 3, 1, 16);
-        MUTANTS_PACK_MAX = builder.comment("Most hounds in a pack").defineInRange("packMax", 5, 1, 16);
+        // 1.9.0: which mutants come, in what groups and how often is in the data (projectrebirth/mutant_spawns); the weights and
+        // pack sizes of 1.8 moved there
+        MUTANTS_WORLD_CAP = builder.comment("No new mutants while this many are loaded in the dimension (1.9.0)").defineInRange("worldCap", 80, 0, 10000);
+        MUTANTS_HUNT = builder.comment("Mutants also attack villagers, animals and garrison machines (1.9.0)").define("huntOthers", true);
+        MUTANTS_FLEE_FIRE = builder.comment("Mutants keep away from fire, lit campfires and lava (1.9.0)").define("fleeFire", true);
+        MUTATION_ENABLED = builder.comment("Animals in contaminated places mutate (1.9.0; which into what is in the data, projectrebirth/mutation)").define("animalMutation", true);
+        MUTATION_SECONDS = builder.comment("Seconds an animal must spend in a contaminated place to mutate").defineInRange("mutationSeconds", 300, 1, 1_000_000);
+        MUTATION_RADIUS = builder.comment("Blocks around a player within which animals are counted for mutation").defineInRange("mutationRadius", 48, 8, 128);
+        defineMutatedAnimal(builder, "cow", 18.0, 4.0, 0.25);
+        defineMutatedAnimal(builder, "pig", 14.0, 3.0, 0.28);
+        defineMutatedAnimal(builder, "chicken", 6.0, 0.0, 0.3);
         HOUND_HEALTH = builder.comment("Mutated hound: health").defineInRange("houndHealth", 24.0, 1.0, 10000.0);
         HOUND_DAMAGE = builder.comment("Mutated hound: bite damage").defineInRange("houndDamage", 5.0, 0.0, 1000.0);
         HOUND_SPEED = builder.comment("Mutated hound: speed (a wolf has 0.3)").defineInRange("houndSpeed", 0.36, 0.0, 2.0);
@@ -1702,6 +1711,7 @@ public final class RebirthConfig {
         definePlating(builder, "copper", 1.0, 0.0);
         definePlating(builder, "iron", 2.0, 0.0);
         definePlating(builder, "titanium", 3.0, 1.0);
+        definePlating(builder, "chitin", 2.5, 1.0);
         builder.pop();
         EXTRA_BATTERY_CAPACITY = builder
                 .comment("Charge the extra battery gadget adds to a body, in FE")
@@ -1903,6 +1913,18 @@ public final class RebirthConfig {
     public record ArmorStats(ModConfigSpec.DoubleValue maxStructural, ModConfigSpec.DoubleValue maxCritical,
                              ModConfigSpec.DoubleValue movementSpeed, ModConfigSpec.DoubleValue pilotAttackDamageBonus,
                              ModConfigSpec.DoubleValue jumpStrength, ModConfigSpec.DoubleValue safeFallDistance) {
+    }
+
+    private static void defineMutatedAnimal(ModConfigSpec.Builder builder, String id, double health, double damage, double speed) {
+        builder.comment("Mutated " + id + " (1.9.0)").push("mutated_" + id);
+        MUTATED_ANIMALS.put(id, new MutatedAnimalStats(
+                builder.comment("Health").defineInRange("health", health, 1.0, 10000.0),
+                builder.comment("Damage of a blow (0: it does not attack, it runs)").defineInRange("damage", damage, 0.0, 1000.0),
+                builder.comment("Walking speed").defineInRange("speed", speed, 0.01, 2.0)));
+        builder.pop();
+    }
+
+    public record MutatedAnimalStats(ModConfigSpec.DoubleValue health, ModConfigSpec.DoubleValue damage, ModConfigSpec.DoubleValue speed) {
     }
 
     private static void defineProtectionKit(ModConfigSpec.Builder builder, String id, double pollution, double acid, double radiation,

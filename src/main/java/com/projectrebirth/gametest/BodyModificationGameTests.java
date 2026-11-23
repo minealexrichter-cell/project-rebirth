@@ -199,7 +199,7 @@ public class BodyModificationGameTests {
         station.items().setStackInSlot(0, new ItemStack(Items.COPPER_INGOT, 6));
         station.items().setStackInSlot(1, new ItemStack(TechItems.BRONZE_INGOT.get(), 1));
         var recipes = TechRecipes.recipesFor(helper.getLevel(), Station.IMPLANT_FABRICATOR);
-        helper.assertTrue(recipes.size() == 9, "Nine gadget recipes (extra battery, cooling module and electronics shielding since 1.5.0, the sensor module since 1.6.0), got " + recipes.size());
+        helper.assertTrue(recipes.size() == 10, "Ten gadget recipes (extra battery, cooling module and electronics shielding since 1.5.0, the sensor module since 1.6.0, chitin plating since 1.9.0), got " + recipes.size());
         int index = -1;
         for (int i = 0; i < recipes.size(); i++) {
             if (recipes.get(i).value().result().is(UpgradeRegistry.COPPER_PLATING.get())) {

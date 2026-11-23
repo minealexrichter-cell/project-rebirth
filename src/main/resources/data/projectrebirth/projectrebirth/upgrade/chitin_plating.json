@@ -1,0 +1,10 @@
+{
+  "items": "projectrebirth:chitin_plating",
+  "kind": "plating",
+  "material": "chitin",
+  "body": {
+    "slots": 1,
+    "max_count": 5,
+    "one_material_only": true
+  }
+}

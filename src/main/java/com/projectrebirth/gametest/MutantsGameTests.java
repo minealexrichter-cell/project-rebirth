@@ -86,6 +86,9 @@ public class MutantsGameTests {
         BlockPos centre = helper.absolutePos(new BlockPos(4, 2, 4));
         AABB around = new AABB(centre).inflate(48.0);
         level.getEntitiesOfClass(MutantEntity.class, around).forEach(Entity::discard);
+        // 1.9.0: the rules of hounds, ghouls and brutes (data mutant_spawns) want contaminated ground where the player stands
+        ContaminationMap map = ContaminationMap.get(level);
+        map.addSpot(centre, 0, 5.0f, 0.0f, level.getGameTime());
         int came = 0;
         for (int i = 0; i < 10 && came == 0; i++) {
             came = MutantSpawner.trySpawn(level, centre, level.random);
@@ -101,6 +104,7 @@ public class MutantsGameTests {
         }
         helper.assertTrue(MutantSpawner.trySpawn(level, centre, level.random) == 0, "With the cap reached nobody more comes");
         level.getEntitiesOfClass(MutantEntity.class, around).forEach(Entity::discard);
+        map.clearAround(centre, 1);
         helper.succeed();
     }
 

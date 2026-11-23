@@ -1911,6 +1911,159 @@
     item('sorbent', () => bottle(['....kWWyyWWk....', '....kWyyyyWk....', '....kWWyyWWk....'], {C: '#4caf50', l: '#3a3f46', y: '#3d9a42'}));
     // Antiseptic (1.9.0): iodine-brown liquid, a red cross on the label.
     item('antiseptic', () => bottle(['....kWWyyWWk....', '....kWyyyyWk....', '....kWWyyWWk....'], {C: '#d32f2f', l: '#8a4b1c', y: '#d32f2f'}));
+    // Antitoxin (1.9.0, block C): pale green liquid of a toxic gland, a shield on the label.
+    item('antitoxin', () => bottle(['....kWyyyyWk....', '....kWyyyyWk....', '....kWWyyWWk....'], {C: '#8bc34a', l: '#b7d96a', y: '#3d7a2a'}));
+
+    // ---------------------------------------------------------------- 1.9.0, block C: the loot of mutants
+    const FLESH = {k: '#14181d', R: '#e08a7a', r: '#b0504a', d: '#6e2a2a', G: '#c8f06a', g: '#7cb83a', D: '#3f5a22', Y: '#f2e88a', y: '#c8b040',
+        B: '#efe6cf', b: '#c9bd9a', n: '#8a7d5a', C: '#a08a5a', c: '#6e5a3c', e: '#3e3020'};
+    // Mutagen: a glob of green agent in a torn membrane
+    item('mutagen', () => icon([
+        '................',
+        '......kkkk......',
+        '....kkgGGgkk....',
+        '...kgGGGGGggk...',
+        '...kgGGgGGggk...',
+        '..kggGgggGgggk..',
+        '..kgggggggggDk..',
+        '..kggGggggggDk..',
+        '..kgggggggDDDk..',
+        '...kgggggDDDk...',
+        '...kDgggDDDDk...',
+        '....kkDDDDkk....',
+        '......kkkk......',
+        '........kgk.....',
+        '.........kk.....',
+        '................'], FLESH));
+    // Toxic gland: a swollen yellow sac with red veins
+    item('toxic_gland', () => icon([
+        '................',
+        '........kk......',
+        '.......krrk.....',
+        '.....kkkrkkk....',
+        '....kYYYYyyyk...',
+        '...kYYYryyyyyk..',
+        '...kYYrYyyryyk..',
+        '..kYYYyryyyryyk.',
+        '..kyYyyyryryyyk.',
+        '..kyyyyyyyryyyk.',
+        '..kyyryyyyyyyyk.',
+        '...kyyryyyyyyk..',
+        '...kyyyyyyyyyk..',
+        '....kkyyyyykk...',
+        '......kkkkk.....',
+        '................'], FLESH));
+    // Chitin plate: a curved brown plate in segments
+    item('chitin_plate', () => icon([
+        '................',
+        '................',
+        '....kkkkkkkk....',
+        '..kkCCCCCCCCkk..',
+        '.kCCCCCCCCCCCck.',
+        '.kcccccccccccck.',
+        '.kkkkkkkkkkkkkk.',
+        '.kCCCCCCCCCCCck.',
+        '.kcccccccccccck.',
+        '.kkkkkkkkkkkkkk.',
+        '..kCCCCCCCCCCk..',
+        '..kcccccccccek..',
+        '...kkeeeeeekk...',
+        '.....kkkkkk.....',
+        '................',
+        '................'], FLESH));
+    // Radioactive bone: a bone with a green glow at the joints
+    item('radioactive_bone', () => icon([
+        '................',
+        '............kk..',
+        '...........kGGk.',
+        '..........kGBGk.',
+        '.........kBBbk..',
+        '........kBbk....',
+        '.......kBbk.....',
+        '......kBbk......',
+        '.....kBbk.......',
+        '....kBbk........',
+        '..kbBbk.........',
+        '.kGBbk..........',
+        '.kGGk...........',
+        '..kk............',
+        '................',
+        '................'], FLESH));
+    // Biofilter: the filter with green membranes of a gland
+    item('biofilter', () => icon([
+        '................',
+        '................',
+        '.....kkkkkk.....',
+        '....kBBBBBnk....',
+        '....kgggggnk....',
+        '...kkkkkkkkkk...',
+        '...kGgggggg Dk..'.replace(' ', 'g').slice(0, 16),
+        '...kgDgDgDgDk...',
+        '...kggggggggk...'.slice(0, 16),
+        '...kgDgDgDgDk...',
+        '...kggggggggk...'.slice(0, 16),
+        '...kgDgDgDgDk...',
+        '...kDDDDDDDDk...',
+        '...kkkkkkkkkk...',
+        '................',
+        '................'].map(row => row.padEnd(16, '.').slice(0, 16)), FLESH));
+    item('chitin_plating', () => icon(PLATE_ROWS, {k: '#14181d', H: '#b8a070', m: '#7a6440', d: '#4a3a22'}));
+    // Toxin resistance (the antitoxin): a green shield with a drop
+    TEXTURES['mob_effect/toxin_resistance'] = () => icon([
+        '................',
+        '...kkkkkkkkkk...',
+        '..kGGGGGGGGGgk..',
+        '..kGgggkkgggDk..',
+        '..kGggkYYkggDk..',
+        '..kGgkYYYYkgDk..',
+        '..kGgkYYYyk gDk.'.replace(' ', '').slice(0, 16),
+        '..kGgkYyyykgDk..',
+        '..kGggkkkkggDk..',
+        '...kGgggggggDk..'.slice(0, 16),
+        '...kGggggggDk...',
+        '....kGgggggDk...'.slice(0, 16),
+        '.....kGgggDk....',
+        '......kGgDk.....',
+        '.......kkk......',
+        '................'].map(row => row.padEnd(16, '.').slice(0, 16)), FLESH);
+
+    /**
+     * 1.9.0, block C: the 64x64 skins of the mutated animals (client/render/MutatedAnimalModel). The whole sheet is mottled
+     * hide of the animal's colour with sores, the boxes of growths (v 32 and below) raw flesh with dark nodules; the eyes are
+     * painted on the front of the head.
+     */
+    function mutatedSkin(seed, hide, sore, eyes, extra) {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        const r = random(seed);
+        const put = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); };
+        for (let y = 0; y < 64; y++) {
+            for (let x = 0; x < 64; x++) {
+                const flesh = y >= 32;
+                const base = flesh ? '#b8605a' : hide;
+                let c = shade(base, 1 + (r() - 0.5) * 0.22);
+                if (!flesh && r() < 0.05) c = shade(sore, 0.9 + r() * 0.3);
+                if (flesh && r() < 0.12) c = shade('#5a2422', 0.9 + r() * 0.3);
+                put(x, y, c);
+            }
+        }
+        // sores: small blotches of the sore colour with a pale rim
+        for (let i = 0; i < 26; i++) {
+            const cx = Math.floor(r() * 64), cy = Math.floor(r() * 32);
+            put(cx, cy, sore); put(cx + 1, cy, shade(sore, 0.8)); put(cx, cy + 1, shade(sore, 0.85));
+            put(cx - 1, cy, '#d8c8a0');
+        }
+        eyes.forEach(([x, y]) => { put(x, y, '#e8d23a'); put(x + 1, y, '#8a1a12'); });
+        if (extra) extra(put);
+        return {canvas};
+    }
+    TEXTURES['entity/mutated_cow'] = () => mutatedSkin(901, '#5e4a3e', '#a04a5a', [[7, 9], [12, 9]],
+        put => { for (let x = 6; x < 14; x++) put(x, 12, '#3a2a22'); });
+    TEXTURES['entity/mutated_pig'] = () => mutatedSkin(902, '#c8988a', '#7a3a4a', [[9, 11], [14, 11]],
+        put => { for (let x = 17; x < 21; x++) { put(x, 17, '#8a4a50'); put(x, 18, '#6a2a30'); } });
+    TEXTURES['entity/mutated_chicken'] = () => mutatedSkin(903, '#b8b4a6', '#8a3a2a', [[3, 4], [6, 4]],
+        put => { for (let x = 14; x < 22; x++) { put(x, 2, '#c89a2a'); put(x, 3, '#a8781a'); } for (let x = 16; x < 20; x++) put(x, 6, '#a02a2a'); });
 
     // Worn gear (respirator and suits) is painted with its 3D model by blockbench/tools/build_gear.js since 1.5.1.
 

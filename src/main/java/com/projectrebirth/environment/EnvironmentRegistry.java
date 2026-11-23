@@ -75,6 +75,18 @@ public final class EnvironmentRegistry {
                 WoundInfection.cure(player);
             }));
 
+    /** 1.9.0, block C: for a while the body takes in toxins more slowly. */
+    public static final DeferredHolder<MobEffect, MobEffect> TOXIN_RESISTANCE = EFFECTS.register("toxin_resistance",
+            () -> new MobEffect(net.minecraft.world.effect.MobEffectCategory.BENEFICIAL, 0x9ccc65) {
+            });
+    /** 1.9.0, block C: antitoxin, of a toxic gland: [wasteland.mutant_loot] antitoxinSeconds of toxin resistance and a wound cured. */
+    public static final DeferredItem<MedicineItem> ANTITOXIN = ITEMS.register("antitoxin", () -> new MedicineItem(new Item.Properties().stacksTo(16),
+            player -> {
+                player.addEffect(new net.minecraft.world.effect.MobEffectInstance(TOXIN_RESISTANCE,
+                        com.projectrebirth.config.WastelandConfig.ANTITOXIN_SECONDS.get() * 20, 0, false, true, true));
+                WoundInfection.cure(player);
+            }));
+
     /** 1.9.0: stops a wound infection and takes away a little of the toxic load. */
     public static final DeferredItem<MedicineItem> ANTISEPTIC = ITEMS.register("antiseptic", () -> new MedicineItem(new Item.Properties().stacksTo(16),
             player -> {
@@ -127,6 +139,8 @@ public final class EnvironmentRegistry {
     public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_TROUSERS = gear("heavy_suit_trousers", HEAVY_SUIT_MATERIAL, ArmorItem.Type.LEGGINGS, 25);
     public static final DeferredItem<ProtectiveArmorItem> HEAVY_SUIT_BOOTS = gear("heavy_suit_boots", HEAVY_SUIT_MATERIAL, ArmorItem.Type.BOOTS, 25);
     public static final DeferredItem<FilterItem> FILTER = ITEMS.register("filter", () -> new FilterItem(new Item.Properties().stacksTo(16)));
+    /** 1.9.0, block C: a filter of toxic glands of mutants that lasts longer ([wasteland.mutant_loot] biofilterLife). */
+    public static final DeferredItem<FilterItem> BIOFILTER = ITEMS.register("biofilter", () -> new FilterItem(new Item.Properties().stacksTo(16), 2.0f));
     public static final DeferredItem<Item> DOSIMETER = ITEMS.registerSimpleItem("dosimeter", new Item.Properties().stacksTo(1));
 
     /**

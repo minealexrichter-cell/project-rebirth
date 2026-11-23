@@ -1,0 +1,24 @@
+{
+  "type": "projectrebirth:fabrication",
+  "station": "assembly_station",
+  "sort": 92,
+  "time": 120,
+  "ingredients": [
+    {
+      "item": "minecraft:glass_bottle",
+      "count": 1
+    },
+    {
+      "item": "projectrebirth:toxic_gland",
+      "count": 1
+    },
+    {
+      "item": "minecraft:sugar",
+      "count": 1
+    }
+  ],
+  "result": {
+    "id": "projectrebirth:antitoxin",
+    "count": 1
+  }
+}

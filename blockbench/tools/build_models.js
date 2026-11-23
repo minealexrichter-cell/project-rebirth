@@ -3715,6 +3715,173 @@
                 };
             })()
         };
+
+        // ------------------------------------------------------------ 1.9.0, block C: the mutated farm animals
+        // The same flesh as the hound and the brute: skin torn off down to raw muscle, bone breaking out, separate teeth, maws
+        // where there were none, tendrils and tumours that move on their own. Every growth goes into the body (no two faces in
+        // one plane).
+        const pulseOf = (length, phase, amount) => loopOf(length, t => { const k = R2(1 + amount * (0.5 + 0.5 * Math.sin(2 * Math.PI * (t + phase)))); return [k, k, k]; });
+        const swayOf = (length, phase, x, y) => loopOf(length, t => [R2(x * Math.sin(2 * Math.PI * (t + phase))), R2(y * Math.sin(2 * Math.PI * (t + phase + 0.25))), 0]);
+        const HOOF = '#2a1a16';
+
+        // the cow: a bloated hide splitting over raw flesh; the left flank torn open to the ribs, a toothed maw on the back,
+        // one horn grown into a long crooked spike, a muzzle split into jaws with teeth, a cluster of eyes on the cheek
+        const COWHIDE = {base: '#c9bfa8', dark: '#a89c84', light: '#ddd4c0', vein: '#8a3a3a', spots: ['#8a2c28', '#6e2c26'], spotChance: 0.2};
+        const PATCH = '#4a3628', PATCH_D = '#36281e';
+        SPECS.mutated_cow = {
+            res: 128, seed: 1901, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'body', parent: 'root', pivot: [0, 12, 0], cubes: [
+                    O([-6, 10, -9], [12, 10, 17], COWHIDE, {sd: [[1, 1, 6, 5, PATCH], [2, 2, 3, 2, PATCH_D], [10, 3, 5, 6, PATCH], [12, 5, 2, 2, PATCH_D]], tp: [[1, 2, 5, 6, PATCH], [7, 9, 4, 5, PATCH], [2, 3, 3, 4, '#6a2420']], f: [[2, 1, 6, 4, PATCH]], k: [[5, 2, 5, 5, PATCH]]}),
+                    O([5, 11, -6], [2, 7, 10], RAW, {sd: [[2, 1, 2, 2, '#c25a4c'], [6, 4, 2, 1, '#4a1214']]}),
+                    bone([6.6, 12, -5], [1, 5, 1]), bone([6.6, 12, -3], [1, 5, 1]), bone([6.6, 12, -1], [1, 5, 1]), bone([6.6, 12, 1], [1, 5, 1]),
+                    O([-3, 8.5, -1], [6, 3, 6], TUMOR),
+                    bone([-0.5, 19.5, -7], [1, 2, 1]), bone([-0.5, 19.5, -4], [1, 3, 1]),
+                    O([-2.5, 19, 1], [5, 2, 5], RAW, {tp: [[1, 1, 3, 3, MAW]]}),
+                    fang(-1.6, 20.75, 1.5, 1.5), fang(0, 20.75, 1, 1.5), fang(1.6, 20.75, 1.5, 1.5),
+                    fang(-1.6, 20.75, 1, 5.5), fang(0.2, 20.75, 1.5, 5.5), fang(1.6, 20.75, 1, 5.5)]},
+                {name: 'tumor_1', parent: 'body', pivot: [3, 20, 3], cubes: [O([1, 19.5, 3.5], [4, 4, 4], TUMOR)]},
+                {name: 'tumor_2', parent: 'body', pivot: [-6, 15, 4], cubes: [O([-7.5, 13, 2], [3, 4, 4], TUMOR)]},
+                {name: 'tendril_1', parent: 'body', pivot: [-2, 17.5, 7.5], cubes: [O([-2.5, 17, 7.5], [1, 1, 7], RAW, {}, {rot: [-35, 15, 0], pivot: [-2, 17.5, 7.5]})]},
+                {name: 'tendril_2', parent: 'body', pivot: [2, 16.5, 7.5], cubes: [O([1.5, 16, 7.5], [1, 1, 6], RAW, {}, {rot: [-20, -20, 0], pivot: [2, 16.5, 7.5]})]},
+                {name: 'tendril_3', parent: 'body', pivot: [-4, 19.5, -3], cubes: [O([-4.5, 19, -3.5], [1, 6, 1], RAW, {}, {rot: [10, 0, 25], pivot: [-4, 19.5, -3]})]},
+                {name: 'head', parent: 'body', pivot: [0, 17, -9], cubes: [
+                    O([-4, 12.5, -15.5], [8, 7, 7], COWHIDE, {f: [[0, 0, 3, 4, PATCH], [1, 1, 1, 1, EYE], [6, 1, 1, 1, EYE], [4, 0, 1, 1, EYE]], sd: [[0, 0, 4, 4, PATCH]], tp: [[3, 2, 2, 3, '#8a2c28']]}),
+                    O([-3, 13.5, -19], [6, 3, 4], RAW, {bt: [[0, 0, 6, 4, MAW]]}),
+                    ...[[-2.3, 1.5], [-1.2, 1.0], [-0.1, 1.5], [1.0, 1.0], [2.1, 1.5]].map(([x, h]) => fang(x, 13.75 - h, h, -18.5)),
+                    O([-5, 15, -14], [2, 3, 3], RAW, {sd: [[0, 0, 1, 1, EYE], [2, 1, 1, 1, EYE], [1, 2, 1, 1, EYE]]}),
+                    bone([-5, 19, -12], [1, 3, 1], [0, 0, 20], [-4.5, 19, -11.5]),
+                    bone([4, 19, -12], [1, 4, 1], [0, 0, -30], [4.5, 19, -11.5]),
+                    bone([6, 22.3, -12], [1, 4, 1], [-15, 0, -70], [6.5, 22.3, -11.5])]},
+                {name: 'jaw', parent: 'head', pivot: [0, 12, -15], cubes: [O([-3, 10, -19], [6, 2, 4], RAW, {tp: [[0, 0, 6, 4, MAW]]}),
+                    ...[[-1.6, 1.0], [-0.4, 1.5], [0.8, 1.0], [1.9, 1.5]].map(([x, h]) => fang(x, 12.25, h, -17.9))]},
+                {name: 'front_right_leg', parent: 'body', pivot: [-3.5, 10.5, -6], cubes: [O([-5, 0, -7.5], [3, 11, 3], COWHIDE, {f: [[0, 9, 3, 2, HOOF]]})]},
+                {name: 'front_left_leg', parent: 'body', pivot: [3.5, 10.5, -6], cubes: [O([2, 0, -7.5], [3, 11, 3], RAW, {f: [[0, 9, 3, 2, HOOF]]}),
+                    bone([4.6, 5, -7], [1, 3, 1])]},
+                {name: 'back_right_leg', parent: 'body', pivot: [-3.5, 10.5, 5.5], cubes: [O([-5, 0, 4], [3, 11, 3], COWHIDE, {f: [[0, 2, 3, 4, PATCH], [0, 9, 3, 2, HOOF]]})]},
+                {name: 'back_left_leg', parent: 'body', pivot: [3.5, 10.5, 5.5], cubes: [O([2, 0, 4], [3, 11, 3], COWHIDE, {f: [[0, 9, 3, 2, HOOF]]})]}
+            ],
+            animations: (() => {
+                const living = length => ({
+                    tumor_1: {s: pulseOf(length, 0, 0.15)}, tumor_2: {s: pulseOf(length, 0.4, 0.12)},
+                    tendril_1: {r: swayOf(length, 0, 14, 18)}, tendril_2: {r: swayOf(length, 0.5, 12, -15)}, tendril_3: {r: swayOf(length, 0.25, 15, 10)}});
+                return {
+                    'animation.mutated_cow.idle': {length: 2.5, loop: 'loop', bones: Object.assign(living(2.5), {
+                        body: {p: loopOf(2.5, t => [0, R2(-0.3 + 0.3 * Math.cos(2 * Math.PI * t)), 0])},
+                        head: {r: K([0, [0, 0, 0]], [1.4, [0, 0, 0]], [1.5, [-6, 14, 12]], [1.65, [4, -8, -6]], [1.9, [0, 0, 0]], [2.5, [0, 0, 0]])},
+                        jaw: {r: loopOf(2.5, t => [R2(10 + 10 * Math.sin(2 * Math.PI * t)), 0, 0])}})},
+                    'animation.mutated_cow.walk': {length: 0.8, loop: 'loop', bones: Object.assign(living(0.8), {
+                        front_right_leg: {r: loopOf(0.8, t => [R2(32 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                        back_left_leg: {r: loopOf(0.8, t => [R2(32 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                        front_left_leg: {r: loopOf(0.8, t => [R2(-26 * Math.cos(2 * Math.PI * (t + 0.08))), 0, 0])},
+                        back_right_leg: {r: loopOf(0.8, t => [R2(-32 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                        body: {r: loopOf(0.8, t => [0, 0, R2(3 * Math.sin(2 * Math.PI * t))]), p: loopOf(0.8, t => [0, R2(0.7 * Math.abs(Math.sin(2 * Math.PI * t))), 0])},
+                        jaw: {r: loopOf(0.8, t => [R2(16 + 8 * Math.sin(2 * Math.PI * t)), 0, 0])}})},
+                    // it lowers the crooked horn and rams, the jaws wide
+                    'animation.mutated_cow.attack': move(0.6, {
+                        body: {p: K([0, [0, 0, 0]], [0.2, [0, 0, 1.5]], [0.32, [0, 0, -3]], [0.6, [0, 0, 0]])},
+                        head: {r: K([0, [0, 0, 0]], [0.2, [-20, 0, 0]], [0.32, [35, -15, 0]], [0.6, [0, 0, 0]])},
+                        jaw: {r: K([0, [10, 0, 0]], [0.2, [55, 0, 0]], [0.36, [5, 0, 0]], [0.6, [10, 0, 0]])}})
+                };
+            })()
+        };
+
+        // the pig: a sick, bristle-less hide; the snout split into a toothed maw, tusks grown through the lips, a ridge of bone
+        // spikes along the back, the right flank opened to the ribs, a tumour on the rump and a fleshy tendril for a tail
+        const PIGSKIN = {base: '#b48478', dark: '#946258', light: '#ca9e92', vein: '#7a2a2a', spots: ['#8a2c28', '#6e2c26'], spotChance: 0.35};
+        SPECS.mutated_pig = {
+            res: 128, seed: 1902, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'body', parent: 'root', pivot: [0, 9, 0], cubes: [
+                    O([-5, 6, -7], [10, 8, 14], PIGSKIN, {tp: [[3, 4, 3, 2, '#8a2c28']], bt: [[2, 3, 6, 6, '#946258']]}),
+                    O([-6, 8, -3], [2, 5, 6], RAW, {sd: [[1, 1, 2, 2, '#c25a4c']]}),
+                    bone([-6.4, 8.5, -2.4], [1, 4, 1]), bone([-6.4, 8.5, -0.4], [1, 4, 1]), bone([-6.4, 8.5, 1.6], [1, 4, 1]),
+                    bone([-0.5, 13.5, -5], [1, 2, 1], [-20, 0, 0], [0, 14, -4.5]), bone([-0.5, 13.5, -2], [1, 3, 1], [-20, 0, 0], [0, 14, -1.5]),
+                    bone([-0.5, 13.5, 1], [1, 3, 1], [-20, 0, 0], [0, 14, 1.5]), bone([-0.5, 13.5, 4], [1, 2, 1], [-20, 0, 0], [0, 14, 4.5])]},
+                {name: 'tumor_1', parent: 'body', pivot: [2.5, 13, 4], cubes: [O([1, 12.5, 3.5], [3, 3, 4], TUMOR)]},
+                {name: 'tail', parent: 'body', pivot: [0, 11, 7], cubes: [O([-0.5, 10.5, 6.5], [1, 1, 6], RAW, {}, {rot: [-25, 0, 0], pivot: [0, 11, 7]})]},
+                {name: 'head', parent: 'body', pivot: [0, 10, -7], cubes: [
+                    O([-4, 6.5, -13.5], [8, 7, 7], PIGSKIN, {f: [[1, 1, 1, 1, EYE], [6, 1, 1, 1, EYE], [5, 3, 1, 1, EYE]], tp: [[2, 2, 3, 2, '#8a2c28']]}),
+                    O([-2.5, 9.5, -16], [5, 3, 3], RAW, {bt: [[0, 0, 5, 3, MAW]], f: [[1, 0, 1, 1, '#4a1214'], [3, 0, 1, 1, '#4a1214']]}),
+                    ...[[-1.8, 1.0], [-0.6, 1.5], [0.6, 1.0], [1.8, 1.5]].map(([x, h]) => fang(x, 9.75 - h, h, -15.6)),
+                    bone([-4, 7, -15], [1, 4, 1], [-25, 0, 0], [-3.5, 7.5, -14.5]), bone([3, 7, -15], [1, 4, 1], [-25, 0, 0], [3.5, 7.5, -14.5])]},
+                {name: 'jaw', parent: 'head', pivot: [0, 8, -13], cubes: [O([-2.5, 6, -16], [5, 2, 3], RAW, {tp: [[0, 0, 5, 3, MAW]]}),
+                    ...[[-1.4, 1.0], [0, 1.5], [1.4, 1.0]].map(([x, h]) => fang(x, 8.25, h, -14.4))]},
+                {name: 'front_right_leg', parent: 'body', pivot: [-3, 6.5, -4.5], cubes: [O([-4.5, 0, -6], [3, 7, 3], PIGSKIN, {f: [[0, 5, 3, 2, HOOF]]})]},
+                {name: 'front_left_leg', parent: 'body', pivot: [3, 6.5, -4.5], cubes: [O([1.5, 0, -6], [3, 7, 3], PIGSKIN, {f: [[0, 5, 3, 2, HOOF]]})]},
+                {name: 'back_right_leg', parent: 'body', pivot: [-3, 6.5, 4.5], cubes: [O([-4.5, 0, 3], [3, 7, 3], RAW, {f: [[0, 5, 3, 2, HOOF]]})]},
+                {name: 'back_left_leg', parent: 'body', pivot: [3, 6.5, 4.5], cubes: [O([1.5, 0, 3], [3, 7, 3], PIGSKIN, {f: [[0, 5, 3, 2, HOOF]]})]}
+            ],
+            animations: {
+                'animation.mutated_pig.idle': {length: 2, loop: 'loop', bones: {
+                    tumor_1: {s: pulseOf(2, 0, 0.18)}, tail: {r: swayOf(2, 0, 18, 25)},
+                    body: {p: loopOf(2, t => [0, R2(-0.2 + 0.2 * Math.cos(2 * Math.PI * t)), 0])},
+                    jaw: {r: loopOf(2, t => [R2(8 + 8 * Math.sin(4 * Math.PI * t)), 0, 0])}}},
+                'animation.mutated_pig.walk': {length: 0.5, loop: 'loop', bones: {
+                    tumor_1: {s: pulseOf(0.5, 0, 0.1)}, tail: {r: swayOf(0.5, 0, 20, 10)},
+                    front_right_leg: {r: loopOf(0.5, t => [R2(35 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    back_left_leg: {r: loopOf(0.5, t => [R2(35 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    front_left_leg: {r: loopOf(0.5, t => [R2(-35 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    back_right_leg: {r: loopOf(0.5, t => [R2(-35 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    body: {p: loopOf(0.5, t => [0, R2(0.6 * Math.abs(Math.sin(2 * Math.PI * t))), 0])},
+                    jaw: {r: loopOf(0.5, t => [R2(14 + 8 * Math.sin(2 * Math.PI * t)), 0, 0])}}},
+                'animation.mutated_pig.attack': move(0.4, {
+                    body: {p: K([0, [0, 0, 0]], [0.12, [0, 0, 1]], [0.22, [0, 0, -2]], [0.4, [0, 0, 0]])},
+                    head: {r: K([0, [0, 0, 0]], [0.12, [-15, 0, 0]], [0.22, [15, 0, 0]], [0.4, [0, 0, 0]])},
+                    jaw: {r: K([0, [8, 0, 0]], [0.12, [50, 0, 0]], [0.24, [0, 0, 0]], [0.4, [8, 0, 0]])}})
+            }
+        };
+
+        // the chicken: plucked to sore skin with a few dirty feathers, a long naked neck with a second head grown from its side,
+        // the beak open on teeth, bone claws on the stumps of the wings and on the feet, a growth on the back
+        const PLUCKED = {base: '#d0b8a4', dark: '#b09884', light: '#e4d0c0', vein: '#8a3a3a', spots: ['#8a2c28', '#efe8d4'], spotChance: 0.4};
+        const BEAK = {c: '#c8962a', n: 0.08, edge: false};
+        SPECS.mutated_chicken = {
+            res: 64, seed: 1903, noCoplanarFaces: true,
+            bones: [
+                {name: 'root', pivot: [0, 0, 0], cubes: []},
+                {name: 'body', parent: 'root', pivot: [0, 6, 0], cubes: [
+                    O([-3, 5, -4], [6, 6, 8], PLUCKED, {sd: [[2, 1, 2, 2, '#efe8d4'], [5, 3, 1, 1, '#efe8d4']], k: [[1, 1, 2, 2, '#efe8d4']]})]},
+                {name: 'tumor_1', parent: 'body', pivot: [1, 11, 1], cubes: [O([-1, 10.5, -0.5], [3, 3, 3], TUMOR)]},
+                {name: 'right_wing', parent: 'body', pivot: [-3, 10, -1], cubes: [O([-4.5, 6.5, -3], [2, 4, 6], PLUCKED, {sd: [[1, 1, 3, 2, '#efe8d4']]}),
+                    bone([-5, 5.5, -3.5], [1, 2, 1])]},
+                {name: 'left_wing', parent: 'body', pivot: [3, 10, -1], cubes: [O([2.5, 6.5, -3], [2, 4, 6], PLUCKED, {sd: [[2, 1, 3, 2, '#efe8d4']]}),
+                    bone([4, 5.5, -3.5], [1, 2, 1])]},
+                {name: 'neck', parent: 'body', pivot: [0, 10.5, -3.5], cubes: [O([-1, 10, -4.5], [2, 4, 2], PLUCKED, {f: [[0, 1, 1, 1, '#8a2c28']]})]},
+                {name: 'head', parent: 'neck', pivot: [0, 14, -3.5], cubes: [
+                    O([-1.5, 13.5, -6], [3, 3, 3], PLUCKED, {f: [[0, 0, 1, 1, EYE], [2, 0, 1, 1, EYE], [1, 1, 1, 1, EYE]]}),
+                    C([-1, 14.5, -7.5], [2, 1, 2], BEAK),
+                    O([-0.5, 12, -6.5], [1, 2, 1], RAW),
+                    fang(-0.7, 14.25, 0.5, -7.0), fang(0.7, 14.25, 0.5, -7.0)]},
+                {name: 'second_head', parent: 'neck', pivot: [1, 12.5, -3.5], cubes: [
+                    O([0.5, 11.25, -5], [2, 2, 2], PLUCKED, {f: [[0, 0, 1, 1, EYE]], sd: [[1, 0, 1, 1, EYE]]}),
+                    C([1, 11.75, -6.5], [1, 1, 2], BEAK)]},
+                {name: 'right_leg', parent: 'body', pivot: [-1.5, 6, 0], cubes: [C([-2, 0.5, -0.5], [1, 6, 1], {c: '#c8962a', n: 0.08, edge: false}),
+                    bone([-2.7, 0, -2], [1, 1, 2]), bone([-1.3, 0, -2], [1, 1, 2]), bone([-1.95, 0, 0.8], [1, 1, 1])]},
+                {name: 'left_leg', parent: 'body', pivot: [1.5, 6, 0], cubes: [C([1, 0.5, -0.5], [1, 6, 1], {c: '#c8962a', n: 0.08, edge: false}),
+                    bone([0.3, 0, -2], [1, 1, 2]), bone([1.7, 0, -2], [1, 1, 2]), bone([1.05, 0, 0.8], [1, 1, 1])]}
+            ],
+            animations: {
+                'animation.mutated_chicken.idle': {length: 1.5, loop: 'loop', bones: {
+                    tumor_1: {s: pulseOf(1.5, 0, 0.15)},
+                    neck: {r: loopOf(1.5, t => [R2(6 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    second_head: {r: K([0, [0, 0, 30]], [0.6, [0, 0, 30]], [0.7, [20, 25, 50]], [0.85, [-10, -10, 20]], [1.0, [0, 0, 30]], [1.5, [0, 0, 30]])},
+                    right_wing: {r: loopOf(1.5, t => [0, 0, R2(4 + 4 * Math.sin(4 * Math.PI * t))])},
+                    left_wing: {r: loopOf(1.5, t => [0, 0, R2(-4 - 4 * Math.sin(4 * Math.PI * t))])}}},
+                'animation.mutated_chicken.walk': {length: 0.4, loop: 'loop', bones: {
+                    right_leg: {r: loopOf(0.4, t => [R2(40 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    left_leg: {r: loopOf(0.4, t => [R2(-40 * Math.cos(2 * Math.PI * t)), 0, 0])},
+                    neck: {r: loopOf(0.4, t => [R2(12 * Math.sin(2 * Math.PI * t)), 0, 0])},
+                    second_head: {r: loopOf(0.4, t => [R2(15 * Math.sin(2 * Math.PI * (t + 0.3))), 0, 30])},
+                    right_wing: {r: loopOf(0.4, t => [0, 0, R2(20 + 20 * Math.sin(4 * Math.PI * t))])},
+                    left_wing: {r: loopOf(0.4, t => [0, 0, R2(-20 - 20 * Math.sin(4 * Math.PI * t))])},
+                    body: {p: loopOf(0.4, t => [0, R2(0.5 * Math.abs(Math.sin(2 * Math.PI * t))), 0])}}},
+                'animation.mutated_chicken.attack': move(0.35, {
+                    neck: {r: K([0, [0, 0, 0]], [0.12, [-25, 0, 0]], [0.2, [40, 0, 0]], [0.35, [0, 0, 0]])}})
+            }
+        };
     })();
 
     // ------------------------------------------------------------------ pilot weapons, second version (1.6.0, part B3f)

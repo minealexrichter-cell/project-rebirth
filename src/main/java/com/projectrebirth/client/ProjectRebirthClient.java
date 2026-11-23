@@ -76,7 +76,6 @@ public class ProjectRebirthClient {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, (container, parent) -> new HudSettingsScreen(parent));
         modEventBus.addListener(this::clientSetup);
         modEventBus.addListener(this::registerRenderers);
-        modEventBus.addListener(ProjectRebirthClient::registerLayerDefinitions);
         modEventBus.addListener(this::createPossessedRenderers);
         modEventBus.addListener(this::registerKeys);
         HostileClient.init();
@@ -138,20 +137,11 @@ public class ProjectRebirthClient {
         ProjectRebirth.LOGGER.info("Project: Rebirth client setup complete");
     }
 
-    /** 1.9.0, block C: the models of the mutated animals (built in code like vanilla ones). */
-    private static void registerLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(com.projectrebirth.client.render.MutatedAnimalModel.COW, com.projectrebirth.client.render.MutatedAnimalModel::createCow);
-        event.registerLayerDefinition(com.projectrebirth.client.render.MutatedAnimalModel.PIG, com.projectrebirth.client.render.MutatedAnimalModel::createPig);
-        event.registerLayerDefinition(com.projectrebirth.client.render.MutatedAnimalModel.CHICKEN, com.projectrebirth.client.render.MutatedAnimalModel::createChicken);
-    }
-
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_COW.get(), context -> new com.projectrebirth.client.render.MutatedAnimalRenderer(
-                context, com.projectrebirth.client.render.MutatedAnimalModel.COW, "cow", false, 0.7f, 1.1f));
-        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_PIG.get(), context -> new com.projectrebirth.client.render.MutatedAnimalRenderer(
-                context, com.projectrebirth.client.render.MutatedAnimalModel.PIG, "pig", false, 0.7f, 1.1f));
-        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_CHICKEN.get(), context -> new com.projectrebirth.client.render.MutatedAnimalRenderer(
-                context, com.projectrebirth.client.render.MutatedAnimalModel.CHICKEN, "chicken", true, 0.3f, 1.1f));
+        // 1.9.0, block C: the mutated animals, GeckoLib models of blockbench/tools/build_models.js like the other mutants
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_COW.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "mutated_cow", 0.7f, false));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_PIG.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "mutated_pig", 0.6f, false));
+        event.registerEntityRenderer(com.projectrebirth.hostile.HostileRegistry.MUTATED_CHICKEN.get(), c -> new com.projectrebirth.client.render.MutantRenderer<>(c, "mutated_chicken", 0.3f, false));
         for (BodyClass bodyClass : BodyClass.values()) {
             event.registerEntityRenderer(BodyEntities.type(bodyClass), context -> new ArtificialBodyRenderer(context, bodyClass));
             event.registerEntityRenderer(com.projectrebirth.garrison.Androids.type(bodyClass),

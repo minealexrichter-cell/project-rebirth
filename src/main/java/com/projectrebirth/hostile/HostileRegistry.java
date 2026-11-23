@@ -68,7 +68,7 @@ public final class HostileRegistry {
                     .sized(0.95f, 0.95f).eyeHeight(0.75f).clientTrackingRange(10).build("mutated_pig"));
     public static final DeferredHolder<EntityType<?>, EntityType<MutatedAnimalEntity>> MUTATED_CHICKEN = ENTITY_TYPES.register("mutated_chicken",
             () -> EntityType.Builder.<MutatedAnimalEntity>of((type, level) -> new MutatedAnimalEntity(type, level, MutatedAnimalEntity.Kind.CHICKEN), MobCategory.MONSTER)
-                    .sized(0.5f, 0.8f).eyeHeight(0.6f).clientTrackingRange(10).build("mutated_chicken"));
+                    .sized(0.6f, 1.05f).eyeHeight(0.9f).clientTrackingRange(10).build("mutated_chicken"));
 
     public static final DeferredHolder<EntityType<?>, EntityType<RemainsEntity>> REMAINS = ENTITY_TYPES.register("remains",
             () -> EntityType.Builder.<RemainsEntity>of(RemainsEntity::new, MobCategory.MISC).sized(1.5f, 0.8f).clientTrackingRange(10).build("remains"));

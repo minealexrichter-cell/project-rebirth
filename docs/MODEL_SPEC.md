@@ -235,5 +235,8 @@ root
 | `mutated_hound` | `idle`, `walk`, `attack` | |
 | `glowing_ghoul` | `idle`, `walk`, `attack`, `spit` | светящиеся места — отдельная текстура свечения |
 | `brute` | `idle`, `walk`, `attack`, `charge`, `leap`, `land`, `roar`, `stun`, `dead` | |
+| `mutated_cow` | `idle`, `walk`, `attack` | 1.9.0: кости `body` > `head` > `jaw`, `tumor_1..2`, `tendril_1..3`, ноги `front_right_leg` и т. д.; текстура 128×128 |
+| `mutated_pig` | `idle`, `walk`, `attack` | 1.9.0: `body` > `head` > `jaw`, `tumor_1`, `tail`, четыре ноги; 128×128 |
+| `mutated_chicken` | `idle`, `walk`, `attack` | 1.9.0: `body` > `neck` > `head`, `second_head`; крылья, ноги, `tumor_1`; 64×64 |
 
 Анимация остова (`dead` у врагов руин, `wrecked` у тел) выбирается по виду остова в `RemainsEntity.Kind`.

@@ -2027,43 +2027,7 @@
         '.......kkk......',
         '................'].map(row => row.padEnd(16, '.').slice(0, 16)), FLESH);
 
-    /**
-     * 1.9.0, block C: the 64x64 skins of the mutated animals (client/render/MutatedAnimalModel). The whole sheet is mottled
-     * hide of the animal's colour with sores, the boxes of growths (v 32 and below) raw flesh with dark nodules; the eyes are
-     * painted on the front of the head.
-     */
-    function mutatedSkin(seed, hide, sore, eyes, extra) {
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = 64;
-        const ctx = canvas.getContext('2d');
-        const r = random(seed);
-        const put = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); };
-        for (let y = 0; y < 64; y++) {
-            for (let x = 0; x < 64; x++) {
-                const flesh = y >= 32;
-                const base = flesh ? '#b8605a' : hide;
-                let c = shade(base, 1 + (r() - 0.5) * 0.22);
-                if (!flesh && r() < 0.05) c = shade(sore, 0.9 + r() * 0.3);
-                if (flesh && r() < 0.12) c = shade('#5a2422', 0.9 + r() * 0.3);
-                put(x, y, c);
-            }
-        }
-        // sores: small blotches of the sore colour with a pale rim
-        for (let i = 0; i < 26; i++) {
-            const cx = Math.floor(r() * 64), cy = Math.floor(r() * 32);
-            put(cx, cy, sore); put(cx + 1, cy, shade(sore, 0.8)); put(cx, cy + 1, shade(sore, 0.85));
-            put(cx - 1, cy, '#d8c8a0');
-        }
-        eyes.forEach(([x, y]) => { put(x, y, '#e8d23a'); put(x + 1, y, '#8a1a12'); });
-        if (extra) extra(put);
-        return {canvas};
-    }
-    TEXTURES['entity/mutated_cow'] = () => mutatedSkin(901, '#5e4a3e', '#a04a5a', [[7, 9], [12, 9]],
-        put => { for (let x = 6; x < 14; x++) put(x, 12, '#3a2a22'); });
-    TEXTURES['entity/mutated_pig'] = () => mutatedSkin(902, '#c8988a', '#7a3a4a', [[9, 11], [14, 11]],
-        put => { for (let x = 17; x < 21; x++) { put(x, 17, '#8a4a50'); put(x, 18, '#6a2a30'); } });
-    TEXTURES['entity/mutated_chicken'] = () => mutatedSkin(903, '#b8b4a6', '#8a3a2a', [[3, 4], [6, 4]],
-        put => { for (let x = 14; x < 22; x++) { put(x, 2, '#c89a2a'); put(x, 3, '#a8781a'); } for (let x = 16; x < 20; x++) put(x, 6, '#a02a2a'); });
+    // The skins of the mutated animals are painted with their models (build_models.js, SPECS.mutated_*).
 
     // Worn gear (respirator and suits) is painted with its 3D model by blockbench/tools/build_gear.js since 1.5.1.
 
